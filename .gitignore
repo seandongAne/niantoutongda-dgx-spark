@@ -1,0 +1,8 @@
+logs/
+models/
+*.safetensors
+*.gguf
+*.bin
+*.pt
+__pycache__/
+.DS_Store

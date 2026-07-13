@@ -9,6 +9,13 @@
 - 所有 GPU / 推理 / 训练命令统一通过 `ssh spark 'cd ~/proj && ...'` 执行。
 - SSH 已配置 `Host spark`(ControlMaster 复用连接,4h 保活);跨境网络不稳定是常态,架构必须对断连免疫。
 
+## 安全自检(铁律,每会话首次用 spark 前必做)
+
+- 远程 spark 曾被 **Koske 挖矿木马**入侵(经 `--ip=0.0.0.0 --token=''` 的裸奔公网 Jupyter 进入),2026-07-12 已清除并封堵入口。详见项目记忆 `spark-compromised.md`。
+- **每次会话首次连 spark 前,先跑 `./scripts/spark_healthcheck.sh` 查回弹。** 输出 `✅ SPARK CLEAN` 才继续;若 `⚠️ 疑似回弹`,立即停下、向用户汇报、按记忆重新清理并考虑报障主办方。
+- **绝不**在 `Developer` 账户存放任何私钥 / token / `.env` / 凭据(该机曾被 user 级攻陷,凭据一放即视为泄露)。
+- 日后要起 Jupyter / ComfyUI 等服务,**必须绑 `127.0.0.1` 或加认证**,绝不再 `--ip=0.0.0.0 --token=''`。
+
 ## 文件纪律
 
 - 代码**只在本地编辑**,绝不在远程直接改文件。

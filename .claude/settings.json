@@ -3,6 +3,9 @@
     "allow": [
       "Bash(ssh spark:*)",
       "Bash(rsync:*)",
+      "Bash(./scripts/spark_healthcheck.sh:*)",
+      "Bash(./scripts/deploy.sh:*)",
+      "Bash(./scripts/pull_results.sh:*)",
       "Bash(git init:*)",
       "Bash(git status:*)",
       "Bash(git diff:*)",

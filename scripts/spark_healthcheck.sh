@@ -12,8 +12,9 @@
 # NAT 后的公网端口不会出现在远端 ss 输出中;须检查内网 8888/9000 是否
 # 监听在非 loopback 地址。无法仅靠监听状态可靠证明认证已开启,故门禁从严告警。
 #
-# 覆盖:已知矿工/投放器进程、Koske 文件、shell 钩子、用户 cron、GNOME
-# autostart/systemd user 持久化、已知矿池端口、敏感映射端口和异常 CPU 负载。
+# 覆盖:已知矿工/投放器进程、Koske rootkit/隐藏 PID/文件、shell 钩子、
+# 用户 cron、GNOME autostart/systemd user/系统级持久化、不安全 Jupyter unit、
+# 已知矿池端口、敏感映射端口和异常 CPU 负载。
 # 用法:./scripts/spark_healthcheck.sh    退出码:0=未发现已知 IOC 1=疑似回弹 2=自检未完成
 set -uo pipefail
 
@@ -49,9 +50,12 @@ remote_probe() {
     files=0
     for path in \
       "$HOME/.bashrc.koske" \
+      "$HOME/koske" \
       "$HOME/xmr" \
       "$HOME/xmrig1" \
-      "$HOME/build_a_claw_workshop-bundle/xmrig1"; do
+      "$HOME/build_a_claw_workshop-bundle/xmrig1" \
+      "/dev/shm/hideproc.so" \
+      "/dev/shm/.hiddenpid"; do
       if [ -e "$path" ] || [ -L "$path" ]; then
         files=$((files + 1))
       fi
@@ -68,7 +72,7 @@ remote_probe() {
       "$HOME/.config/fish/config.fish"; do
       [ -e "$file" ] || continue
       [ -r "$file" ] || fail "unreadable-shell-hook"
-      grep -qE "bashrc\.koske|[k]0ske|[p]anda_v14" "$file"
+      grep -qE "bashrc\.koske|[k]oske|[k]0ske|[p]anda_v14|hideproc|LD_PRELOAD" "$file"
       grep_status=$?
       case "$grep_status" in
         0) hook=$((hook + 1)) ;;
@@ -81,7 +85,7 @@ remote_probe() {
     cron_status=$?
     case "$cron_status" in
       0)
-        cron=$(printf "%s\n" "$cron_text" | grep -cE "[k]0ske|[p]anda_v14|xmr" || true)
+        cron=$(printf "%s\n" "$cron_text" | grep -cE "[k]oske|[k]0ske|[p]anda_v14|xmr|hideproc|LD_PRELOAD" || true)
         ;;
       *)
         printf "%s\n" "$cron_text" | grep -qi "no crontab for" || fail "crontab"
@@ -92,7 +96,7 @@ remote_probe() {
     persistence=0
     for dir in "$HOME/.config/autostart" "$HOME/.config/systemd/user"; do
       [ -d "$dir" ] || continue
-      matches=$(grep -rlE "[k]0ske|[p]anda_v14|xmrig|kryptex" "$dir" 2>/dev/null)
+      matches=$(grep -rlE "[k]oske|[k]0ske|[p]anda_v14|xmrig|kryptex|hideproc|LD_PRELOAD" "$dir" 2>/dev/null)
       grep_status=$?
       case "$grep_status" in
         0)
@@ -103,6 +107,39 @@ remote_probe() {
         *) fail "grep-persistence" ;;
       esac
     done
+
+    system_persistence=0
+    for file in \
+      /etc/ld.so.preload \
+      /etc/rc.local \
+      /etc/systemd/system/shellkoske.service \
+      /usr/lib/systemd/system/shellkoske.service; do
+      [ -e "$file" ] || continue
+      [ -r "$file" ] || fail "unreadable-system-persistence"
+      grep -qE "[k]oske|[k]0ske|[p]anda_v14|xmrig|kryptex|hideproc|LD_PRELOAD" "$file"
+      grep_status=$?
+      case "$grep_status" in
+        0) system_persistence=$((system_persistence + 1)) ;;
+        1) ;;
+        *) fail "grep-system-persistence" ;;
+      esac
+    done
+
+    loaded_rootkit=0
+    for maps in /proc/[0-9]*/maps; do
+      grep -qF "/dev/shm/hideproc.so" "$maps" 2>/dev/null || continue
+      loaded_rootkit=$((loaded_rootkit + 1))
+    done
+
+    unsafe_jupyter_unit=0
+    jupyter_unit="$HOME/.config/systemd/user/jupyter-workshop.service"
+    if [ -f "$jupyter_unit" ]; then
+      [ -r "$jupyter_unit" ] || fail "unreadable-jupyter-unit"
+      if grep -q -- "--ip=0.0.0.0" "$jupyter_unit" \
+        && grep -q -- "--port=8888" "$jupyter_unit"; then
+        unsafe_jupyter_unit=1
+      fi
+    fi
 
     listeners=$(ss -H -ltn 2>/dev/null) || fail "ss-listeners"
     count_exposed() {
@@ -123,6 +160,7 @@ remote_probe() {
     IFS=" " read -r load _ </proc/loadavg || fail "loadavg-read"
 
     for value in "$drop" "$miner" "$files" "$hook" "$cron" "$persistence" \
+      "$system_persistence" "$loaded_rootkit" "$unsafe_jupyter_unit" \
       "$jupyter_exposed" "$comfyui_exposed" "$pool"; do
       case "$value" in
         ""|*[!0-9]*) fail "invalid-count" ;;
@@ -132,8 +170,9 @@ remote_probe() {
       ""|*[!0-9.]*) fail "invalid-load" ;;
     esac
 
-    printf "OK|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s\n" \
+    printf "OK|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s\n" \
       "$drop" "$miner" "$files" "$hook" "$cron" "$persistence" \
+      "$system_persistence" "$loaded_rootkit" "$unsafe_jupyter_unit" \
       "$jupyter_exposed" "$comfyui_exposed" "$pool" "$load"
   '
 }
@@ -172,6 +211,7 @@ case "$OUT" in
 esac
 
 IFS="|" read -r status drop miner files hook cron persistence \
+  system_persistence loaded_rootkit unsafe_jupyter_unit \
   jupyter_exposed comfyui_exposed pool load extra <<<"$OUT"
 
 if [ "$status" != "OK" ] || [ -n "${extra:-}" ]; then
@@ -180,6 +220,7 @@ if [ "$status" != "OK" ] || [ -n "${extra:-}" ]; then
 fi
 
 for value in "$drop" "$miner" "$files" "$hook" "$cron" "$persistence" \
+  "$system_persistence" "$loaded_rootkit" "$unsafe_jupyter_unit" \
   "$jupyter_exposed" "$comfyui_exposed" "$pool"; do
   if [[ ! "$value" =~ ^[0-9]+$ ]]; then
     echo "⚠️  spark 自检计数字段异常,拒绝判定为干净"
@@ -198,6 +239,9 @@ problems=()
 [ "$hook"              -gt 0 ] && problems+=("shell 钩子×${hook}")
 [ "$cron"              -gt 0 ] && problems+=("恶意 cron×${cron}")
 [ "$persistence"       -gt 0 ] && problems+=("autostart/systemd user 持久化×${persistence}")
+[ "$system_persistence" -gt 0 ] && problems+=("系统级 Koske 持久化×${system_persistence}")
+[ "$loaded_rootkit"    -gt 0 ] && problems+=("已加载 hideproc rootkit×${loaded_rootkit}")
+[ "$unsafe_jupyter_unit" -gt 0 ] && problems+=("休眠的不安全 Jupyter unit×${unsafe_jupyter_unit}")
 [ "$jupyter_exposed"   -gt 0 ] && problems+=("Jupyter 内网 8888 非 loopback 监听×${jupyter_exposed}(公网 ${PUBLIC_JUPYTER_PORT})")
 [ "$comfyui_exposed"   -gt 0 ] && problems+=("ComfyUI 内网 9000 非 loopback 监听×${comfyui_exposed}(公网 ${PUBLIC_COMFYUI_PORT})")
 [ "$pool"              -gt 0 ] && problems+=("已知矿池端口 7029 连接×${pool}")

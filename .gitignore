@@ -6,3 +6,7 @@ models/
 *.pt
 __pycache__/
 .DS_Store
+
+# 本地 AI 编程代理项目纪律（含机器专属运行上下文）
+AGENTS.md
+CLAUDE.md

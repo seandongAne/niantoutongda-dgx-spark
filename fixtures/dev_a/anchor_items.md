@@ -29,11 +29,16 @@
 - C 组:玩具柜 vs 白色立柜(cabinet ×2)
 - D 组:蓝色水壶 vs 玫红色水壶(water bottle ×2)
 
-检测词表 v3(2026-07-15 重拍段验证,16/17 锚点成轨;box_threshold 0.30 + 分批检测):
+检测词表 v5(2026-07-15 定稿,补拍段全项验证;box_threshold 0.28,批次=4,**词序即分批,易混概念强制分批**):
 
 ```
-toy storage organizer,wardrobe,luggage,mini fridge,bookshelf,water bottle,tumbler,night light,security camera,desk,table lamp,stuffed animal,storage box,laundry bag,bed
+desk,water bottle,bookshelf,security camera,bed,tumbler,storage box,baby monitor,laundry bag,smart speaker,toy storage organizer,table lamp,luggage,mini fridge,wardrobe,stuffed animal,cylinder lamp
 ```
+
+演进记录:
+- v4:夜灯检测词 = **smart speaker**(白色柱体+贴纸,关灯态形似智能音箱;"night light" 全程零命中);摄像头双词 security camera(近摄)+ baby monitor(中距);批次 6→4(行李箱 0.61 分仍被 6 词批吞没);
+- v5:**luggage 与 laundry bag 必须分批**(v4 同批再度互吞,分离后恢复双长轨);夜灯加备用词 **cylinder lamp** 排在第 17 位单独成批——它会把所有圆柱物都网进来,词表管召回,身份精度交给 S3 嵌入匹配+真值;
+- 原则沉淀:**GDINO 的词表是召回网,不是分类器**——同批词竞争 token 归因,易混概念同批 = 互吞或复合标签;每批 ≤4 词、五个"柜架箱"类每批至多一个。
 
 词表诊断记录:
 - "cabinet" 对格架+抽屉盒式玩具柜零检出 → "toy storage organizer"(v2 起采用);

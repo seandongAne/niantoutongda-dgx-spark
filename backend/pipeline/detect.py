@@ -38,8 +38,11 @@ class GroundingDinoDetector:
         self.model_version = f"grounding-dino-base@{model_dir}"
 
     # GDINO 一次喂全量词表会稀释小类得分(2026-07-15 任务A实测:水壶 15 类下
-    # 碎片、3 类下 0.56 分)——按批检测再合并,跨批近重框只留高分。
-    PROMPT_BATCH_SIZE = 6
+    # 碎片、3 类下 0.56 分;行李箱 6 类批内仍被吞)——按批检测再合并,跨批近重
+    # 框只留高分。批次=4,且调用方的词表顺序即分批顺序:易混概念(收纳盒/玩具
+    # 柜/脏衣袋、衣柜/书架、水壶/保温杯)必须排进不同批,否则批内竞争产生
+    # 复合标签或直接吞并。
+    PROMPT_BATCH_SIZE = 4
 
     def detect(self, image_path: str, prompts: list[str]) -> list[RawDetection]:
         from PIL import Image

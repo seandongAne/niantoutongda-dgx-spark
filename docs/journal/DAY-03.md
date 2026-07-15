@@ -27,6 +27,12 @@
 - A1 降级阶梯第三级修正（commit `6653b7d`）：原"Stepfun 开源文本模型润色"不成立——Stepfun 开源文本旗舰为 321B 级 MoE，128GB 统一内存不可行；第三级改为 Step-Audio 2 mini 文本输出模式生成任务卡朗读稿，并区分"质量不达标走阶梯"与"加载失败走同生态换型号 + P1 上报"两条路径。教训：降级阶梯里的每一级都要单独过桌面预审，兜底选项不能只因为"听起来最保守"就免检。
 - 未验证或降级边界：v0.3 仍是纯文档；G0/SP0/A1 均未启动，Step-Audio 系列在本队 Spark 上未实测（可行性证据沿用海事线核实结论）；不得将对齐矩阵描述为已实现能力。
 
+- **两日主链冲刺启动（Sean 拍板）**：技术先行，48 小时内目标 = 主链端到端（视频→实体→组合→区域→CP-SAT→任务卡→trace），真模型、在 Spark 上；冻结任务 B 验收、SF1 预注册、三次复跑等日历型证据流程仍按 v0.3 七日计划走。
+- SP0 桌面预审（commit `3497366`）：5 个 ModelScope ID 经公开 API 核验 200（`IDEA-Research/grounding-dino-base`、`facebook/dinov2-base`、`stepfun-ai/Step-Audio-2-mini`、`Step-Audio-Tokenizer`、`Step-Audio-TTS-3B`）；两个猜测 ID 404 排除（`AI-ModelScope/grounding-dino-base`、`AI-ModelScope/dinov2-base`）。
+- S0 契约核心落地（同 commit）：`backend/schemas/core.py`（10 契约对象 + 枚举，extra=forbid，未知 schema_version 拒绝）、`backend/tools/solver/layout_solver.py`（CP-SAT 硬约束 + 整数软目标 + 替代区域 + INFEASIBLE 冲突解释 + PLANNER_ERROR 区分，seed/单 worker 确定性）、`backend/tools/audit/store.py`（追加式 JSONL）；本地 pytest **14/14 全绿**。
+- Spark 侧：会话首检 `✅ SPARK CLEAN`；节点为裸环境（无 torch/modelscope），`spark_bootstrap.sh min` 完成（venv + modelscope CLI）；`sp0_download.sh`（5 模型 → `~/models/`）与 `torch(cu130)+deps` 安装已 nohup 发射（logs：`~/proj/logs/sp0_download.log`、`bootstrap_torch_deps.log`），发射后 20 秒复核确认两者均在真实推进。
+- 未验证或降级边界（本段新增）：所有模型尚未跑过任何推理（探针 L1/L2 明日）；NVIDIA 生态出场的具体载体（TensorRT L2 + TAO/NvDINOv2 升级）待 SP0 后复核；VLM 属性抽取在两日主链内降级为规则+检测类别，槽位保留。
+
 ## 失败与教训
 
 - 选题切换时，海事文档里已经做过的官方评分对齐（v0.2 评分对齐补丁、双生态载体、成品视频分镜、E1）没有随选题迁移，搬家 v0.2 六项标准里三项载体完全缺席——**评分对齐矩阵必须是任何新选题文档的第一节检查项，选题可以换，赛事标准不换**。

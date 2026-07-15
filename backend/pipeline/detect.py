@@ -49,13 +49,14 @@ class GroundingDinoDetector:
         results = self.processor.post_process_grounded_object_detection(
             outputs,
             inputs.input_ids,
-            box_threshold=self.box_threshold,
+            threshold=self.box_threshold,  # transformers 4.51+ 改名(原 box_threshold)
             text_threshold=self.text_threshold,
             target_sizes=[image.size[::-1]],
         )[0]
+        labels = results.get("text_labels", results["labels"])  # 新版文本标签迁到 text_labels
         detections = [
             RawDetection(label=label, score=float(score), box=tuple(float(v) for v in box))
-            for label, score, box in zip(results["labels"], results["scores"], results["boxes"])
+            for label, score, box in zip(labels, results["scores"], results["boxes"])
         ]
         # 确定性输出顺序
         detections.sort(key=lambda d: (-d.score, d.label, d.box))

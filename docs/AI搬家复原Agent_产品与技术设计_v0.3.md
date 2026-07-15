@@ -21,11 +21,11 @@ v0.2 替代了“尽量先做简单盘点、布局以后再说”的保守路线
 5. 每个物体、组合和布局结论必须保留截图、物品框、时间戳、模型/配置版本和用户修改记录。
 6. 产品必须显式呈现 `NOT_SEEN`（未看到）、`SUSPECTED_DUPLICATE`（疑似重复）和 `NEW_SPACE_INCOMPATIBLE`（新空间不适配）。
 7. 模型指标、DGX Spark 角色、隐私边界、非技术队员分工和七日硬门槛均进入主计划，不作为最后补写材料。
-8. **官方六项评审标准每一项都有明确得分载体与文档锚点**（§4.4 评分对齐矩阵）；标注“不可裁剪”的载体与主干同级，任何进度压力下不得移出 MVP，裁剪争议以矩阵仲裁。
-9. **双生态出场不可裁剪**：NVIDIA 与 Stepfun 各至少一个模型必须在最终演示中真实运行。Stepfun 主载体为 Step-Audio 2 mini 的拍摄语音旁白理解（能力路径 A1，时间盒约束，不阻塞主链）；Step-Audio-TTS-3B 任务卡语音播报为条件镜头；语音理解质量不达标时以 Step-Audio 2 mini 文本输出模式生成任务卡朗读稿兜底（Stepfun 开源文本旗舰为 321B 级 MoE，128GB 统一内存不可行，不存在独立文本模型兜底）。
+8. **官方六项评审标准每一项都有明确得分载体与文档锚点**（§4.4 评分对齐矩阵）；载体分三档——必须得分载体 / 有条件增强 / 明确可舍弃——裁剪争议以矩阵按档仲裁，不允许“全部不可裁剪”式的假优先级。
+9. **双生态各一个主链模型是必须档**：NVIDIA = Nemotron VL 区域属性抽取，Stepfun = Step-Audio 2 mini 拍摄语音旁白理解（能力路径 A1，时间盒约束，不阻塞主链），两者必须在最终演示中真实运行。Step-Audio-TTS-3B 播报与 Nemotron 9B 文案为有条件增强；语音理解质量不达标时以 Step-Audio 2 mini 文本输出模式生成任务卡朗读稿兜底（Stepfun 开源文本旗舰为 321B 级 MoE，128GB 统一内存不可行，不存在独立文本模型兜底）。模型依赖钉版冲突由三套隔离环境解决（§9.2）。
 10. 评审的“演示效果”评的是**成品视频**而不是原始录屏：V1 交付 3～4 分钟分镜成片，核心闭环压在 90 秒内；“本地优先”的宣称必须有断网高光镜头背书。
 11. 赛事征文（十日谈）按项目纪律（AGENTS.md）**每日强制更新**，D9 汇编；不是赛末补写材料。
-12. 搬家执行 Agent 的 `VERIFIED` 结论必须经物品记忆 Agent 的验收复核请求闭环（跨 Agent 反向消息），不允许由前端或人工口头判定；该反向回路同时是“智能体融合”评分的协同证据。
+12. 搬家执行 Agent 的 `VERIFIED` 结论必须经**验收复核消息族**闭环（§5.2）：物品记忆 Agent 出具“出现”结论、空间规划侧出具“摆放合规”结论，两者同时通过才 `VERIFIED`——**物品出现在照片里但放错位置不是 `VERIFIED`**；请求、双结果、裁决、用户裁决均为独立不可变消息（correlation/causation/producer/payload_hash），不允许由前端或人工口头判定；该往返消息链同时是“智能体融合”评分的协同证据。
 
 ---
 
@@ -218,18 +218,22 @@ stateDiagram-v2
 
 ### 4.4 赛事评分对齐矩阵（v0.3 新增）
 
-赛事官方评审标准共六项。本项目每一项的得分载体、文档锚点与是否可裁剪如下；**标注“不可裁剪”的载体与主干同级，任何进度压力下不得移出 MVP**。
+赛事官方评审标准共六项。载体分三档，发生容量、下载或兼容性问题时按档裁决，**不允许“全部不可裁剪”式的假优先级**：
 
-| 评审标准 | 权重 | 本项目得分载体 | 锚点 | 是否可裁剪 |
+- **必须得分载体**：砍掉 = 直接丢掉对应权重，与主干同级；
+- **有条件增强**：有时间盒，超时按预案降级并如实记录，不算丢分；
+- **明确可舍弃**：升级路径，默认不做，做了才宣称。
+
+| 评审标准 | 权重 | 必须得分载体 | 有条件增强 | 明确可舍弃 |
 |---|---:|---|---|---|
-| 项目实用性、行业落地价值与技术创新性 | 25% | 搬家后“第一晚生活秩序”真实痛点与用户访谈；跨视频实例重识别 + 生活组合图 + 约束求解布局的组合创新；搬家公司 B2B2C 落地路径 | §1–§3、§10 | 主干不可裁剪 |
-| 智能体融合与模型优化技术深度 | 25% | 四 Agent 异构协同，**协同 trace 可回放为主要证据**（结构化消息链，含 MEM→UI 二选一请求与 EXEC→MEM 验收复核反向请求）；SF1 三层调优（投影头度量学习 / TensorRT / 工作点消融） | §5、§6.4、手册 S3/S7/SF1 | **协同 trace、验收复核回路与 SF1 不可裁剪** |
-| 项目完整性 | 20% | 旧家视频→实体库→组合→区域→布局→任务卡→验收→审计回放全闭环；六核心界面；切片验收证据体系；一键启动/重置演示 | §3、§8、手册 S8 | 不可裁剪 |
-| 平台适配性 | 15% | 全栈 NVIDIA（TAO 检测/度量学习、TensorRT、本地 VLM）+ Stepfun（Step-Audio 2 mini 旁白理解为主载体，TTS-3B 条件镜头，Step-Audio 2 mini 文本输出兜底）；Spark 单机“训练 + 推理”（投影头训练）；权重只从 ModelScope 拉取 | §9、手册 SP0/A1/SF1 | **双生态出场不可裁剪** |
-| 演示效果（Demo 视频） | 10% | 3～4 分钟成品分镜：90 秒主闭环 + 架构与双生态 trace 动画 + 断网高光 + 调优对比 + 语音能力段（条件）+ 指标与边界收尾 | §11、手册 V1 | 不可裁剪 |
-| 赛事征文（十日谈） | 5% | `docs/journal/DAY-XX.md` 每日强制更新（AGENTS.md 纪律），验收证据目录即素材，D9 汇编 `docs/十日谈_念头通达.md` | 手册 E1 | 不可裁剪 |
+| 项目实用性、行业落地价值与技术创新性 | 25% | “第一晚生活秩序”痛点 + 用户访谈；跨视频实例重识别 + 生活组合图 + 约束求解布局的组合创新（§1–§3、§10） | 搬家公司 B2B2C 叙事细化 | — |
+| 智能体融合与模型优化技术深度 | 25% | 四 Agent 协同 trace 可回放（结构化消息链：MEM→UI 二选一 + EXEC 发起的验收复核消息族，含 correlation/causation/producer/payload_hash）；SF1-L1 投影头度量学习（§5、§6.4、手册 S3/S7/SF1） | SF1-L2 TensorRT 部署对比、SF1-L3 工作点消融 | — |
+| 项目完整性 | 20% | 旧家视频→实体库→组合→区域→布局→任务卡→验收→审计回放全闭环；切片验收证据体系（§3、§8、手册 S8） | 六界面全量打磨、一键重置演示 | — |
+| 平台适配性 | 15% | **每生态各一个真实进入主链的模型**：NVIDIA = Nemotron VL 区域属性抽取（S5 必经产出方），Stepfun = Step-Audio 2 mini 旁白理解；Spark 单机“训练+推理”（投影头）；权重只从 ModelScope 拉取（§9、手册 SP0/A1/SF1） | TTS-3B 播报镜头、Nemotron 9B 任务卡文案 | NVFP4 量化、TAO 微调、NvDINOv2 换骨干 |
+| 演示效果（Demo 视频） | 10% | 3～4 分钟成品分镜：90 秒主闭环 + 架构与双生态 trace 动画 + 断网高光 + 指标与边界收尾（§11、手册 V1） | 调优对比段、语音能力段 | — |
+| 赛事征文（十日谈） | 5% | `docs/journal/DAY-XX.md` 每日强制更新（AGENTS.md 纪律），D9 汇编 `docs/十日谈_念头通达.md`（手册 E1） | — | — |
 
-> 解读：第 2、4 两项合计 40% 由四个载体承接——**协同 trace（含验收复核反向请求）、SF1 三层调优、双生态模型出场、Spark 单机训练+推理**。这四者是“不做就直接丢分”的硬载体，优先级等同主干。另需清醒：本选题在第 1 项的“行业落地价值”叙事上先天弱于 ToB 深场景，必须靠第 2、3 项的工程深度和完整性补分——这正是跨视频重识别与自动布局都不许降级的赛事理由，也是访谈证据（§10.2）必须做实的原因。
+> 解读：第 2、4 两项合计 40% 的**必须档**是三个载体——协同 trace（含验收复核消息族）、SF1-L1 投影头、双生态各一个主链模型。双生态“出场”指真实进入产品主链，不是演示片尾放个 logo；但它不等于 Stepfun/NVIDIA 的每个候选模型都必须保留——TTS 与 9B 文案是增强，超时就按预案降。另需清醒：本选题在第 1 项的“行业落地价值”叙事上先天弱于 ToB 深场景，必须靠第 2、3 项的工程深度和完整性补分——访谈证据（§10.2）必须做实。口径红线：材料中“TAO”字样只允许在真的执行过 TAO 训练/部署流程后出现，社区 checkpoint 转 TensorRT 的正确口径是“TensorRT 部署”。
 
 ---
 
@@ -254,11 +258,18 @@ stateDiagram-v2
 | 物品记忆 Agent | `ObjectEntity`、`Observation`、永久正/负匹配约束 | 视频处理、单视频轨迹、跨视频重识别、疑似重复请求 | 不推断最终生活习惯，不决定新家位置 |
 | 生活组合 Agent | 物品关系图、组合候选、用户模板选择 | 从空间关系和功能属性推断生活组合与装箱组合 | 不覆盖实体身份，不声称理解不可见习惯 |
 | 空间规划 Agent | 新家 `RegionGraph`、约束、求解结果 | 区域识别、兼容性判断、自动布局和不适配解释 | 不输出精确坐标，不违反硬约束迁就文案 |
-| 搬家执行 Agent | 箱、任务、完成状态、验收图 | 生成箱单、优先级、任务卡、二维码和验收流程；验收照片提交后向物品记忆 Agent 发起复核请求 | 不篡改上游实体、组合和布局事实；不自行判定 `VERIFIED` |
+| 搬家执行 Agent | 箱、任务、完成状态、验收图 | 生成箱单、优先级、任务卡、二维码和验收流程；验收照片提交后向物品记忆 Agent 请求“物品是否出现”、向空间规划 Agent 请求“摆放是否合规”，两者都通过才汇总出 `VERIFIED` | 不篡改上游实体、组合和布局事实；不自行做实例匹配或摆放判断 |
 
 审计与证据存储是确定性基础服务，不是第五个 Agent。
 
-Agent 协同不是单向流水线：物品记忆 Agent 向 UI 发起二选一请求（`ClarificationRequest`），搬家执行 Agent 在验收阶段向物品记忆 Agent 发起 `VerificationCheckRequest` 反向复核请求——物品记忆 Agent 对验收照片重跑实例匹配，返回 `VerificationCheckResult`，`VERIFIED` / `NOT_SEEN` 只能依据该结论写入。全部跨 Agent 消息追加写入 `audit/events.jsonl` 并可按任务单命令回放；**协同 trace 是“智能体融合”评分项的主要证据，不可裁剪**（§4.4）。
+Agent 协同不是单向流水线：物品记忆 Agent 向 UI 发起二选一请求（`ClarificationRequest`），搬家执行 Agent 在验收阶段发起**验收复核消息族**——一次往返包含四条独立不可变消息，各有唯一权责，共享 `correlation_id`，并携带 `causation_id`、`producer`、`payload_hash`（`backend/schemas/core.py` 为契约权威）：
+
+1. `VerificationCheckRequest`（EXEC 发出）：任务、预期实体、**目标区域与预期关系**、验收照片；
+2. `ObjectPresenceCheckResult`（MEM 返回）：只回答“物品是否出现在照片中”，逐实体带匹配分与证据——**出现 ≠ 摆对，MEM 无权判定摆放**；
+3. `PlacementComplianceResult`（SPACE/确定性校验器返回）：只回答“目标区域与关系约束是否满足”；
+4. `VerificationVerdict`（EXEC 汇总）：presence 与 compliance **同时通过**才 `VERIFIED`；物品出现但放错区域 = `FAILED(MISPLACED)`，匹配分低于阈值 = `NEEDS_USER`。用户裁决是第五条独立消息 `UserAdjudication`，接受错位摆放走 `USER_OVERRIDDEN` 并记录原因。
+
+结果消息覆盖不全或 `correlation_id` 不符是协议错误，直接拒绝，不得静默降级成结论。全部跨 Agent 消息追加写入 `audit/events.jsonl`，回放时校验 `payload_hash`；**协同 trace 是“智能体融合”评分项的主要证据，必须档载体**（§4.4）。
 
 ### 5.3 组件图
 
@@ -282,7 +293,11 @@ flowchart LR
     EXEC --> UI
     UI -->|TaskCompleted / VerificationPhoto| EXEC
     EXEC -->|VerificationCheckRequest| MEM
-    MEM -->|VerificationCheckResult| EXEC
+    EXEC -->|VerificationCheckRequest| SPACE
+    MEM -->|ObjectPresenceCheckResult| EXEC
+    SPACE -->|PlacementComplianceResult| EXEC
+    EXEC -->|VerificationVerdict| UI
+    UI -->|UserAdjudication| EXEC
 
     MEM --> AUDIT["证据库 + audit/events.jsonl"]
     ROUTINE --> AUDIT
@@ -545,11 +560,11 @@ maximize Σ x[g,r] × (
 
 二维码只保存随机任务 ID，不直接写入“首饰”“证件”等敏感物品名称。
 
-最终验收允许三种结果：
+最终验收由验收复核消息族（§5.2）驱动，任务状态允许三种落点：
 
-- `VERIFIED`：任务完成、验收照片经物品记忆 Agent 复核请求确认且证据齐全；
-- `NOT_SEEN`：预期物品未在验收照片中看到（复核结论，不是前端判断）；
-- `USER_OVERRIDDEN`：用户主动改变了建议区域，并记录原因。
+- `VERIFIED`：`VerificationVerdict` 为 VERIFIED——即物品记忆 Agent 确认全部预期物品出现（presence）**且**空间规划侧确认目标区域与关系满足（compliance），两者缺一不可。**物品出现在照片里但放错位置不是 `VERIFIED`**，是 `FAILED(MISPLACED)`，任务停在 `PLACED` 等待重做或用户裁决；
+- `NOT_SEEN`：预期物品未在验收照片中出现（MEM 的 presence 结论，不是前端判断）；
+- `USER_OVERRIDDEN`：用户通过 `UserAdjudication` 接受与计划不符的摆放或主动改变建议区域，并记录原因。
 
 ---
 
@@ -563,7 +578,11 @@ maximize Σ x[g,r] × (
 | `Tracklet` | `tracklet_id`、`observation_ids`、`prototype_refs`、`embedding_ref`、`attributes` |
 | `ObjectEntity` | `entity_id`、`tracklet_ids`、`label`、`identity_state`、`confidence`、`evidence_refs` |
 | `ClarificationRequest` | `request_id`、`candidate_a`、`candidate_b`、`reason_codes`、`decision` |
-| `VerificationCheckRequest` | `request_id`、`task_id`、`expected_entity_ids`、`photo_refs`、`result`、`reason_codes` |
+| `VerificationCheckRequest` | 消息基字段（`message_id`、`correlation_id`、`causation_id`、`producer`、`payload_hash`）+ `task_id`、`expected_entity_ids`、`target_region_id`、`expected_relation_edges`、`photo_refs`；**不携带结论回写位** |
+| `ObjectPresenceCheckResult` | 消息基字段 + `request_id`、`presences[{entity_id, present, match_score, evidence_refs}]`、`reason_codes`（MEM 出具，只判“出现”） |
+| `PlacementComplianceResult` | 消息基字段 + `request_id`、`compliances[{entity_id, region_ok, relations_ok, violated_constraints}]`、`reason_codes`（SPACE 出具，只判“摆放”） |
+| `VerificationVerdict` | 消息基字段 + `request_id`、`presence_result_id`、`compliance_result_id`、`verdict(VERIFIED/FAILED/NEEDS_USER)`、`reason_codes`（EXEC 汇总） |
+| `UserAdjudication` | 消息基字段 + `verdict_id`、`decision(accept_override/reject_redo)`、`note`（用户裁决，独立不可变） |
 | `LifeGroup` | `group_id`、`entity_ids`、`relation_edges`、`source`、`evidence_refs` |
 | `Region` | `region_id`、`anchor`、`support_type`、`capacity_class`、`attributes`、`evidence_refs` |
 | `PlacementPlan` | `plan_id`、`assignments`、`hard_constraints`、`soft_scores`、`solver_status` |
@@ -660,17 +679,17 @@ results/jobs/<job_id>/audit/events.jsonl
 
 | 能力 | 首选路径 | 七日训练/优化 |
 |---|---|---|
-| 开放词汇检测 | 可导出 TensorRT 的开放词汇检测器；优先验证 NVIDIA TAO Grounding DINO 能力路径 | 冻结词表和阈值，必要时只微调检测头 |
-| 实例分割 | 与检测框配套的轻量分割或 Mask Grounding DINO 能力路径 | 只用于改善裁剪，不让分割阻塞主链 |
-| 实例嵌入 | 支持度量学习的视觉骨干；优先验证 TAO Metric Learning / NvDINOv2 路径 | 冻结骨干，训练小型投影头或末层 |
+| 开放词汇检测 | Grounding DINO（社区 checkpoint）；SF1-L2 走 ONNX→TensorRT **部署**（口径不称 TAO；TAO 微调是明确可舍弃的升级路径，做了才宣称） | 冻结词表和阈值，必要时只微调检测头 |
+| 实例分割 | 与检测框配套的轻量分割 | 只用于改善裁剪，不让分割阻塞主链 |
+| 实例嵌入 | DINOv2 冻结骨干 + 投影头度量学习（SF1-L1，Spark 单机训练）；NvDINOv2 为可舍弃的换骨干路径 | 冻结骨干，训练小型投影头或末层 |
 | 单视频追踪 | ByteTrack/等价确定性追踪器 | 不训练，调关联阈值 |
-| 属性与区域抽取 | 可在 Spark 本地运行的 NVIDIA 视觉语言模型候选 | 结构化输出；不逐帧调用 |
+| 属性与区域抽取 | **Nemotron-Nano-12B-v2-VL（NVIDIA 生态主链载体）**：探针通过后为 S5 区域/物品属性候选的必经产出方；探针未过前的规则+检测类别兜底是降级路径，须 P1 上报且演示口径不得称 VLM 在场 | 结构化输出；不逐帧调用 |
 | 自动布局 | OR-Tools CP-SAT | 冻结约束和整数权重 |
 | 语音旁白理解 | Stepfun Step-Audio 2 mini（能力路径 A1：拍摄旁白→物品语义标签候选，候选证据不改写实体身份） | 不训练；SP0 探针 + A1 时间盒，与主链解耦 |
 | 任务卡语音播报 | Stepfun Step-Audio-TTS-3B（条件路径：SP0 30 分钟时间盒探针 `PASS` 才纳入演示） | 不训练 |
 | 任务文案 | 结构模板为主，本地语言模型可润色（语音两级质量不达标时，Step-Audio 2 mini 文本输出模式生成任务卡朗读稿，为双生态出场兜底载体） | 不得修改事实字段 |
 
-NVIDIA TAO 官方文档显示其当前工具链覆盖 Grounding DINO、Mask Grounding DINO、RT-DETR、ReIdentificationNet、Metric Learning Recognition 和 TensorRT 部署；本项目利用的是这条训练/部署能力链，而不是声称 TAO 已经提供现成的家庭物品重识别模型。Step-Audio 2 mini 与 Step-Audio-TTS-3B 在 ModelScope 开源、有 Spark/aarch64 可行性证据（海事线已核实），实际可用性以 SP0 实测为准。
+口径红线：把社区 checkpoint 转成 TensorRT engine 的正确说法是“TensorRT 部署”，**不是“TAO 路线”**——“TAO”字样只允许在真的执行过 TAO 训练/部署流程后出现在任何材料里（TAO 官方流程覆盖 Grounding DINO 微调→ONNX→TensorRT，作为明确可舍弃的升级路径记录在案）。NVIDIA 生态的主链出场载体是 Nemotron VL 属性抽取，不靠 TAO 字样撑场面。模型依赖钉版冲突（Step-Audio `transformers==4.49.0` vs Nemotron VL `>4.53,<4.54`）由三套隔离环境解决（`scripts/spark_bootstrap.sh env`，`configs/env_*.txt`）。Step-Audio 2 mini 与 Step-Audio-TTS-3B 在 ModelScope 开源、有 Spark/aarch64 可行性证据（海事线已核实），实际可用性以 SP0 实测为准。
 
 **双生态出场是评分硬载体**（§4.4）：NVIDIA 与 Stepfun 各至少一个模型必须在最终演示中真实运行；型号、版本与生态归属（`ecosystem: nvidia / stepfun / deterministic`）写入 `configs/models.yaml`，SP0 实测后冻结。降级只允许在同生态内就近换型号或沿 A1 降级阶梯（旁白理解 → TTS 播报 → Step-Audio 2 mini 文本输出）下移，不允许移出生态。注意阶梯的适用边界：第三级覆盖的是“模型能加载但语音理解/合成质量不达标”；若两个音频模型在 Spark 上连加载都失败，按 SP0 纪律在 Stepfun 生态内就近换型号并按 P1 上报，不得静默放弃双生态载体。
 
@@ -746,7 +765,7 @@ NVIDIA TAO 官方文档显示其当前工具链覆盖 Grounding DINO、Mask Grou
 | 段落 | 时长 | 内容 |
 |---|---:|---|
 | 90 秒主闭环 | ~90 s | 下方主闭环分镜表（含问题冷开场） |
-| 架构与双生态 | ~25 s | 四 Agent 架构图 + 一条真实协同 trace 动画（消息链：记忆→二选一→组合→规划→执行→验收复核反向请求）；模型清单动画（NVIDIA：TAO/TensorRT/VLM；Stepfun：Step-Audio 系列）；“单机训练 + 推理” |
+| 架构与双生态 | ~25 s | 四 Agent 架构图 + 一条真实协同 trace 动画（消息链：记忆→二选一→组合→规划→执行→验收复核消息族）；模型清单动画（NVIDIA：Nemotron VL + TensorRT 部署；Stepfun：Step-Audio 系列）；“单机训练 + 推理” |
 | 断网高光 | ~10 s | Spark 出站封锁特写 + 全链继续运行（“本地优先”背书） |
 | 调优对比 | ~20 s | SF1 三层证据：投影头前后 `Recall@1`/误合并对比（L1）、TensorRT 延迟条（L2）、工作点曲线一瞥（L3） |
 | 语音能力段（条件） | ~10 s | A1：拍摄旁白→物品语义标签；或 TTS 播报一张任务卡（探针 `PASS` 才纳入，否则以任务卡特写替代） |

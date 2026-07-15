@@ -1,4 +1,4 @@
-version: "0.1"
+version: "0.2"
 created_at: "2026-07-15"
 owner: "集成与平台主责"
 reason: "SP0 桌面预审通过的候选(ModelScope API 核验 200);实测探针后冻结"
@@ -6,28 +6,36 @@ applies_to_dataset: "dev_a"
 frozen: false
 
 # ecosystem 取值: nvidia / stepfun / community / deterministic
-# 说明: 两日主链先用 transformers 原生可加载的开源权重起链;
-# NVIDIA 生态出场载体 = SF1-L2 TensorRT 引擎 + (后续)TAO/NvDINOv2 升级路径,SP0 后复核。
+# env 取值: main(~/venv) / stepaudio / nemotron_vl — 三套隔离环境,
+#   因 Step-Audio(transformers==4.49.0)与 Nemotron VL(>4.53,<4.54)钉版冲突,
+#   见 scripts/spark_bootstrap.sh 与 configs/env_*.txt。
+# NVIDIA 生态主链出场 = vlm_attributes(Nemotron VL 探针通过后为 S5 区域属性
+#   候选的必经产出方,规则兜底仅作降级路径且须 P1 上报+演示口径披露);
+#   TensorRT 部署为 SF1-L2 补充载体 — 口径写"TensorRT 部署",不称 TAO;
+#   "TAO 微调"只有在真的执行 TAO 训练流程后才允许出现在任何材料里。
 capabilities:
   detection:
     primary:
       id: IDEA-Research/grounding-dino-base
       ecosystem: community
       runtime: transformers
+      env: main
       status: pending_probe
-      note: "开放词汇检测;TAO Grounding DINO 为微调/TensorRT 部署升级路径(nvidia 载体)"
+      note: "开放词汇检测;SF1-L2 走 ONNX→TensorRT 部署(社区 checkpoint,口径不称 TAO)"
   instance_embedding:
     primary:
       id: facebook/dinov2-base
       ecosystem: community
       runtime: transformers
+      env: main
       status: pending_probe
-      note: "冻结骨干 + 轻量投影头(SF1-L1 在 Spark 上训练);NvDINOv2 为同类升级路径"
+      note: "冻结骨干 + 轻量投影头(SF1-L1 在 Spark 上训练)"
   tracking:
     primary:
       id: bytetrack
       ecosystem: deterministic
       runtime: python
+      env: main
       status: pending_probe
       note: "无权重;关联阈值进 configs"
   layout_solver:
@@ -35,6 +43,7 @@ capabilities:
       id: ortools-cpsat
       ecosystem: deterministic
       runtime: python
+      env: main
       status: probed_local
       note: "本地已过单元测试;Spark 侧随 deps 安装复测"
   audio_understanding:
@@ -42,6 +51,7 @@ capabilities:
       id: stepfun-ai/Step-Audio-2-mini
       ecosystem: stepfun
       runtime: custom
+      env: stepaudio
       status: pending_probe
       note: "A1 主载体:拍摄旁白→物品语义标签候选;文本输出模式为第三级兜底"
   audio_tts:
@@ -49,6 +59,7 @@ capabilities:
       id: stepfun-ai/Step-Audio-TTS-3B
       ecosystem: stepfun
       runtime: custom
+      env: stepaudio
       status: pending_probe
       note: "条件路径,30 分钟时间盒;依赖 stepfun-ai/Step-Audio-Tokenizer"
   vlm_attributes:
@@ -56,12 +67,17 @@ capabilities:
       id: nv-community/NVIDIA-Nemotron-Nano-12B-v2-VL-BF16
       ecosystem: nvidia
       runtime: transformers
+      env: nemotron_vl
       status: pending_probe
-      note: "S5 区域/物品属性候选抽取;两日主链先规则+检测类别兜底,VL 探针通过后接入;NVFP4-QAD 变体(已核验存在)为量化/L2 升级路径"
+      note: "NVIDIA 生态主链载体:S5 区域/物品属性候选的必经产出方(探针通过后)。
+        探针未过前规则+检测类别兜底 = 降级路径,须 P1 上报,演示不得口称 VLM 在场;
+        NVFP4-QAD 变体(已核验存在)为量化升级路径"
   task_copy:
     primary:
       id: nv-community/NVIDIA-Nemotron-Nano-9B-v2
       ecosystem: nvidia
       runtime: transformers
+      env: nemotron_vl
       status: pending_probe
-      note: "任务卡文案润色;不得修改事实字段;生成失败时结构化任务卡仍可渲染"
+      note: "有条件增强(非必须载体):任务卡文案润色;不得修改事实字段;
+        生成失败时结构化任务卡仍可渲染"

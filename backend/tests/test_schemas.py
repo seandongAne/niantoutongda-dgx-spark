@@ -11,7 +11,6 @@ from backend.schemas.core import (
     Observation,
     PlacementPlan,
     Region,
-    VerificationCheckRequest,
 )
 
 
@@ -65,14 +64,6 @@ def test_clarification_decision_enum():
             request_id="c2", candidate_a="t1", candidate_b="t2",
             reason_codes=[], decision="maybe",
         )
-
-
-def test_verification_check_contract():
-    req = VerificationCheckRequest(
-        request_id="vc1", task_id="task1",
-        expected_entity_ids=["e1"], photo_refs=["p.jpg"], result="VERIFIED",
-    )
-    assert req.result == "VERIFIED"
 
 
 def test_placement_plan_status_literal():

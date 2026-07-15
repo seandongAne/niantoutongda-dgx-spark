@@ -1,0 +1,10 @@
+# Step-Audio 2 mini / TTS-3B 专用环境 — 官方仓库钉死 transformers==4.49.0,
+# 与 Nemotron VL 的 >4.53,<4.54 直接冲突,禁止装进主 venv。
+# torch/torchaudio 由 bootstrap 先从 cu130/cu128 index 装,不写在这里。
+transformers==4.49.0
+librosa
+soundfile
+onnxruntime
+s3tokenizer
+diffusers
+hyperpyyaml

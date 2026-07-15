@@ -20,7 +20,7 @@
 4. 用户介入必须受指标约束：冻结任务中二选一率不得超过 20%，主演示最多出现一次。
 5. 所有切片必须产生可见结果、机器可读指标、失败案例和可回放证据；“代码写了但没接通”不算完成。
 6. 第六天结束后冻结新功能，第七天只修阻断问题、复验、录制和包装。
-7. **裁剪争议一律以《产品与技术设计 v0.3》§4.4 评分对齐矩阵仲裁**：双生态出场、协同 trace 回放（含验收复核反向请求）、SF1 三层调优、成品视频与十日谈是不可裁剪评分载体，与主干同级；砍掉任何一个等于主动放弃对应权重。
+7. **裁剪争议一律以《产品与技术设计 v0.3》§4.4 评分对齐矩阵仲裁**——矩阵分三档：**必须得分载体**（主干闭环、协同 trace 回放含验收复核消息族、SF1-L1 投影头、双生态各一个主链模型、成品视频、十日谈）砍掉 = 主动放弃对应权重；**有条件增强**（TTS 镜头、9B 文案、SF1-L2/L3、界面打磨）超时按预案降级并如实记录；**明确可舍弃**（NVFP4 量化、TAO 微调、NvDINOv2）默认不做。“全部不可裁剪”式的假优先级不允许存在。
 8. 十日谈按 AGENTS.md 纪律**每日强制更新**：任何实质成果在当次交付前写入当天 `docs/journal/DAY-XX.md`，D9 汇编——不是赛末补写材料。
 
 ---
@@ -32,8 +32,9 @@
 ```mermaid
 flowchart LR
     G0["G0 数据与真值冻结<br/>0–8h"] --> S0["S0 骨架与数据契约<br/>0–12h"]
-    SP0["SP0 Spark/模型探针（双生态）<br/>0–8h"] --> S1
-    SP0 --> A1["A1 语音能力切片<br/>96–112h 时间盒"]
+    SP0C["SP0-core 主链探针<br/>torch/检测/嵌入/CP-SAT<br/>0–8h"] --> S1
+    SP0S["SP0-score 评分载体探针<br/>Step-Audio/Nemotron VL/TensorRT<br/>0–32h"] --> A1["A1 语音能力切片<br/>96–112h 时间盒"]
+    SP0S --> V1
     A1 --> V1
     E1["E1 十日谈<br/>每日 · D9 汇编"] --> V1
     S0 --> S1["S1 视频接入与证据抽取<br/>8–24h"]
@@ -54,8 +55,8 @@ flowchart LR
 
 | 天 | 主线 | 并行工作 | 当天必须可见的结果 | 日终门槛 |
 |---|---|---|---|---|
-| Day 1（07-15/D3） | G0、SP0、S0 | 非技术队员完成任务 A/B 拍摄和真值；技术队员完成 Spark 双生态模型探针与仓库骨架 | 一套冻结开发任务、一套冻结验收任务；NVIDIA 与 Stepfun 模型能在 Spark 启动；空流程 UI 能创建任务 | **G1：数据、模型（双生态）、schema 三者全部存在** |
-| Day 2（07-16/D4） | S1、S2 | 前端制作旧家扫描和证据页 | 三段视频生成关键帧、框、轨迹和多视角证据 | 15 件至少看到 12 件；单视频轨迹可复现 |
+| Day 1（07-15/D3） | G0、SP0-core、S0 | 非技术队员完成任务 A/B 拍摄和真值；技术队员完成主链探针与仓库骨架；SP0-score 下载启动 | 一套冻结开发任务、一套冻结验收任务；主链模型（检测/嵌入）与 CP-SAT 能在 Spark 跑通；空流程 UI 能创建任务 | **G1：数据、SP0-core、schema 三者全部 PASS 才开 S1；SP0-score 允许顺延至 Day 2 日终** |
+| Day 2（07-16/D4） | S1、S2 | 前端制作旧家扫描和证据页；**SP0-score 收口**（Step-Audio 与 Nemotron VL 各完成一次加载探针） | 三段视频生成关键帧、框、轨迹和多视角证据 | 15 件至少看到 12 件；单视频轨迹可复现；SP0-score 未 PASS 则当晚触发降级预案评估 |
 | Day 3（07-17/D5） | S3 第一轮 | 二选一界面；相似物品困难负样本补标 | 跨视频实体库、匹配分数、疑似重复队列 | **G2：13/15 正确合并、0 高置信误合并、确认率 ≤20%** |
 | Day 4（07-18/D6） | S3 加固、S4、S5 开始 | 轻量投影头训练；组合真值与区域标注 | 三个生活组合、箱单；新家至少五个区域及证据 | 阈值冻结；3 组中至少 2 组自动接受 |
 | Day 5（07-19/D7） | S5、S6 | 前端制作区域计划页；布局约束测试；**A1 语音能力切片（时间盒 0.5 天）** | 自动区域布局、替代方案和不适配状态；A1 至少一级路径产出 | **G3：0 硬约束违反、≥80% 区域建议接受** |
@@ -213,11 +214,16 @@ docs/数据授权与脱敏说明_v0.1.md
 
 ---
 
-## 5. SP0：Spark 与模型能力探针（0～8h，双生态）
+## 5. SP0：Spark 与模型能力探针（拆分为 core 与 score 两段）
 
 ### 目标
 
-第一天确认所有主能力——含 NVIDIA 与 Stepfun 双生态模型——能在 aarch64 DGX Spark 上启动、训练或推理，避免第六天才发现平台不兼容或双生态出场（评分硬载体）悬空。
+确认所有主能力能在 aarch64 DGX Spark 上启动、训练或推理。**SP0 拆成两段，各自阻塞不同的下游**——不允许让 Step-Audio/TTS/VLM 的探针进度把 S1 主链卡住：
+
+- **SP0-core（0～8h，阻塞 S1）**：torch CUDA、开放词汇检测、实例嵌入、投影头训练、CP-SAT——主链起链的最小集合；
+- **SP0-score（0～32h，不阻塞 S1，阻塞最终演示与 A1）**：Step-Audio 2 mini、TTS-3B、Nemotron VL、TensorRT 导出——评分载体探针，Day 2 日终收口，逐模型 30 分钟加载时间盒，超时记 `TIMEBOX_EXPIRED` 进入下一个，不无限陪跑。
+
+**环境纪律（评审 P0-3）**：Step-Audio 官方钉死 `transformers==4.49.0`，Nemotron VL 要求 `>4.53,<4.54`——两条官方依赖线不可能共存于一个 venv。三套隔离环境：`~/venv`（下载器 + 视觉主链）、`~/envs/stepaudio`、`~/envs/nemotron_vl`，由 `scripts/spark_bootstrap.sh env <name>` + `configs/env_*.txt` 锁定；任何探针必须在其所属环境里跑（`models.yaml` 的 `env` 字段为准），把音频/VLM 依赖装进主 venv 视为 P1 事故。
 
 ### 前置纪律
 
@@ -235,31 +241,34 @@ ssh spark 'free -h'
 
 超过一分钟的任务使用 `nohup` 后台运行；代码只在本地编辑并通过 `scripts/deploy.sh` 部署。
 
-### 任务
+### SP0-core 任务（阻塞 S1）
 
-1. 在一张冻结图片上运行开放词汇检测，输出框与类别。
-2. 在同一物品两张不同视角裁剪上输出实例嵌入和余弦相似度。
-3. 在相似但不同实例裁剪上验证嵌入可以形成困难负样本基线。
-4. 用少量正负样本训练一次轻量投影头并保存小型权重。
-5. 运行一次结构化物品/区域属性抽取。
+1. torch CUDA matmul 探针通过（GB10/aarch64 生死门；bare-metal 失败则切 NGC 容器）。
+2. 在一张冻结图片上运行开放词汇检测，输出框与类别。
+3. 在同一物品两张不同视角裁剪上输出实例嵌入和余弦相似度。
+4. 在相似但不同实例裁剪上验证嵌入可以形成困难负样本基线。
+5. 用少量正负样本训练一次轻量投影头并保存小型权重。
 6. 运行一个最小 CP-SAT 区域分配案例，覆盖 `OPTIMAL` 和 `INFEASIBLE`。
-7. 验证候选模型的 TensorRT/ONNX 导出路径或明确记录不支持。
-8. 运行 Step-Audio 2 mini 一次真实语音理解推理（A1 能力路径探针）；对 Step-Audio-TTS-3B 执行 30 分钟时间盒探针，留下 `PASS` / `TIMEBOX_EXPIRED` / `FAIL` 记录（不作为门槛）。
-9. 冻结每种能力的一主一备，不继续无限试模型。
+
+### SP0-score 任务（不阻塞 S1，Day 2 日终收口）
+
+1. 在 `~/envs/stepaudio` 运行 Step-Audio 2 mini 一次真实语音理解推理（A1 能力路径探针）；对 Step-Audio-TTS-3B 执行 30 分钟时间盒探针，留下 `PASS` / `TIMEBOX_EXPIRED` / `FAIL` 记录（不作为门槛）。
+2. 在 `~/envs/nemotron_vl` 运行 Nemotron VL 一次结构化物品/区域属性抽取（NVIDIA 主链载体探针；`mamba-ssm` aarch64 编译失败 → NGC 容器兜底并记录）。
+3. 验证检测模型的 TensorRT/ONNX 导出路径或明确记录不支持（口径为“TensorRT 部署”，不称 TAO）。
+4. 冻结每种能力的一主一备，不继续无限试模型。
 
 ### 必交产物
 
-- `configs/models.yaml`：ModelScope ID、版本、许可证、用途、量化、候选顺序和生态归属（`ecosystem: nvidia / stepfun / deterministic`）；
-- `results/acceptance/sp0/<run_id>/metrics.json`：加载时间、峰值内存、单次延迟；
+- `configs/models.yaml`：ModelScope ID、版本、许可证、用途、量化、候选顺序、生态归属（`ecosystem`）与运行环境（`env`）；
+- `results/acceptance/sp0/<run_id>/metrics.json`：加载时间、峰值内存、单次延迟（core/score 分开记录）；
 - 一组检测、嵌入、属性抽取和求解截图；
 - 一个可复现的投影头训练命令；
 - 一个 CP-SAT 不可行案例。
 
 ### 验收
 
-- 检测、嵌入、属性抽取和 CP-SAT 均有真实输出。
-- 轻量投影头完成一次前向、反向和保存。
-- **NVIDIA 与 Stepfun 双生态各至少一个模型完成一次可复现推理**（Stepfun 以 Step-Audio 2 mini 为准；TTS 探针结果在案但不作为门槛）。
+- **SP0-core**：torch CUDA、检测、嵌入、CP-SAT 均有真实输出；轻量投影头完成一次前向、反向和保存——PASS 才开 S1。
+- **SP0-score**：NVIDIA 与 Stepfun 双生态各至少一个模型完成一次可复现推理（NVIDIA 以 Nemotron VL 属性抽取为准，Stepfun 以 Step-Audio 2 mini 为准；TTS 探针结果在案但不作为门槛）——Day 2 日终未 PASS 触发降级预案评估（同生态换型号 / NGC 容器 / P1 上报），不静默拖延。
 - 模型权重只在 Spark 上从 ModelScope 拉取。
 - 峰值内存有记录且未超过机器内存 80%。
 - 服务未裸露在非 loopback 的敏感端口。
@@ -315,7 +324,7 @@ scripts/
 - `Tracklet`；
 - `ObjectEntity`；
 - `ClarificationRequest`；
-- `VerificationCheckRequest`；
+- 验收复核消息族（`VerificationCheckRequest` / `ObjectPresenceCheckResult` / `PlacementComplianceResult` / `VerificationVerdict` / `UserAdjudication`，共享消息基字段 `message_id`/`correlation_id`/`causation_id`/`producer`/`payload_hash`）；
 - `LifeGroup`；
 - `Region`；
 - `PlacementPlan`；
@@ -559,7 +568,7 @@ scripts/
 2. 每张任务卡显示组合、箱号、旧家证据、新家区域、优先级和约束。
 3. 二维码只编码随机任务 ID。
 4. 支持完成勾选、验收照片和用户覆盖结果。
-5. 实现 `VERIFIED`、`NOT_SEEN` 和 `USER_OVERRIDDEN`；验收照片提交后由搬家执行 Agent 向物品记忆 Agent 发起 `VerificationCheckRequest` 复核请求，`VERIFIED` / `NOT_SEEN` 只能依据复核结论写入。
+5. 实现 `VERIFIED`、`NOT_SEEN` 和 `USER_OVERRIDDEN`；验收照片提交后由搬家执行 Agent 发起验收复核消息族——MEM 只答“出现”（`ObjectPresenceCheckResult`），SPACE 只答“摆放合规”（`PlacementComplianceResult`），EXEC 汇总 `VerificationVerdict`，presence ∧ compliance 才 `VERIFIED`；**物品出现但放错区域 = `FAILED(MISPLACED)`，不是 `VERIFIED`**；用户裁决走独立消息 `UserAdjudication`。
 6. 实现按时间回放的 audit timeline。
 7. 提供 `scripts/replay_trace.sh`（或等价单命令）按任务回放全部跨 Agent 消息链——这是“智能体融合”评分的主要证据入口。
 8. 所有事实字段直接来自结构对象，不能由前端自由拼接。
@@ -570,7 +579,7 @@ scripts/
 - 从任务首页到提交完成照片不超过三个主要动作。
 - 任一最终任务能回溯到原视频截图、实体、组合、区域和配置。
 - `SUSPECTED_DUPLICATE`、`NOT_SEEN` 和 `NEW_SPACE_INCOMPATIBLE` 均有真实界面。
-- 任一任务的跨 Agent 消息链（含 EXEC→MEM 验收复核请求）可单命令回放；每个 `VERIFIED` 均有复核结论支撑。
+- 任一任务的跨 Agent 消息链（含验收复核消息族的请求→双结果→裁决全链）可单命令回放，回放时校验 `payload_hash` 与 `correlation_id` 闭合；每个 `VERIFIED` 均有 presence 与 compliance 双结论支撑。
 - 用户覆盖不会删除原建议，而是追加审计事件。
 
 ---
@@ -622,7 +631,7 @@ scripts/
 ### 任务
 
 1. 主路径：对一段带用户旁白的拍摄视频运行 Step-Audio 2 mini，把旁白转成物品语义标签候选（例如“这是床头灯”→ 对应轨迹的 label 候选）；语音候选只作为候选证据，不直接改写实体身份或事实字段。
-2. 条件路径：SP0 的 TTS 探针为 `PASS` 时，用 Step-Audio-TTS-3B 为一张真实任务卡生成语音播报 WAV。
+2. 条件路径：SP0-score 的 TTS 探针为 `PASS` 时，用 Step-Audio-TTS-3B 为一张真实任务卡生成语音播报 WAV。
 3. 两条路径的输入、输出、模型版本写入 manifest 并追加 `audit/events.jsonl`。
 
 ### 时间盒与降级阶梯
@@ -633,7 +642,7 @@ scripts/
   2. Step-Audio-TTS-3B 任务卡播报；
   3. Step-Audio 2 mini 文本输出模式生成任务卡朗读稿（双生态出场的最低保险）。
 - 阶梯边界：Stepfun 开源文本旗舰为 321B 级 MoE，128GB 统一内存不可行，**不存在独立文本模型兜底**——第三级复用 Step-Audio 2 mini 的文本出口，只覆盖“能加载但语音理解质量不达标”的情形。
-- 若两个音频模型在 Spark 上连加载都失败（而非质量不达标），按 SP0 纪律在 Stepfun 生态内就近换型号重试；仍失败则按 P1 上报，并在当天十日谈如实记录——不允许静默放弃双生态载体。
+- 若两个音频模型在 Spark 上连加载都失败（而非质量不达标），按 SP0-score 纪律在 Stepfun 生态内就近换型号重试；仍失败则按 P1 上报，并在当天十日谈如实记录——不允许静默放弃双生态载体。
 
 ### 验收
 
@@ -688,7 +697,7 @@ scripts/
 | 重复性 | 连续 3 次实体和布局一致 |
 | 稳定性 | 30 分钟无崩溃、无 OOM |
 | 双生态出场 | NVIDIA 与 Stepfun 各至少一个模型在演示链路真实运行（A1 降级阶梯任一级） |
-| 协同 trace 回放 | 任一任务的跨 Agent 消息链可单命令回放，含 EXEC→MEM 验收复核请求 |
+| 协同 trace 回放 | 任一任务的跨 Agent 消息链可单命令回放，含验收复核消息族全链（请求→presence/compliance 双结果→verdict→用户裁决），`payload_hash` 校验通过 |
 
 ### 正式异常验收
 
@@ -724,7 +733,7 @@ scripts/
 | 段落 | 时长 | 内容 |
 |---|---:|---|
 | 90 秒主闭环 | ~90 s | 设计文档 §11 主闭环分镜表（含问题冷开场） |
-| 架构与双生态 | ~25 s | 四 Agent 架构图 + 真实协同 trace 动画（含 EXEC→MEM 验收复核反向请求）；模型清单动画（NVIDIA + Stepfun）；“单机训练 + 推理” |
+| 架构与双生态 | ~25 s | 四 Agent 架构图 + 真实协同 trace 动画（含验收复核消息族往返）；模型清单动画（NVIDIA：Nemotron VL + TensorRT 部署；Stepfun：Step-Audio 系列）；“单机训练 + 推理” |
 | 断网高光 | ~10 s | Spark 出站封锁特写 + 全链继续运行 |
 | 调优对比 | ~20 s | SF1 三层证据（L1 指标条 / L2 延迟条 / L3 工作点曲线） |
 | 语音能力段（条件） | ~10 s | A1 达成级别对应镜头；未达成则以任务卡特写替代 |
@@ -853,7 +862,7 @@ configs/
 - [ ] 七日落地切片与验收手册 v0.3；
 - [ ] 开发任务 A 与冻结任务 B 的脱敏 manifest 和人工真值；
 - [ ] 六个核心界面的可运行前端；
-- [ ] 四 Agent 的结构化消息和状态；协同 trace 可单命令回放（含验收复核反向请求）；
+- [ ] 四 Agent 的结构化消息和状态；协同 trace 可单命令回放（含验收复核消息族全链）；
 - [ ] 跨视频实体重识别完整链；
 - [ ] 二选一不确定交互；
 - [ ] 生活组合、模板和箱单；

@@ -5,6 +5,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 from enum import Enum
 from typing import Literal, Optional
 
@@ -16,6 +18,37 @@ SCHEMA_VERSION = "1.0"
 class _Contract(BaseModel):
     model_config = ConfigDict(extra="forbid")
     schema_version: Literal["1.0"] = SCHEMA_VERSION
+
+
+class AgentRole(str, Enum):
+    MEM = "MEM"  # 物品记忆
+    GROUP = "GROUP"  # 生活组合
+    SPACE = "SPACE"  # 空间规划
+    EXEC = "EXEC"  # 搬家执行
+    USER = "USER"
+    SYSTEM = "SYSTEM"
+
+
+class _Message(_Contract):
+    """跨 Agent 消息基类 — 追加写入后不可变。
+
+    correlation_id 串起一次完整往返(如一次验收复核);causation_id 指向
+    触发本消息的上游 message_id;payload_hash 由 compute_payload_hash
+    计算(排除自身),回放时校验消息未被篡改。
+    """
+
+    message_id: str
+    correlation_id: str
+    causation_id: Optional[str] = None
+    producer: AgentRole
+    payload_hash: str = ""
+
+
+def compute_payload_hash(msg: _Message) -> str:
+    data = msg.model_dump(mode="json")
+    data.pop("payload_hash", None)
+    canonical = json.dumps(data, sort_keys=True, ensure_ascii=False)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
 class IdentityState(str, Enum):
@@ -88,20 +121,75 @@ class ClarificationRequest(_Contract):
     decision: Optional[Literal["same", "different"]] = None
 
 
-class VerificationCheckRequest(_Contract):
-    request_id: str
-    task_id: str
-    expected_entity_ids: list[str]
-    photo_refs: list[str]
-    result: Optional[Literal["VERIFIED", "NOT_SEEN"]] = None
-    reason_codes: list[str] = []
-
-
 class RelationEdge(_Contract):
     src: str
     dst: str
     relation: Literal["NEAR", "SAME_SURFACE", "CO_USED", "REQUIRES_POWER", "STORED_WITH", "ANCHORED_TO"]
     evidence_refs: list[str] = []
+
+
+# ---- 验收复核消息族(EXEC 发起的反向协同) ----
+# 职责拆分:MEM 只回答"物品是否出现"(presence),SPACE/确定性校验器只回答
+# "目标区域与关系是否满足"(compliance);EXEC 汇总为 verdict,
+# VERIFIED 必须 presence 与 compliance 同时通过。任何一方不得代写结论。
+
+
+class VerificationCheckRequest(_Message):
+    """EXEC → MEM 与 SPACE:请求对验收照片复核。producer=EXEC。"""
+
+    task_id: str
+    expected_entity_ids: list[str]
+    target_region_id: str
+    expected_relation_edges: list[RelationEdge] = []
+    photo_refs: list[str]
+
+
+class EntityPresence(_Contract):
+    entity_id: str
+    present: bool
+    match_score: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    evidence_refs: list[str] = []
+
+
+class ObjectPresenceCheckResult(_Message):
+    """MEM → EXEC:只回答物品是否出现在照片中,不判断摆放。producer=MEM。"""
+
+    request_id: str
+    presences: list[EntityPresence]
+    reason_codes: list[str] = []
+
+
+class PlacementCompliance(_Contract):
+    entity_id: str
+    region_ok: bool
+    relations_ok: bool
+    violated_constraints: list[str] = []
+
+
+class PlacementComplianceResult(_Message):
+    """SPACE/确定性校验器 → EXEC:只回答区域与关系约束是否满足。producer=SPACE。"""
+
+    request_id: str
+    compliances: list[PlacementCompliance]
+    reason_codes: list[str] = []
+
+
+class VerificationVerdict(_Message):
+    """EXEC 汇总:presence ∧ compliance 才 VERIFIED。producer=EXEC。"""
+
+    request_id: str
+    presence_result_id: str
+    compliance_result_id: str
+    verdict: Literal["VERIFIED", "FAILED", "NEEDS_USER"]
+    reason_codes: list[str] = []
+
+
+class UserAdjudication(_Message):
+    """用户对 FAILED/NEEDS_USER 的裁决 — 独立不可变消息。producer=USER。"""
+
+    verdict_id: str
+    decision: Literal["accept_override", "reject_redo"]
+    note: str = ""
 
 
 class LifeGroup(_Contract):

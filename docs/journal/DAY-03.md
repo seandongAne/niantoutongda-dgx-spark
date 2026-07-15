@@ -32,7 +32,13 @@
 - S0 契约核心落地（同 commit）：`backend/schemas/core.py`（10 契约对象 + 枚举，extra=forbid，未知 schema_version 拒绝）、`backend/tools/solver/layout_solver.py`（CP-SAT 硬约束 + 整数软目标 + 替代区域 + INFEASIBLE 冲突解释 + PLANNER_ERROR 区分，seed/单 worker 确定性）、`backend/tools/audit/store.py`（追加式 JSONL）；本地 pytest **14/14 全绿**。
 - Spark 侧：会话首检 `✅ SPARK CLEAN`；节点为裸环境（无 torch/modelscope），`spark_bootstrap.sh min` 完成（venv + modelscope CLI）；`sp0_download.sh`（5 模型 → `~/models/`）与 `torch(cu130)+deps` 安装已 nohup 发射（logs：`~/proj/logs/sp0_download.log`、`bootstrap_torch_deps.log`），发射后 20 秒复核确认两者均在真实推进。
 - NVIDIA 模型机会核实（Sean 追问触发）：`nvidia/` 命名空间在 ModelScope 全 404，真实宿主为 **`nv-community/` 镜像 org**；`NVIDIA-Nemotron-Nano-12B-v2-VL-BF16`（→ vlm_attributes 槽位）与 `NVIDIA-Nemotron-Nano-9B-v2`（→ 任务文案润色槽位）均 API 核验 200 并已入队下载（`logs/nvidia_download.log`）；NVFP4-QAD 变体核验存在，记为量化/L2 升级路径不下载。models.yaml 两槽位已从 TBD 落到实 ID。
-- 未验证或降级边界（本段新增）：所有模型尚未跑过任何推理（探针 L1/L2 明日）；NVIDIA VLM 在两日主链内仍先以规则+检测类别兜底，VL 探针通过后接入；TensorRT L2 与 TAO 微调为 NVIDIA 软件栈侧的补充载体。
+- 未验证或降级边界（本段新增）：所有模型尚未跑过任何推理（探针 L1/L2 明日）；NVIDIA VLM 在两日主链内仍先以规则+检测类别兜底，VL 探针通过后接入；TensorRT 部署为 SF1-L2 补充载体（口径不称 TAO）。
+- **外部评审三 P0 全部核实成立并当日修复**（commit 见当日）：
+  1. P0-1 `VERIFIED` 只证明"出现"不证明"摆对" → 验收拆为 presence（MEM）∧ compliance（SPACE）双结论，EXEC 汇总 `VerificationVerdict`，"出现但放错 = FAILED(MISPLACED)"入契约与测试；
+  2. P0-2 请求/结果同一消息自相矛盾 → 验收复核改为五条独立不可变消息（Request / PresenceResult / ComplianceResult / Verdict / UserAdjudication），全部携带 correlation_id、causation_id、producer、payload_hash，覆盖不全或串号 = 协议错误直接拒绝；`backend/tools/verification/verdict.py` + 9 个新测试，本地 22/22 绿；
+  3. P0-3 单 venv 装不下两条官方依赖线（Step-Audio 钉 `transformers==4.49.0`，Nemotron VL 要 `>4.53,<4.54`，均经官方仓库/模型卡核实）→ 三套隔离环境 `~/venv`（视觉主链）/`~/envs/stepaudio`/`~/envs/nemotron_vl`，`spark_bootstrap.sh env <name>` + `configs/env_*.txt` 锁定；mamba-ssm aarch64 现场编译失败的兜底 = NGC 容器。
+- 同批 P1 采纳：SP0 拆 **SP0-core（阻塞 S1）/ SP0-score（Day 2 收口，只阻塞演示与 A1）**；评分矩阵从"全部不可裁剪"改为**必须得分载体 / 有条件增强 / 明确可舍弃**三档；NVIDIA 主链锚定为 Nemotron VL 属性抽取（必经产出方，规则兜底 = 降级路径须 P1 上报），TTS 与 9B 文案降为增强档；口径红线：社区 checkpoint 转 TensorRT 只许说"TensorRT 部署"，"TAO"字样做了才准写。
+- 教训：**"全部不可裁剪"等于没有优先级**——评分对齐矩阵不仅要枚举载体，还要给出出问题时的裁决顺序；以及验收语义要从"照片里有"追问到"放对了没有"，单 Agent 重跑自己的能力不构成验收。
 
 ## 失败与教训
 

@@ -1,0 +1,7 @@
+# SP0 权重下载清单 — ModelScope ID,全部经 API 核验(2026-07-15)
+# 顺序 = 主链关键度:视觉先行,音频随后
+IDEA-Research/grounding-dino-base
+facebook/dinov2-base
+stepfun-ai/Step-Audio-2-mini
+stepfun-ai/Step-Audio-Tokenizer
+stepfun-ai/Step-Audio-TTS-3B

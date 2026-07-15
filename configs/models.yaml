@@ -1,0 +1,60 @@
+version: "0.1"
+created_at: "2026-07-15"
+owner: "集成与平台主责"
+reason: "SP0 桌面预审通过的候选(ModelScope API 核验 200);实测探针后冻结"
+applies_to_dataset: "dev_a"
+frozen: false
+
+# ecosystem 取值: nvidia / stepfun / community / deterministic
+# 说明: 两日主链先用 transformers 原生可加载的开源权重起链;
+# NVIDIA 生态出场载体 = SF1-L2 TensorRT 引擎 + (后续)TAO/NvDINOv2 升级路径,SP0 后复核。
+capabilities:
+  detection:
+    primary:
+      id: IDEA-Research/grounding-dino-base
+      ecosystem: community
+      runtime: transformers
+      status: pending_probe
+      note: "开放词汇检测;TAO Grounding DINO 为微调/TensorRT 部署升级路径(nvidia 载体)"
+  instance_embedding:
+    primary:
+      id: facebook/dinov2-base
+      ecosystem: community
+      runtime: transformers
+      status: pending_probe
+      note: "冻结骨干 + 轻量投影头(SF1-L1 在 Spark 上训练);NvDINOv2 为同类升级路径"
+  tracking:
+    primary:
+      id: bytetrack
+      ecosystem: deterministic
+      runtime: python
+      status: pending_probe
+      note: "无权重;关联阈值进 configs"
+  layout_solver:
+    primary:
+      id: ortools-cpsat
+      ecosystem: deterministic
+      runtime: python
+      status: probed_local
+      note: "本地已过单元测试;Spark 侧随 deps 安装复测"
+  audio_understanding:
+    primary:
+      id: stepfun-ai/Step-Audio-2-mini
+      ecosystem: stepfun
+      runtime: custom
+      status: pending_probe
+      note: "A1 主载体:拍摄旁白→物品语义标签候选;文本输出模式为第三级兜底"
+  audio_tts:
+    primary:
+      id: stepfun-ai/Step-Audio-TTS-3B
+      ecosystem: stepfun
+      runtime: custom
+      status: pending_probe
+      note: "条件路径,30 分钟时间盒;依赖 stepfun-ai/Step-Audio-Tokenizer"
+  vlm_attributes:
+    primary:
+      id: TBD
+      ecosystem: nvidia
+      runtime: TBD
+      status: deferred
+      note: "两日主链降级为规则+检测类别;NVIDIA VLM 候选在主链打通后 SP0 补探"

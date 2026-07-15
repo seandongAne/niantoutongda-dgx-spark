@@ -72,8 +72,10 @@ def ingest_video(
     *,
     config_version: str,
     target_fps: float = 2.0,
-    iou_threshold: float = 0.3,
-    max_missed: int = 2,
+    # 2026-07-15 试机片 A/B:iou 0.2/miss 4 比 0.3/2 少 25% 碎片且缝合断轨,
+    # 真实批次到货后随 S3 阈值一起冻结
+    iou_threshold: float = 0.2,
+    max_missed: int = 4,
     min_track_len: int = 2,
 ) -> IngestResult:
     workdir = Path(workdir)

@@ -29,14 +29,18 @@
 - C 组:玩具柜 vs 白色立柜(cabinet ×2)
 - D 组:蓝色水壶 vs 玫红色水壶(water bottle ×2)
 
-检测词表 v2(2026-07-15 用第一段真实视频诊断后修订;一概念一词,颜色区分交给嵌入/属性层):
+检测词表 v3(2026-07-15 重拍段验证,16/17 锚点成轨;box_threshold 0.30 + 分批检测):
 
 ```
-toy storage organizer,wardrobe,suitcase,toy refrigerator,bookshelf,water bottle,tumbler,night light,security camera,desk,desk lamp,stuffed animal,storage box,laundry basket,bed
+toy storage organizer,wardrobe,luggage,mini fridge,bookshelf,water bottle,tumbler,night light,security camera,desk,table lamp,stuffed animal,storage box,laundry bag,bed
 ```
 
-词表诊断记录(视频 g0_a_old1,box_threshold 0.28):
-- "cabinet" 对格架+抽屉盒式玩具柜零检出 → "toy storage organizer" 成 22 帧长轨(v2 采用);
-- 白色立柜是整面白门,首段视频怼脸拍导致物体大于画面,任何词都框不出——拍摄距离问题非词表问题;
-- 词组间避免共享单词(曾出现 "toy storage organizer storage box" 复合碎片),复合碎片被 min_track_len 过滤,可容忍;
-- 玫红色水壶外观为保温杯型 → 词表补 "tumbler"。
+词表诊断记录:
+- "cabinet" 对格架+抽屉盒式玩具柜零检出 → "toy storage organizer"(v2 起采用);
+- 白色立柜首段怼脸拍导致物体大于画面 → 重拍退后入画即成轨(拍摄距离,非词表);
+- 措辞胜负局:suitcase→**luggage**、toy refrigerator→**mini fridge**、desk lamp→**table lamp**、
+  laundry basket→**laundry bag**(软袋非硬篓);玫红色水壶=保温杯型 → **tumbler**;
+- **GDINO 得分稀释陷阱**:15 类一次喂,小类得分被稀释到阈值下(水壶 15 类碎片/3 类 0.56 分)
+  → detect.py 改分批检测(≤6 类/批)+ 跨批 IoU>0.8 去重,阈值回到 0.30;
+- 复合标签碎片("wardrobe bookshelf" 等)为批内相邻词伪影,量小可容忍;
+- **夜灯唯一未决**:疑似发光球形灯,开灯状态过曝成白团任何词零命中——拍摄时关闭夜灯(或开大房间主灯)再验证。

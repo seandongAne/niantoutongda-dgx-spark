@@ -1,0 +1,122 @@
+#!/usr/bin/env python
+"""Stepfun Step Plan API 本地客户端(赛方 2000M token 配额)。
+
+红线:
+- STEPFUN_API_KEY 只存本地 .env / 环境变量;永不进 git、永不上 Spark 节点
+  (.gitignore 与 deploy.sh 均已排除 .env)。本脚本部署到节点无害(无密钥即退出),
+  但设计用途是只在本地 Mac 运行。
+- 演示主链不调用云 API。本工具只服务 dev-time 用途——A1 prompt 预热、
+  G0 预标注/词表、LLM-judge、文案润色,见 docs/STEPFUN_API_PLAYBOOK.md。
+- 云端输出永远是"候选/评审意见",不得自动写入真值或契约对象。
+
+用法:
+  python scripts/stepfun_api.py models
+  python scripts/stepfun_api.py chat --model step-3.5-flash --prompt "..."
+  echo "..." | python scripts/stepfun_api.py chat --model step-3.5-flash
+  python scripts/stepfun_api.py chat --model step-audio-2.5 \
+      --audio memo.wav --prompt "列出旁白里提到的每一件物品"
+  (音频 content part 采用 OpenAI input_audio 约定;若阶跃实际格式不同,
+   以第一次真实调用的报错为准修正。)
+"""
+
+from __future__ import annotations
+
+import argparse
+import base64
+import json
+import os
+import sys
+import urllib.error
+import urllib.request
+from pathlib import Path
+
+BASE_URL = os.environ.get("STEPFUN_BASE_URL", "https://api.stepfun.com/step_plan/v1")
+
+
+def load_key() -> str:
+    key = os.environ.get("STEPFUN_API_KEY", "")
+    if not key:
+        env = Path(__file__).resolve().parent.parent / ".env"
+        if env.exists():
+            for line in env.read_text().splitlines():
+                if line.startswith("STEPFUN_API_KEY="):
+                    key = line.split("=", 1)[1].strip().strip('"').strip("'")
+                    break
+    if not key:
+        sys.exit("missing STEPFUN_API_KEY — 写入仓库根 .env(已 gitignore)或导出环境变量")
+    return key
+
+
+def call(path: str, payload: dict | None = None) -> dict:
+    req = urllib.request.Request(
+        BASE_URL + path,
+        data=json.dumps(payload).encode() if payload is not None else None,
+        headers={
+            "Authorization": f"Bearer {load_key()}",
+            "Content-Type": "application/json",
+        },
+        method="POST" if payload is not None else "GET",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=180) as r:
+            return json.load(r)
+    except urllib.error.HTTPError as e:
+        sys.exit(f"HTTP {e.code} {path}: {e.read().decode(errors='replace')[:2000]}")
+
+
+def cmd_models(_: argparse.Namespace) -> None:
+    data = call("/models")
+    for m in data.get("data", []):
+        print(m.get("id"))
+
+
+def cmd_chat(args: argparse.Namespace) -> None:
+    prompt = args.prompt if args.prompt is not None else sys.stdin.read()
+    content: list[dict] | str
+    if args.audio:
+        audio = Path(args.audio)
+        content = [
+            {"type": "text", "text": prompt},
+            {
+                "type": "input_audio",
+                "input_audio": {
+                    "data": base64.b64encode(audio.read_bytes()).decode(),
+                    "format": audio.suffix.lstrip(".").lower() or "wav",
+                },
+            },
+        ]
+    else:
+        content = prompt
+    messages = []
+    if args.system:
+        messages.append({"role": "system", "content": args.system})
+    messages.append({"role": "user", "content": content})
+    data = call(
+        "/chat/completions",
+        {"model": args.model, "messages": messages, "temperature": args.temperature},
+    )
+    print(data["choices"][0]["message"]["content"])
+    usage = data.get("usage", {})
+    print(
+        f"[usage] prompt={usage.get('prompt_tokens')} completion={usage.get('completion_tokens')}",
+        file=sys.stderr,
+    )
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    sub = ap.add_subparsers(dest="cmd", required=True)
+    sub.add_parser("models").set_defaults(func=cmd_models)
+    chat = sub.add_parser("chat")
+    chat.add_argument("--model", required=True)
+    chat.add_argument("--prompt", default=None, help="缺省从 stdin 读")
+    chat.add_argument("--system", default=None)
+    chat.add_argument("--audio", default=None, help="音频文件路径(wav/mp3)")
+    chat.add_argument("--temperature", type=float, default=0.2)
+    chat.set_defaults(func=cmd_chat)
+    args = ap.parse_args()
+    args.func(args)
+
+
+if __name__ == "__main__":
+    main()

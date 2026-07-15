@@ -44,6 +44,9 @@
 - SP0-core 探针脚本 `scripts/sp0_core_probe.py` 就绪并已部署：CUDA matmul 生死门 → 检测/嵌入真模型加载+前向+计时+峰值显存 → CP-SAT 双态冒烟，落 `results/acceptance/sp0/<run_id>/metrics.json`；节点上已挂 watcher（deps 装完自动跑探针）。无真实图片时探针只证明"加载+前向"，真实输出探针等 G0 素材重跑——不冒充质量证据。
 - torch 安装仍在跟跨境网络缠斗（CUDA 库单包 200~700MB,超时自动续传中）；vision 双模型权重已完整落盘,Step-Audio 2 mini 下载中。
 
+- **SP0-core 首轮探针(watcher 自动触发,run `sp0core_20260715_2027`)**:3/4 过——CUDA matmul(GB10 识别正常,4096² 0.366s)、DINOv2 嵌入前向(768 维,self-cosine=1.0)、CP-SAT 双态(PLAN_READY/NEW_SPACE_INCOMPATIBLE)全部真机通过;**检测失败**:Grounding DINO 前向触发 nvrtc JIT 内核编译,cu128 工具链不认 GB10 新算力架构(`invalid value for --gpu-architecture`)。根因回溯:cu130 首装死于 `error: incomplete-download`(跨境断流),自动降级到 cu128 埋下此雷。已用 `pip --resume-retries 10` 重装 cu130(断点续传)并链式自动重跑探针。教训:**降级路径成功 ≠ 主路径不再需要——cu128 能跑基础算子但 JIT 必炸,凡"自动 fallback 成功"都要回头问一句主路径当初为什么失败**。
+- **阶跃 Step Plan 接入(Sean 提供控制台截图,配额 2000M 远超预期)**:落地 `scripts/stepfun_api.py` 本地客户端(stdlib-only,models/chat+audio 子命令,stderr 报 usage)+ `docs/STEPFUN_API_PLAYBOOK.md`(四条 dev-time 用途按冲刺价值排序:A1 prompt 预热 > G0 预标注/词表工厂 > LLM-judge > 文案润色;五条红线:密钥仅本地、演示主链不接云、云输出仅候选、影像出境先脱敏、批量任务记 usage)。`.env` 进 .gitignore 且 deploy.sh 排除——密钥双重隔离于 git 与节点。待 key 到手先跑 `models` 拿权威清单。
+
 ## 失败与教训
 
 - 选题切换时，海事文档里已经做过的官方评分对齐（v0.2 评分对齐补丁、双生态载体、成品视频分镜、E1）没有随选题迁移，搬家 v0.2 六项标准里三项载体完全缺席——**评分对齐矩阵必须是任何新选题文档的第一节检查项，选题可以换，赛事标准不换**。

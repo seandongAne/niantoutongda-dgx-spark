@@ -3,5 +3,6 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 rsync -az --delete --exclude .git --exclude logs --exclude results \
-  --exclude .venv --exclude local-data --exclude .DS_Store --exclude __pycache__ ./ spark:~/proj/
+  --exclude .venv --exclude local-data --exclude .DS_Store --exclude __pycache__ \
+  --exclude .env ./ spark:~/proj/
 echo "deploy: OK -> spark:~/proj/"

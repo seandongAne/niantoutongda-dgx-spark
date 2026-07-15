@@ -48,6 +48,8 @@
 - **SP0-core 终局:PASS(当晚 23 点前)**。cu130 断点续传成功(torch 2.13+cu130),nvrtc JIT 错误随之消失;最后一雷是 transformers 新版把 `post_process_grounded_object_detection` 的 `box_threshold` 改名 `threshold`(文本标签迁 `text_labels`),一行修复后全绿:检测在合成图上真检出 "red box"(score 0.758,框坐标与画的矩形吻合)、嵌入 33ms/图、CP-SAT 双态、`failures: []`。**S1 依赖解除**。合成图口径不变:这是加载+前向+基础语义探针,真实场景质量探针等 G0 素材重跑。
 - **阶跃 Step Plan 接入(Sean 提供控制台截图,配额 2000M 远超预期)**:落地 `scripts/stepfun_api.py` 本地客户端(stdlib-only,models/chat+audio 子命令,stderr 报 usage)+ `docs/STEPFUN_API_PLAYBOOK.md`(四条 dev-time 用途按冲刺价值排序:A1 prompt 预热 > G0 预标注/词表工厂 > LLM-judge > 文案润色;五条红线:密钥仅本地、演示主链不接云、云输出仅候选、影像出境先脱敏、批量任务记 usage)。`.env` 进 .gitignore 且 deploy.sh 排除——密钥双重隔离于 git 与节点。待 key 到手先跑 `models` 拿权威清单。
 
+- **G0 试机片过真实管线（当晚，Sean 拍摄 35s 卧室片段）**：67 关键帧、检测 0.40s/帧、大件与停留物全部成轨（bed 25 帧/12.5s 跨度）；72% 单帧碎片经标签分析确认为杂物闪烁（box×29）而非追踪失败——**碎片率对乱房间是误导性指标，真验收口径应为"每件停留锚点是否成长轨"**。宽松参数（iou 0.2/miss 4）缝合断轨且碎片 -25%，已定为 ingest 默认（真实批次后随 S3 阈值冻结）。`scripts/g0_clip_check.py` 成为素材质检门。房间分配拍板：A=Sean 房间（仅开发，素材不进任何提交物），B=队友房间（冻结+成片，需记录展示授权），另加 R1 鲁棒性扫描（队友房间 2–3 个，零标注，只验流程）。
+
 ## 失败与教训
 
 - 选题切换时，海事文档里已经做过的官方评分对齐（v0.2 评分对齐补丁、双生态载体、成品视频分镜、E1）没有随选题迁移，搬家 v0.2 六项标准里三项载体完全缺席——**评分对齐矩阵必须是任何新选题文档的第一节检查项，选题可以换，赛事标准不换**。

@@ -35,6 +35,7 @@ def main() -> int:
     ap.add_argument("video")
     ap.add_argument("--prompts", default=DEFAULT_PROMPTS)
     ap.add_argument("--workdir", default=None)
+    ap.add_argument("--box-threshold", type=float, default=0.35)
     args = ap.parse_args()
 
     from backend.pipeline.detect import GroundingDinoDetector
@@ -54,7 +55,10 @@ def main() -> int:
     if len(keyframes) < 10:
         print("⚠️ 关键帧过少:视频太短或画面几乎静止")
 
-    detector = GroundingDinoDetector(str(Path.home() / "models" / "IDEA-Research__grounding-dino-base"))
+    detector = GroundingDinoDetector(
+        str(Path.home() / "models" / "IDEA-Research__grounding-dino-base"),
+        box_threshold=args.box_threshold,
+    )
     per_frame: list[list[FrameDetection]] = []
     total_dets = 0
     t0 = time.perf_counter()

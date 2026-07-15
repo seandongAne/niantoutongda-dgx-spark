@@ -31,7 +31,8 @@
 - SP0 桌面预审（commit `3497366`）：5 个 ModelScope ID 经公开 API 核验 200（`IDEA-Research/grounding-dino-base`、`facebook/dinov2-base`、`stepfun-ai/Step-Audio-2-mini`、`Step-Audio-Tokenizer`、`Step-Audio-TTS-3B`）；两个猜测 ID 404 排除（`AI-ModelScope/grounding-dino-base`、`AI-ModelScope/dinov2-base`）。
 - S0 契约核心落地（同 commit）：`backend/schemas/core.py`（10 契约对象 + 枚举，extra=forbid，未知 schema_version 拒绝）、`backend/tools/solver/layout_solver.py`（CP-SAT 硬约束 + 整数软目标 + 替代区域 + INFEASIBLE 冲突解释 + PLANNER_ERROR 区分，seed/单 worker 确定性）、`backend/tools/audit/store.py`（追加式 JSONL）；本地 pytest **14/14 全绿**。
 - Spark 侧：会话首检 `✅ SPARK CLEAN`；节点为裸环境（无 torch/modelscope），`spark_bootstrap.sh min` 完成（venv + modelscope CLI）；`sp0_download.sh`（5 模型 → `~/models/`）与 `torch(cu130)+deps` 安装已 nohup 发射（logs：`~/proj/logs/sp0_download.log`、`bootstrap_torch_deps.log`），发射后 20 秒复核确认两者均在真实推进。
-- 未验证或降级边界（本段新增）：所有模型尚未跑过任何推理（探针 L1/L2 明日）；NVIDIA 生态出场的具体载体（TensorRT L2 + TAO/NvDINOv2 升级）待 SP0 后复核；VLM 属性抽取在两日主链内降级为规则+检测类别，槽位保留。
+- NVIDIA 模型机会核实（Sean 追问触发）：`nvidia/` 命名空间在 ModelScope 全 404，真实宿主为 **`nv-community/` 镜像 org**；`NVIDIA-Nemotron-Nano-12B-v2-VL-BF16`（→ vlm_attributes 槽位）与 `NVIDIA-Nemotron-Nano-9B-v2`（→ 任务文案润色槽位）均 API 核验 200 并已入队下载（`logs/nvidia_download.log`）；NVFP4-QAD 变体核验存在，记为量化/L2 升级路径不下载。models.yaml 两槽位已从 TBD 落到实 ID。
+- 未验证或降级边界（本段新增）：所有模型尚未跑过任何推理（探针 L1/L2 明日）；NVIDIA VLM 在两日主链内仍先以规则+检测类别兜底，VL 探针通过后接入；TensorRT L2 与 TAO 微调为 NVIDIA 软件栈侧的补充载体。
 
 ## 失败与教训
 

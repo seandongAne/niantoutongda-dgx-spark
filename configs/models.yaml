@@ -53,8 +53,15 @@ capabilities:
       note: "条件路径,30 分钟时间盒;依赖 stepfun-ai/Step-Audio-Tokenizer"
   vlm_attributes:
     primary:
-      id: TBD
+      id: nv-community/NVIDIA-Nemotron-Nano-12B-v2-VL-BF16
       ecosystem: nvidia
-      runtime: TBD
-      status: deferred
-      note: "两日主链降级为规则+检测类别;NVIDIA VLM 候选在主链打通后 SP0 补探"
+      runtime: transformers
+      status: pending_probe
+      note: "S5 区域/物品属性候选抽取;两日主链先规则+检测类别兜底,VL 探针通过后接入;NVFP4-QAD 变体(已核验存在)为量化/L2 升级路径"
+  task_copy:
+    primary:
+      id: nv-community/NVIDIA-Nemotron-Nano-9B-v2
+      ecosystem: nvidia
+      runtime: transformers
+      status: pending_probe
+      note: "任务卡文案润色;不得修改事实字段;生成失败时结构化任务卡仍可渲染"

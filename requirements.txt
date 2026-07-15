@@ -5,3 +5,4 @@ pyyaml>=6
 fastapi>=0.111
 uvicorn>=0.30
 numpy
+opencv-python-headless

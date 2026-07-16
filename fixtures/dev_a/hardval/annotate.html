@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>hardval 真值标注 — dev_a_hardval_v1</title>
+<style>
+  body { margin:0; font:13px/1.4 -apple-system,sans-serif; display:flex; height:100vh; }
+  #side { width:230px; overflow-y:auto; border-right:1px solid #ccc; padding:8px; box-sizing:border-box; }
+  #side h3 { margin:4px 0; font-size:13px; }
+  #frames button { display:block; width:100%; text-align:left; margin:2px 0; padding:4px 6px;
+    border:1px solid #ddd; background:#fafafa; cursor:pointer; border-radius:4px; }
+  #frames button.active { background:#cde4ff; border-color:#5b9bd5; }
+  #frames button.done::after { content:" ✓"; color:#2a8f2a; font-weight:bold; }
+  #main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+  #bar { padding:6px 10px; border-bottom:1px solid #ccc; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  #stage { flex:1; overflow:auto; position:relative; background:#333; }
+  canvas { display:block; cursor:crosshair; }
+  #boxes { width:330px; overflow-y:auto; border-left:1px solid #ccc; padding:8px; box-sizing:border-box; }
+  .box-row { border:1px solid #ddd; border-radius:4px; padding:6px; margin-bottom:6px; }
+  .box-row.selected { border-color:#e67e22; background:#fff7ef; }
+  .box-row label { display:block; margin:2px 0; }
+  .box-row input[type=text], .box-row select { width:100%; box-sizing:border-box; }
+  button.small { font-size:12px; padding:2px 8px; }
+  #io { display:none; position:fixed; inset:10% 20%; background:#fff; border:2px solid #888;
+    padding:12px; z-index:9; flex-direction:column; gap:8px; }
+  #io textarea { flex:1; font:11px monospace; }
+  .hint { color:#777; font-size:12px; }
+</style>
+</head>
+<body>
+<div id="side">
+  <h3>帧列表 (<span id="doneCount">0</span>/40)</h3>
+  <div class="hint">拖拽画框;点行选中;Delete 删框;逐帧勾"完成"。</div>
+  <div id="frames"></div>
+</div>
+<div id="main">
+  <div id="bar">
+    <b id="frameTitle"></b>
+    <label><input type="checkbox" id="frameDone"> 本帧完成</label>
+    <button id="export">导出 gt.json</button>
+    <button id="importBtn">导入/查看 JSON</button>
+    <span class="hint" id="saveState"></span>
+  </div>
+  <div id="stage"><canvas id="cv"></canvas></div>
+</div>
+<div id="boxes"><h3>本帧实例</h3><div id="boxList"></div></div>
+<div id="io">
+  <b>粘贴既有 gt.json 后点导入;或复制当前内容备份</b>
+  <textarea id="ioText"></textarea>
+  <div><button id="ioImport">导入</button> <button id="ioClose">关闭</button></div>
+</div>
+<script>
+const MANIFEST = {"dataset_id": "dev_a_hardval_v1", "focus_canonicals": ["luggage", "night_light", "security_camera", "storage_box", "stuffed_animal", "table_lamp", "water_bottle"], "frames": [{"focus_hits": 15, "frame_id": "000030", "frame_index": 30, "image": "frames/v1_kf_000030.jpg", "observation_count": 37, "selection_reason": "focus_score", "source_path": "local-data/ingest_a_v6/v1/keyframes/kf_000030.jpg", "timestamp_ms": 1000, "video_id": "v1"}, {"focus_hits": 2, "frame_id": "000450", "frame_index": 450, "image": "frames/v1_kf_000450.jpg", "observation_count": 10, "selection_reason": "timeline_stride", "source_path": "local-data/ingest_a_v6/v1/keyframes/kf_000450.jpg", "timestamp_ms": 15000, "video_id": "v1"}, {"focus_hits": 7, "frame_id": "000675", "frame_index": 675, "image": "frames/v1_kf_000675.jpg", "observation_count": 24, "selection_reason": "focus_score", "source_path": "local-data/ingest_a_v6/v1/keyframes/kf_000675.jpg", "timestamp_ms": 22500, "video_id": "v1"}, {"focus_hits": 5, "frame_id": "000900", "frame_index": 900, "image": "frames/v1_kf_000900.jpg", "observation_count": 9, "selection_reason": "timeline_stride", "source_path": "local-data/ingest_a_v6/v1/keyframes/kf_000900.jpg", "timestamp_ms": 30000, "video_id": "v1"}, {"focus_hits": 3, "frame_id": "001350", "frame_index": 1350, "image": "frames/v1_kf_001350.jpg", "observation_count": 9, "selection_reason": "timeline_stride", "source_path": "local-data/ingest_a_v6/v1/keyframes/kf_001350.jpg", "timestamp_ms": 45000, "video_id": "v1"}, {"focus_hits": 0, "frame_id": "001800", "frame_index": 1800, "image": "frames/v1_kf_001800.jpg", "observation_count": 7, "selection_reason": "timeline_stride", "source_path": "local-data/ingest_a_v6/v1/keyframes/kf_001800.jpg", "timestamp_ms": 60000, "video_id": "v1"}, {"focus_hits": 14, "frame_id": "002010", "frame_index": 2010, "image": "frames/v1_kf_002010.jpg", "observation_count": 24, "selection_reason": "focus_score", "source_path": "local-data/ingest_a_v6/v1/keyframes/kf_002010.jpg", "timestamp_ms": 67000, "video_id": "v1"}, {"focus_hits": 11, "frame_id": "002070", "frame_index": 2070, "image": "frames/v1_kf_002070.jpg", "observation_count": 21, "selection_reason": "focus_score", "source_path": "local-data/ingest_a_v6/v1/keyframes/kf_002070.jpg", "timestamp_ms": 69000, "video_id": "v1"}, {"focus_hits": 2, "frame_id": "002250", "frame_index": 2250, "image": "frames/v1_kf_002250.jpg", "observation_count": 6, "selection_reason": "timeline_stride", "source_path": "local-data/ingest_a_v6/v1/keyframes/kf_002250.jpg", "timestamp_ms": 75000, "video_id": "v1"}, {"focus_hits": 14, "frame_id": "002700", "frame_index": 2700, "image": "frames/v1_kf_002700.jpg", "observation_count": 26, "selection_reason": "focus_score", "source_path": "local-data/ingest_a_v6/v1/keyframes/kf_002700.jpg", "timestamp_ms": 90000, "video_id": "v1"}, {"focus_hits": 15, "frame_id": "000345", "frame_index": 345, "image": "frames/v2_kf_000345.jpg", "observation_count": 39, "selection_reason": "focus_score", "source_path": "local-data/ingest_a_v6/v2/keyframes/kf_000345.jpg", "timestamp_ms": 11500, "video_id": "v2"}, {"focus_hits": 2, "frame_id": "000660", "frame_index": 660, "image": "frames/v2_kf_000660.jpg", "observation_count": 8, "selection_reason": "timeline_stride", "source_path": "local-data/ingest_a_v6/v2/keyframes/kf_000660.jpg", "timestamp_ms": 22000, "video_id": "v2"}, {"focus_hits": 3, "frame_id": "000990", "frame_index": 990, "image": "frames/v2_kf_000990.jpg", "observation_count": 6, "selection_reason": "timeline_stride", "source_path": "local-data/ingest_a_v6/v2/keyframes/kf_000990.jpg", "timestamp_ms": 33000, "video_id": "v2"}, {"focus_hits": 12, "frame_id": "001245", "frame_index": 1245, "image": "frames/v2_kf_001245.jpg", "observation_count": 23, "selection_reason": "focus_score", "source_path": "local-data/ingest_a_v6/v2/keyframes/kf_001245.jpg", "timestamp_ms": 41500, "video_id": "v2"}, {"focus_hits": 10, "frame_id": "001320", "frame_index": 1320, "image": "frames/v2_kf_001320.jpg", "observation_count": 22, "selection_reason": "timeline_stride", "source_path": "local-data/ingest_a_v6/v2/keyframes/kf_001320.jpg", "timestamp_ms": 44000, "video_id": "v2"}, {"focus_hits": 7, "frame_id": "001545", "frame_index": 1545, "image": "frames/v2_kf_001545.jpg", "observation_count": 32, "selection_reason": "focus_score", "source_path": "local-data/ingest_a_v6/v2/keyframes/kf_001545.jpg", "timestamp_ms": 51500, "video_id": "v2"}, {"focus_hits": 4, "frame_id": "001650", "frame_index": 1650, "image": "frames/v2_kf_001650.jpg", "observation_count": 11, "selection_reason": "timeline_stride", "source_path": "local-data/ingest_a_v6/v2/keyframes/kf_001650.jpg", "timestamp_ms": 55000, "video_id": "v2"}, {"focus_hits": 2, "frame_id": "001725", "frame_index": 1725, "image": "frames/v2_kf_001725.jpg", "observation_count": 29, "selection_reason": "score_backfill", "source_path": "local-data/ingest_a_v6/v2/keyframes/kf_001725.jpg", "timestamp_ms": 57500, "video_id": "v2"}, {"focus_hits": 13, "frame_id": "001980", "frame_index": 1980, "image": "frames/v2_kf_001980.jpg", "observation_count": 19, "selection_reason": "focus_score", "source_path": "local-data/ingest_a_v6/v2/keyframes/kf_001980.jpg", "timestamp_ms": 66000, "video_id": "v2"}, {"focus_hits": 14, "frame_id": "002040", "frame_index": 2040, "image": "frames/v2_kf_002040.jpg", "observation_count": 33, "selection_reason": "focus_score", "source_path": "local-data/ingest_a_v6/v2/keyframes/kf_002040.jpg", "timestamp_ms": 68000, "video_id": "v2"}, {"focus_hits": 6, "frame_id": "000315", "frame_index": 315, "image": "frames/v3_kf_000315.jpg", "observation_count": 11, "selection_reason": "timeline_stride", "source_path": "local-data/ingest_a_v6/v3/keyframes/kf_000315.jpg", "timestamp_ms": 10500, "video_id": "v3"}, {"focus_hits": 11, "frame_id": "000465", "frame_index": 465, "image": "frames/v3_kf_000465.jpg", "observation_count": 23, "selection_reason": "focus_score", "source_path": "local-data/ingest_a_v6/v3/keyframes/kf_000465.jpg", "timestamp_ms": 15500, "video_id": "v3"}, {"focus_hits": 7, "frame_id": "000615", "frame_index": 615, "image": "frames/v3_kf_000615.jpg", "observation_count": 25, "selection_reason": "focus_score", "source_path": "local-data/ingest_a_v6/v3/keyframes/kf_000615.jpg", "timestamp_ms": 20500, "video_id": "v3"}, {"focus_hits": 3, "frame_id": "000945", "frame_index": 945, "image": "frames/v3_kf_000945.jpg", "observation_count": 5, "selection_reason": "timeline_stride", "source_path": "local-data/ingest_a_v6/v3/keyframes/kf_000945.jpg", "timestamp_ms": 31500, "video_id": "v3"}, {"focus_hits": 10, "frame_id": "001035", "frame_index": 1035, "image": "frames/v3_kf_001035.jpg", "observation_count": 29, "selection_reason": "focus_score", "source_path": "local-data/ingest_a_v6/v3/keyframes/kf_001035.jpg", "timestamp_ms": 34500, "video_id": "v3"}, {"focus_hits": 7, "frame_id": "001260", "frame_index": 1260, "image": "frames/v3_kf_001260.jpg", "observation_count": 26, "selection_reason": "timeline_stride", "source_path": "local-data/ingest_a_v6/v3/keyframes/kf_001260.jpg", "timestamp_ms": 42000, "video_id": "v3"}, {"focus_hits": 11, "frame_id": "001335", "frame_index": 1335, "image": "frames/v3_kf_001335.jpg", "observation_count": 28, "selection_reason": "focus_score", "source_path": "local-data/ingest_a_v6/v3/keyframes/kf_001335.jpg", "timestamp_ms": 44500, "video_id": "v3"}, {"focus_hits": 6, "frame_id": "001575", "frame_index": 1575, "image": "frames/v3_kf_001575.jpg", "observation_count": 18, "selection_reason": "timeline_stride", "source_path": "local-data/ingest_a_v6/v3/keyframes/kf_001575.jpg", "timestamp_ms": 52500, "video_id": "v3"}, {"focus_hits": 11, "frame_id": "001830", "frame_index": 1830, "image": "frames/v3_kf_001830.jpg", "observation_count": 15, "selection_reason": "score_backfill", "source_path": "local-data/ingest_a_v6/v3/keyframes/kf_001830.jpg", "timestamp_ms": 61000, "video_id": "v3"}, {"focus_hits": 11, "frame_id": "001890", "frame_index": 1890, "image": "frames/v3_kf_001890.jpg", "observation_count": 29, "selection_reason": "focus_score", "source_path": "local-data/ingest_a_v6/v3/keyframes/kf_001890.jpg", "timestamp_ms": 63000, "video_id": "v3"}, {"focus_hits": 5, "frame_id": "000405", "frame_index": 405, "image": "frames/v4_kf_000405.jpg", "observation_count": 10, "selection_reason": "timeline_stride", "source_path": "local-data/ingest_a_v6/v4/keyframes/kf_000405.jpg", "timestamp_ms": 13500, "video_id": "v4"}, {"focus_hits": 11, "frame_id": "000510", "frame_index": 510, "image": "frames/v4_kf_000510.jpg", "observation_count": 15, "selection_reason": "focus_score", "source_path": "local-data/ingest_a_v6/v4/keyframes/kf_000510.jpg", "timestamp_ms": 17000, "video_id": "v4"}, {"focus_hits": 12, "frame_id": "000645", "frame_index": 645, "image": "frames/v4_kf_000645.jpg", "observation_count": 21, "selection_reason": "focus_score", "source_path": "local-data/ingest_a_v6/v4/keyframes/kf_000645.jpg", "timestamp_ms": 21500, "video_id": "v4"}, {"focus_hits": 11, "frame_id": "000705", "frame_index": 705, "image": "frames/v4_kf_000705.jpg", "observation_count": 19, "selection_reason": "focus_score", "source_path": "local-data/ingest_a_v6/v4/keyframes/kf_000705.jpg", "timestamp_ms": 23500, "video_id": "v4"}, {"focus_hits": 4, "frame_id": "000810", "frame_index": 810, "image": "frames/v4_kf_000810.jpg", "observation_count": 10, "selection_reason": "timeline_stride", "source_path": "local-data/ingest_a_v6/v4/keyframes/kf_000810.jpg", "timestamp_ms": 27000, "video_id": "v4"}, {"focus_hits": 3, "frame_id": "001215", "frame_index": 1215, "image": "frames/v4_kf_001215.jpg", "observation_count": 11, "selection_reason": "timeline_stride", "source_path": "local-data/ingest_a_v6/v4/keyframes/kf_001215.jpg", "timestamp_ms": 40500, "video_id": "v4"}, {"focus_hits": 7, "frame_id": "001425", "frame_index": 1425, "image": "frames/v4_kf_001425.jpg", "observation_count": 23, "selection_reason": "focus_score", "source_path": "local-data/ingest_a_v6/v4/keyframes/kf_001425.jpg", "timestamp_ms": 47500, "video_id": "v4"}, {"focus_hits": 10, "frame_id": "001635", "frame_index": 1635, "image": "frames/v4_kf_001635.jpg", "observation_count": 16, "selection_reason": "focus_score", "source_path": "local-data/ingest_a_v6/v4/keyframes/kf_001635.jpg", "timestamp_ms": 54500, "video_id": "v4"}, {"focus_hits": 3, "frame_id": "002025", "frame_index": 2025, "image": "frames/v4_kf_002025.jpg", "observation_count": 6, "selection_reason": "timeline_stride", "source_path": "local-data/ingest_a_v6/v4/keyframes/kf_002025.jpg", "timestamp_ms": 67500, "video_id": "v4"}, {"focus_hits": 7, "frame_id": "002430", "frame_index": 2430, "image": "frames/v4_kf_002430.jpg", "observation_count": 11, "selection_reason": "timeline_stride", "source_path": "local-data/ingest_a_v6/v4/keyframes/kf_002430.jpg", "timestamp_ms": 81000, "video_id": "v4"}], "ingest_root": "local-data/ingest_a_v6", "min_spacing_ms": 2000, "total_frames": 40};
+const CANONICALS = ["bed", "bookshelf", "desk", "laundry_bag", "luggage", "mini_fridge", "night_light", "security_camera", "storage_box", "stuffed_animal", "table_lamp", "toy_storage_organizer", "tumbler", "wardrobe", "water_bottle"];
+const ANCHORS = ["anchor_01", "anchor_02", "anchor_03", "anchor_04", "anchor_05", "anchor_06", "anchor_07", "anchor_08", "anchor_09", "anchor_10", "anchor_11", "anchor_12", "anchor_13", "anchor_14", "anchor_15", "anchor_16", "anchor_17"];
+const DATASET = "dev_a_hardval_v1";
+const KEY = "hardval_gt_" + DATASET;
+
+let store = JSON.parse(localStorage.getItem(KEY) || "null") || { frames: {}, done: {} };
+let cur = 0, img = new Image(), scale = 1, sel = -1, drag = null;
+
+const frameKey = f => f.video_id + "/" + f.frame_id;
+const curFrame = () => MANIFEST.frames[cur];
+const curBoxes = () => store.frames[frameKey(curFrame())] || [];
+const setBoxes = b => { store.frames[frameKey(curFrame())] = b; save(); };
+
+function save() {
+  localStorage.setItem(KEY, JSON.stringify(store));
+  document.getElementById("saveState").textContent = "已自动保存 " + new Date().toLocaleTimeString();
+  renderSide();
+}
+function renderSide() {
+  const wrap = document.getElementById("frames");
+  if (!wrap.childElementCount) {
+    MANIFEST.frames.forEach((f, i) => {
+      const b = document.createElement("button");
+      b.textContent = f.video_id + " · " + f.frame_id + " (" + f.selection_reason + ")";
+      b.onclick = () => load(i);
+      wrap.appendChild(b);
+    });
+  }
+  [...wrap.children].forEach((b, i) => {
+    const f = MANIFEST.frames[i];
+    b.classList.toggle("active", i === cur);
+    b.classList.toggle("done", !!store.done[frameKey(f)]);
+  });
+  document.getElementById("doneCount").textContent =
+    MANIFEST.frames.filter(f => store.done[frameKey(f)]).length;
+}
+function load(i) {
+  cur = i; sel = -1;
+  const f = curFrame();
+  document.getElementById("frameTitle").textContent = f.video_id + " / kf_" + f.frame_id + ".jpg";
+  document.getElementById("frameDone").checked = !!store.done[frameKey(f)];
+  img = new Image();
+  img.onload = draw;
+  img.src = f.image;
+  renderSide();
+}
+function draw() {
+  const cv = document.getElementById("cv"), stage = document.getElementById("stage");
+  scale = Math.min(1, (stage.clientWidth - 4) / img.naturalWidth);
+  cv.width = img.naturalWidth * scale; cv.height = img.naturalHeight * scale;
+  const g = cv.getContext("2d");
+  g.drawImage(img, 0, 0, cv.width, cv.height);
+  curBoxes().forEach((b, i) => {
+    g.lineWidth = i === sel ? 3 : 2;
+    g.strokeStyle = i === sel ? "#e67e22" : (b.visible === false ? "#999" : "#3ddc84");
+    g.strokeRect(b.bbox[0]*scale, b.bbox[1]*scale, (b.bbox[2]-b.bbox[0])*scale, (b.bbox[3]-b.bbox[1])*scale);
+    g.font = "12px sans-serif"; g.fillStyle = g.strokeStyle;
+    g.fillText(b.instance_id + ":" + b.canonical_id, b.bbox[0]*scale + 2, b.bbox[1]*scale + 12);
+  });
+  renderBoxList();
+  if (drag) {
+    g.strokeStyle = "#ff5252"; g.lineWidth = 1.5;
+    g.strokeRect(drag.x0, drag.y0, drag.x1 - drag.x0, drag.y1 - drag.y0);
+  }
+}
+function renderBoxList() {
+  const wrap = document.getElementById("boxList");
+  wrap.innerHTML = "";
+  curBoxes().forEach((b, i) => {
+    const div = document.createElement("div");
+    div.className = "box-row" + (i === sel ? " selected" : "");
+    div.innerHTML =
+      '<label>instance_id <input type="text" list="anchorList" value="' + (b.instance_id||"") + '"></label>' +
+      '<label>canonical <select>' +
+        CANONICALS.map(c => '<option' + (c === b.canonical_id ? " selected" : "") + '>' + c + '</option>').join("") +
+      '</select></label>' +
+      '<label><input type="checkbox"' + (b.visible === false ? "" : " checked") + '> visible</label>' +
+      '<button class="small">删除</button>';
+    const [inst, canon, vis, del] =
+      [div.querySelector("input[type=text]"), div.querySelector("select"),
+       div.querySelector("input[type=checkbox]"), div.querySelector("button")];
+    div.onclick = () => { sel = i; draw(); };
+    inst.onchange = () => { b.instance_id = inst.value.trim(); setBoxes(curBoxes()); draw(); };
+    canon.onchange = () => { b.canonical_id = canon.value; setBoxes(curBoxes()); draw(); };
+    vis.onchange = () => { b.visible = vis.checked; setBoxes(curBoxes()); draw(); };
+    del.onclick = e => { e.stopPropagation(); const bs = curBoxes(); bs.splice(i,1); setBoxes(bs); sel=-1; draw(); };
+    wrap.appendChild(div);
+  });
+}
+const cv = document.getElementById("cv");
+cv.onmousedown = e => {
+  const r = cv.getBoundingClientRect();
+  drag = { x0: e.clientX - r.left, y0: e.clientY - r.top, x1: e.clientX - r.left, y1: e.clientY - r.top };
+};
+cv.onmousemove = e => {
+  if (!drag) return;
+  const r = cv.getBoundingClientRect();
+  drag.x1 = e.clientX - r.left; drag.y1 = e.clientY - r.top; draw();
+};
+cv.onmouseup = e => {
+  if (!drag) return;
+  const x0 = Math.min(drag.x0, drag.x1)/scale, y0 = Math.min(drag.y0, drag.y1)/scale;
+  const x1 = Math.max(drag.x0, drag.x1)/scale, y1 = Math.max(drag.y0, drag.y1)/scale;
+  drag = null;
+  if ((x1-x0) > 4 && (y1-y0) > 4) {
+    const bs = curBoxes();
+    bs.push({ instance_id: "", canonical_id: CANONICALS[0], bbox: [x0,y0,x1,y1], visible: true });
+    sel = bs.length - 1;
+    setBoxes(bs);
+  }
+  draw();
+};
+document.onkeydown = e => {
+  if ((e.key === "Delete" || e.key === "Backspace") && sel >= 0 && e.target.tagName !== "INPUT") {
+    const bs = curBoxes(); bs.splice(sel, 1); setBoxes(bs); sel = -1; draw(); e.preventDefault();
+  }
+};
+document.getElementById("frameDone").onchange = e => {
+  store.done[frameKey(curFrame())] = e.target.checked; save();
+};
+document.getElementById("export").onclick = () => {
+  const missing = [];
+  const frames = MANIFEST.frames.map(f => ({
+    sequence_id: f.video_id,
+    frame_id: f.frame_id,
+    instances: (store.frames[frameKey(f)] || []).map(b => {
+      if (!b.instance_id) missing.push(f.video_id + "/" + f.frame_id);
+      return { instance_id: b.instance_id, canonical_id: b.canonical_id,
+               bbox: b.bbox.map(v => Math.round(v*100)/100), visible: b.visible !== false };
+    }),
+  }));
+  if (missing.length) { alert("存在空 instance_id:\n" + [...new Set(missing)].join("\n")); return; }
+  const blob = new Blob([JSON.stringify({ dataset_id: DATASET, frames }, null, 2)],
+                        { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "gt.json"; a.click();
+};
+const io = document.getElementById("io");
+document.getElementById("importBtn").onclick = () => {
+  document.getElementById("ioText").value = JSON.stringify(store, null, 2);
+  io.style.display = "flex";
+};
+document.getElementById("ioClose").onclick = () => io.style.display = "none";
+document.getElementById("ioImport").onclick = () => {
+  try {
+    const raw = JSON.parse(document.getElementById("ioText").value);
+    if (raw.frames && Array.isArray(raw.frames)) {  // detection_eval GT 格式
+      store = { frames: {}, done: {} };
+      raw.frames.forEach(f => {
+        store.frames[f.sequence_id + "/" + f.frame_id] = (f.instances || []).map(i => ({
+          instance_id: i.instance_id, canonical_id: i.canonical_id,
+          bbox: i.bbox, visible: i.visible !== false }));
+      });
+    } else { store = raw; }  // 内部备份格式
+    save(); load(cur); io.style.display = "none";
+  } catch (err) { alert("JSON 解析失败: " + err); }
+};
+const dl = document.createElement("datalist");
+dl.id = "anchorList";
+ANCHORS.forEach(a => { const o = document.createElement("option"); o.value = a; dl.appendChild(o); });
+document.body.appendChild(dl);
+window.onresize = draw;
+renderSide(); load(0);
+</script>
+</body>
+</html>

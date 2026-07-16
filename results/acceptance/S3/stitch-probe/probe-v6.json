@@ -1,0 +1,233 @@
+{
+  "category_counts_top": {
+    "bed": 21,
+    "bookshelf": 38,
+    "cabinet": 178,
+    "camera": 41,
+    "desk": 25,
+    "lamp": 77,
+    "laundry_container": 47,
+    "refrigerator": 80,
+    "storage_box": 219,
+    "stuffed_animal": 76,
+    "suitcase": 38,
+    "uncategorised": 33,
+    "water_bottle": 72
+  },
+  "config_version": "reid-dev-a-v1",
+  "cooccurring_pairs": 1431,
+  "focus_categories_before": {
+    "bookshelf": 38,
+    "cabinet": 178,
+    "lamp": 77,
+    "security_camera": 0,
+    "suitcase": 38,
+    "water_bottle": 72
+  },
+  "ingest_root": "local-data/ingest_a_v6",
+  "observation_count_histogram": {
+    "2": 238,
+    "3": 153,
+    "4": 104,
+    "5+": 450
+  },
+  "pair_cosine_deciles": {
+    "p10": 0.145581,
+    "p25": 0.214881,
+    "p50": 0.310244,
+    "p75": 0.419959,
+    "p90": 0.53154,
+    "p95": 0.619652,
+    "p99": 0.816202
+  },
+  "same_video_same_label_pairs": 12743,
+  "stitch_threshold_sweep": {
+    "0.80": {
+      "cooccurrence_vetoes": 108,
+      "focus_categories": {
+        "bookshelf": 34,
+        "cabinet": 170,
+        "lamp": 75,
+        "security_camera": 0,
+        "suitcase": 37,
+        "water_bottle": 68
+      },
+      "merge_count": 42,
+      "per_video": {
+        "v1": {
+          "after": 271,
+          "before": 291
+        },
+        "v2": {
+          "after": 244,
+          "before": 251
+        },
+        "v3": {
+          "after": 184,
+          "before": 189
+        },
+        "v4": {
+          "after": 204,
+          "before": 214
+        }
+      },
+      "tracklets_after": 903
+    },
+    "0.85": {
+      "cooccurrence_vetoes": 56,
+      "focus_categories": {
+        "bookshelf": 36,
+        "cabinet": 173,
+        "lamp": 77,
+        "security_camera": 0,
+        "suitcase": 37,
+        "water_bottle": 69
+      },
+      "merge_count": 23,
+      "per_video": {
+        "v1": {
+          "after": 280,
+          "before": 291
+        },
+        "v2": {
+          "after": 248,
+          "before": 251
+        },
+        "v3": {
+          "after": 188,
+          "before": 189
+        },
+        "v4": {
+          "after": 206,
+          "before": 214
+        }
+      },
+      "tracklets_after": 922
+    },
+    "0.88": {
+      "cooccurrence_vetoes": 27,
+      "focus_categories": {
+        "bookshelf": 38,
+        "cabinet": 176,
+        "lamp": 77,
+        "security_camera": 0,
+        "suitcase": 38,
+        "water_bottle": 69
+      },
+      "merge_count": 11,
+      "per_video": {
+        "v1": {
+          "after": 286,
+          "before": 291
+        },
+        "v2": {
+          "after": 249,
+          "before": 251
+        },
+        "v3": {
+          "after": 189,
+          "before": 189
+        },
+        "v4": {
+          "after": 210,
+          "before": 214
+        }
+      },
+      "tracklets_after": 934
+    },
+    "0.90": {
+      "cooccurrence_vetoes": 12,
+      "focus_categories": {
+        "bookshelf": 38,
+        "cabinet": 177,
+        "lamp": 77,
+        "security_camera": 0,
+        "suitcase": 38,
+        "water_bottle": 70
+      },
+      "merge_count": 8,
+      "per_video": {
+        "v1": {
+          "after": 287,
+          "before": 291
+        },
+        "v2": {
+          "after": 250,
+          "before": 251
+        },
+        "v3": {
+          "after": 189,
+          "before": 189
+        },
+        "v4": {
+          "after": 211,
+          "before": 214
+        }
+      },
+      "tracklets_after": 937
+    },
+    "0.92": {
+      "cooccurrence_vetoes": 4,
+      "focus_categories": {
+        "bookshelf": 38,
+        "cabinet": 178,
+        "lamp": 77,
+        "security_camera": 0,
+        "suitcase": 38,
+        "water_bottle": 71
+      },
+      "merge_count": 3,
+      "per_video": {
+        "v1": {
+          "after": 291,
+          "before": 291
+        },
+        "v2": {
+          "after": 251,
+          "before": 251
+        },
+        "v3": {
+          "after": 189,
+          "before": 189
+        },
+        "v4": {
+          "after": 211,
+          "before": 214
+        }
+      },
+      "tracklets_after": 942
+    },
+    "0.95": {
+      "cooccurrence_vetoes": 2,
+      "focus_categories": {
+        "bookshelf": 38,
+        "cabinet": 178,
+        "lamp": 77,
+        "security_camera": 0,
+        "suitcase": 38,
+        "water_bottle": 71
+      },
+      "merge_count": 1,
+      "per_video": {
+        "v1": {
+          "after": 291,
+          "before": 291
+        },
+        "v2": {
+          "after": 251,
+          "before": 251
+        },
+        "v3": {
+          "after": 189,
+          "before": 189
+        },
+        "v4": {
+          "after": 213,
+          "before": 214
+        }
+      },
+      "tracklets_after": 944
+    }
+  },
+  "tracklet_count": 945
+}

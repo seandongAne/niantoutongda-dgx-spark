@@ -44,6 +44,25 @@ def test_projection_roundtrip_normalizes_and_checks_hash(tmp_path):
         NumpyProjectionHead.load(path, expected_sha256="0" * 64)
 
 
+def test_zero_initialized_residual_head_is_identity_mapping(tmp_path):
+    head = NumpyProjectionHead(
+        weight1=np.eye(2, dtype=np.float32),
+        bias1=np.zeros(2, dtype=np.float32),
+        weight2=np.zeros((2, 2), dtype=np.float32),
+        bias2=np.zeros(2, dtype=np.float32),
+        mode="residual",
+        residual_scale=0.25,
+    )
+    path = tmp_path / "residual.npz"
+    head.save(path)
+    loaded = NumpyProjectionHead.load(path)
+    assert loaded.mode == "residual"
+    assert loaded.residual_scale == pytest.approx(0.25)
+    assert loaded.apply(np.asarray([0.6, 0.8], dtype=np.float32)).tolist() == pytest.approx(
+        [0.6, 0.8]
+    )
+
+
 def test_leave_video_out_split_has_no_tracklet_or_video_leakage():
     samples = []
     for identity, vector in (("a", [1.0, 0.0]), ("b", [0.0, 1.0])):

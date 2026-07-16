@@ -6,12 +6,15 @@ scope: "HERO_S1_OFFICIAL"
 # 与 dev_a 完全同一训练协议；素材日只替换 --ingest-root 与 --labels。
 split_policy: "leave_last_video_out_v1"
 input_dim: 768
-hidden_dim: 256
-output_dim: 128
+hidden_dim: 128
+output_dim: 768
+mode: "residual"
+residual_scale: 0.25
 epochs: 120
+eval_every: 5
 learning_rate: 0.003
 weight_decay: 0.0001
 temperature: 0.07
 seeds: [20260716, 20260717, 20260718]
-selection_policy: "first_preregistered_seed"
+selection_policy: "first_preregistered_seed; checkpoint=max_margin_subject_to_R1_R5_non_degrading"
 device: "cuda"

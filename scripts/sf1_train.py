@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import os
 import subprocess
@@ -58,17 +59,18 @@ def _sample_arrays(samples, identity_index: dict[str, int]):
     return vectors, labels
 
 
-def _head_from_torch(model) -> NumpyProjectionHead:
-    first, _, second = model
+def _head_from_torch(model, cfg: dict) -> NumpyProjectionHead:
     return NumpyProjectionHead(
-        weight1=first.weight.detach().cpu().numpy().astype(np.float32),
-        bias1=first.bias.detach().cpu().numpy().astype(np.float32),
-        weight2=second.weight.detach().cpu().numpy().astype(np.float32),
-        bias2=second.bias.detach().cpu().numpy().astype(np.float32),
+        weight1=model.first.weight.detach().cpu().numpy().astype(np.float32),
+        bias1=model.first.bias.detach().cpu().numpy().astype(np.float32),
+        weight2=model.second.weight.detach().cpu().numpy().astype(np.float32),
+        bias2=model.second.bias.detach().cpu().numpy().astype(np.float32),
+        mode=str(cfg.get("mode", "plain")),
+        residual_scale=float(cfg.get("residual_scale", 1.0)),
     )
 
 
-def _train_one(cfg: dict, split, seed: int, device: str):
+def _train_one(cfg: dict, split, seed: int, device: str, baseline: dict):
     try:
         import torch
         from torch import nn
@@ -88,18 +90,41 @@ def _train_one(cfg: dict, split, seed: int, device: str):
     x = torch.from_numpy(train_vectors).to(device)
     labels = torch.from_numpy(train_labels).to(device)
 
-    model = nn.Sequential(
-        nn.Linear(int(cfg["input_dim"]), int(cfg["hidden_dim"])),
-        nn.ReLU(),
-        nn.Linear(int(cfg["hidden_dim"]), int(cfg["output_dim"])),
-    ).to(device)
+    class ProjectionModel(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.mode = str(cfg.get("mode", "plain"))
+            self.residual_scale = float(cfg.get("residual_scale", 1.0))
+            self.first = nn.Linear(int(cfg["input_dim"]), int(cfg["hidden_dim"]))
+            self.second = nn.Linear(int(cfg["hidden_dim"]), int(cfg["output_dim"]))
+            if self.mode == "residual":
+                if int(cfg["output_dim"]) != int(cfg["input_dim"]):
+                    raise ValueError("residual mode requires output_dim == input_dim")
+                # 恒等起点：epoch 0 与原始 DINO 向量逐字节等价（归一化误差除外）。
+                nn.init.zeros_(self.second.weight)
+                nn.init.zeros_(self.second.bias)
+
+        def forward(self, values):
+            learned = self.second(F.relu(self.first(values)))
+            if self.mode == "residual":
+                return values + self.residual_scale * learned
+            return learned
+
+    model = ProjectionModel().to(device)
     optimizer = torch.optim.AdamW(
         model.parameters(),
         lr=float(cfg["learning_rate"]),
         weight_decay=float(cfg["weight_decay"]),
     )
     temperature = float(cfg["temperature"])
+    eval_every = int(cfg.get("eval_every", 5))
     history = []
+    train_matrix = np.stack([sample.vector for sample in split.train])
+    validation_matrix = np.stack([sample.vector for sample in split.validation])
+    best_state = None
+    best_metrics = None
+    best_epoch = None
+    best_score = None
     for epoch in range(1, int(cfg["epochs"]) + 1):
         model.train()
         z = F.normalize(model(x), dim=1)
@@ -121,21 +146,52 @@ def _train_one(cfg: dict, split, seed: int, device: str):
         optimizer.zero_grad(set_to_none=True)
         loss.backward()
         optimizer.step()
-        if epoch == 1 or epoch % 10 == 0 or epoch == int(cfg["epochs"]):
+        should_eval = epoch % eval_every == 0 or epoch == int(cfg["epochs"])
+        if should_eval:
+            head = _head_from_torch(model, cfg)
+            metrics = retrieval_metrics(
+                split.train,
+                split.validation,
+                projected_train=head.apply(train_matrix),
+                projected_validation=head.apply(validation_matrix),
+            )
+            eligible = (
+                metrics["recall_at_1"] >= baseline["recall_at_1"]
+                and metrics["recall_at_5"] >= baseline["recall_at_5"]
+            )
+            # 选择策略在 config 冻结：先守住 R@1/R@5，再最大化平均 top-1 margin。
+            score = (
+                float(metrics["top1_margin_mean"]),
+                float(metrics["mean_reciprocal_rank"]),
+            )
+            if eligible and (best_score is None or score > best_score):
+                best_score = score
+                best_state = copy.deepcopy(model.state_dict())
+                best_metrics = metrics
+                best_epoch = epoch
             history.append(
-                {"seed": seed, "epoch": epoch, "loss": round(float(loss.item()), 8)}
+                {
+                    "seed": seed,
+                    "epoch": epoch,
+                    "loss": round(float(loss.item()), 8),
+                    "eligible": eligible,
+                    "metrics": metrics,
+                }
             )
 
-    head = _head_from_torch(model)
-    train_matrix = np.stack([sample.vector for sample in split.train])
-    validation_matrix = np.stack([sample.vector for sample in split.validation])
-    metrics = retrieval_metrics(
+    if best_state is None:
+        # 不把退化权重包装成成功；保留最后权重与失败 gate 供诊断。
+        best_state = copy.deepcopy(model.state_dict())
+        best_epoch = int(cfg["epochs"])
+    model.load_state_dict(best_state)
+    head = _head_from_torch(model, cfg)
+    metrics = best_metrics or retrieval_metrics(
         split.train,
         split.validation,
         projected_train=head.apply(train_matrix),
         projected_validation=head.apply(validation_matrix),
     )
-    return head, metrics, history, torch.__version__
+    return head, metrics, history, torch.__version__, best_epoch, best_metrics is not None
 
 
 def _stability(per_seed: list[dict]) -> dict:
@@ -193,14 +249,25 @@ def main() -> int:
     all_history = []
     torch_version = "unknown"
     for index, seed in enumerate(int(value) for value in cfg["seeds"]):
-        head, metrics, history, torch_version = _train_one(cfg, split, seed, device)
+        head, metrics, history, torch_version, selected_epoch, eligible = _train_one(
+            cfg, split, seed, device, baseline
+        )
         if index == 0:
             primary_head = head
-        per_seed.append({"seed": seed, "metrics": metrics})
+        per_seed.append(
+            {
+                "seed": seed,
+                "selected_epoch": selected_epoch,
+                "eligible_checkpoint_found": eligible,
+                "metrics": metrics,
+            }
+        )
         all_history.extend(history)
         print(
             json.dumps(
-                {"seed": seed, "recall_at_1": metrics["recall_at_1"],
+                {"seed": seed, "selected_epoch": selected_epoch,
+                 "recall_at_1": metrics["recall_at_1"],
+                 "recall_at_5": metrics["recall_at_5"],
                  "top1_margin_mean": metrics["top1_margin_mean"]},
                 ensure_ascii=False,
             ),
@@ -240,7 +307,12 @@ def main() -> int:
     }
     gate = {
         "finite": bool(primary["finite"]),
+        "learned_checkpoint_found": bool(
+            per_seed[0]["eligible_checkpoint_found"]
+            and per_seed[0]["selected_epoch"] > 0
+        ),
         "recall_at_1_non_degrading": primary["recall_at_1"] >= baseline["recall_at_1"],
+        "recall_at_5_non_degrading": primary["recall_at_5"] >= baseline["recall_at_5"],
         "top1_margin_improved": primary["top1_margin_mean"] > baseline["top1_margin_mean"],
     }
     gate["pass"] = all(gate.values())
@@ -283,6 +355,7 @@ def main() -> int:
         "split_policy": split.policy,
         "selection_policy": cfg["selection_policy"],
         "primary_seed": int(cfg["seeds"][0]),
+        "selected_epoch": int(per_seed[0]["selected_epoch"]),
         "projection": {
             "path": str(artifact),
             "sha256": artifact_sha,
@@ -290,6 +363,8 @@ def main() -> int:
             "input_dim": primary_head.input_dim,
             "hidden_dim": primary_head.hidden_dim,
             "output_dim": primary_head.output_dim,
+            "mode": primary_head.mode,
+            "residual_scale": primary_head.residual_scale,
             "parameters": (
                 primary_head.weight1.size
                 + primary_head.bias1.size

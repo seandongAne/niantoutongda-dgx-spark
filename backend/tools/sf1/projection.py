@@ -21,12 +21,14 @@ def sha256_file(path: str | Path) -> str:
 
 @dataclass(frozen=True)
 class NumpyProjectionHead:
-    """Linear(input→hidden) + ReLU + Linear(hidden→output) + L2 normalize。"""
+    """两层头；residual 模式以原始 DINO 向量为恒等起点。"""
 
     weight1: np.ndarray  # [hidden, input]
     bias1: np.ndarray  # [hidden]
     weight2: np.ndarray  # [output, hidden]
     bias2: np.ndarray  # [output]
+    mode: str = "plain"  # plain / residual
+    residual_scale: float = 1.0
 
     def __post_init__(self) -> None:
         arrays = (self.weight1, self.bias1, self.weight2, self.bias2)
@@ -40,6 +42,12 @@ class NumpyProjectionHead:
             raise ValueError("hidden dimension mismatch")
         if self.bias2.shape != (self.weight2.shape[0],):
             raise ValueError("bias2 shape mismatch")
+        if self.mode not in {"plain", "residual"}:
+            raise ValueError(f"unsupported projection mode: {self.mode}")
+        if self.mode == "residual" and self.weight2.shape[0] != self.input_dim:
+            raise ValueError("residual projection output must equal input dimension")
+        if not np.isfinite(self.residual_scale) or self.residual_scale <= 0:
+            raise ValueError("residual_scale must be finite and positive")
         if not all(np.isfinite(array).all() for array in arrays):
             raise ValueError("projection contains non-finite values")
 
@@ -65,7 +73,12 @@ class NumpyProjectionHead:
                 f"expected [N,{self.input_dim}] vectors, got {tuple(values.shape)}"
             )
         hidden = np.maximum(values @ self.weight1.T + self.bias1, 0.0)
-        output = hidden @ self.weight2.T + self.bias2
+        learned = hidden @ self.weight2.T + self.bias2
+        output = (
+            values + self.residual_scale * learned
+            if self.mode == "residual"
+            else learned
+        )
         norms = np.linalg.norm(output, axis=1, keepdims=True)
         if (norms < 1e-12).any() or not np.isfinite(norms).all():
             raise ValueError("projection produced zero or non-finite vector")
@@ -82,6 +95,8 @@ class NumpyProjectionHead:
             bias1=self.bias1,
             weight2=self.weight2,
             bias2=self.bias2,
+            mode=np.asarray(self.mode),
+            residual_scale=np.asarray(self.residual_scale, dtype=np.float32),
         )
 
     @classmethod
@@ -107,4 +122,10 @@ class NumpyProjectionHead:
                 bias1=np.asarray(data["bias1"], dtype=np.float32),
                 weight2=np.asarray(data["weight2"], dtype=np.float32),
                 bias2=np.asarray(data["bias2"], dtype=np.float32),
+                mode=str(data["mode"].item()) if "mode" in data else "plain",
+                residual_scale=(
+                    float(data["residual_scale"].item())
+                    if "residual_scale" in data
+                    else 1.0
+                ),
             )

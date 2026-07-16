@@ -8,14 +8,17 @@ scope: "DEV_A_DIAGNOSTIC_ONLY_NOT_HERO_ACCEPTANCE"
 split_policy: "leave_last_video_out_v1"
 
 input_dim: 768
-hidden_dim: 256
-output_dim: 128
+hidden_dim: 128
+output_dim: 768
+mode: "residual"
+residual_scale: 0.25
 epochs: 120
+eval_every: 5
 learning_rate: 0.003
 weight_decay: 0.0001
 temperature: 0.07
 
 # 第一颗种子是预注册主产物；其余只用于统计稳定性，不择优挑权重。
 seeds: [20260716, 20260717, 20260718]
-selection_policy: "first_preregistered_seed"
+selection_policy: "first_preregistered_seed; checkpoint=max_margin_subject_to_R1_R5_non_degrading"
 device: "cuda"

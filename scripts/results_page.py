@@ -4,7 +4,10 @@
 初赛完成门"可点击成果"的落地:实体卡(hero 图+VLM 名+属性+组徽章)、
 生活组合(证据来源可见:旁白/轻确认/模板主导,共现只作佐证标签)、
 新家布局、任务卡、澄清队列、复跑指纹(bundle/config 哈希)。
-无外部依赖(内联 CSS,无 CDN),file:// 直接打开,适合录屏。
+
+视觉:HeroUI 设计语言的手写实现(暗色优先、语义色 chip、圆角卡片),
+零外部依赖(无 CDN/字体/JS 框架),file:// 直开——演示关键路径不引入
+构建链与网络面。证据类别一律 颜色+文字标签,不做纯色编码。
 """
 
 from __future__ import annotations
@@ -19,11 +22,20 @@ from pathlib import Path
 PROJ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJ))
 
+# 证据来源 → (中文标签, 语义色槽)。HeroUI 语义:narration=primary,
+# confirmation=secondary, template=warning, cooccurrence=default。
 SOURCE_LABEL = {
-    "narration": ("旁白", "#2563eb"),
-    "confirmation": ("轻确认", "#7c3aed"),
-    "template": ("模板", "#b45309"),
-    "cooccurrence": ("共现佐证", "#6b7280"),
+    "narration": ("旁白", "primary"),
+    "confirmation": ("轻确认", "secondary"),
+    "template": ("模板", "warning"),
+    "cooccurrence": ("共现佐证", "neutral"),
+}
+
+CSS_COLOR = {
+    "blue": "#338ef7", "pink": "#ff71d7", "red": "#f31260", "white": "#ececee",
+    "black": "#3f3f46", "gray": "#a1a1aa", "green": "#17c964",
+    "yellow": "#fbc531", "orange": "#f5a524", "purple": "#9353d3",
+    "brown": "#a16207", "beige": "#d6c7a1",
 }
 
 
@@ -37,27 +49,38 @@ def load_jsonl(path: Path) -> list[dict]:
     ]
 
 
+def load_json(path: Path, default):
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else default
+
+
 def esc(value: object) -> str:
     return html.escape(str(value))
 
 
-def badge(text: str, color: str) -> str:
+def chip(text: str, kind: str = "neutral") -> str:
+    return f'<span class="chip chip-{kind}">{esc(text)}</span>'
+
+
+def color_chip(color: str) -> str:
+    if not color:
+        return ""
+    swatch = CSS_COLOR.get(color, "#a1a1aa")
     return (
-        f'<span class="badge" style="background:{color}1a;color:{color};'
-        f'border:1px solid {color}55">{esc(text)}</span>'
+        f'<span class="chip chip-neutral"><i class="dot" '
+        f'style="background:{swatch}"></i>{esc(color)}</span>'
     )
 
 
 def img_tag(run_dir: Path, ref: str, cls: str = "hero") -> str:
     if not ref:
-        return f'<div class="{cls} noimg">无图</div>'
+        return f'<div class="{cls} noimg">待补 hero 图</div>'
     src = ref
     if not ref.startswith(("http://", "https://", "/")):
         src = os.path.relpath(PROJ / ref, run_dir)
     return (
         f'<img class="{cls}" src="{esc(src)}" alt="" loading="lazy" '
         "onerror=\"this.outerHTML='<div class=&quot;" + cls +
-        " noimg&quot;>图缺失</div>'\">"
+        " noimg&quot;>待补 hero 图</div>'\">"
     )
 
 
@@ -65,37 +88,42 @@ def build_page(run_dir: Path) -> str:
     display = {r["entity_id"]: r for r in load_jsonl(run_dir / "naming/display.jsonl")}
     groups = load_jsonl(run_dir / "group/groups.jsonl")
     clarifications = load_jsonl(run_dir / "group/clarifications.jsonl")
-    conflicts = json.loads((run_dir / "group/conflicts.json").read_text(encoding="utf-8")) \
-        if (run_dir / "group/conflicts.json").exists() else []
-    layout = json.loads((run_dir / "layout/layout.json").read_text(encoding="utf-8")) \
-        if (run_dir / "layout/layout.json").exists() else {}
-    regions = json.loads((run_dir / "regions/regions.json").read_text(encoding="utf-8")) \
-        if (run_dir / "regions/regions.json").exists() else {}
+    conflicts = load_json(run_dir / "group/conflicts.json", [])
+    layout = load_json(run_dir / "layout/layout.json", {})
+    regions = load_json(run_dir / "regions/regions.json", {})
     cards = load_jsonl(run_dir / "taskcards/taskcards.jsonl")
-    bundle = json.loads((run_dir / "bundle.json").read_text(encoding="utf-8")) \
-        if (run_dir / "bundle.json").exists() else {}
+    bundle = load_json(run_dir / "bundle.json", {})
 
-    group_of = {
-        eid: g for g in groups for eid in g.get("entity_ids", [])
-    }
+    group_of = {eid: g for g in groups for eid in g.get("entity_ids", [])}
     region_names = {
         e["region_id"]: e["display_name_zh"] for e in regions.get("entries", [])
     }
+
+    # ---- 顶部统计 ----
+    stats = [
+        (len(display), "实体"),
+        (len(groups), "生活组合"),
+        (len(cards), "任务卡"),
+        (len(clarifications), "待澄清"),
+    ]
+    stat_tiles = "".join(
+        f'<div class="stat"><div class="stat-n">{n}</div>'
+        f'<div class="stat-l">{esc(label)}</div></div>'
+        for n, label in stats
+    )
 
     # ---- 实体卡 ----
     entity_cards = []
     for eid in sorted(display):
         row = display[eid]
         g = group_of.get(eid)
-        gname = badge(g["name_zh"], "#059669") if g else badge("未归组", "#dc2626")
-        color = row.get("color_primary", "")
+        gchip = chip(g["name_zh"], "success") if g else chip("未归组", "danger")
         entity_cards.append(
-            '<div class="card">'
+            '<div class="card entity">'
             + img_tag(run_dir, row.get("hero_crop_ref", ""))
             + f'<div class="cardbody"><div class="name">{esc(row["display_name_zh"])}</div>'
-            + f'<div class="meta">{gname}'
-            + (badge(color, "#0891b2") if color else "")
-            + f'</div><div class="eid">{esc(eid)}</div></div></div>'
+            + f'<div class="chips">{gchip}{color_chip(row.get("color_primary", ""))}</div>'
+            + f'<div class="eid">{esc(eid)}</div></div></div>'
         )
 
     # ---- 组合 ----
@@ -108,7 +136,7 @@ def build_page(run_dir: Path) -> str:
         for eid in g.get("entity_ids", []):
             name = display.get(eid, {}).get("display_name_zh", eid)
             tags = "".join(
-                badge(*SOURCE_LABEL.get(ev["source"], (ev["source"], "#6b7280")))
+                chip(*SOURCE_LABEL.get(ev["source"], (ev["source"], "neutral")))
                 for ev in evidence_by_eid.get(eid, [])
             )
             detail = "; ".join(
@@ -119,14 +147,15 @@ def build_page(run_dir: Path) -> str:
                 f"<tr><td>{esc(name)}</td><td>{tags}</td>"
                 f'<td class="detail">{esc(detail)}</td></tr>'
             )
-        dominant = badge(*SOURCE_LABEL.get(g["dominant_source"], (g["dominant_source"], "#6b7280")))
+        dominant = chip(*SOURCE_LABEL.get(
+            g["dominant_source"], (g["dominant_source"], "neutral")))
         hint = esc(g.get("target_region_hint", "")) or "—"
         group_secs.append(
-            f'<div class="panel"><h3>{esc(g["name_zh"])} '
-            f'<span class="dim">{esc(g["group_id"])}</span> {dominant}</h3>'
-            f'<div class="dim">旁白去向提示:{hint}</div>'
-            f'<table><tr><th>成员</th><th>证据</th><th>依据原文</th></tr>'
-            + "".join(rows) + "</table></div>"
+            f'<div class="panel"><div class="panel-head"><h3>{esc(g["name_zh"])}</h3>'
+            f'<span class="mono dim">{esc(g["group_id"])}</span>{dominant}'
+            f'<span class="dim">去向提示:{hint}</span></div>'
+            f'<table><thead><tr><th>成员</th><th>证据</th><th>依据原文</th></tr></thead>'
+            f"<tbody>{''.join(rows)}</tbody></table></div>"
         )
 
     # ---- 布局 ----
@@ -136,14 +165,19 @@ def build_page(run_dir: Path) -> str:
         alt = layout.get("alternatives", {}).get(gid)
         layout_rows.append(
             f'<tr><td>{esc(g.get("name_zh", gid))}</td>'
-            f'<td><b>{esc(region_names.get(rid, rid))}</b> <span class="dim">{esc(rid)}</span></td>'
+            f'<td><b>{esc(region_names.get(rid, rid))}</b> '
+            f'<span class="mono dim">{esc(rid)}</span></td>'
             f'<td class="dim">{esc(region_names.get(alt, alt) if alt else "—")}</td></tr>'
         )
-    layout_status = layout.get("status", "未运行")
+    status = layout.get("status", "未运行")
+    status_chip = chip(
+        "✓ " + status if status == "PLAN_READY" else status,
+        "success" if status == "PLAN_READY" else "danger",
+    )
     layout_sec = (
-        f'<div class="panel"><h3>布局结果 {badge(layout_status, "#059669" if layout_status == "PLAN_READY" else "#dc2626")}</h3>'
-        '<table><tr><th>组合</th><th>指派区域</th><th>备选</th></tr>'
-        + "".join(layout_rows) + "</table>"
+        f'<div class="panel"><div class="panel-head"><h3>布局结果</h3>{status_chip}</div>'
+        '<table><thead><tr><th>组合</th><th>指派区域</th><th>备选</th></tr></thead>'
+        f"<tbody>{''.join(layout_rows)}</tbody></table>"
         + (f'<div class="warn">{"; ".join(esc(c) for c in layout.get("conflicts", []))}</div>'
            if layout.get("conflicts") else "")
         + "</div>"
@@ -153,107 +187,190 @@ def build_page(run_dir: Path) -> str:
     card_secs = []
     for c in cards:
         items = "".join(
-            f"<li>{img_tag(run_dir, i.get('hero_crop_ref', ''), 'thumb')}"
-            f"{esc(i['display_name_zh'])}</li>"
+            f'<li>{img_tag(run_dir, i.get("hero_crop_ref", ""), "thumb")}'
+            f"<span>{esc(i['display_name_zh'])}</span></li>"
             for i in c["items"]
         )
         checks = "".join(
-            f'<li class="check">☐ {esc(k)}</li>' for k in c["verification_checklist"]
+            f'<li><i class="box"></i>{esc(k)}</li>'
+            for k in c["verification_checklist"]
         )
         card_secs.append(
             f'<div class="card taskcard"><div class="cardbody">'
-            f'<div class="name">{esc(c["box_label_zh"])} '
-            f'<span class="dim">{esc(c["card_id"])}</span></div>'
-            f'<div>目标:<b>{esc(c["target_region_name_zh"])}</b></div>'
-            f'<ul class="items">{items}</ul><ul class="checks">{checks}</ul>'
+            f'<div class="panel-head"><div class="name">{esc(c["box_label_zh"])}</div>'
+            f'<span class="mono dim">{esc(c["card_id"])}</span></div>'
+            f'<div class="target">目标区域 <b>{esc(c["target_region_name_zh"])}</b>'
+            + (f' <span class="dim">备选 {esc(region_names.get(c["alternative_region_id"], c["alternative_region_id"]))}</span>'
+               if c.get("alternative_region_id") else "")
+            + f'</div><ul class="items">{items}</ul>'
+            f'<div class="check-title">验收清单</div><ul class="checks">{checks}</ul>'
             "</div></div>"
         )
 
     # ---- 澄清与冲突 ----
     clar_rows = "".join(
-        f'<tr><td>{esc(c.get("entity_id") or "—")}</td><td>{esc(c["question_zh"])}</td>'
-        f'<td class="dim">{esc(c["reason"])}</td></tr>'
+        f'<tr><td class="mono">{esc(c.get("entity_id") or "—")}</td>'
+        f'<td>{esc(c["question_zh"])}</td>'
+        f'<td>{chip(c["reason"], "warning")}</td></tr>'
         for c in clarifications
-    ) or '<tr><td colspan="3" class="dim">无待澄清项</td></tr>'
-    conflict_list = "".join(f"<li>{esc(c)}</li>" for c in conflicts) or '<li class="dim">无</li>'
+    ) or '<tr><td colspan="3" class="dim">无待澄清项 — 旁白证据覆盖全部实体</td></tr>'
+    conflict_list = "".join(
+        f"<li>{esc(c)}</li>" for c in conflicts
+    ) or '<li class="dim">无</li>'
 
     # ---- 复跑指纹 ----
     artifacts = "".join(
-        f'<tr><td>{esc(a["stage"])}</td><td class="mono">{esc(Path(a["path"]).name)}</td>'
+        f'<tr><td>{chip(a["stage"], "primary")}</td>'
+        f'<td class="mono">{esc(Path(a["path"]).name)}</td>'
         f'<td class="mono dim">{esc(a["sha256"][:16])}…</td></tr>'
         for a in bundle.get("artifacts", [])
     )
     config_refs = "".join(
-        f'<tr><td>{esc(k)}</td><td colspan="2" class="mono dim">{esc(v[:16])}…</td></tr>'
+        f'<tr><td>{chip("config", "secondary")}</td><td class="mono">{esc(k)}</td>'
+        f'<td class="mono dim">{esc(v[:16])}…</td></tr>'
         for k, v in bundle.get("config_refs", {}).items()
     )
 
-    stats = (
-        f"{len(display)} 实体 · {len(groups)} 组合 · "
-        f"{len(cards)} 任务卡 · {len(clarifications)} 待澄清"
-    )
+    bundle_id = bundle.get("bundle_id", run_dir.name)
     return f"""<!DOCTYPE html>
 <html lang="zh"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>搬家复原 · {esc(bundle.get("bundle_id", run_dir.name))}</title>
+<title>搬家复原 · {esc(bundle_id)}</title>
 <style>
-:root {{ --fg:#111827; --dim:#6b7280; --bg:#f8fafc; --card:#fff; --line:#e5e7eb; }}
+:root {{
+  --bg:#09090b; --panel:#131316; --panel-2:#18181b; --line:#27272a;
+  --fg:#ececee; --dim:#a1a1aa; --muted:#71717a; --radius:14px;
+  --primary:#66aaf9; --primary-bg:rgba(0,111,238,.16);
+  --secondary:#ae7ede; --secondary-bg:rgba(120,40,200,.20);
+  --success:#45d483; --success-bg:rgba(23,201,100,.14);
+  --warning:#f7b750; --warning-bg:rgba(245,165,36,.15);
+  --danger:#f871a0; --danger-bg:rgba(243,18,96,.16);
+  --neutral:#a1a1aa; --neutral-bg:rgba(161,161,170,.12);
+  --shadow:0 4px 24px rgba(0,0,0,.35);
+}}
+@media (prefers-color-scheme: light) {{
+  :root {{
+    --bg:#f4f4f5; --panel:#ffffff; --panel-2:#fafafa; --line:#e4e4e7;
+    --fg:#18181b; --dim:#52525b; --muted:#a1a1aa;
+    --primary:#005bc4; --primary-bg:rgba(0,111,238,.10);
+    --secondary:#6020a0; --secondary-bg:rgba(120,40,200,.10);
+    --success:#0e793c; --success-bg:rgba(23,201,100,.12);
+    --warning:#936316; --warning-bg:rgba(245,165,36,.14);
+    --danger:#c20e4d; --danger-bg:rgba(243,18,96,.10);
+    --neutral:#52525b; --neutral-bg:rgba(113,113,122,.10);
+    --shadow:0 4px 20px rgba(24,24,27,.08);
+  }}
+}}
 * {{ box-sizing:border-box; }}
-body {{ margin:0; font:15px/1.6 -apple-system,"PingFang SC","Noto Sans SC",sans-serif;
-       color:var(--fg); background:var(--bg); }}
-header {{ position:sticky; top:0; background:#fffffff2; border-bottom:1px solid var(--line);
-          padding:10px 24px; display:flex; gap:16px; align-items:baseline; z-index:9; }}
-header h1 {{ font-size:17px; margin:0; }}
-header nav a {{ margin-right:12px; color:#2563eb; text-decoration:none; font-size:13px; }}
-main {{ max-width:1080px; margin:0 auto; padding:16px 24px 64px; }}
-h2 {{ margin:32px 0 12px; font-size:16px; border-left:4px solid #2563eb; padding-left:8px; }}
-.grid {{ display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:12px; }}
-.cards {{ display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:12px; }}
-.card {{ background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden; }}
-.cardbody {{ padding:10px 12px; }}
-.name {{ font-weight:600; }}
-.meta {{ margin:4px 0; }}
-.eid {{ font-size:11px; color:var(--dim); font-family:ui-monospace,monospace; }}
-.hero {{ width:100%; aspect-ratio:1; object-fit:cover; background:#eef2f7; display:block; }}
-.noimg {{ display:flex; align-items:center; justify-content:center; color:var(--dim); font-size:12px; }}
+body {{ margin:0; background:var(--bg); color:var(--fg);
+  font:15px/1.65 -apple-system,"SF Pro SC","PingFang SC",Inter,"Noto Sans SC",sans-serif;
+  -webkit-font-smoothing:antialiased; }}
+header {{ position:sticky; top:0; z-index:9; display:flex; gap:14px; align-items:center;
+  padding:12px 28px; background:var(--bg);
+  border-bottom:1px solid var(--line); }}
+.brand {{ display:flex; align-items:center; gap:10px; font-weight:700; font-size:16px; }}
+.brand i {{ width:10px; height:10px; border-radius:3px; background:linear-gradient(135deg,#338ef7,#9353d3); }}
+header nav {{ display:flex; gap:4px; flex-wrap:wrap; }}
+header nav a {{ color:var(--dim); text-decoration:none; font-size:13px;
+  padding:5px 12px; border-radius:999px; transition:all .15s; }}
+header nav a:hover {{ color:var(--fg); background:var(--neutral-bg); }}
+header .spacer {{ flex:1; }}
+main {{ max-width:1120px; margin:0 auto; padding:28px 28px 80px; }}
+.hero-head {{ margin:8px 0 24px; }}
+.hero-head h1 {{ margin:0 0 4px; font-size:24px; letter-spacing:-.02em; }}
+.hero-head .sub {{ color:var(--dim); font-size:13px; }}
+.stats {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:12px; margin:18px 0 8px; }}
+.stat {{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+  padding:14px 18px; }}
+.stat-n {{ font-size:26px; font-weight:700; letter-spacing:-.02em; }}
+.stat-l {{ color:var(--dim); font-size:12px; margin-top:2px; }}
+h2 {{ margin:36px 0 14px; font-size:17px; letter-spacing:-.01em;
+  display:flex; align-items:baseline; gap:10px; }}
+h2 .note {{ font-size:12px; font-weight:400; color:var(--muted); }}
+.grid {{ display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:14px; }}
+.cards {{ display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px; }}
+.card {{ background:var(--panel); border:1px solid var(--line);
+  border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow);
+  transition:transform .15s ease, border-color .15s ease; }}
+.card:hover {{ transform:translateY(-2px); border-color:var(--muted); }}
+.cardbody {{ padding:12px 14px; }}
+.name {{ font-weight:650; font-size:15px; }}
+.chips {{ margin:6px 0 4px; display:flex; flex-wrap:wrap; gap:4px; }}
+.eid {{ font-size:11px; color:var(--muted); font-family:ui-monospace,SFMono-Regular,monospace; }}
+.hero {{ width:100%; aspect-ratio:1; object-fit:cover; display:block; background:var(--panel-2); }}
+.noimg {{ display:flex; align-items:center; justify-content:center;
+  color:var(--muted); font-size:12px; border-bottom:1px dashed var(--line);
+  background:repeating-linear-gradient(45deg,var(--panel-2),var(--panel-2) 10px,var(--panel) 10px,var(--panel) 20px); }}
 .hero.noimg {{ aspect-ratio:1; }}
-.thumb {{ width:28px; height:28px; object-fit:cover; border-radius:6px; vertical-align:middle; margin-right:6px; }}
-.thumb.noimg {{ display:inline-flex; width:28px; height:28px; font-size:9px; }}
-.badge {{ display:inline-block; padding:0 8px; border-radius:999px; font-size:12px; margin-right:4px; }}
-.panel {{ background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 16px; margin-bottom:12px; }}
-.panel h3 {{ margin:4px 0 8px; font-size:15px; }}
-table {{ width:100%; border-collapse:collapse; margin-top:6px; }}
-th, td {{ text-align:left; padding:6px 8px; border-top:1px solid var(--line); font-size:14px; }}
-th {{ color:var(--dim); font-weight:500; font-size:12px; border-top:none; }}
+.thumb {{ width:30px; height:30px; object-fit:cover; border-radius:8px; }}
+.thumb.noimg {{ width:30px; height:30px; font-size:8px; border:1px dashed var(--line); border-radius:8px; flex:none; }}
+.chip {{ display:inline-flex; align-items:center; gap:5px; padding:1px 9px;
+  border-radius:999px; font-size:12px; line-height:1.7; white-space:nowrap; }}
+.chip .dot {{ width:8px; height:8px; border-radius:50%; display:inline-block;
+  border:1px solid rgba(255,255,255,.25); }}
+.chip-primary {{ background:var(--primary-bg); color:var(--primary); }}
+.chip-secondary {{ background:var(--secondary-bg); color:var(--secondary); }}
+.chip-success {{ background:var(--success-bg); color:var(--success); }}
+.chip-warning {{ background:var(--warning-bg); color:var(--warning); }}
+.chip-danger {{ background:var(--danger-bg); color:var(--danger); }}
+.chip-neutral {{ background:var(--neutral-bg); color:var(--neutral); }}
+.panel {{ background:var(--panel); border:1px solid var(--line);
+  border-radius:var(--radius); padding:14px 18px; margin-bottom:14px; box-shadow:var(--shadow); }}
+.panel-head {{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:6px; }}
+.panel-head h3 {{ margin:0; font-size:15px; }}
+table {{ width:100%; border-collapse:collapse; margin-top:4px; }}
+th {{ text-align:left; color:var(--muted); font-weight:500; font-size:11px;
+  text-transform:uppercase; letter-spacing:.05em; padding:6px 10px; }}
+td {{ text-align:left; padding:8px 10px; border-top:1px solid var(--line); font-size:14px; }}
 .dim {{ color:var(--dim); font-size:12px; }}
-.detail {{ color:var(--dim); font-size:12px; }}
-.mono {{ font-family:ui-monospace,monospace; font-size:12px; }}
-.items, .checks {{ margin:8px 0 0; padding-left:0; list-style:none; }}
-.items li {{ margin:4px 0; }}
-.checks li {{ color:var(--dim); font-size:13px; }}
-.warn {{ color:#b91c1c; margin-top:8px; font-size:13px; }}
-ul.conflicts li {{ font-size:13px; }}
+.detail {{ color:var(--dim); font-size:12.5px; }}
+.mono {{ font-family:ui-monospace,SFMono-Regular,monospace; font-size:12px; }}
+.warn {{ color:var(--danger); margin-top:10px; font-size:13px; }}
+.target {{ margin:2px 0 8px; font-size:14px; }}
+.items {{ list-style:none; margin:6px 0; padding:0; display:flex; flex-direction:column; gap:6px; }}
+.items li {{ display:flex; align-items:center; gap:9px; background:var(--panel-2);
+  border:1px solid var(--line); border-radius:10px; padding:5px 10px; }}
+.check-title {{ margin-top:10px; color:var(--muted); font-size:11px;
+  text-transform:uppercase; letter-spacing:.05em; }}
+.checks {{ list-style:none; margin:6px 0 0; padding:0; }}
+.checks li {{ display:flex; align-items:center; gap:8px; color:var(--dim);
+  font-size:13px; padding:3px 0; }}
+.checks .box {{ width:14px; height:14px; border:1.5px solid var(--muted);
+  border-radius:4px; flex:none; }}
+ul.conflicts {{ margin:6px 0 0; padding-left:18px; }}
+ul.conflicts li {{ font-size:13px; color:var(--dim); }}
+footer {{ color:var(--muted); font-size:12px; margin-top:28px; }}
 </style></head><body>
-<header><h1>AI 搬家复原 · 成果页</h1>
-<nav><a href="#entities">实体</a><a href="#groups">生活组合</a><a href="#layout">布局</a>
-<a href="#cards">任务卡</a><a href="#clarify">澄清</a><a href="#trace">复跑指纹</a></nav>
-<span class="dim">{esc(stats)}</span></header>
+<header>
+  <div class="brand"><i></i>AI 搬家复原</div>
+  <nav><a href="#entities">实体</a><a href="#groups">生活组合</a><a href="#layout">布局</a>
+  <a href="#cards">任务卡</a><a href="#clarify">澄清</a><a href="#trace">复跑指纹</a></nav>
+  <div class="spacer"></div>
+  {chip(bundle_id, "primary")}
+</header>
 <main>
-<h2 id="entities">实体卡 <span class="dim">展示名 = 本地 VLM 读 hero 图</span></h2>
+<div class="hero-head">
+  <h1>房间成果总览</h1>
+  <div class="sub">旧房间 → 实体识别 → 生活组合 → 新家布局 → 任务卡 · 全链确定性复跑</div>
+  <div class="stats">{stat_tiles}</div>
+</div>
+<h2 id="entities">实体卡 <span class="note">展示名 = 本地 VLM 读 hero 图,同款不同色自动消歧</span></h2>
 <div class="grid">{"".join(entity_cards)}</div>
-<h2 id="groups">生活组合 <span class="dim">旁白 &gt; 轻确认 &gt; 模板 &gt; 共现佐证</span></h2>
+<h2 id="groups">生活组合 <span class="note">证据优先级:旁白 &gt; 轻确认 &gt; 模板 &gt; 共现佐证</span></h2>
 {"".join(group_secs)}
-<h2 id="layout">新家布局(CP-SAT)</h2>
+<h2 id="layout">新家布局 <span class="note">CP-SAT 约束求解,固定 seed 可复现</span></h2>
 {layout_sec}
 <h2 id="cards">任务卡</h2>
 <div class="cards">{"".join(card_secs)}</div>
 <h2 id="clarify">澄清队列与冲突记录</h2>
-<div class="panel"><table><tr><th>实体</th><th>问题</th><th>原因</th></tr>{clar_rows}</table>
-<h3>冲突记录</h3><ul class="conflicts">{conflict_list}</ul></div>
-<h2 id="trace">复跑指纹</h2>
-<div class="panel"><table><tr><th>阶段</th><th>产物</th><th>sha256</th></tr>
-{config_refs}{artifacts}</table>
-<div class="dim">bundle:{esc(bundle.get("bundle_id", ""))} · {esc(bundle.get("created_at", ""))}</div></div>
+<div class="panel"><table><thead><tr><th>实体</th><th>问题</th><th>原因</th></tr></thead>
+<tbody>{clar_rows}</tbody></table>
+<div class="check-title">冲突记录</div><ul class="conflicts">{conflict_list}</ul></div>
+<h2 id="trace">复跑指纹 <span class="note">全部阶段产物 sha256,可对照 bundle.json 复验</span></h2>
+<div class="panel"><table><thead><tr><th>阶段</th><th>产物</th><th>sha256</th></tr></thead>
+<tbody>{config_refs}{artifacts}</tbody></table></div>
+<footer>bundle {esc(bundle_id)} · {esc(bundle.get("created_at", ""))} · 本页由 hero_pipeline report 阶段确定性生成</footer>
 </main></body></html>
 """
 

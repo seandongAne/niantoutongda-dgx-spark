@@ -165,10 +165,25 @@ def test_aggregate_requires_every_condition_to_reach_stop_gate():
 
     report = aggregate_scores(records, plan)
     assert report["backends"]["cloud"]["stopping"]["reached"] is True
+    assert report["backends"]["cloud"]["coverage_progress"] == {
+        "observed": 4,
+        "expected": 4,
+        "rate": 1.0,
+        "complete": True,
+    }
     assert report["backends"]["cloud"]["coverage"]["condition_id"] == {
         "clean": 2,
         "noise20": 2,
     }
+
+    partial = aggregate_scores(records[:-1], plan)["backends"]["cloud"]
+    assert partial["coverage_progress"] == {
+        "observed": 3,
+        "expected": 4,
+        "rate": 0.75,
+        "complete": False,
+    }
+    assert partial["stopping"]["reached"] is False
 
 
 def test_noise_injection_is_deterministic_and_hits_requested_snr(tmp_path):

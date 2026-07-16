@@ -410,12 +410,25 @@ def aggregate_scores(records: Iterable[Mapping[str, Any]], plan: Mapping[str, An
             (conditions.get(condition, {}).get("cases", 0) for condition in planned_conditions),
             default=0,
         )
+        expected_observations = int(plan["observation_count_per_backend"])
+        observed_observations = len(backend_records)
+        coverage_complete = observed_observations == expected_observations
         backends[backend] = {
             **_aggregate_group(backend_records),
             "conditions": conditions,
             "coverage": _coverage(backend_records),
+            "coverage_progress": {
+                "observed": observed_observations,
+                "expected": expected_observations,
+                "rate": round(observed_observations / expected_observations, 6),
+                "complete": coverage_complete,
+            },
             "stopping": {
-                "reached": bool(condition_ready) and all(condition_ready.values()),
+                "reached": (
+                    coverage_complete
+                    and bool(condition_ready)
+                    and all(condition_ready.values())
+                ),
                 "condition_ready": condition_ready,
                 "missing_conditions": missing_conditions,
                 "required_per_condition": required,

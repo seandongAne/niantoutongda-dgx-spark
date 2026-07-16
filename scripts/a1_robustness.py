@@ -105,7 +105,13 @@ def retry_api(operation: Callable[[], Any], *, attempts: int = 2) -> Any:
 def ffmpeg(*arguments: str) -> None:
     executable = shutil.which("ffmpeg")
     if executable is None:
-        raise SystemExit("ffmpeg is required for A1 audio normalization")
+        try:
+            import imageio_ffmpeg
+        except ImportError as exc:
+            raise SystemExit(
+                "ffmpeg is required for codec conditions; install imageio-ffmpeg"
+            ) from exc
+        executable = imageio_ffmpeg.get_ffmpeg_exe()
     process = subprocess.run(
         [executable, "-hide_banner", "-loglevel", "error", "-y", *arguments],
         capture_output=True,
@@ -166,7 +172,7 @@ def _canonical_wav_pcm16(
 
 def canonical_wav(source: Path, output: Path, *, speed_ratio: float = 1.0) -> None:
     output.parent.mkdir(parents=True, exist_ok=True)
-    if shutil.which("ffmpeg") is None:
+    if shutil.which("ffmpeg") is None and source.suffix.lower() == ".wav":
         _canonical_wav_pcm16(source, output, speed_ratio=speed_ratio)
         return
     temporary = output.with_name(output.stem + ".tmp.wav")
@@ -440,6 +446,7 @@ def _status_summary(metrics: dict[str, Any]) -> dict[str, Any]:
         "backends": {
             backend: {
                 "cases": data["cases"],
+                "coverage_rate": data["coverage_progress"]["rate"],
                 "slot_accuracy": data["slot_accuracy"]["rate"],
                 "ci_half_width": data["slot_accuracy"]["half_width"],
                 "stopping_reached": data["stopping"]["reached"],

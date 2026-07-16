@@ -4,6 +4,7 @@
 transformers==4.49.0
 librosa
 soundfile
+imageio-ffmpeg
 onnxruntime
 s3tokenizer
 diffusers

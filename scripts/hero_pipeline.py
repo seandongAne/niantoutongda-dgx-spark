@@ -32,11 +32,12 @@ from backend.schemas.hero_bundle import (  # noqa: E402
     sha256_file,
 )
 
+# attributes(S5 读 ingest hero 图)在 reid 之前:reid 的属性分量吃 S5 产物
 STAGE_ORDER = [
     "healthcheck",
     "ingest",
-    "reid",
     "attributes",
+    "reid",
     "pull",
     "naming",
     "narration",

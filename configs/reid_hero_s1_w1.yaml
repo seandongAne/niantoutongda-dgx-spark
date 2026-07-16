@@ -1,0 +1,36 @@
+version: "reid-hero-s1-w1"
+created_at: "2026-07-16"
+owner: "物品记忆 Agent"
+reason: "英雄素材预注册工作点 W1 = reid-dev-a-v3 逐字段照抄(attr 0.00);素材未到先注册,防临场挪门"
+applies_to_dataset: "hero_s1"
+frozen: true
+
+# 预注册出处:docs/英雄场景预注册验收门_2026-07-16.md §0 —— W1 vs W2 判卷二选一。
+# 本文件与 reid_dev_a_v3.yaml 唯一差异 = version/dataset 标识;权重阈值逐字段一致。
+
+embedding_dim: 768
+top_k: 5
+
+weights:
+  instance: 0.80
+  semantic: 0.15
+  attribute: 0.00
+  context: 0.00
+  geometry: 0.05
+
+thresholds:
+  match: 0.84
+  new: 0.70
+  margin: 0.00
+  min_quality: 0.28
+
+stitch:
+  enabled: true
+  min_cosine: 0.85
+  max_gap_ms: 0
+
+filter:
+  min_observations: 3
+
+clarify:
+  max_partners_per_tracklet: 2

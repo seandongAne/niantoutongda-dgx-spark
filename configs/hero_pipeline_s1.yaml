@@ -1,0 +1,104 @@
+# 英雄主链 · 真实素材配置(W1 工作点)— 素材日只填 TODO 路径即可发射。
+#
+# 用法:
+#   .venv/bin/python scripts/hero_pipeline.py --config configs/hero_pipeline_s1.yaml
+# W2 判卷对照跑法(预注册门 §0 二选一):
+#   把 reid.spark_cmd 里的 --config 换成 configs/reid_hero_s1_w2.yaml、
+#   --out 换成 results/hero_s1/reid_w2,并用 --run-dir results/hero/s1-w2 隔离产物。
+#
+# 素材日待办(素材到手后,发射前):
+#   1. 队友视频上传 spark:~/proj/local-data/hero_s1/{old_1,old_2,old_3,new_1}.mp4
+#   2. 词表:照片预编 + 打分回路 → fixtures/hero_s1/vocab.json(deploy.sh 部署)
+#   3. 旁白誊写 → fixtures/hero_s1/transcript.txt(A1 冻结协议零-shot贪心 或 人工)
+#   4. 对照 new_1.mp4 登记区域 → fixtures/hero_s1/regions.json(每区域必须带画面证据)
+#   5. S5 前提:spark 上 vLLM/NVFP4 服务已起(docs/NEMOTRON_SPARK_SERVING.md);
+#      attributes 阶段带 curl 探活守卫,服务没起会快速失败而不是空跑。
+#   6. 验收照片 + 匹配勾选 → fixtures/hero_s1/acceptance.json 后把 verify 翻 true。
+run_dir: results/hero/s1-w1
+python: .venv/bin/python
+
+stages:
+  healthcheck:
+    enabled: true
+
+  ingest:
+    enabled: true
+    # 冻结参数 = configs/ingest_dev_a_v6.yaml(box 0.28,其余 tile/批参数与
+    # ingest_task 默认值一致,即 v6 冻结值)。只吃旧房间三段;new_1 不进 ingest,
+    # 它的用途是人工登记区域 manifest。
+    spark_cmd: >-
+      source ~/venv/bin/activate && cd ~/proj &&
+      python scripts/ingest_task.py
+      --out results/hero_s1/ingest
+      --config-version hero-s1-vocab1
+      --vocab fixtures/hero_s1/vocab.json
+      --box-threshold 0.28
+      --videos old_1=local-data/hero_s1/old_1.mp4
+      old_2=local-data/hero_s1/old_2.mp4
+      old_3=local-data/hero_s1/old_3.mp4
+
+  attributes:
+    enabled: true
+    # S5 读 ingest hero 图 → 属性+命名;reid 的属性分量吃本产物(顺序在 reid 前)。
+    spark_cmd: >-
+      source ~/venv/bin/activate && cd ~/proj &&
+      curl -sf http://127.0.0.1:8000/v1/models > /dev/null &&
+      python scripts/s5_attributes.py
+      --ingest-root results/hero_s1/ingest
+      --out results/s5/attributes_hero_s1.jsonl
+
+  reid:
+    enabled: true
+    spark_cmd: >-
+      source ~/venv/bin/activate && cd ~/proj &&
+      python scripts/reid_task.py
+      --ingest-root results/hero_s1/ingest
+      --vocab fixtures/hero_s1/vocab.json
+      --config configs/reid_hero_s1_w1.yaml
+      --attributes results/s5/attributes_hero_s1.jsonl
+      --out results/hero_s1/reid
+
+  pull:
+    enabled: true
+    cmd: [scripts/pull_results.sh]
+    local_outputs:
+      - results/hero_s1/reid/entities.jsonl
+      - results/hero_s1/reid/metrics.json
+      - results/s5/attributes_hero_s1.jsonl
+
+  naming:
+    enabled: true
+    entities: results/hero_s1/reid/entities.jsonl
+    attributes: results/s5/attributes_hero_s1.jsonl
+    tracklets_dir: results/hero_s1/ingest
+
+  narration:
+    enabled: true
+    transcript: fixtures/hero_s1/transcript.txt   # TODO 素材日:旁白誊写
+    audio_ref: local-data/hero_s1/narration.wav   # TODO 素材日:旁白音频引用
+
+  regions:
+    enabled: true
+    manifest: fixtures/hero_s1/regions.json       # TODO 素材日:对照 new_1 登记
+
+  group:
+    enabled: true
+    config_version: group-v1
+    # 轻确认按需:fixtures/hero_s1/confirmations.json(只补旁白没覆盖的实体)
+
+  layout:
+    enabled: true
+    # 需电组按需:--requires-power-groups 组名逗号分隔(如台灯所在组)
+
+  taskcards:
+    enabled: true
+
+  verify:
+    enabled: false                                # TODO 验收照片到手后翻 true
+    photos: fixtures/hero_s1/acceptance.json
+
+  report:
+    enabled: true
+
+  bundle:
+    enabled: true

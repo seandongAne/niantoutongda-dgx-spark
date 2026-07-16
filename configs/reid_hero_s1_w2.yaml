@@ -1,0 +1,38 @@
+version: "reid-hero-s1-w2"
+created_at: "2026-07-16"
+owner: "物品记忆 Agent"
+reason: "英雄素材预注册工作点 W2 = v3 + attr 0.15(从 instance 让渡);素材未到先注册,防临场挪门"
+applies_to_dataset: "hero_s1"
+frozen: true
+
+# 预注册出处:docs/英雄场景预注册验收门_2026-07-16.md §0 —— W1 vs W2 判卷二选一。
+# 权重法 = reid_weight_sweep.py 的让渡规则:instance = 0.80 + 0.00 - 0.15 = 0.65。
+# 依据 wsweep-9fe3c30/wattr0.15(dev_a 诊断):R@1 0.807→0.826、澄清 525→513、
+# 误合并 0、硬负 4/4;碎轨属性伤碎链的机制在英雄场景(受控拍摄)预期消解。
+
+embedding_dim: 768
+top_k: 5
+
+weights:
+  instance: 0.65
+  semantic: 0.15
+  attribute: 0.15
+  context: 0.00
+  geometry: 0.05
+
+thresholds:
+  match: 0.84
+  new: 0.70
+  margin: 0.00
+  min_quality: 0.28
+
+stitch:
+  enabled: true
+  min_cosine: 0.85
+  max_gap_ms: 0
+
+filter:
+  min_observations: 3
+
+clarify:
+  max_partners_per_tracklet: 2

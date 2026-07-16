@@ -222,6 +222,8 @@ def main(argv: list[str] | None = None) -> int:
             "condition_id": condition_id,
             "backend": args.backend,
             "model": "stepfun-ai/Step-Audio-2-mini",
+            "temperature": 0.0,
+            "do_sample": False,
             "model_path": str(args.model_path),
             "upstream_revision": UPSTREAM_REVISION,
             "created_at": utc_now(),

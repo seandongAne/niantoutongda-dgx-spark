@@ -256,6 +256,7 @@ def extract_cloud(
     case_id: str,
     condition_id: str,
     model: str,
+    temperature: float,
 ) -> None:
     encoded = base64.b64encode(audio.read_bytes()).decode()
     messages = [
@@ -268,7 +269,7 @@ def extract_cloud(
     response = retry_api(lambda: chat_completion(
         model=model,
         messages=messages,
-        temperature=0.2,
+        temperature=temperature,
         max_tokens=800,
     ))
     content = response["choices"][0]["message"]["content"]
@@ -277,6 +278,7 @@ def extract_cloud(
         "condition_id": condition_id,
         "backend": "cloud",
         "model": model,
+        "temperature": temperature,
         "created_at": utc_now(),
         "audio_sha256": sha256_file(audio),
         "raw_text": content if isinstance(content, str) else json.dumps(content, ensure_ascii=False),
@@ -318,6 +320,7 @@ def cmd_cloud(args: argparse.Namespace) -> int:
                 case_id=case["case_id"],
                 condition_id=condition_id,
                 model=args.chat_model,
+                temperature=args.temperature,
             )
             new_extractions += 1
             print(f"extract cloud {condition_id}/{case['case_id']}")
@@ -357,6 +360,7 @@ def score_run(run_dir: Path, plan: dict[str, Any]) -> dict[str, Any]:
                     "backend": backend,
                     "condition_id": condition_id,
                     "model": payload.get("model"),
+                    "temperature": payload.get("temperature"),
                     "audio_sha256": payload.get("audio_sha256"),
                 })
                 records.append(record)
@@ -493,6 +497,12 @@ def build_parser() -> argparse.ArgumentParser:
     cloud.add_argument("--run-dir", required=True)
     cloud.add_argument("--tts-model", default="stepaudio-2.5-tts")
     cloud.add_argument("--chat-model", default="stepaudio-2.5-chat")
+    cloud.add_argument(
+        "--temperature",
+        type=float,
+        default=0.0,
+        help="formal benchmark default is deterministic greedy decoding",
+    )
     cloud.add_argument("--max-new-tts", type=int, default=10)
     cloud.add_argument("--max-new-extractions", type=int, default=50)
     cloud.set_defaults(func=cmd_cloud)

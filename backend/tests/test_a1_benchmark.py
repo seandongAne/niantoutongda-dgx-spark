@@ -13,7 +13,7 @@ from backend.tools.a1_benchmark import (
     score_case,
     wilson_interval,
 )
-from scripts.a1_robustness import add_noise_at_snr
+from scripts.a1_robustness import add_noise_at_snr, build_parser
 
 
 def test_plan_is_deterministic_balanced_and_capped():
@@ -185,3 +185,8 @@ def test_noise_injection_is_deterministic_and_hits_requested_snr(tmp_path):
     noise_power = sum((a - b) ** 2 for a, b in zip(noisy, samples, strict=True)) / len(samples)
     measured_snr = 10 * math.log10(signal_power / noise_power)
     assert measured_snr == pytest.approx(20.0, abs=0.25)
+
+
+def test_formal_cloud_runner_defaults_to_greedy_decoding():
+    args = build_parser().parse_args(["cloud", "--run-dir", "example"])
+    assert args.temperature == 0.0

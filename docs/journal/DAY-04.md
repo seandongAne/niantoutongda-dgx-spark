@@ -76,3 +76,44 @@
 - P1：把已产出的 hero crop 接入 NVFP4 属性抽取，形成颜色/材质/文字标记等多证据原型，再复验蓝色与玫红水壶等同类不同实例。
 - P1：修正 S3 缺失属性的默认相似度语义，使 missing/unknown 不再产生恒定 1.0；属性产生方差且有标注验证后，才从 0 调高 `attribute/context` 权重。
 - P2：hardval 证明 tile 有真实收益后，才保留按类/按场景触发；否则缩减或关闭低运动 fallback，避免为候选膨胀支付 32.8% 墙钟成本。
+
+## D4 午后增量(stitch + GT 物料,commit 4482129)
+
+- **属性链路根因闭合**:S3 候选 `attribute≡1.0` 的机制 = v6 tracklet.attributes 只有
+  label/hero_ref/hero_score/hero_scoring_version 四个流水线元数据键,matcher 忽略集漏了
+  常量版本串 `hero_scoring_version`(145f3fa 已修,回归测试);`context≡0.5` 为硬编码占位;
+  两权重在 v1 配置本就是 0。更根本:backend 无任何代码把 Nemotron/S5 属性写入
+  tracklet.attributes——属性方差是接线工程,不只是相似度语义修正。
+- **S3 v2 预处理落地**(e75bded + 4482129):同视频 stitch(共现硬否决 + 簇级 veto,
+  代表 id 取成员最小者,对外全部展开回原始 id 空间)、低证据标记、澄清互选封顶。
+  v1 配置不带新节时行为与冻结基线逐字段一致(真机 diff 验证:7811 candidates 仅
+  components.attribute 显示值 1.0→0.5,entities/clarifications/accepted-links 逐字节相同;
+  新合法基线 hash `e0fdc61b…`)。
+- **stitch 参数探针**(`results/acceptance/S3/stitch-probe/probe-v6.json`):v6 同视频同标签
+  12743 对,余弦 p50=0.31/p99=0.816;0.80 阈值 108 次共现否决 vs 42 次合并 → 高余弦对多数
+  是共现的不同物体,共现否决是承重墙;冻结 v2 = stitch 0.85(23 merges)。观测数直方图
+  {2:238,3:153,4:104,5+:450},无单观测轨。
+- **关键教训(一次 A/B 换来的)**:`min_observations=3` 若做成硬剔除,丢 13 条 0.865–0.954
+  的自动链接,全部是弱类(security_camera×3/storage_box+玩具收纳×5/luggage×2/
+  stuffed_animal×2)——两观测轨恰是 v6 找回的弱类召回本身。改为"保留匹配与自动链接
+  资格、仅吊销提问权"后 13/13 恢复。
+- **S3 v6 A/B 终版**(均三次 hash 全同):
+
+  | 指标 | v1 控制 | v2 处理 |
+  |---|---|---|
+  | 澄清请求 | 921 | **564 (−38.8%)** |
+  | 自动链接 | 83 | **85** |
+  | matched entities | 59 | 61 |
+  | 低证据摘除澄清 | — | 242 |
+  | 互选封顶摘除 | — | 65 |
+  | stitch 合并 | — | 23 组(945→922) |
+
+  match/margin/new 阈值与 v1 逐字段一致,未用降阈值换数字。
+- **GT 物料齐备待人工**:hardval 40 帧(焦点分+时间步进混采,`fixtures/dev_a/hardval/`,
+  含 gt.skeleton + v6 predictions 746 条 + 离线标注器 annotate.html,评测回环已对
+  hardval_eval.py 验证);17 锚点候选审阅表 + 预填 review JSON
+  (`results/acceptance/S3/anchor-review-v6/`,候选=同 category 全集,无相似度筛选);
+  四组硬负真值在锚点确认后自动导出。23 个 stitch 合并组目检表随 v2 产物留档。
+- **P2 顺手修复**:acceptance manifest `code_commit=unknown` — deploy.sh 现写 COMMIT 戳,
+  reid_task 回退读取;本批 manifest 已带真实 commit。
+- 本地测试 75 passed;sp0 三次核心探针产物入库(c5b3e1d)。

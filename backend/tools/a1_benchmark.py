@@ -229,9 +229,15 @@ def _render_narration(items: Sequence[Mapping[str, Any]], style: str) -> str:
         source = f"现在放在{item['source_location']}"
         target = f"搬到新家后放到{item['target_location']}" if item["target_location"] else ""
         group = f"打包时归到{item['pack_group']}" if item["pack_group"] else ""
-        parts = [part for part in (target, owner + label, source, group) if part]
+        parts = [part for part in (owner + label, source, target, group) if part]
         if style == "direct":
             parts = [owner + label, source, target, group]
+        elif style == "reordered":
+            # Always name the object before moving its fields around.  An earlier
+            # calibration put ``target`` before the label; after TTS removed written
+            # punctuation, that made a following item's target genuinely ambiguous.
+            ownership = f"它是{item['owner']}的" if item["owner"] else ""
+            parts = [f"说到{label}", target, ownership, source, group]
         elif style == "conversational":
             parts = ["嗯，先看这个，" + owner + label, source, target, group]
         fragments.append("，".join(part for part in parts if part) + "。")

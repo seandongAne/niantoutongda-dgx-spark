@@ -40,6 +40,14 @@ def test_plan_is_deterministic_balanced_and_capped():
     assert {case["voice"] for case in first["cases"]} == {"voice-a", "voice-b"}
     assert all("家庭" not in case["narration"] for case in first["cases"])
 
+    reordered = next(case for case in first["cases"] if case["style"] == "reordered")
+    for expected, fragment in zip(
+        reordered["expected"], reordered["narration"].split("接下来，"), strict=True
+    ):
+        label_position = fragment.index(expected["label_zh"])
+        if expected["target_location"]:
+            assert label_position < fragment.index(expected["target_location"])
+
 
 def test_wilson_target_uses_worst_case_precision():
     required = required_wilson_trials(0.08)

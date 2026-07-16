@@ -46,6 +46,7 @@ STAGE_ORDER = [
     "layout",
     "taskcards",
     "verify",
+    "trace",
     "report",
     "bundle",
 ]
@@ -78,6 +79,7 @@ def _p(value: str) -> Path:
 
 def build_stages(cfg: dict, py: str) -> dict[str, Stage]:
     run = _p(cfg["run_dir"])
+    trace_id = str(cfg.get("trace_id") or run.name)
     stage_cfg: dict = cfg.get("stages", {}) or {}
 
     def sc(name: str) -> dict:
@@ -110,15 +112,21 @@ def build_stages(cfg: dict, py: str) -> dict[str, Stage]:
     if sc("naming").get("enabled"):
         c = sc("naming")
         out = run / "naming/display.jsonl"
+        trace_out = run / "naming/trace.jsonl"
         argv = [py, str(PROJ / "scripts/entity_naming.py"),
                 "--entities", str(_p(c["entities"])),
                 "--attributes", str(_p(c["attributes"])),
-                "--out", str(out)]
+                "--out", str(out),
+                "--trace-id", trace_id, "--trace-out", str(trace_out)]
         inputs = [_p(c["entities"]), _p(c["attributes"])]
+        if c.get("clarifications"):
+            clarifications = _p(c["clarifications"])
+            argv += ["--clarifications", str(clarifications)]
+            inputs.append(clarifications)
         if c.get("tracklets_dir"):
             argv += ["--tracklets-dir", str(_p(c["tracklets_dir"]))]
         stages["naming"] = Stage("naming", "local", argv=argv,
-                                 inputs=inputs, outputs=[out])
+                                 inputs=inputs, outputs=[out, trace_out])
 
     if sc("narration").get("enabled"):
         c = sc("narration")
@@ -153,11 +161,16 @@ def build_stages(cfg: dict, py: str) -> dict[str, Stage]:
         display = run / "naming/display.jsonl"
         narration = run / "narration/narration.jsonl"
         out_dir = run / "group"
+        trace_parent = run / "naming/trace.jsonl"
+        trace_out = out_dir / "trace.jsonl"
         argv = [py, str(PROJ / "scripts/group_task.py"),
                 "--display", str(display), "--narration", str(narration),
                 "--config-version", c.get("config_version", "group-v1"),
-                "--out-dir", str(out_dir)]
-        inputs = [display, narration]
+                "--out-dir", str(out_dir),
+                "--trace-id", trace_id,
+                "--trace-parent", str(trace_parent),
+                "--trace-out", str(trace_out)]
+        inputs = [display, narration, trace_parent]
         for opt in ("confirmations", "template_rules", "cooccurrence"):
             if c.get(opt):
                 argv += [f"--{opt.replace('_', '-')}", str(_p(c[opt]))]
@@ -166,7 +179,8 @@ def build_stages(cfg: dict, py: str) -> dict[str, Stage]:
             "group", "local", argv=argv, inputs=inputs,
             outputs=[out_dir / "groups.jsonl", out_dir / "life_groups.jsonl",
                      out_dir / "resolutions.jsonl",
-                     out_dir / "clarifications.jsonl", out_dir / "conflicts.json"],
+                     out_dir / "clarifications.jsonl", out_dir / "conflicts.json",
+                     trace_out],
         )
 
     if sc("layout").get("enabled"):
@@ -174,28 +188,38 @@ def build_stages(cfg: dict, py: str) -> dict[str, Stage]:
         groups = run / "group/groups.jsonl"
         regions = run / "regions/regions.json"
         out_dir = run / "layout"
+        trace_parent = run / "group/trace.jsonl"
+        trace_out = out_dir / "trace.jsonl"
         argv = [py, str(PROJ / "scripts/layout_task.py"),
                 "--groups", str(groups), "--regions", str(regions),
-                "--out-dir", str(out_dir)]
+                "--out-dir", str(out_dir),
+                "--trace-id", trace_id,
+                "--trace-parent", str(trace_parent),
+                "--trace-out", str(trace_out)]
         if c.get("requires_power_groups"):
             argv += ["--requires-power-groups", c["requires_power_groups"]]
         stages["layout"] = Stage(
-            "layout", "local", argv=argv, inputs=[groups, regions],
-            outputs=[out_dir / "plan.json", out_dir / "layout.json"],
+            "layout", "local", argv=argv, inputs=[groups, regions, trace_parent],
+            outputs=[out_dir / "plan.json", out_dir / "layout.json", trace_out],
         )
 
     if sc("taskcards").get("enabled"):
         out_dir = run / "taskcards"
         inputs = [run / "group/groups.jsonl", run / "layout/layout.json",
-                  run / "regions/regions.json", run / "naming/display.jsonl"]
+                  run / "regions/regions.json", run / "naming/display.jsonl",
+                  run / "layout/trace.jsonl"]
+        trace_out = out_dir / "trace.jsonl"
         stages["taskcards"] = Stage(
             "taskcards", "local",
             argv=[py, str(PROJ / "scripts/taskcards_task.py"),
                   "--groups", str(inputs[0]), "--layout", str(inputs[1]),
                   "--regions", str(inputs[2]), "--display", str(inputs[3]),
-                  "--out-dir", str(out_dir)],
+                  "--out-dir", str(out_dir),
+                  "--trace-id", trace_id,
+                  "--trace-parent", str(inputs[4]),
+                  "--trace-out", str(trace_out)],
             inputs=inputs,
-            outputs=[out_dir / "taskcards.jsonl", out_dir / "taskcards.md"],
+            outputs=[out_dir / "taskcards.jsonl", out_dir / "taskcards.md", trace_out],
         )
 
     if sc("verify").get("enabled"):
@@ -203,14 +227,58 @@ def build_stages(cfg: dict, py: str) -> dict[str, Stage]:
         photos = _p(c["photos"])
         cards = run / "taskcards/taskcards.jsonl"
         out_dir = run / "verify"
+        trace_parent = run / "taskcards/trace.jsonl"
         stages["verify"] = Stage(
             "verify", "local",
             argv=[py, str(PROJ / "scripts/verify_task.py"),
                   "--cards", str(cards), "--photos", str(photos),
-                  "--out-dir", str(out_dir)],
-            inputs=[cards, photos],
+                  "--out-dir", str(out_dir),
+                  "--trace-parent", str(trace_parent),
+                  "--trace-out", str(out_dir / "messages.jsonl")],
+            inputs=[cards, photos, trace_parent],
             outputs=[out_dir / "messages.jsonl", out_dir / "verdicts.json",
                      out_dir / "taskcards_verified.jsonl"],
+        )
+
+    if sc("trace").get("enabled"):
+        c = sc("trace")
+        fragments = [
+            run / "naming/trace.jsonl",
+            run / "group/trace.jsonl",
+            run / "layout/trace.jsonl",
+            run / "taskcards/trace.jsonl",
+        ]
+        if sc("verify").get("enabled"):
+            fragments.append(run / "verify/messages.jsonl")
+        out = run / "audit/events.jsonl"
+        report = run / "audit/replay-report.json"
+        argv = [
+            py,
+            str(PROJ / "scripts/replay_trace.py"),
+            "--fragments",
+            *[str(path) for path in fragments],
+            "--out",
+            str(out),
+            "--report",
+            str(report),
+            "--require-main-chain",
+        ]
+        if c.get("strict"):
+            argv.append("--strict")
+        else:
+            for key, flag in (
+                ("require_verification", "--require-verification"),
+                ("require_closed_choices", "--require-closed-choices"),
+                ("require_adjudication", "--require-adjudication"),
+            ):
+                if c.get(key):
+                    argv.append(flag)
+        stages["trace"] = Stage(
+            "trace",
+            "local",
+            argv=argv,
+            inputs=fragments,
+            outputs=[out, report],
         )
 
     if sc("report").get("enabled"):
@@ -219,6 +287,8 @@ def build_stages(cfg: dict, py: str) -> dict[str, Stage]:
                   run / "taskcards/taskcards.jsonl"]
         if sc("verify").get("enabled"):
             inputs.append(run / "verify/verdicts.json")
+        if sc("trace").get("enabled"):
+            inputs.append(run / "audit/replay-report.json")
         stages["report"] = Stage(
             "report", "local",
             argv=[py, str(PROJ / "scripts/results_page.py"),

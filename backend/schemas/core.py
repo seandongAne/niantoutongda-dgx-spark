@@ -8,9 +8,9 @@ from __future__ import annotations
 import hashlib
 import json
 from enum import Enum
-from typing import Literal, Optional
+from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 SCHEMA_VERSION = "1.0"
 
@@ -113,12 +113,74 @@ class ObjectEntity(_Contract):
     evidence_refs: list[str]
 
 
-class ClarificationRequest(_Contract):
+class ClarificationRequest(_Message):
+    """MEM → UI 的实例二选一请求。
+
+    早期 S3 证据只含 request_id/candidates。``_legacy_message_fields`` 让这些
+    已归档 JSONL 仍可读取；当前生产者必须显式写消息基字段并在落盘前计算
+    payload_hash，严格 trace 回放会拒绝空 hash。
+    """
+
+    target: Literal[AgentRole.USER] = AgentRole.USER
     request_id: str
     candidate_a: str  # tracklet/entity id
     candidate_b: str
     reason_codes: list[str]
     decision: Optional[Literal["same", "different"]] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def _legacy_message_fields(cls, value: Any) -> Any:
+        if not isinstance(value, dict) or "message_id" in value:
+            return value
+        data = dict(value)
+        request_id = str(data.get("request_id", ""))
+        data.update(
+            message_id=request_id,
+            correlation_id=f"clarify-{request_id}",
+            producer=AgentRole.MEM,
+            payload_hash="",
+        )
+        return data
+
+
+class ClarificationDecision(_Message):
+    """UI → MEM 的二选一答复；与 request 分离，避免原消息被回写。"""
+
+    target: Literal[AgentRole.MEM] = AgentRole.MEM
+    request_id: str
+    decision: Literal["same", "different"]
+    note: str = ""
+
+
+class AgentHandoff(_Message):
+    """四 Agent 主链的不可变阶段交接消息。"""
+
+    target: AgentRole
+    action: Literal[
+        "ENTITIES_READY",
+        "GROUPS_READY",
+        "PLACEMENT_READY",
+        "TASKS_READY",
+    ]
+    item_ids: list[str] = []
+    artifact_refs: list[str] = []
+    summary: dict[str, str | int | float | bool] = {}
+
+    @model_validator(mode="after")
+    def _enforce_route(self) -> "AgentHandoff":
+        routes = {
+            "ENTITIES_READY": (AgentRole.MEM, AgentRole.GROUP),
+            "GROUPS_READY": (AgentRole.GROUP, AgentRole.SPACE),
+            "PLACEMENT_READY": (AgentRole.SPACE, AgentRole.EXEC),
+            "TASKS_READY": (AgentRole.EXEC, AgentRole.USER),
+        }
+        expected = routes[self.action]
+        if (self.producer, self.target) != expected:
+            raise ValueError(
+                f"{self.action} route must be {expected[0].value}->{expected[1].value}"
+            )
+        return self
 
 
 class RelationEdge(_Contract):

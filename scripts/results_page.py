@@ -93,6 +93,7 @@ def build_page(run_dir: Path) -> str:
     regions = load_json(run_dir / "regions/regions.json", {})
     cards = load_jsonl(run_dir / "taskcards/taskcards.jsonl")
     verdicts = load_json(run_dir / "verify/verdicts.json", {})
+    trace_report = load_json(run_dir / "audit/replay-report.json", {})
     bundle = load_json(run_dir / "bundle.json", {})
 
     group_of = {eid: g for g in groups for eid in g.get("entity_ids", [])}
@@ -110,6 +111,8 @@ def build_page(run_dir: Path) -> str:
     if verdicts:
         n_verified = sum(1 for v in verdicts.values() if v["verdict"] == "VERIFIED")
         stats.append((f"{n_verified}/{len(verdicts)}", "验收通过"))
+    if trace_report:
+        stats.append((trace_report.get("message_count", 0), "Agent 消息"))
     stat_tiles = "".join(
         f'<div class="stat"><div class="stat-n">{n}</div>'
         f'<div class="stat-l">{esc(label)}</div></div>'
@@ -282,6 +285,24 @@ def build_page(run_dir: Path) -> str:
         f'<td class="mono dim">{esc(v[:16])}…</td></tr>'
         for k, v in bundle.get("config_refs", {}).items()
     )
+    main_trace = trace_report.get("main_chain", {})
+    verify_trace = trace_report.get("verification", {})
+    clarification_trace = trace_report.get("clarifications", {})
+    producer_counts = trace_report.get("producer_counts", {})
+    trace_summary = ""
+    if trace_report:
+        trace_summary = (
+            '<div class="panel"><div class="panel-head"><h3>协议回放</h3>'
+            + chip("✓ hash / causation / correlation PASS", "success")
+            + "</div><table><tbody>"
+            + f'<tr><td>四 Agent 主链</td><td>{esc(" → ".join(main_trace.get("actions", [])))}</td>'
+            + f'<td>{chip(str(main_trace.get("complete", 0)) + " 条闭合", "success")}</td></tr>'
+            + f'<tr><td>MEM→UI 二选一</td><td>{esc(clarification_trace.get("closed", 0))} closed / '
+            + f'{esc(clarification_trace.get("open", 0))} open</td><td>{chip("已闭合", "success") if not clarification_trace.get("open") else chip("有待确认", "warning")}</td></tr>'
+            + f'<tr><td>EXEC 验收复核</td><td>{esc(verify_trace.get("closed", 0))} 条四消息闭环 · '
+            + f'{esc(verify_trace.get("adjudication_closed", 0))} 条用户裁决</td><td class="mono dim">{esc(producer_counts)}</td></tr>'
+            + "</tbody></table></div>"
+        )
 
     bundle_id = bundle.get("bundle_id", run_dir.name)
     return f"""<!DOCTYPE html>
@@ -420,7 +441,8 @@ footer {{ color:var(--muted); font-size:12px; margin-top:28px; }}
 <div class="panel"><table><thead><tr><th>实体</th><th>问题</th><th>原因</th></tr></thead>
 <tbody>{clar_rows}</tbody></table>
 <div class="check-title">冲突记录</div><ul class="conflicts">{conflict_list}</ul></div>
-<h2 id="trace">复跑指纹 <span class="note">全部阶段产物 sha256,可对照 bundle.json 复验</span></h2>
+<h2 id="trace">Agent trace 与复跑指纹 <span class="note">严格回放 audit/events.jsonl，再核对阶段 sha256</span></h2>
+{trace_summary}
 <div class="panel"><table><thead><tr><th>阶段</th><th>产物</th><th>sha256</th></tr></thead>
 <tbody>{config_refs}{artifacts}</tbody></table></div>
 <footer>bundle {esc(bundle_id)} · {esc(bundle.get("created_at", ""))} · 本页由 hero_pipeline report 阶段确定性生成</footer>

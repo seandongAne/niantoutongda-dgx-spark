@@ -4,6 +4,7 @@
 # narration.transcript 换成旁白誊写(或 ASR 产物),regions.manifest
 # 换成对照 new_1.mp4 登记的区域表。
 run_dir: results/hero/dev-fixture
+trace_id: hero-dev-v1
 python: .venv/bin/python
 
 stages:
@@ -17,6 +18,7 @@ stages:
     enabled: true
     entities: fixtures/hero_dev/entities.jsonl
     attributes: fixtures/hero_dev/attributes.jsonl
+    clarifications: fixtures/hero_dev/clarifications.jsonl
 
   narration:
     enabled: true
@@ -42,6 +44,10 @@ stages:
     # 夹具演练三种结局:card-01 VERIFIED / card-02 FAILED(缺件) /
     # card-03 NEEDS_USER(低置信)。真实素材时由 ReID 匹配或对账 UI 产生。
     photos: fixtures/hero_dev/acceptance.json
+
+  trace:
+    enabled: true
+    strict: true
 
   report:
     enabled: true

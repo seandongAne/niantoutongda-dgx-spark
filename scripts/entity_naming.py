@@ -18,6 +18,13 @@ PROJ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJ))
 
 from backend.tools.grouping.narration import COLOR_ZH  # noqa: E402
+from backend.schemas.core import (  # noqa: E402
+    AgentHandoff,
+    AgentRole,
+    ClarificationDecision,
+    ClarificationRequest,
+)
+from backend.tools.trace import finalize_message, write_fragment  # noqa: E402
 
 CONFIDENCE_RANK = {"high": 0, "medium": 1, "low": 2}
 QUALITY_FIELDS = ("hero_score", "quality", "max_quality")
@@ -84,7 +91,12 @@ def main() -> int:
     ap.add_argument("--attributes", required=True, type=Path)
     ap.add_argument("--tracklets-dir", type=Path, default=None)
     ap.add_argument("--out", required=True, type=Path)
+    ap.add_argument("--clarifications", type=Path)
+    ap.add_argument("--trace-id")
+    ap.add_argument("--trace-out", type=Path)
     args = ap.parse_args()
+    if bool(args.trace_id) != bool(args.trace_out):
+        ap.error("--trace-id and --trace-out must be provided together")
 
     entities = load_jsonl(args.entities)
     attr_by_tid = {row["tracklet_id"]: row for row in load_jsonl(args.attributes)}
@@ -124,6 +136,45 @@ def main() -> int:
     with args.out.open("w", encoding="utf-8") as f:
         for row in rows:
             f.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
+
+    if args.trace_out:
+        messages = []
+        if args.clarifications:
+            for raw in load_jsonl(args.clarifications):
+                legacy_decision = raw.get("decision")
+                request = ClarificationRequest.model_validate(raw).model_copy(
+                    update={"decision": None}
+                )
+                finalize_message(request)
+                messages.append(request)
+                if legacy_decision:
+                    messages.append(
+                        finalize_message(
+                            ClarificationDecision(
+                                message_id=f"{request.message_id}-decision",
+                                correlation_id=request.correlation_id,
+                                causation_id=request.message_id,
+                                producer=AgentRole.USER,
+                                request_id=request.message_id,
+                                decision=legacy_decision,
+                            )
+                        )
+                    )
+        messages.append(
+            finalize_message(
+                AgentHandoff(
+                    message_id=f"{args.trace_id}-mem-ready",
+                    correlation_id=args.trace_id,
+                    producer=AgentRole.MEM,
+                    target=AgentRole.GROUP,
+                    action="ENTITIES_READY",
+                    item_ids=[row["entity_id"] for row in rows],
+                    artifact_refs=[str(args.entities), str(args.out)],
+                    summary={"entities": len(rows), "clarifications": len(messages)},
+                )
+            )
+        )
+        write_fragment(args.trace_out, messages)
     print(
         json.dumps(
             {"entities": len(entities), "vlm_named": named, "missing_name": missing},

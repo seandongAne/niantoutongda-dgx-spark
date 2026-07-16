@@ -22,6 +22,7 @@ from backend.schemas.core import (
     PlacementCompliance,
     PlacementComplianceResult,
     TaskStatus,
+    UserAdjudication,
     VerificationCheckRequest,
     VerificationVerdict,
     compute_payload_hash,
@@ -37,6 +38,7 @@ class CardVerification:
     presence: ObjectPresenceCheckResult
     compliance: PlacementComplianceResult
     verdict: VerificationVerdict
+    adjudication: UserAdjudication | None = None
 
 
 def _finalize(msg):
@@ -44,7 +46,12 @@ def _finalize(msg):
     return msg
 
 
-def verify_card(card: TaskCard, acceptance: AcceptanceManifest) -> CardVerification:
+def verify_card(
+    card: TaskCard,
+    acceptance: AcceptanceManifest,
+    *,
+    parent_message_id: str | None = None,
+) -> CardVerification:
     corr = f"verify-{card.card_id}"
     expected = [item.entity_id for item in card.items]
 
@@ -61,6 +68,7 @@ def verify_card(card: TaskCard, acceptance: AcceptanceManifest) -> CardVerificat
         VerificationCheckRequest(
             message_id=f"{corr}-request",
             correlation_id=corr,
+            causation_id=parent_message_id,
             producer=AgentRole.EXEC,
             task_id=card.card_id,
             expected_entity_ids=expected,
@@ -136,17 +144,49 @@ def verify_card(card: TaskCard, acceptance: AcceptanceManifest) -> CardVerificat
     verdict = derive_verdict(
         request, presence, compliance, verdict_id=f"{corr}-verdict"
     )
-    return CardVerification(card, request, presence, compliance, verdict)
+    decision = next(
+        (item for item in acceptance.adjudications if item.card_id == card.card_id),
+        None,
+    )
+    if decision and verdict.verdict == "VERIFIED":
+        raise ValueError(f"{card.card_id}: VERIFIED verdict cannot be user-overridden")
+    adjudication = None
+    if decision:
+        adjudication = _finalize(
+            UserAdjudication(
+                message_id=f"{corr}-adjudication",
+                correlation_id=corr,
+                causation_id=verdict.message_id,
+                producer=AgentRole.USER,
+                verdict_id=verdict.message_id,
+                decision=decision.decision,
+                note=decision.note,
+            )
+        )
+    return CardVerification(
+        card, request, presence, compliance, verdict, adjudication
+    )
 
 
 def verify_cards(
-    cards: list[TaskCard], acceptance: AcceptanceManifest
+    cards: list[TaskCard],
+    acceptance: AcceptanceManifest,
+    *,
+    parent_message_id: str | None = None,
 ) -> list[CardVerification]:
-    return [verify_card(card, acceptance) for card in cards]
+    return [
+        verify_card(card, acceptance, parent_message_id=parent_message_id)
+        for card in cards
+    ]
 
 
 def card_status_after(verification: CardVerification) -> TaskStatus:
     """只有 VERIFIED 改卡状态;FAILED/NEEDS_USER 留给用户裁决,不代写。"""
     if verification.verdict.verdict == "VERIFIED":
         return TaskStatus.VERIFIED
+    if (
+        verification.adjudication
+        and verification.adjudication.decision == "accept_override"
+    ):
+        return TaskStatus.USER_OVERRIDDEN
     return verification.card.status

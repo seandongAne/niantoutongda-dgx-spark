@@ -21,8 +21,14 @@ from backend.schemas.hero_bundle import (  # noqa: E402
     GroupConfirmation,
     NarrationItem,
 )
+from backend.schemas.core import AgentHandoff, AgentRole  # noqa: E402
 from backend.tools.audit.store import append_event  # noqa: E402
 from backend.tools.grouping import build_groups, resolve_narration  # noqa: E402
+from backend.tools.trace import (  # noqa: E402
+    finalize_message,
+    require_handoff,
+    write_fragment,
+)
 
 
 def load_jsonl(path: Path) -> list[dict]:
@@ -43,7 +49,13 @@ def main() -> int:
     ap.add_argument("--cooccurrence", type=Path, default=None)
     ap.add_argument("--config-version", default="group-v1")
     ap.add_argument("--out-dir", required=True, type=Path)
+    ap.add_argument("--trace-id")
+    ap.add_argument("--trace-parent", type=Path)
+    ap.add_argument("--trace-out", type=Path)
     args = ap.parse_args()
+    trace_args = (args.trace_id, args.trace_parent, args.trace_out)
+    if any(trace_args) and not all(trace_args):
+        ap.error("--trace-id, --trace-parent and --trace-out must be provided together")
 
     entity_display = {
         row["entity_id"]: row for row in load_jsonl(args.display)
@@ -104,6 +116,30 @@ def main() -> int:
     )
     for event in build.audit_events:
         append_event(out / "audit-events.jsonl", event)
+
+    if args.trace_out:
+        parent = require_handoff(args.trace_parent, "ENTITIES_READY")
+        message = finalize_message(
+            AgentHandoff(
+                message_id=f"{args.trace_id}-groups-ready",
+                correlation_id=parent.correlation_id,
+                causation_id=parent.message_id,
+                producer=AgentRole.GROUP,
+                target=AgentRole.SPACE,
+                action="GROUPS_READY",
+                item_ids=[group.group_id for group in build.groups],
+                artifact_refs=[
+                    str(out / "groups.jsonl"),
+                    str(out / "life_groups.jsonl"),
+                ],
+                summary={
+                    "groups": len(build.groups),
+                    "unassigned": len(build.unassigned_entity_ids),
+                    "clarifications": len(build.clarifications),
+                },
+            )
+        )
+        write_fragment(args.trace_out, [message])
 
     print(
         json.dumps(

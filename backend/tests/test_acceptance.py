@@ -11,6 +11,7 @@ import pytest
 
 from backend.schemas.core import TaskStatus
 from backend.schemas.hero_bundle import (
+    AcceptanceAdjudication,
     AcceptanceManifest,
     AcceptanceMatch,
     AcceptancePhoto,
@@ -103,6 +104,29 @@ def test_low_confidence_needs_user():
     assert card_status_after(r) == TaskStatus.REGION_PLANNED
 
 
+def test_user_accept_override_is_standalone_message_and_updates_status():
+    manifest = AcceptanceManifest(
+        photos=[
+            _photo("desk_top", [
+                AcceptanceMatch(entity_id="e1", present=True, match_score=0.9),
+                AcceptanceMatch(entity_id="e2", present=True, match_score=0.5),
+            ])
+        ],
+        adjudications=[
+            AcceptanceAdjudication(
+                card_id="card-01",
+                decision="accept_override",
+                note="用户确认是同一件",
+            )
+        ],
+    )
+    result = verify_card(_card(), manifest)
+    assert result.verdict.verdict == "NEEDS_USER"
+    assert result.adjudication is not None
+    assert result.adjudication.causation_id == result.verdict.message_id
+    assert card_status_after(result) == TaskStatus.USER_OVERRIDDEN
+
+
 def test_no_relevant_photo_all_not_seen():
     manifest = _manifest([
         _photo("closet_shelf", [
@@ -181,8 +205,11 @@ def test_cli_writes_messages_verdicts_and_updated_cards(tmp_path):
     assert verdicts["card-01"]["verdict"] == "VERIFIED"
     assert verdicts["card-01"]["status_after"] == "VERIFIED"
     lines = (out / "messages.jsonl").read_text(encoding="utf-8").splitlines()
-    assert [json.loads(l)["type"] for l in lines] == [
-        "request", "presence", "compliance", "verdict"
+    assert [json.loads(l)["message_type"] for l in lines] == [
+        "VerificationCheckRequest",
+        "ObjectPresenceCheckResult",
+        "PlacementComplianceResult",
+        "VerificationVerdict",
     ]
     updated = json.loads(
         (out / "taskcards_verified.jsonl").read_text(encoding="utf-8")

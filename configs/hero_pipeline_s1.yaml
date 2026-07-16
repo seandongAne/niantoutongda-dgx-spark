@@ -15,6 +15,7 @@
 #      attributes 阶段带 curl 探活守卫,服务没起会快速失败而不是空跑。
 #   6. 验收照片 + 匹配勾选 → fixtures/hero_s1/acceptance.json 后把 verify 翻 true。
 run_dir: results/hero/s1-w1
+trace_id: hero-s1-w1
 python: .venv/bin/python
 
 stages:
@@ -63,6 +64,7 @@ stages:
     cmd: [scripts/pull_results.sh]
     local_outputs:
       - results/hero_s1/reid/entities.jsonl
+      - results/hero_s1/reid/clarifications.jsonl
       - results/hero_s1/reid/metrics.json
       - results/s5/attributes_hero_s1.jsonl
 
@@ -70,6 +72,7 @@ stages:
     enabled: true
     entities: results/hero_s1/reid/entities.jsonl
     attributes: results/s5/attributes_hero_s1.jsonl
+    clarifications: results/hero_s1/reid/clarifications.jsonl
     tracklets_dir: results/hero_s1/ingest
 
   narration:
@@ -96,6 +99,12 @@ stages:
   verify:
     enabled: false                                # TODO 验收照片到手后翻 true
     photos: fixtures/hero_s1/acceptance.json
+
+  trace:
+    enabled: true
+    # 素材刚接入且 verify 尚未开启时，只强制四 Agent 主链闭合；最终判分跑
+    # 将 verify 打开并把 strict 改为 true，要求二选一与用户裁决也全部闭合。
+    strict: false
 
   report:
     enabled: true

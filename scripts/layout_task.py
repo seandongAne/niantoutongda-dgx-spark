@@ -15,10 +15,20 @@ from pathlib import Path
 PROJ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJ))
 
-from backend.schemas.core import Assignment, PlacementPlan  # noqa: E402
+from backend.schemas.core import (  # noqa: E402
+    AgentHandoff,
+    AgentRole,
+    Assignment,
+    PlacementPlan,
+)
 from backend.schemas.hero_bundle import HeroGroup, RegionManifest  # noqa: E402
 from backend.tools.solver.assemble import build_layout_problem  # noqa: E402
 from backend.tools.solver.layout_solver import solve_layout  # noqa: E402
+from backend.tools.trace import (  # noqa: E402
+    finalize_message,
+    require_handoff,
+    write_fragment,
+)
 
 
 def main() -> int:
@@ -28,7 +38,13 @@ def main() -> int:
     ap.add_argument("--requires-power-groups", default="")
     ap.add_argument("--plan-id", default="plan-hero-v1")
     ap.add_argument("--out-dir", required=True, type=Path)
+    ap.add_argument("--trace-id")
+    ap.add_argument("--trace-parent", type=Path)
+    ap.add_argument("--trace-out", type=Path)
     args = ap.parse_args()
+    trace_args = (args.trace_id, args.trace_parent, args.trace_out)
+    if any(trace_args) and not all(trace_args):
+        ap.error("--trace-id, --trace-parent and --trace-out must be provided together")
 
     groups = []
     with args.groups.open(encoding="utf-8") as f:
@@ -102,6 +118,26 @@ def main() -> int:
     if result.status != "PLAN_READY":
         print(f"布局未就绪: {result.conflicts}", file=sys.stderr)
         return 3
+    if args.trace_out:
+        parent = require_handoff(args.trace_parent, "GROUPS_READY")
+        message = finalize_message(
+            AgentHandoff(
+                message_id=f"{args.trace_id}-placement-ready",
+                correlation_id=parent.correlation_id,
+                causation_id=parent.message_id,
+                producer=AgentRole.SPACE,
+                target=AgentRole.EXEC,
+                action="PLACEMENT_READY",
+                item_ids=[assignment.group_id for assignment in plan.assignments],
+                artifact_refs=[str(out / "plan.json"), str(out / "layout.json")],
+                summary={
+                    "solver_status": result.status,
+                    "assignments": len(result.assignments),
+                    "objective": result.objective,
+                },
+            )
+        )
+        write_fragment(args.trace_out, [message])
     return 0
 
 

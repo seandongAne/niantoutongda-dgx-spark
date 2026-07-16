@@ -20,6 +20,7 @@ from backend.tools.verification.acceptance import (  # noqa: E402
     card_status_after,
     verify_cards,
 )
+from backend.tools.trace import require_handoff, write_fragment  # noqa: E402
 
 
 def main() -> int:
@@ -27,6 +28,8 @@ def main() -> int:
     ap.add_argument("--cards", required=True, type=Path)
     ap.add_argument("--photos", required=True, type=Path)
     ap.add_argument("--out-dir", required=True, type=Path)
+    ap.add_argument("--trace-parent", type=Path)
+    ap.add_argument("--trace-out", type=Path)
     args = ap.parse_args()
 
     cards = [
@@ -38,26 +41,31 @@ def main() -> int:
         json.loads(args.photos.read_text(encoding="utf-8"))
     )
 
-    results = verify_cards(cards, acceptance)
+    parent = (
+        require_handoff(args.trace_parent, "TASKS_READY")
+        if args.trace_parent
+        else None
+    )
+    results = verify_cards(
+        cards,
+        acceptance,
+        parent_message_id=parent.message_id if parent else None,
+    )
     out = args.out_dir
     out.mkdir(parents=True, exist_ok=True)
 
-    with (out / "messages.jsonl").open("w", encoding="utf-8") as f:
-        for r in results:
-            for kind, msg in (
-                ("request", r.request),
-                ("presence", r.presence),
-                ("compliance", r.compliance),
-                ("verdict", r.verdict),
-            ):
-                f.write(
-                    json.dumps(
-                        {"type": kind, **msg.model_dump(mode="json")},
-                        ensure_ascii=False,
-                        sort_keys=True,
-                    )
-                    + "\n"
-                )
+    messages = []
+    for result in results:
+        messages.extend(
+            [result.request, result.presence, result.compliance, result.verdict]
+        )
+        if result.adjudication:
+            messages.append(result.adjudication)
+    trace_out = args.trace_out or (out / "messages.jsonl")
+    write_fragment(trace_out, messages)
+    # 保留历史约定的 verify/messages.jsonl；若 trace-out 另有路径则同步一份。
+    if trace_out != out / "messages.jsonl":
+        write_fragment(out / "messages.jsonl", messages)
 
     summary = {
         r.card.card_id: {
@@ -65,6 +73,14 @@ def main() -> int:
             "reason_codes": r.verdict.reason_codes,
             "photo_refs": r.request.photo_refs,
             "status_after": card_status_after(r).value,
+            "adjudication": (
+                {
+                    "decision": r.adjudication.decision,
+                    "note": r.adjudication.note,
+                }
+                if r.adjudication
+                else None
+            ),
         }
         for r in results
     }

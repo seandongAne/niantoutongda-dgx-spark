@@ -27,5 +27,17 @@
         {"entity_id": "e_lamp", "present": true, "match_score": 0.81}
       ]
     }
+  ],
+  "adjudications": [
+    {
+      "card_id": "card-02",
+      "decision": "reject_redo",
+      "note": "粉色水壶缺失，重新寻找后再验收"
+    },
+    {
+      "card_id": "card-03",
+      "decision": "accept_override",
+      "note": "用户确认低置信匹配确为蓝色水壶"
+    }
   ]
 }

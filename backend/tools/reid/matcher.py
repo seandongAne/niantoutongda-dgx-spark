@@ -16,7 +16,13 @@ from itertools import combinations
 from pathlib import Path
 from typing import Any
 
-from backend.schemas.core import ClarificationRequest, IdentityState, ObjectEntity
+from backend.schemas.core import (
+    AgentRole,
+    ClarificationRequest,
+    IdentityState,
+    ObjectEntity,
+    compute_payload_hash,
+)
 from backend.tools.reid.assignment import maximise_assignment
 from backend.tools.reid.model import (
     COMPARABLE_ATTRIBUTE_KEYS,
@@ -404,12 +410,18 @@ def _cap_clarifications(
 
 def _clarification(pair: tuple[str, str], reasons: tuple[str, ...]) -> ClarificationRequest:
     digest = hashlib.sha256("\n".join(pair).encode()).hexdigest()[:12]
-    return ClarificationRequest(
-        request_id=f"clarify_{digest}",
+    request_id = f"clarify_{digest}"
+    request = ClarificationRequest(
+        message_id=request_id,
+        correlation_id=f"clarification-{digest}",
+        producer=AgentRole.MEM,
+        request_id=request_id,
         candidate_a=pair[0],
         candidate_b=pair[1],
         reason_codes=list(reasons),
     )
+    request.payload_hash = compute_payload_hash(request)
+    return request
 
 
 def run_reid(

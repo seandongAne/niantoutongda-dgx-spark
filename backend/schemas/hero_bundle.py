@@ -208,14 +208,26 @@ class AcceptancePhoto(_HeroContract):
     match_source: Literal["reid", "manual"] = "manual"
 
 
+class AcceptanceAdjudication(_HeroContract):
+    """FAILED/NEEDS_USER 后的 UI 裁决输入，最终转成 UserAdjudication 消息。"""
+
+    card_id: str
+    decision: Literal["accept_override", "reject_redo"]
+    note: str = ""
+
+
 class AcceptanceManifest(_HeroContract):
     photos: list[AcceptancePhoto] = Field(min_length=1)
+    adjudications: list[AcceptanceAdjudication] = []
 
     @model_validator(mode="after")
     def _unique_photo_refs(self) -> "AcceptanceManifest":
         refs = [p.photo_ref for p in self.photos]
         if len(refs) != len(set(refs)):
             raise ValueError("photo_ref 重复")
+        card_ids = [item.card_id for item in self.adjudications]
+        if len(card_ids) != len(set(card_ids)):
+            raise ValueError("adjudication card_id 重复")
         return self
 
 

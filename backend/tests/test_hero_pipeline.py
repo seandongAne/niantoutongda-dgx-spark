@@ -30,7 +30,7 @@ def test_full_chain_then_resume_then_from_stage(tmp_path):
     bundle = json.loads((run_dir / "bundle.json").read_text(encoding="utf-8"))
     stages_in_bundle = {a["stage"] for a in bundle["artifacts"]}
     assert {"naming", "narration", "regions", "group", "layout", "taskcards",
-            "verify"} <= stages_in_bundle
+            "verify", "trace"} <= stages_in_bundle
     cards = (run_dir / "taskcards/taskcards.md").read_text(encoding="utf-8")
     assert "水壶(蓝色)" in cards and "水壶(粉色)" in cards
 
@@ -41,10 +41,25 @@ def test_full_chain_then_resume_then_from_stage(tmp_path):
         "VERIFIED", "FAILED", "NEEDS_USER"
     }
     assert (run_dir / "index.html").exists()
+    replay = json.loads(
+        (run_dir / "audit/replay-report.json").read_text(encoding="utf-8")
+    )
+    assert replay["status"] == "PASS"
+    assert replay["main_chain"]["complete"] == 1
+    assert replay["producer_counts"] == {
+        "EXEC": 7,
+        "GROUP": 1,
+        "MEM": 5,
+        "SPACE": 4,
+        "USER": 3,
+    }
+    assert replay["clarifications"] == {"requests": 1, "closed": 1, "open": 0}
+    assert replay["verification"]["requests"] == 3
+    assert replay["verification"]["adjudication_closed"] == 2
 
     second = run_pipeline(run_dir)
     assert second.returncode == 0, second.stderr
-    assert second.stdout.count("[skip]") == 8
+    assert second.stdout.count("[skip]") == 9
     assert "[run ] naming" not in second.stdout
 
     third = run_pipeline(run_dir, "--from-stage", "layout")

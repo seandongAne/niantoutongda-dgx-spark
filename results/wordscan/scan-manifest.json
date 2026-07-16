@@ -1,0 +1,248 @@
+{
+  "box_threshold": 0.35,
+  "candidates": {
+    "luggage/c0": {
+      "detections": 32,
+      "phrase": "pink rolling kids luggage",
+      "seconds": 15.7
+    },
+    "luggage/c1": {
+      "detections": 72,
+      "phrase": "soft fabric children luggage",
+      "seconds": 15.3
+    },
+    "luggage/c2": {
+      "detections": 28,
+      "phrase": "toddler pink wheeled luggage",
+      "seconds": 14.9
+    },
+    "luggage/c3": {
+      "detections": 46,
+      "phrase": "kids soft carry luggage",
+      "seconds": 16.5
+    },
+    "luggage/c4": {
+      "detections": 31,
+      "phrase": "pink child rolling luggage",
+      "seconds": 16.2
+    },
+    "luggage/c5": {
+      "detections": 71,
+      "phrase": "fabric kids travel luggage",
+      "seconds": 16.3
+    },
+    "luggage/c6": {
+      "detections": 33,
+      "phrase": "small pink wheeled luggage",
+      "seconds": 16.1
+    },
+    "luggage/c7": {
+      "detections": 35,
+      "phrase": "children's soft rolling luggage",
+      "seconds": 16.3
+    },
+    "mini_fridge/c0": {
+      "detections": 37,
+      "phrase": "teal toy mini fridge",
+      "seconds": 16.2
+    },
+    "mini_fridge/c1": {
+      "detections": 38,
+      "phrase": "green toy refrigerator",
+      "seconds": 16.3
+    },
+    "mini_fridge/c2": {
+      "detections": 18,
+      "phrase": "kids play mini fridge",
+      "seconds": 16.5
+    },
+    "mini_fridge/c3": {
+      "detections": 31,
+      "phrase": "teal children's toy fridge",
+      "seconds": 16.4
+    },
+    "mini_fridge/c4": {
+      "detections": 41,
+      "phrase": "small play fridge toy",
+      "seconds": 16.3
+    },
+    "mini_fridge/c5": {
+      "detections": 32,
+      "phrase": "green playroom mini fridge",
+      "seconds": 16.9
+    },
+    "mini_fridge/c6": {
+      "detections": 34,
+      "phrase": "toddler toy refrigerator",
+      "seconds": 16.7
+    },
+    "mini_fridge/c7": {
+      "detections": 26,
+      "phrase": "teal play kitchen fridge",
+      "seconds": 15.4
+    },
+    "night_light/c0": {
+      "detections": 32,
+      "phrase": "cylindrical ambient night light",
+      "seconds": 15.3
+    },
+    "night_light/c1": {
+      "detections": 39,
+      "phrase": "cylinder shaped mood night light",
+      "seconds": 15.2
+    },
+    "night_light/c2": {
+      "detections": 24,
+      "phrase": "round pillar night light",
+      "seconds": 15.2
+    },
+    "night_light/c3": {
+      "detections": 23,
+      "phrase": "ambient sleep night light",
+      "seconds": 16.5
+    },
+    "night_light/c4": {
+      "detections": 32,
+      "phrase": "pillar soft glow night light",
+      "seconds": 16.3
+    },
+    "night_light/c5": {
+      "detections": 41,
+      "phrase": "cylindrical bedroom night light",
+      "seconds": 16.4
+    },
+    "night_light/c6": {
+      "detections": 38,
+      "phrase": "round tube night light",
+      "seconds": 16.3
+    },
+    "night_light/c7": {
+      "detections": 43,
+      "phrase": "cylinder mood night light",
+      "seconds": 16.3
+    },
+    "security_camera/c0": {
+      "detections": 36,
+      "phrase": "white spherical security camera",
+      "seconds": 16.3
+    },
+    "security_camera/c1": {
+      "detections": 25,
+      "phrase": "round white shelf camera",
+      "seconds": 16.3
+    },
+    "security_camera/c2": {
+      "detections": 11,
+      "phrase": "ball shaped home camera",
+      "seconds": 16.2
+    },
+    "security_camera/c3": {
+      "detections": 20,
+      "phrase": "white orb security camera",
+      "seconds": 16.3
+    },
+    "security_camera/c4": {
+      "detections": 23,
+      "phrase": "shelf mounted round camera",
+      "seconds": 16.8
+    },
+    "security_camera/c5": {
+      "detections": 31,
+      "phrase": "white dome security camera",
+      "seconds": 22.7
+    },
+    "security_camera/c6": {
+      "detections": 35,
+      "phrase": "spherical home shelf camera",
+      "seconds": 33.1
+    },
+    "security_camera/c7": {
+      "detections": 17,
+      "phrase": "round ball security camera",
+      "seconds": 33.7
+    },
+    "table_lamp/c0": {
+      "detections": 26,
+      "phrase": "adjustable desk table lamp",
+      "seconds": 19.3
+    },
+    "table_lamp/c1": {
+      "detections": 55,
+      "phrase": "kids desk adjustable lamp",
+      "seconds": 15.3
+    },
+    "table_lamp/c2": {
+      "detections": 30,
+      "phrase": "foldable desk table lamp",
+      "seconds": 15.2
+    },
+    "table_lamp/c3": {
+      "detections": 61,
+      "phrase": "children's study table lamp",
+      "seconds": 15.3
+    },
+    "table_lamp/c4": {
+      "detections": 29,
+      "phrase": "adjustable study desk lamp",
+      "seconds": 15.1
+    },
+    "table_lamp/c5": {
+      "detections": 39,
+      "phrase": "flexible neck desk lamp",
+      "seconds": 15.2
+    },
+    "table_lamp/c6": {
+      "detections": 54,
+      "phrase": "kids study adjustable lamp",
+      "seconds": 15.2
+    },
+    "table_lamp/c7": {
+      "detections": 46,
+      "phrase": "foldable study table lamp",
+      "seconds": 15.2
+    },
+    "tumbler/c0": {
+      "detections": 34,
+      "phrase": "pink Stanley tumbler",
+      "seconds": 15.2
+    },
+    "tumbler/c1": {
+      "detections": 33,
+      "phrase": "straw top insulated tumbler",
+      "seconds": 15.3
+    },
+    "tumbler/c2": {
+      "detections": 28,
+      "phrase": "pink insulated drink tumbler",
+      "seconds": 15.3
+    },
+    "tumbler/c3": {
+      "detections": 35,
+      "phrase": "Stanley style pink tumbler",
+      "seconds": 15.2
+    },
+    "tumbler/c4": {
+      "detections": 30,
+      "phrase": "straw equipped insulated tumbler",
+      "seconds": 15.3
+    },
+    "tumbler/c5": {
+      "detections": 31,
+      "phrase": "pink thermal drink tumbler",
+      "seconds": 16.1
+    },
+    "tumbler/c6": {
+      "detections": 36,
+      "phrase": "Stanley pink vacuum tumbler",
+      "seconds": 16.3
+    },
+    "tumbler/c7": {
+      "detections": 26,
+      "phrase": "straw lid pink tumbler",
+      "seconds": 16.3
+    }
+  },
+  "frames": 40,
+  "model": "grounding-dino-base@/home/Developer/models/IDEA-Research__grounding-dino-base",
+  "wall_seconds": 807.9
+}

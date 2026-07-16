@@ -50,7 +50,9 @@ def main() -> int:
     by_category: dict[str, dict[str, dict]] = {}
     for path in sorted(args.scan_dir.glob("*__c*.json")):
         category, cid = path.stem.split("__")
-        by_category.setdefault(category, {})[cid] = load_json_document(path)
+        doc = dict(load_json_document(path))
+        doc["dataset_id"] = gt["dataset_id"]  # 扫描默认 id 与 GT 对齐(纯元数据)
+        by_category.setdefault(category, {})[cid] = doc
 
     report: dict[str, object] = {
         "lambda_fp": args.lambda_fp,
@@ -76,7 +78,7 @@ def main() -> int:
                     "candidate": r.candidate_id,
                     "phrase": phrases.get(f"{category}/{r.candidate_id}", ""),
                     "score": round(r.score, 4),
-                    "recall": round(ev.recall, 4),
+                    "recall": round(ev.visible_instance_recall, 4),
                     "fp_per_frame": round(ev.false_positives_per_frame, 3),
                     "fragmentation": round(ev.fragmentation_rate, 4),
                 }

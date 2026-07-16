@@ -183,3 +183,11 @@
   主导 + 两端同错),只污染展示层**;修复归属 S5 属性接线
   (hero 图 VLM 命名为展示权威,GDINO raw_label 降级为召回内部键,
   已写入工厂设计 §5 命名权威原则),不另开战役。
+
+## D4 许可增量:AGPL-3.0 开源许可(commit 1bd1ca9)
+
+- 根目录新增 `LICENSE`,采用 GNU 官方 GNU Affero General Public License v3.0
+  完整原文;本地文件与官方纯文本 SHA-256 均为
+  `0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0`。
+- 许可证版本按 SPDX `AGPL-3.0-only` 记录,未扩展为“或任何以后版本”。
+- 边界:本次未逐文件补 SPDX 头,也未改变第三方依赖、模型权重或数据素材各自的许可条款。

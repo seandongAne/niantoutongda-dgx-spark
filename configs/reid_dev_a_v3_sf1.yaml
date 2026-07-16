@@ -1,0 +1,39 @@
+version: "reid-dev-a-v3+sf1-c9db7366"
+created_at: "2026-07-16"
+owner: "物品记忆 Agent"
+reason: "dev_a SF1-L1 推理接线验证；基线字段冻结，只新增已验 SHA 的 concat 投影头"
+applies_to_dataset: "dev_a"
+frozen: true
+derived_from: "configs/reid_dev_a_v3.yaml"
+
+embedding_dim: 768
+top_k: 5
+
+weights:
+  instance: 0.80
+  semantic: 0.15
+  attribute: 0.00
+  context: 0.00
+  geometry: 0.05
+
+thresholds:
+  match: 0.84
+  new: 0.70
+  margin: 0.00
+  min_quality: 0.28
+
+stitch:
+  enabled: true
+  min_cosine: 0.85
+  max_gap_ms: 0
+
+filter:
+  min_observations: 3
+
+clarify:
+  max_partners_per_tracklet: 2
+
+projection:
+  enabled: true
+  artifact: "results/acceptance/SF1/dev-a-9fb39af/projection.npz"
+  sha256: "c9db736623daec95075592120c399a9a163697aed1b087ffe21419a196079cfa"

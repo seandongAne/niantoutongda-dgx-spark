@@ -467,6 +467,16 @@ def git_revision(project_dir: Path = PROJ) -> str:
         return "unknown"
 
 
+def backend_runtime_manifests(run_dir: Path, backends: list[str]) -> dict[str, Any]:
+    """Collect small, credential-free backend runtime manifests for acceptance."""
+    runtime: dict[str, Any] = {}
+    for backend in backends:
+        path = run_dir / "predictions" / backend / "manifest.json"
+        if path.exists():
+            runtime[backend] = json.loads(path.read_text(encoding="utf-8"))
+    return runtime
+
+
 def export_report(run_dir: Path, report_dir: Path, plan: dict[str, Any], metrics: dict[str, Any]) -> None:
     report_dir.mkdir(parents=True, exist_ok=True)
     plan_bytes = (run_dir / "plan.json").read_bytes()
@@ -508,6 +518,9 @@ def export_report(run_dir: Path, report_dir: Path, plan: dict[str, Any], metrics
         "synthetic_audio_location": "local-data only; excluded from git and Spark deploy",
         "observed_predictions": metrics["observed_predictions"],
         "usage": metrics["usage"],
+        "backend_runtime": backend_runtime_manifests(
+            run_dir, sorted(metrics["backends"])
+        ),
         "models": {
             backend: sorted({
                 record.get("model")

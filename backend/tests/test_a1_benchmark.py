@@ -15,6 +15,7 @@ from backend.tools.a1_benchmark import (
 )
 from scripts.a1_robustness import (
     add_noise_at_snr,
+    backend_runtime_manifests,
     build_parser,
     canonical_wav,
     git_revision,
@@ -221,3 +222,13 @@ def test_formal_cloud_runner_defaults_to_greedy_decoding():
 def test_git_revision_falls_back_to_deploy_stamp(tmp_path):
     (tmp_path / "COMMIT").write_text("abc123\n", encoding="utf-8")
     assert git_revision(tmp_path) == "abc123"
+
+
+def test_backend_runtime_manifests_only_collect_existing_backends(tmp_path):
+    path = tmp_path / "predictions" / "local" / "manifest.json"
+    path.parent.mkdir(parents=True)
+    path.write_text(json.dumps({"model_load_seconds": 12.5}), encoding="utf-8")
+
+    assert backend_runtime_manifests(tmp_path, ["cloud", "local"]) == {
+        "local": {"model_load_seconds": 12.5}
+    }

@@ -1,7 +1,7 @@
-version: "reid-dev-a-v3+sf1-c9db7366"
+version: "reid-dev-a-v3+sf1-c9db7366-m080"
 created_at: "2026-07-16"
 owner: "物品记忆 Agent"
-reason: "dev_a SF1-L1 推理接线验证；基线字段冻结，只新增已验 SHA 的 concat 投影头"
+reason: "dev_a SF1-L1 推理接线验证；concat 投影后四点校准选 m0.80（R@1 过门、误合并 0、完整合并 5）"
 applies_to_dataset: "dev_a"
 frozen: true
 derived_from: "configs/reid_dev_a_v3.yaml"
@@ -17,7 +17,9 @@ weights:
   geometry: 0.05
 
 thresholds:
-  match: 0.84
+  # 投影后的余弦尺度必须独立校准；0.80/0.82/0.84/0.86 四点中仅
+  # 0.80 在守住 R@1、误合并和硬负的同时把完整合并由 3 提到 5。
+  match: 0.80
   new: 0.70
   margin: 0.00
   min_quality: 0.28

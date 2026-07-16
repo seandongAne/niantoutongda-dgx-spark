@@ -51,9 +51,9 @@ class StitchConfig:
 
 @dataclass(frozen=True)
 class FilterConfig:
-    """低证据轨过滤:观测数不足的轨不进跨视频配对,保留为单例实体。"""
+    """低证据轨标记:观测数不足的轨保留匹配与自动链接资格,但不进澄清队列。"""
 
-    min_observations: int = 1  # 1 = 不过滤
+    min_observations: int = 1  # 1 = 不标记
 
 
 @dataclass(frozen=True)

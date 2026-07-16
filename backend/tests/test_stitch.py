@@ -15,7 +15,7 @@ from backend.tools.reid.model import (
     TrackFeature,
     WeightConfig,
 )
-from backend.tools.reid.stitch import split_low_evidence, stitch_features
+from backend.tools.reid.stitch import stitch_features, tag_low_evidence
 
 
 def _config(*, stitch=None, filter_=None, clarify=None) -> ReIDConfig:
@@ -123,18 +123,17 @@ def test_stitch_respects_cannot_link_and_user_same():
     assert forced.report["merges"][0]["mode"] == "user_same"
 
 
-def test_split_low_evidence_filters_but_protects_constrained():
+def test_tag_low_evidence_marks_but_protects_constrained():
     config = _config(filter_=FilterConfig(min_observations=2))
     strong = _feature("v1_t001", "v1", [1.0, 0.0], (0, 100))
     weak = _feature("v1_t002", "v1", [1.0, 0.0], (300,))
     protected = _feature("v1_t003", "v1", [1.0, 0.0], (500,))
-    kept, excluded = split_low_evidence(
+    low, records = tag_low_evidence(
         [strong, weak, protected], config, {}, protected=frozenset({"v1_t003"})
     )
-    assert [f.tracklet_id for f in kept] == ["v1_t001", "v1_t003"]
-    assert len(excluded) == 1
-    assert excluded[0]["tracklet_id"] == "v1_t002"
-    assert excluded[0]["reason"] == "LOW_EVIDENCE_MIN_OBSERVATIONS"
+    assert low == frozenset({"v1_t002"})
+    assert len(records) == 1
+    assert records[0]["reason"] == "LOW_EVIDENCE_CLARIFICATION_SUPPRESSED"
 
 
 def test_cap_is_mutual_and_suppresses_star_fanout():
@@ -234,22 +233,30 @@ def test_run_reid_stitches_fragments_and_expands_original_ids(tmp_path):
     assert [e.model_dump() for e in first.entities] == [e.model_dump() for e in second.entities]
 
 
-def test_run_reid_low_evidence_singleton_keeps_neutral_confidence(tmp_path):
+def test_run_reid_low_evidence_keeps_auto_link_but_cannot_ask(tmp_path):
     ingest = tmp_path / "ingest"
     _write_ingest(
         ingest,
         {
-            "v1": [("v1_t001", "bookshelf", [1.0, 0.0], [0, 100])],
-            "v2": [("v2_t001", "bookshelf", [1.0, 0.0], [0])],  # 单观测低证据轨
+            "v1": [
+                ("v1_t001", "bookshelf", [1.0, 0.0], [0, 100]),
+                ("v1_t002", "bookshelf", [0.8, 0.6], [300]),  # 低证据 + 歧义区分数
+            ],
+            "v2": [("v2_t001", "bookshelf", [1.0, 0.0], [0])],  # 低证据 + 高分
         },
     )
-    config = _config(filter_=FilterConfig(min_observations=2))
+    config = _config(
+        stitch=StitchConfig(enabled=False), filter_=FilterConfig(min_observations=2)
+    )
     run = run_reid(ingest_root=ingest, config=config, vocab=_vocab())
 
-    assert run.metrics["low_evidence_excluded_count"] == 1
-    assert run.metrics["automatic_link_count"] == 0
-    states = {e.tracklet_ids[0]: e for e in run.entities}
-    assert states["v2_t001"].identity_state == IdentityState.NEW_ENTITY
-    assert states["v2_t001"].confidence == 0.5
-    assert run.filtered_tracklets[0]["tracklet_id"] == "v2_t001"
+    # 高分链接不因低证据而丢:v1_t001 <-> v2_t001 照常自动合并
+    assert run.metrics["automatic_link_count"] == 1
+    matched = [e for e in run.entities if e.identity_state == IdentityState.MATCHED]
+    assert len(matched) == 1 and matched[0].tracklet_ids == ["v1_t001", "v2_t001"]
+    # 歧义区的对因低证据端点被摘出人工队列,但实体状态仍然诚实
+    assert run.metrics["low_evidence_tracklet_count"] == 2
+    assert run.metrics["clarifications_suppressed_low_evidence"] >= 1
     assert run.clarifications == []
+    suspected = [e for e in run.entities if e.identity_state == IdentityState.SUSPECTED_DUPLICATE]
+    assert [e.tracklet_ids for e in suspected] == [["v1_t002"]]

@@ -1,0 +1,42 @@
+version: "reid-dev-a-v2"
+created_at: "2026-07-16"
+owner: "物品记忆 Agent"
+reason: "v6 后压澄清:同视频 stitch + 低证据过滤 + 互选澄清封顶;跨视频权重与阈值和 v1 逐字段一致,禁止用降 match 阈值冒充改进"
+applies_to_dataset: "dev_a"
+frozen: false
+
+embedding_dim: 768
+top_k: 5
+
+# 与 reid-dev-a-v1 完全一致 —— 本版所有变化都在匹配前/后处理,不动打分
+weights:
+  instance: 0.80
+  semantic: 0.15
+  attribute: 0.00
+  context: 0.00
+  geometry: 0.05
+
+thresholds:
+  match: 0.86
+  new: 0.70
+  margin: 0.04
+  min_quality: 0.28
+
+# 参数依据 = stitch-probe/probe-v6.json(2026-07-16 真机探针):
+# 同视频同标签对 12743 个,余弦 p99=0.816;0.85 阈值 23 merges/56 共现否决,
+# 0.80 时 108 否决说明高余弦对里多数是共现的不同物体 → 取保守 0.85,
+# 合并组人工抽查量可控;GT 到位后再校准。
+stitch:
+  enabled: true
+  min_cosine: 0.85
+  max_gap_ms: 0
+
+# v6 观测数直方图 {2:238, 3:153, 4:104, 5+:450},无 1 观测轨(ingest min_track_len=2)。
+# 语义 = 低证据轨保留匹配/自动链接资格,仅吊销"提问权"(歧义对不进澄清队列):
+# 07-16 A/B 证明彻底剔除会丢 13 条 0.865+ 的弱类自动链接(security_camera/storage_box 等)
+filter:
+  min_observations: 3
+
+# 互选封顶:每轨对每个对手视频最多 2 个双向 top-N 澄清伙伴
+clarify:
+  max_partners_per_tracklet: 2

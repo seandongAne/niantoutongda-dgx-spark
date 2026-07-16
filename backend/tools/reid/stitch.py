@@ -234,36 +234,38 @@ def stitch_features(
     return StitchResult(features=stitched, members_by_rep=members_by_rep, report=report)
 
 
-def split_low_evidence(
+def tag_low_evidence(
     features: list[TrackFeature],
     config: ReIDConfig,
     members_by_rep: dict[str, list[str]],
     protected: frozenset[str] = frozenset(),
-) -> tuple[list[TrackFeature], list[dict[str, Any]]]:
-    """把观测数不足的轨从跨视频配对里摘出来;它们保留为单例实体,不消失。
+) -> tuple[frozenset[str], list[dict[str, Any]]]:
+    """标记观测数不足的轨:保留全部匹配资格,只吊销"提问权"。
 
-    protected 里的 id(用户约束点名的轨)不过滤——用户证据优先于启发式。
+    低证据轨恰恰集中在弱类小物(v6 找回的 security_camera/storage_box 等
+    2 观测轨),从匹配中剔除会直接吃掉高分自动链接 —— 2026-07-16 A/B 实测
+    丢 13 条 0.865+ 弱类链接。因此它们照常参与打分和自动链接,但其歧义对
+    不进入人工澄清队列。protected(用户约束点名的轨)不打标。
     """
 
     if config.filter.min_observations <= 1:
-        return features, []
-    kept: list[TrackFeature] = []
-    excluded: list[dict[str, Any]] = []
+        return frozenset(), []
+    low: set[str] = set()
+    records: list[dict[str, Any]] = []
     for feature in features:
         if (
-            feature.observation_count >= config.filter.min_observations
-            or feature.tracklet_id in protected
+            feature.observation_count < config.filter.min_observations
+            and feature.tracklet_id not in protected
         ):
-            kept.append(feature)
-        else:
-            excluded.append(
+            low.add(feature.tracklet_id)
+            records.append(
                 {
                     "tracklet_id": feature.tracklet_id,
                     "members": members_by_rep.get(feature.tracklet_id, [feature.tracklet_id]),
                     "video_id": feature.video_id,
                     "observation_count": feature.observation_count,
                     "quality": round(feature.quality, 8),
-                    "reason": "LOW_EVIDENCE_MIN_OBSERVATIONS",
+                    "reason": "LOW_EVIDENCE_CLARIFICATION_SUPPRESSED",
                 }
             )
-    return kept, excluded
+    return frozenset(low), records

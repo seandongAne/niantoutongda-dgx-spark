@@ -19,7 +19,7 @@ from typing import Any
 from backend.schemas.core import ClarificationRequest, IdentityState, ObjectEntity
 from backend.tools.reid.assignment import maximise_assignment
 from backend.tools.reid.model import ReIDConfig, TrackFeature, Vocabulary, load_features
-from backend.tools.reid.stitch import split_low_evidence, stitch_features
+from backend.tools.reid.stitch import stitch_features, tag_low_evidence
 
 
 def _pair_key(a: str, b: str) -> tuple[str, str]:
@@ -436,7 +436,7 @@ def run_reid(
         same=frozenset(remapped_same), different=frozenset(remapped_different)
     )
 
-    matching_features, filtered_records = split_low_evidence(
+    low_evidence_ids, filtered_records = tag_low_evidence(
         stitch_result.features,
         config,
         stitch_result.members_by_rep,
@@ -444,8 +444,9 @@ def run_reid(
             item for pair in constraints.same | constraints.different for item in pair
         ),
     )
+    matching_features = stitch_result.features
     feature_by_id = {feature.tracklet_id: feature for feature in matching_features}
-    stitched_by_id = {feature.tracklet_id: feature for feature in stitch_result.features}
+    stitched_by_id = feature_by_id
 
     accepted, ambiguous, candidates = _pairwise_assignments(matching_features, config, constraints)
     union_find = _UnionFind(sorted(feature_by_id))
@@ -469,9 +470,15 @@ def run_reid(
         else:
             ambiguous.setdefault(key, (("GLOBAL_CLUSTER_CONFLICT",), score.total))
 
-    # 实体状态基于封顶前的完整歧义集(诚实);澄清队列基于互选封顶后的子集。
+    # 实体状态基于完整歧义集(诚实);澄清队列先摘低证据端点的对,再互选封顶。
+    eligible = {
+        pair: value
+        for pair, value in ambiguous.items()
+        if pair[0] not in low_evidence_ids and pair[1] not in low_evidence_ids
+    }
+    suppressed_low_evidence = len(ambiguous) - len(eligible)
     clarify_pairs, suppressed_count = _cap_clarifications(
-        ambiguous,
+        eligible,
         config.clarify.max_partners_per_tracklet,
         {feature.tracklet_id: feature.video_id for feature in matching_features},
     )
@@ -481,10 +488,7 @@ def run_reid(
         clusters[union_find.find(tracklet_id)].append(tracklet_id)
     ambiguous_members = {item for pair in ambiguous for item in pair}
     entities: list[ObjectEntity] = []
-    filtered_rep_ids = {record["tracklet_id"] for record in filtered_records}
-    # 被低证据过滤的轨保留为单例实体,与匹配聚类一并按首成员排序输出。
     member_lists = [sorted(value) for value in clusters.values()]
-    member_lists.extend([rep] for rep in filtered_rep_ids)
     for members in sorted(member_lists, key=lambda value: value[0]):
         member_features = [stitched_by_id[item] for item in members]
         labels = [
@@ -498,10 +502,7 @@ def run_reid(
             for pair, score in accepted_score_by_pair.items()
             if pair[0] in members and pair[1] in members
         ]
-        if members[0] in filtered_rep_ids:
-            state = IdentityState.NEW_ENTITY
-            confidence = 0.5  # 证据不足,不得声称高置信的"确为新物体"
-        elif len(members) > 1:
+        if len(members) > 1:
             state = IdentityState.MATCHED
             confidence = sum(link_scores) / len(link_scores) if link_scores else 1.0
         elif members[0] in ambiguous_members:
@@ -547,7 +548,8 @@ def run_reid(
         "stitch_enabled": config.stitch.enabled,
         "stitch_merge_count": stitch_result.report["merge_count"],
         "tracklet_count_after_stitch": len(stitch_result.features),
-        "low_evidence_excluded_count": len(filtered_records),
+        "low_evidence_tracklet_count": len(filtered_records),
+        "clarifications_suppressed_low_evidence": suppressed_low_evidence,
         "clarifications_suppressed_by_cap": suppressed_count,
         "entity_count": len(entities),
         "matched_entity_count": sum(entity.identity_state == IdentityState.MATCHED for entity in entities),

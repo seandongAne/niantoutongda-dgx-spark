@@ -170,13 +170,50 @@ def _load_vector(ref: str, ingest_root: Path, expected_dim: int) -> tuple[float,
     return tuple(value / norm for value in values)
 
 
+# S5 属性接线:只有这些键参与 _attribute_score 比较(白名单,杜绝流水线元数据
+# 混入打分的 hero_scoring_version 一类事故);命名键(label_en/label_zh)只供展示。
+COMPARABLE_ATTRIBUTE_KEYS = (
+    "color_primary",
+    "color_secondary",
+    "material",
+    "pattern",
+    "shape",
+    "text_marks",
+)
+# 归一化后视为"未知/缺失"的值 —— 不进分子也不进分母(missing/unknown 语义)。
+UNKNOWN_ATTRIBUTE_VALUES = frozenset({"", "unknown", "none", "null"})
+
+
+def load_attribute_enrichment(path: str | Path) -> dict[str, dict[str, str]]:
+    """读 S5 属性抽取产物 JSONL({tracklet_id, attributes:{...}}),只保留可比键。"""
+
+    enrichment: dict[str, dict[str, str]] = {}
+    for line in Path(path).read_text().splitlines():
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        attrs = {
+            key: str(value)
+            for key, value in (row.get("attributes") or {}).items()
+            if key in COMPARABLE_ATTRIBUTE_KEYS
+        }
+        if attrs:
+            enrichment[str(row["tracklet_id"])] = attrs
+    return enrichment
+
+
 def load_features(
     ingest_root: str | Path,
     *,
     vocab: Vocabulary,
     embedding_dim: int,
+    attributes: dict[str, dict[str, str]] | None = None,
 ) -> list[TrackFeature]:
-    """读取每个视频目录的 Tracklet、Observation 与嵌入，顺序确定。"""
+    """读取每个视频目录的 Tracklet、Observation 与嵌入，顺序确定。
+
+    ``attributes``(tracklet_id → 可比属性键值)在读入时合并进
+    ``tracklet.attributes``;stitch 发生在其后,合并组自动继承 hero 成员属性。
+    """
 
     root = Path(ingest_root)
     if not root.is_dir():
@@ -191,6 +228,8 @@ def load_features(
         for tracklet in _read_jsonl(tracklet_path, Tracklet):
             if not tracklet.embedding_ref:
                 continue
+            if attributes and tracklet.tracklet_id in attributes:
+                tracklet.attributes.update(attributes[tracklet.tracklet_id])
             vector = _load_vector(tracklet.embedding_ref, root, embedding_dim)
             raw_label = str(tracklet.attributes.get("label", ""))
             vocab_match = vocab.match(raw_label)

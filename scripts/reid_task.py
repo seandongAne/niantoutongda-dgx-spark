@@ -59,6 +59,7 @@ def main() -> int:
     parser.add_argument("--vocab", required=True)
     parser.add_argument("--config", required=True)
     parser.add_argument("--constraints")
+    parser.add_argument("--attributes", help="S5 属性抽取产物 JSONL(可选)")
     parser.add_argument("--out", required=True)
     parser.add_argument("--repeat", type=int, default=3)
     args = parser.parse_args()
@@ -67,14 +68,16 @@ def main() -> int:
 
     from backend.schemas.core import AuditEvent
     from backend.tools.reid.matcher import IdentityConstraints, run_reid
-    from backend.tools.reid.model import ReIDConfig, Vocabulary
+    from backend.tools.reid.model import ReIDConfig, Vocabulary, load_attribute_enrichment
 
     config_path = Path(args.config)
     vocab_path = Path(args.vocab)
     constraints_path = Path(args.constraints) if args.constraints else None
+    attributes_path = Path(args.attributes) if args.attributes else None
     config = ReIDConfig.from_yaml(config_path)
     vocab = Vocabulary.from_json(vocab_path)
     constraints = IdentityConstraints.from_json(constraints_path)
+    attributes = load_attribute_enrichment(attributes_path) if attributes_path else None
 
     runs = [
         run_reid(
@@ -82,6 +85,7 @@ def main() -> int:
             config=config,
             vocab=vocab,
             constraints=constraints,
+            attributes=attributes,
         )
         for _ in range(args.repeat)
     ]
@@ -109,6 +113,10 @@ def main() -> int:
         "constraints": {
             "path": str(constraints_path) if constraints_path else None,
             "sha256": _sha256(constraints_path),
+        },
+        "attributes": {
+            "path": str(attributes_path) if attributes_path else None,
+            "sha256": _sha256(attributes_path),
         },
         "ground_truth": None,
         "ground_truth_status": "MISSING_MACHINE_READABLE_ANNOTATIONS",

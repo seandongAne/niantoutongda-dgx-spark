@@ -76,8 +76,9 @@ def test_attribute_score_ignores_pipeline_metadata_keys():
             }
         )
     score = score_pair(a, b, config, IdentityConstraints())
-    # 仅有元数据键时属性证据缺失,必须回到中性 0.5,不得因常量版本串恒等于 1.0。
-    assert score.attribute == 0.5
+    # 仅有元数据键时属性证据缺失:白名单语义下不产生属性分(None,权重让渡),
+    # 更不得因常量版本串恒等于 1.0。
+    assert score.attribute is None
 
 
 def test_hard_gates_same_video_category_and_user_negative():

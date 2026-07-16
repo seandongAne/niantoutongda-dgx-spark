@@ -18,7 +18,14 @@ from typing import Any
 
 from backend.schemas.core import ClarificationRequest, IdentityState, ObjectEntity
 from backend.tools.reid.assignment import maximise_assignment
-from backend.tools.reid.model import ReIDConfig, TrackFeature, Vocabulary, load_features
+from backend.tools.reid.model import (
+    COMPARABLE_ATTRIBUTE_KEYS,
+    UNKNOWN_ATTRIBUTE_VALUES,
+    ReIDConfig,
+    TrackFeature,
+    Vocabulary,
+    load_features,
+)
 from backend.tools.reid.stitch import stitch_features, tag_low_evidence
 
 
@@ -50,7 +57,7 @@ class PairScore:
     b: str
     instance: float
     semantic: float
-    attribute: float
+    attribute: float | None  # None = 该对没有可比属性键(权重已让渡)
     context: float
     geometry: float
     total: float
@@ -68,7 +75,7 @@ class PairScore:
             "components": {
                 "instance": round(self.instance, 8),
                 "semantic": round(self.semantic, 8),
-                "attribute": round(self.attribute, 8),
+                "attribute": round(self.attribute, 8) if self.attribute is not None else None,
                 "context": round(self.context, 8),
                 "geometry": round(self.geometry, 8),
             },
@@ -118,12 +125,23 @@ def _cosine(a: tuple[float, ...], b: tuple[float, ...]) -> float:
     return max(0.0, min(1.0, sum(x * y for x, y in zip(a, b))))
 
 
-def _attribute_score(a: TrackFeature, b: TrackFeature) -> float:
-    ignored = {"label", "hero_ref", "hero_score", "hero_scoring_version"}
-    shared = sorted((set(a.tracklet.attributes) & set(b.tracklet.attributes)) - ignored)
-    if not shared:
-        return 0.5
-    return sum(a.tracklet.attributes[key] == b.tracklet.attributes[key] for key in shared) / len(shared)
+def _attribute_score(a: TrackFeature, b: TrackFeature) -> float | None:
+    """S5 属性相似度,白名单键逐一比较。
+
+    missing/unknown 语义:任一侧未知的键不进分子也不进分母;零可比键返回
+    None,由 score_pair 把 attribute 权重让渡给其余分量(而不是给 0.5 偏置)。
+    """
+    hits = comparable = 0
+    for key in COMPARABLE_ATTRIBUTE_KEYS:
+        value_a = str(a.tracklet.attributes.get(key, "")).strip().lower()
+        value_b = str(b.tracklet.attributes.get(key, "")).strip().lower()
+        if value_a in UNKNOWN_ATTRIBUTE_VALUES or value_b in UNKNOWN_ATTRIBUTE_VALUES:
+            continue
+        comparable += 1
+        hits += value_a == value_b
+    if not comparable:
+        return None
+    return hits / comparable
 
 
 def _geometry_score(a: TrackFeature, b: TrackFeature) -> float:
@@ -161,13 +179,17 @@ def score_pair(
     context = 0.5  # v5 没有上下文字段，保持中性且默认权重为 0。
     geometry = _geometry_score(a, b)
     weights = config.weights
+    # 零可比属性键 → attribute 权重让渡:分子不含该项,分母同步扣除,
+    # 其余分量按原比例放大;等价于"该对不测属性",不引入 0.5 中性偏置。
+    effective_attribute_weight = weights.attribute if attribute is not None else 0.0
+    denominator = weights.total - weights.attribute + effective_attribute_weight
     total = (
         weights.instance * instance
         + weights.semantic * semantic
-        + weights.attribute * attribute
+        + effective_attribute_weight * (attribute if attribute is not None else 0.0)
         + weights.context * context
         + weights.geometry * geometry
-    ) / weights.total
+    ) / denominator if denominator > 0 else 0.0
     return PairScore(
         a=a.tracklet_id,
         b=b.tracklet_id,
@@ -396,9 +418,12 @@ def run_reid(
     config: ReIDConfig,
     vocab: Vocabulary,
     constraints: IdentityConstraints | None = None,
+    attributes: dict[str, dict[str, str]] | None = None,
 ) -> ReIDRun:
     constraints = constraints or IdentityConstraints()
-    original_features = load_features(ingest_root, vocab=vocab, embedding_dim=config.embedding_dim)
+    original_features = load_features(
+        ingest_root, vocab=vocab, embedding_dim=config.embedding_dim, attributes=attributes
+    )
     if not original_features:
         raise ValueError("no embedded tracklets found")
     original_ids = {feature.tracklet_id for feature in original_features}
@@ -544,6 +569,14 @@ def run_reid(
         "tracklet_count": len(original_features),
         "known_category_tracklets": sum(
             feature.category_id is not None for feature in original_features
+        ),
+        "attribute_enriched_tracklet_count": sum(
+            any(
+                str(feature.tracklet.attributes.get(key, "")).strip().lower()
+                not in UNKNOWN_ATTRIBUTE_VALUES
+                for key in COMPARABLE_ATTRIBUTE_KEYS
+            )
+            for feature in original_features
         ),
         "stitch_enabled": config.stitch.enabled,
         "stitch_merge_count": stitch_result.report["merge_count"],

@@ -1,0 +1,205 @@
+{
+  "dataset_id": "dev_a_hardval_v1",
+  "frames": [
+    {
+      "frame_id": "000030",
+      "instances": [],
+      "sequence_id": "v1"
+    },
+    {
+      "frame_id": "000450",
+      "instances": [],
+      "sequence_id": "v1"
+    },
+    {
+      "frame_id": "000675",
+      "instances": [],
+      "sequence_id": "v1"
+    },
+    {
+      "frame_id": "000900",
+      "instances": [],
+      "sequence_id": "v1"
+    },
+    {
+      "frame_id": "001350",
+      "instances": [],
+      "sequence_id": "v1"
+    },
+    {
+      "frame_id": "001800",
+      "instances": [],
+      "sequence_id": "v1"
+    },
+    {
+      "frame_id": "002010",
+      "instances": [],
+      "sequence_id": "v1"
+    },
+    {
+      "frame_id": "002070",
+      "instances": [],
+      "sequence_id": "v1"
+    },
+    {
+      "frame_id": "002250",
+      "instances": [],
+      "sequence_id": "v1"
+    },
+    {
+      "frame_id": "002700",
+      "instances": [],
+      "sequence_id": "v1"
+    },
+    {
+      "frame_id": "000345",
+      "instances": [],
+      "sequence_id": "v2"
+    },
+    {
+      "frame_id": "000660",
+      "instances": [],
+      "sequence_id": "v2"
+    },
+    {
+      "frame_id": "000990",
+      "instances": [],
+      "sequence_id": "v2"
+    },
+    {
+      "frame_id": "001245",
+      "instances": [],
+      "sequence_id": "v2"
+    },
+    {
+      "frame_id": "001320",
+      "instances": [],
+      "sequence_id": "v2"
+    },
+    {
+      "frame_id": "001545",
+      "instances": [],
+      "sequence_id": "v2"
+    },
+    {
+      "frame_id": "001650",
+      "instances": [],
+      "sequence_id": "v2"
+    },
+    {
+      "frame_id": "001725",
+      "instances": [],
+      "sequence_id": "v2"
+    },
+    {
+      "frame_id": "001980",
+      "instances": [],
+      "sequence_id": "v2"
+    },
+    {
+      "frame_id": "002040",
+      "instances": [],
+      "sequence_id": "v2"
+    },
+    {
+      "frame_id": "000315",
+      "instances": [],
+      "sequence_id": "v3"
+    },
+    {
+      "frame_id": "000465",
+      "instances": [],
+      "sequence_id": "v3"
+    },
+    {
+      "frame_id": "000615",
+      "instances": [],
+      "sequence_id": "v3"
+    },
+    {
+      "frame_id": "000945",
+      "instances": [],
+      "sequence_id": "v3"
+    },
+    {
+      "frame_id": "001035",
+      "instances": [],
+      "sequence_id": "v3"
+    },
+    {
+      "frame_id": "001260",
+      "instances": [],
+      "sequence_id": "v3"
+    },
+    {
+      "frame_id": "001335",
+      "instances": [],
+      "sequence_id": "v3"
+    },
+    {
+      "frame_id": "001575",
+      "instances": [],
+      "sequence_id": "v3"
+    },
+    {
+      "frame_id": "001830",
+      "instances": [],
+      "sequence_id": "v3"
+    },
+    {
+      "frame_id": "001890",
+      "instances": [],
+      "sequence_id": "v3"
+    },
+    {
+      "frame_id": "000405",
+      "instances": [],
+      "sequence_id": "v4"
+    },
+    {
+      "frame_id": "000510",
+      "instances": [],
+      "sequence_id": "v4"
+    },
+    {
+      "frame_id": "000645",
+      "instances": [],
+      "sequence_id": "v4"
+    },
+    {
+      "frame_id": "000705",
+      "instances": [],
+      "sequence_id": "v4"
+    },
+    {
+      "frame_id": "000810",
+      "instances": [],
+      "sequence_id": "v4"
+    },
+    {
+      "frame_id": "001215",
+      "instances": [],
+      "sequence_id": "v4"
+    },
+    {
+      "frame_id": "001425",
+      "instances": [],
+      "sequence_id": "v4"
+    },
+    {
+      "frame_id": "001635",
+      "instances": [],
+      "sequence_id": "v4"
+    },
+    {
+      "frame_id": "002025",
+      "instances": [],
+      "sequence_id": "v4"
+    },
+    {
+      "frame_id": "002430",
+      "instances": [],
+      "sequence_id": "v4"
+    }
+  ]
+}

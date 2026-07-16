@@ -2,9 +2,9 @@
 
 > 赛程日：D4
 >
-> 当日主责：S3 跨视频匹配与 S2.5 检测推理修复
+> 当日主责：S3 跨视频匹配、四 Agent 审计链与 SF1-L1 轻量投影头
 >
-> 状态：进行中（S2.5/S3 可复跑基线已闭环；A1 正式 v3 凭据确认门待办）
+> 状态：进行中（四 Agent trace/单命令回放与 SF1-L1 dev_a 诊断闭环；A1 正式批次并行运行；正式素材待到）
 
 ## 今日目标
 
@@ -13,6 +13,8 @@
 - 将 `vlm_attributes` 主路切换为 Nemotron VL NVFP4-QAD/vLLM，保留 BF16 fallback；裁撤独立 9B `task_copy` 槽位。
 - 把 A1 评价目标从额度消耗改为覆盖完整性与统计稳定性，建立无需人工逐条标注的
   合成旁白云/本地同题 A/B；赛方 SSH 限流公告后停止音频传输，改为 Spark 原地工厂。
+- 用现有 fixture 打通四 Agent 的完整可追溯消息链、严格校验与单命令回放，使正式素材到达后只替换输入，不重写审计协议。
+- 在冻结 DINOv2 表征上训练 SF1-L1 轻量 metric projection head，以现有 `dev_a` 完成无泄漏切分、GB10 多种子训练、ReID 接线和失败门校准。
 
 ## 关键证据或截图
 
@@ -91,6 +93,32 @@
   - 启动后约 1 分钟已在 Spark 原地产出前 5 个 case 的 source 与
     clean/noise20/noise10/speed090/codec32 音频，证明 worker 已实际推进而非空启动；
     当前仍为 `phase=cloud`，最终覆盖、稳定性和删除日期均尚未形成，不提前写成完成。
+  - 四 Agent trace 已把 EXEC7、GROUP1、MEM5、SPACE4 和 USER 串成统一消息协议；fixture hero
+    运行生成 20 条事件，覆盖 4 次 handoff、1 组澄清请求/决策、3 条验证链和 2 次裁决。
+    `scripts/replay_trace.py` 会校验 payload hash、因果顺序、correlation 闭合、主路由、
+    澄清、验证和 adjudication；严格模式单命令回放输出 `TRACE REPLAY PASS`。实现 commit
+    `08bbd2f`，回放入口为 `.venv/bin/python scripts/replay_trace.py
+    results/hero/dev-fixture/audit/events.jsonl --strict`。
+  - SF1-L1 先后保留两次真实失败：纯 128d 头使 R@5 `0.976190→0.880952`，暴露旧 gate
+    只看 R@1 的漏洞；残差头虽守住 R@1/R@5，却使主种子 top-1 margin
+    `0.194555→0.075542`，被加严 gate 正确拒绝。对应 commit `797c16a`、`7ef07c5`，
+    失败证据未覆盖删除。
+  - 最终 dev 诊断头采用原始 DINO 与 `0.4×` learned branch 的 concat skip fusion：
+    229,760 参数、有效 896d、119 train / 42 validation / 17 identities，tracklet overlap=0。
+    GB10 / PyTorch 2.13.0+cu130 三种子 R@1 为 `0.880952/0.880952/0.857143`，均值
+    `0.873016`、std `0.011224`；第一颗预注册种子守住 R@1/R@5，并把 margin 提至
+    `0.232772`。实现/接线/校准/证据 commit `9fb39af`、`4028737`、`1fea5ab`、`48ab93e`；权重 SHA-256
+    `c9db736623daec95075592120c399a9a163697aed1b087ffe21419a196079cfa`。
+  - 完整 ReID 用冻结四点网格 `match=0.80/0.82/0.84/0.86, margin=0` 校准，选择 0.80；
+    三重复 hash 均为 `01317bc742…`。相对原 v3，17-anchor R@1 `0.8068→0.8509`、
+    完整合并 `4→5`、高置信误合并 `0→0`、硬负 `4/4→4/4`，自动链接
+    `156→257`、澄清 `525→505`。但总门仍仅 `5/17 < 15/17`，所以只裁决为
+    `ACCEPT_FOR_DEV_DIAGNOSTIC`，不是正式 S3 PASS。
+  - SF1 可复核索引：`results/acceptance/SF1/README.md`；最终投影头与训练指标：
+    `results/acceptance/SF1/dev-a-9fb39af/`；三次完整接线证据：
+    `results/acceptance/SF1/dev-a-9fb39af/reid-final-m080/`。
+  - 最终本地回归为 `148 passed in 4.61s`；严格 trace 回放再次通过，投影头按冻结
+    SHA-256 加载并确认有效输出维度为 896。
 
 ## 失败与教训
 
@@ -112,9 +140,21 @@
   未安装 TorchCodec。两次都在断点边界安全失败，分别改为确定性 PCM16 线性重采样、
   已由真机探针验证的 SoundFile 解码；codec32 的静态编码器由节点从国内镜像自取。
   依赖存在不能靠开发机经验猜，正式大批次前必须逐条件真机冒烟。
+- 审计链“有日志”不等于“可审计”：只有统一 message id、payload hash、causation、
+  correlation、验证结果与用户裁决都能闭合，回放器才能把缺路由、乱序和篡改判成失败。
+- SF1 第一版旧 gate 会让 R@5 明显退化的头误通过；训练门必须同时约束 R@1、R@5、
+  margin 和有限值。第二版进一步证明“残差结构”本身不保证检索几何不退化，失败 checkpoint
+  应留证据而不是用新运行覆盖。
+- 投影改变余弦分布后不能沿用旧 `match=0.84` 并直接比较完整合并数；必须先冻结小网格、
+  守住 R@1/误合并/硬负，再选择完整合并最优点。即使 dev_a 达到 R@1 门，`5/17`
+  仍说明碎轨和素材覆盖是主瓶颈，轻量头不能替代正式素材与完整真值。
 
 ## 明日计划
 
+- 正式素材到达后，将 fixture 输入替换为赛方素材并沿用同一 trace schema，跑完整 hero
+  pipeline 后执行 `scripts/replay_trace.py ... --strict`；任何缺失 handoff、验证或裁决都阻断演示包。
+- 按冻结 `configs/sf1_hero_s1.yaml` 用正式 anchor 标注重训 SF1-L1，禁止沿用 dev_a 权重；
+  用 `scripts/sf1_wire_reid.py` 生成带 SHA 锁的 ReID 配置，再复跑同一四点阈值网格与正式 G2 判卷。
 - P0：完成 30–50 帧 task-A hardval 人工框与 17-anchor→tracklet 映射，补齐 v5/v6 三指标和正式四组硬负判卷；在此之前不调整验收结论。
 - P1：在 S3 前增加低质量/重复候选门控，并先做同视频短轨缝合；目标是降低 921 条澄清，而不是简单放宽自动合并阈值。
 - P1：把已产出的 hero crop 接入 NVFP4 属性抽取，形成颜色/材质/文字标记等多证据原型，再复验蓝色与玫红水壶等同类不同实例。

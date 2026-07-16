@@ -113,11 +113,13 @@ function load(i) {
   document.getElementById("frameTitle").textContent = f.video_id + " / kf_" + f.frame_id + ".jpg";
   document.getElementById("frameDone").checked = !!store.done[frameKey(f)];
   img = new Image();
-  img.onload = draw;
+  img.onload = () => { drawCanvas(); renderBoxList(); };
   img.src = f.image;
   renderSide();
 }
-function draw() {
+// 画布重绘与列表重建彻底分离:重建 DOM 会销毁刚点开的原生下拉,
+// 因此选中/改字段只走 drawCanvas + refreshRowClasses,绝不重建列表。
+function drawCanvas() {
   const cv = document.getElementById("cv"), stage = document.getElementById("stage");
   scale = Math.min(1, (stage.clientWidth - 4) / img.naturalWidth);
   cv.width = img.naturalWidth * scale; cv.height = img.naturalHeight * scale;
@@ -130,12 +132,16 @@ function draw() {
     g.font = "12px sans-serif"; g.fillStyle = g.strokeStyle;
     g.fillText(b.instance_id + ":" + b.canonical_id, b.bbox[0]*scale + 2, b.bbox[1]*scale + 12);
   });
-  renderBoxList();
   if (drag) {
     g.strokeStyle = "#ff5252"; g.lineWidth = 1.5;
     g.strokeRect(drag.x0, drag.y0, drag.x1 - drag.x0, drag.y1 - drag.y0);
   }
 }
+function refreshRowClasses() {
+  [...document.getElementById("boxList").children].forEach(
+    (row, i) => row.classList.toggle("selected", i === sel));
+}
+function selectRow(i) { sel = i; refreshRowClasses(); drawCanvas(); }
 function renderBoxList() {
   const wrap = document.getElementById("boxList");
   wrap.innerHTML = "";
@@ -152,11 +158,11 @@ function renderBoxList() {
     const [inst, canon, vis, del] =
       [div.querySelector("input[type=text]"), div.querySelector("select"),
        div.querySelector("input[type=checkbox]"), div.querySelector("button")];
-    div.onclick = () => { sel = i; draw(); };
-    inst.onchange = () => { b.instance_id = inst.value.trim(); setBoxes(curBoxes()); draw(); };
-    canon.onchange = () => { b.canonical_id = canon.value; setBoxes(curBoxes()); draw(); };
-    vis.onchange = () => { b.visible = vis.checked; setBoxes(curBoxes()); draw(); };
-    del.onclick = e => { e.stopPropagation(); const bs = curBoxes(); bs.splice(i,1); setBoxes(bs); sel=-1; draw(); };
+    div.onclick = () => selectRow(i);
+    inst.onchange = () => { b.instance_id = inst.value.trim(); setBoxes(curBoxes()); drawCanvas(); };
+    canon.onchange = () => { b.canonical_id = canon.value; setBoxes(curBoxes()); drawCanvas(); };
+    vis.onchange = () => { b.visible = vis.checked; setBoxes(curBoxes()); drawCanvas(); };
+    del.onclick = e => { e.stopPropagation(); const bs = curBoxes(); bs.splice(i,1); setBoxes(bs); sel=-1; renderBoxList(); drawCanvas(); };
     wrap.appendChild(div);
   });
 }
@@ -168,7 +174,7 @@ cv.onmousedown = e => {
 cv.onmousemove = e => {
   if (!drag) return;
   const r = cv.getBoundingClientRect();
-  drag.x1 = e.clientX - r.left; drag.y1 = e.clientY - r.top; draw();
+  drag.x1 = e.clientX - r.left; drag.y1 = e.clientY - r.top; drawCanvas();
 };
 cv.onmouseup = e => {
   if (!drag) return;
@@ -180,12 +186,15 @@ cv.onmouseup = e => {
     bs.push({ instance_id: "", canonical_id: CANONICALS[0], bbox: [x0,y0,x1,y1], visible: true });
     sel = bs.length - 1;
     setBoxes(bs);
+    renderBoxList();
   }
-  draw();
+  drawCanvas();
 };
 document.onkeydown = e => {
-  if ((e.key === "Delete" || e.key === "Backspace") && sel >= 0 && e.target.tagName !== "INPUT") {
-    const bs = curBoxes(); bs.splice(sel, 1); setBoxes(bs); sel = -1; draw(); e.preventDefault();
+  if ((e.key === "Delete" || e.key === "Backspace") && sel >= 0
+      && e.target.tagName !== "INPUT" && e.target.tagName !== "SELECT") {
+    const bs = curBoxes(); bs.splice(sel, 1); setBoxes(bs); sel = -1;
+    renderBoxList(); drawCanvas(); e.preventDefault();
   }
 };
 document.getElementById("frameDone").onchange = e => {
@@ -232,7 +241,7 @@ const dl = document.createElement("datalist");
 dl.id = "anchorList";
 ANCHORS.forEach(a => { const o = document.createElement("option"); o.value = a; dl.appendChild(o); });
 document.body.appendChild(dl);
-window.onresize = draw;
+window.onresize = drawCanvas;
 renderSide(); load(0);
 </script>
 </body>

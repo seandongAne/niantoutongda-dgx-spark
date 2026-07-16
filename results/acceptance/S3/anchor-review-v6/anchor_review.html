@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>17 锚点对账 — dev-a-vocab5</title>
+<style>
+  body { margin:0; font:14px/1.5 -apple-system,"PingFang SC",sans-serif; display:flex; height:100vh; }
+  #side { width:250px; overflow-y:auto; border-right:1px solid #ccc; padding:10px; box-sizing:border-box; }
+  #side button.anchor { display:block; width:100%; text-align:left; margin:3px 0; padding:6px 8px;
+    border:1px solid #ddd; background:#fafafa; cursor:pointer; border-radius:6px; font-size:13px; }
+  #side button.anchor.active { background:#cde4ff; border-color:#5b9bd5; }
+  #side button.anchor.done::after { content:" ✓"; color:#2a8f2a; font-weight:bold; }
+  #side .hn { color:#c0392b; font-size:11px; }
+  #main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+  #bar { padding:8px 12px; border-bottom:1px solid #ccc; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  #warn { padding:6px 12px; background:#fdecea; color:#c0392b; display:none; font-weight:bold; }
+  #content { flex:1; overflow-y:auto; padding:12px; }
+  h3.video { margin:14px 0 6px; border-bottom:1px solid #eee; padding-bottom:2px; }
+  .grid { display:flex; flex-wrap:wrap; gap:8px; }
+  .card { width:150px; border:3px solid #ddd; border-radius:8px; cursor:pointer; position:relative;
+    background:#fff; user-select:none; }
+  .card img { width:100%; height:104px; object-fit:contain; background:#f2f2f2; display:block;
+    border-radius:5px 5px 0 0; }
+  .card .cap { font-size:11px; padding:2px 4px; text-align:center; color:#333; }
+  .card.sel { border-color:#2a8f2a; background:#eefaee; }
+  .card.sel::after { content:"✓"; position:absolute; top:2px; right:6px; color:#2a8f2a;
+    font-size:20px; font-weight:bold; }
+  .card .badge { position:absolute; top:2px; left:4px; font-size:10px; padding:1px 5px;
+    border-radius:8px; color:#fff; display:none; }
+  .card .badge.warn { background:#e67e22; display:block; }
+  .card .badge.danger { background:#c0392b; display:block; }
+  .meta { display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-bottom:6px; }
+  .meta input[type=text] { width:340px; }
+  button.small { font-size:12px; padding:3px 10px; }
+  #io { display:none; position:fixed; inset:10% 20%; background:#fff; border:2px solid #888;
+    padding:12px; z-index:9; flex-direction:column; gap:8px; }
+  #io textarea { flex:1; font:11px monospace; }
+  .hint { color:#777; font-size:12px; }
+</style>
+</head>
+<body>
+<div id="side">
+  <h3>锚点 (<span id="doneCount">0</span>/17)</h3>
+  <div class="hint">点图勾选"这是该锚点物品"。同视频多条碎轨都要勾。认不准的不勾。</div>
+  <div id="anchorNav"></div>
+</div>
+<div id="main">
+  <div id="bar">
+    <b id="title"></b>
+    <label><input type="checkbox" id="anchorDone"> 本锚点完成</label>
+    <button id="export">导出 confirmed JSON</button>
+    <button id="importBtn">导入/备份</button>
+    <span class="hint" id="saveState"></span>
+  </div>
+  <div id="warn"></div>
+  <div id="content"></div>
+</div>
+<div id="io">
+  <b>粘贴既有 JSON 后点导入(支持导出的 confirmed 文档或内部备份);或复制当前内容备份</b>
+  <textarea id="ioText"></textarea>
+  <div><button id="ioImport">导入</button> <button id="ioClose">关闭</button></div>
+</div>
+<script>
+const REVIEW = {"dataset_version": "dev-a-vocab5", "entities": [{"anchor_id": "anchor_01", "candidate_tracklets_by_video": {"v1": ["v1_t002", "v1_t015", "v1_t018", "v1_t043", "v1_t056", "v1_t059", "v1_t068", "v1_t102", "v1_t105", "v1_t106", "v1_t110", "v1_t112", "v1_t115", "v1_t125", "v1_t155", "v1_t161", "v1_t169", "v1_t199", "v1_t201", "v1_t211", "v1_t228", "v1_t241", "v1_t249", "v1_t252", "v1_t254", "v1_t271", "v1_t276", "v1_t283", "v1_t285", "v1_t287", "v1_t289", "v1_t321", "v1_t327", "v1_t330", "v1_t332", "v1_t341", "v1_t358", "v1_t368", "v1_t372", "v1_t373", "v1_t383", "v1_t385", "v1_t397", "v1_t399", "v1_t400", "v1_t411", "v1_t425", "v1_t429", "v1_t444", "v1_t455", "v1_t479", "v1_t495", "v1_t501", "v1_t505", "v1_t526", "v1_t528"], "v2": ["v2_t004", "v2_t007", "v2_t009", "v2_t010", "v2_t011", "v2_t028", "v2_t052", "v2_t059", "v2_t069", "v2_t070", "v2_t074", "v2_t085", "v2_t086", "v2_t091", "v2_t109", "v2_t121", "v2_t130", "v2_t136", "v2_t152", "v2_t165", "v2_t173", "v2_t175", "v2_t194", "v2_t198", "v2_t202", "v2_t235", "v2_t239", "v2_t257", "v2_t265", "v2_t283", "v2_t285", "v2_t289", "v2_t290", "v2_t308", "v2_t330", "v2_t352", "v2_t356", "v2_t357", "v2_t373", "v2_t377", "v2_t383", "v2_t410", "v2_t413", "v2_t414", "v2_t430", "v2_t438", "v2_t463", "v2_t473", "v2_t484", "v2_t497", "v2_t500", "v2_t501", "v2_t518", "v2_t531", "v2_t540"], "v3": ["v3_t014", "v3_t024", "v3_t029", "v3_t047", "v3_t050", "v3_t056", "v3_t081", "v3_t090", "v3_t092", "v3_t098", "v3_t107", "v3_t115", "v3_t116", "v3_t135", "v3_t145", "v3_t156", "v3_t164", "v3_t193", "v3_t201", "v3_t246", "v3_t264", "v3_t272", "v3_t329", "v3_t333", "v3_t334", "v3_t335", "v3_t338", "v3_t350", "v3_t364", "v3_t384", "v3_t392"], "v4": ["v4_t001", "v4_t008", "v4_t044", "v4_t046", "v4_t056", "v4_t064", "v4_t066", "v4_t067", "v4_t076", "v4_t101", "v4_t116", "v4_t125", "v4_t127", "v4_t146", "v4_t158", "v4_t185", "v4_t197", "v4_t203", "v4_t204", "v4_t206", "v4_t214", "v4_t217", "v4_t222", "v4_t225", "v4_t233", "v4_t237", "v4_t262", "v4_t274", "v4_t282", "v4_t287", "v4_t324", "v4_t326", "v4_t341", "v4_t363", "v4_t371", "v4_t386"]}, "category_id": "cabinet", "confirmed_tracklet_ids_by_video": {}, "display_label_zh": "玩具柜", "visible_in": []}, {"anchor_id": "anchor_02", "candidate_tracklets_by_video": {"v1": ["v1_t065", "v1_t129", "v1_t132", "v1_t408", "v1_t427", "v1_t428", "v1_t440", "v1_t446", "v1_t448", "v1_t450", "v1_t500"], "v2": ["v2_t005", "v2_t014", "v2_t030", "v2_t046", "v2_t095", "v2_t096", "v2_t116", "v2_t128", "v2_t417", "v2_t418", "v2_t472"], "v3": ["v3_t025", "v3_t039", "v3_t060", "v3_t332", "v3_t344", "v3_t345"], "v4": ["v4_t002", "v4_t053", "v4_t065", "v4_t258", "v4_t315", "v4_t325", "v4_t354", "v4_t357", "v4_t365", "v4_t373"]}, "category_id": "suitcase", "confirmed_tracklet_ids_by_video": {}, "display_label_zh": "玩具行李箱", "visible_in": []}, {"anchor_id": "anchor_03", "candidate_tracklets_by_video": {"v1": ["v1_t017", "v1_t058", "v1_t060", "v1_t066", "v1_t082", "v1_t099", "v1_t116", "v1_t122", "v1_t130", "v1_t149", "v1_t160", "v1_t176", "v1_t213", "v1_t260", "v1_t268", "v1_t294", "v1_t333", "v1_t335", "v1_t374", "v1_t386", "v1_t415", "v1_t443", "v1_t458", "v1_t493", "v1_t506"], "v2": ["v2_t008", "v2_t034", "v2_t056", "v2_t089", "v2_t176", "v2_t217", "v2_t270", "v2_t332", "v2_t338", "v2_t363", "v2_t367", "v2_t404", "v2_t470", "v2_t479", "v2_t481", "v2_t499", "v2_t539"], "v3": ["v3_t018", "v3_t030", "v3_t035", "v3_t045", "v3_t075", "v3_t077", "v3_t095", "v3_t101", "v3_t124", "v3_t169", "v3_t222", "v3_t232", "v3_t285", "v3_t313", "v3_t325", "v3_t366", "v3_t382", "v3_t402"], "v4": ["v4_t003", "v4_t005", "v4_t019", "v4_t038", "v4_t100", "v4_t104", "v4_t122", "v4_t124", "v4_t164", "v4_t190", "v4_t208", "v4_t223", "v4_t239", "v4_t248", "v4_t251", "v4_t300", "v4_t317", "v4_t366", "v4_t377", "v4_t404"]}, "category_id": "refrigerator", "confirmed_tracklet_ids_by_video": {}, "display_label_zh": "玩具冰箱", "visible_in": []}, {"anchor_id": "anchor_04", "candidate_tracklets_by_video": {"v1": ["v1_t001", "v1_t153", "v1_t246", "v1_t258", "v1_t269", "v1_t273", "v1_t298", "v1_t370", "v1_t389", "v1_t434", "v1_t509", "v1_t511"], "v2": ["v2_t072", "v2_t077", "v2_t083", "v2_t127", "v2_t215", "v2_t253", "v2_t274", "v2_t279", "v2_t350", "v2_t431", "v2_t502"], "v3": ["v3_t083", "v3_t100", "v3_t123", "v3_t160", "v3_t172", "v3_t212", "v3_t265", "v3_t289"], "v4": ["v4_t060", "v4_t169", "v4_t171", "v4_t189", "v4_t194", "v4_t293", "v4_t320"]}, "category_id": "bookshelf", "confirmed_tracklet_ids_by_video": {}, "display_label_zh": "黑色书架", "visible_in": []}, {"anchor_id": "anchor_05", "candidate_tracklets_by_video": {"v1": ["v1_t126", "v1_t170", "v1_t197", "v1_t207", "v1_t209", "v1_t221", "v1_t226", "v1_t234", "v1_t257", "v1_t259", "v1_t261", "v1_t262", "v1_t301", "v1_t308"], "v2": ["v2_t208", "v2_t214", "v2_t251", "v2_t252", "v2_t284", "v2_t294", "v2_t301", "v2_t302", "v2_t305", "v2_t307", "v2_t327", "v2_t328", "v2_t340", "v2_t345", "v2_t346", "v2_t370"], "v3": ["v3_t074", "v3_t109", "v3_t162", "v3_t180", "v3_t200", "v3_t207", "v3_t208", "v3_t213", "v3_t214", "v3_t221", "v3_t245", "v3_t257", "v3_t261", "v3_t268", "v3_t271", "v3_t291", "v3_t293", "v3_t294", "v3_t296", "v3_t309", "v3_t311", "v3_t312", "v3_t370", "v3_t373"], "v4": ["v4_t073", "v4_t088", "v4_t094", "v4_t097", "v4_t107", "v4_t108", "v4_t112", "v4_t120", "v4_t123", "v4_t141", "v4_t145", "v4_t166", "v4_t167", "v4_t188", "v4_t201", "v4_t240", "v4_t243", "v4_t303"]}, "category_id": "water_bottle", "confirmed_tracklet_ids_by_video": {}, "display_label_zh": "蓝色水壶", "visible_in": []}, {"anchor_id": "anchor_06", "candidate_tracklets_by_video": {"v1": ["v1_t062", "v1_t172", "v1_t174", "v1_t175", "v1_t194", "v1_t196", "v1_t204", "v1_t208", "v1_t212", "v1_t217", "v1_t219", "v1_t223", "v1_t230", "v1_t235", "v1_t286", "v1_t291", "v1_t299", "v1_t305"], "v2": ["v2_t216", "v2_t233", "v2_t238", "v2_t291", "v2_t296", "v2_t297", "v2_t304", "v2_t306", "v2_t322", "v2_t325", "v2_t329", "v2_t331", "v2_t339", "v2_t375", "v2_t480", "v2_t525"], "v3": ["v3_t198", "v3_t210", "v3_t225", "v3_t249", "v3_t254", "v3_t258", "v3_t259", "v3_t260", "v3_t267", "v3_t269", "v3_t270", "v3_t292", "v3_t295", "v3_t307", "v3_t308", "v3_t310", "v3_t337", "v3_t339", "v3_t367", "v3_t368", "v3_t374", "v3_t393"], "v4": ["v4_t006", "v4_t077", "v4_t084", "v4_t095", "v4_t096", "v4_t109", "v4_t110", "v4_t111", "v4_t113", "v4_t114", "v4_t130", "v4_t132", "v4_t133", "v4_t136", "v4_t144", "v4_t147", "v4_t152", "v4_t160", "v4_t187", "v4_t308", "v4_t323"]}, "category_id": "lamp", "confirmed_tracklet_ids_by_video": {}, "display_label_zh": "夜灯", "visible_in": []}, {"anchor_id": "anchor_07", "candidate_tracklets_by_video": {"v1": ["v1_t003", "v1_t069", "v1_t072", "v1_t120", "v1_t173", "v1_t214", "v1_t433", "v1_t524", "v1_t536"], "v2": ["v2_t013", "v2_t044", "v2_t125", "v2_t298", "v2_t310", "v2_t313", "v2_t324", "v2_t380", "v2_t416", "v2_t487", "v2_t524"], "v3": ["v3_t008", "v3_t040", "v3_t203", "v3_t215", "v3_t273", "v3_t297", "v3_t319", "v3_t369", "v3_t371", "v3_t394"], "v4": ["v4_t012", "v4_t014", "v4_t031", "v4_t069", "v4_t148", "v4_t151", "v4_t350", "v4_t361", "v4_t364", "v4_t390", "v4_t398"]}, "category_id": "camera", "confirmed_tracklet_ids_by_video": {}, "display_label_zh": "摄像头", "visible_in": []}, {"anchor_id": "anchor_08", "candidate_tracklets_by_video": {"v1": ["v1_t023", "v1_t154", "v1_t171", "v1_t189", "v1_t255", "v1_t534"], "v2": ["v2_t055", "v2_t166", "v2_t174", "v2_t210", "v2_t250", "v2_t271", "v2_t368", "v2_t494"], "v3": ["v3_t175", "v3_t290", "v3_t323"], "v4": ["v4_t030", "v4_t083", "v4_t186", "v4_t207", "v4_t238", "v4_t284", "v4_t304", "v4_t321"]}, "category_id": "desk", "confirmed_tracklet_ids_by_video": {}, "display_label_zh": "书桌", "visible_in": []}, {"anchor_id": "anchor_09", "candidate_tracklets_by_video": {"v1": ["v1_t062", "v1_t172", "v1_t174", "v1_t175", "v1_t194", "v1_t196", "v1_t204", "v1_t208", "v1_t212", "v1_t217", "v1_t219", "v1_t223", "v1_t230", "v1_t235", "v1_t286", "v1_t291", "v1_t299", "v1_t305"], "v2": ["v2_t216", "v2_t233", "v2_t238", "v2_t291", "v2_t296", "v2_t297", "v2_t304", "v2_t306", "v2_t322", "v2_t325", "v2_t329", "v2_t331", "v2_t339", "v2_t375", "v2_t480", "v2_t525"], "v3": ["v3_t198", "v3_t210", "v3_t225", "v3_t249", "v3_t254", "v3_t258", "v3_t259", "v3_t260", "v3_t267", "v3_t269", "v3_t270", "v3_t292", "v3_t295", "v3_t307", "v3_t308", "v3_t310", "v3_t337", "v3_t339", "v3_t367", "v3_t368", "v3_t374", "v3_t393"], "v4": ["v4_t006", "v4_t077", "v4_t084", "v4_t095", "v4_t096", "v4_t109", "v4_t110", "v4_t111", "v4_t113", "v4_t114", "v4_t130", "v4_t132", "v4_t133", "v4_t136", "v4_t144", "v4_t147", "v4_t152", "v4_t160", "v4_t187", "v4_t308", "v4_t323"]}, "category_id": "lamp", "confirmed_tracklet_ids_by_video": {}, "display_label_zh": "台灯", "visible_in": []}, {"anchor_id": "anchor_10", "candidate_tracklets_by_video": {"v1": ["v1_t126", "v1_t170", "v1_t197", "v1_t207", "v1_t209", "v1_t221", "v1_t226", "v1_t234", "v1_t257", "v1_t259", "v1_t261", "v1_t262", "v1_t301", "v1_t308"], "v2": ["v2_t208", "v2_t214", "v2_t251", "v2_t252", "v2_t284", "v2_t294", "v2_t301", "v2_t302", "v2_t305", "v2_t307", "v2_t327", "v2_t328", "v2_t340", "v2_t345", "v2_t346", "v2_t370"], "v3": ["v3_t074", "v3_t109", "v3_t162", "v3_t180", "v3_t200", "v3_t207", "v3_t208", "v3_t213", "v3_t214", "v3_t221", "v3_t245", "v3_t257", "v3_t261", "v3_t268", "v3_t271", "v3_t291", "v3_t293", "v3_t294", "v3_t296", "v3_t309", "v3_t311", "v3_t312", "v3_t370", "v3_t373"], "v4": ["v4_t073", "v4_t088", "v4_t094", "v4_t097", "v4_t107", "v4_t108", "v4_t112", "v4_t120", "v4_t123", "v4_t141", "v4_t145", "v4_t166", "v4_t167", "v4_t188", "v4_t201", "v4_t240", "v4_t243", "v4_t303"]}, "category_id": "water_bottle", "confirmed_tracklet_ids_by_video": {}, "display_label_zh": "玫红色水壶", "visible_in": []}, {"anchor_id": "anchor_11", "candidate_tracklets_by_video": {"v1": ["v1_t001", "v1_t153", "v1_t246", "v1_t258", "v1_t269", "v1_t273", "v1_t298", "v1_t370", "v1_t389", "v1_t434", "v1_t509", "v1_t511"], "v2": ["v2_t072", "v2_t077", "v2_t083", "v2_t127", "v2_t215", "v2_t253", "v2_t274", "v2_t279", "v2_t350", "v2_t431", "v2_t502"], "v3": ["v3_t083", "v3_t100", "v3_t123", "v3_t160", "v3_t172", "v3_t212", "v3_t265", "v3_t289"], "v4": ["v4_t060", "v4_t169", "v4_t171", "v4_t189", "v4_t194", "v4_t293", "v4_t320"]}, "category_id": "bookshelf", "confirmed_tracklet_ids_by_video": {}, "display_label_zh": "白色书架", "visible_in": []}, {"anchor_id": "anchor_12", "candidate_tracklets_by_video": {"v1": ["v1_t021", "v1_t077", "v1_t081", "v1_t083", "v1_t131", "v1_t166", "v1_t200", "v1_t202", "v1_t288", "v1_t322", "v1_t323", "v1_t334", "v1_t336", "v1_t361", "v1_t363", "v1_t365", "v1_t414", "v1_t482", "v1_t485", "v1_t491", "v1_t497"], "v2": ["v2_t018", "v2_t037", "v2_t090", "v2_t093", "v2_t124", "v2_t163", "v2_t190", "v2_t193", "v2_t195", "v2_t197", "v2_t213", "v2_t343", "v2_t344", "v2_t486", "v2_t488", "v2_t489", "v2_t536"], "v3": ["v3_t002", "v3_t004", "v3_t013", "v3_t036", "v3_t093", "v3_t125", "v3_t129", "v3_t136", "v3_t137", "v3_t138", "v3_t396"], "v4": ["v4_t013", "v4_t018", "v4_t020", "v4_t021", "v4_t027", "v4_t099", "v4_t103", "v4_t184", "v4_t193", "v4_t216", "v4_t220", "v4_t221", "v4_t234", "v4_t254", "v4_t255", "v4_t257", "v4_t305", "v4_t312", "v4_t322", "v4_t330", "v4_t385", "v4_t387", "v4_t392", "v4_t395", "v4_t396", "v4_t399", "v4_t402"]}, "category_id": "stuffed_animal", "confirmed_tracklet_ids_by_video": {}, "display_label_zh": "史迪奇玩偶", "visible_in": []}, {"anchor_id": "anchor_13", "candidate_tracklets_by_video": {"v1": ["v1_t002", "v1_t015", "v1_t018", "v1_t043", "v1_t056", "v1_t059", "v1_t068", "v1_t102", "v1_t105", "v1_t106", "v1_t110", "v1_t112", "v1_t115", "v1_t125", "v1_t155", "v1_t161", "v1_t169", "v1_t199", "v1_t201", "v1_t211", "v1_t228", "v1_t241", "v1_t249", "v1_t252", "v1_t254", "v1_t271", "v1_t276", "v1_t283", "v1_t285", "v1_t287", "v1_t289", "v1_t321", "v1_t327", "v1_t330", "v1_t332", "v1_t341", "v1_t358", "v1_t368", "v1_t372", "v1_t373", "v1_t383", "v1_t385", "v1_t397", "v1_t399", "v1_t400", "v1_t411", "v1_t425", "v1_t429", "v1_t444", "v1_t455", "v1_t479", "v1_t495", "v1_t501", "v1_t505", "v1_t526", "v1_t528"], "v2": ["v2_t004", "v2_t007", "v2_t009", "v2_t010", "v2_t011", "v2_t028", "v2_t052", "v2_t059", "v2_t069", "v2_t070", "v2_t074", "v2_t085", "v2_t086", "v2_t091", "v2_t109", "v2_t121", "v2_t130", "v2_t136", "v2_t152", "v2_t165", "v2_t173", "v2_t175", "v2_t194", "v2_t198", "v2_t202", "v2_t235", "v2_t239", "v2_t257", "v2_t265", "v2_t283", "v2_t285", "v2_t289", "v2_t290", "v2_t308", "v2_t330", "v2_t352", "v2_t356", "v2_t357", "v2_t373", "v2_t377", "v2_t383", "v2_t410", "v2_t413", "v2_t414", "v2_t430", "v2_t438", "v2_t463", "v2_t473", "v2_t484", "v2_t497", "v2_t500", "v2_t501", "v2_t518", "v2_t531", "v2_t540"], "v3": ["v3_t014", "v3_t024", "v3_t029", "v3_t047", "v3_t050", "v3_t056", "v3_t081", "v3_t090", "v3_t092", "v3_t098", "v3_t107", "v3_t115", "v3_t116", "v3_t135", "v3_t145", "v3_t156", "v3_t164", "v3_t193", "v3_t201", "v3_t246", "v3_t264", "v3_t272", "v3_t329", "v3_t333", "v3_t334", "v3_t335", "v3_t338", "v3_t350", "v3_t364", "v3_t384", "v3_t392"], "v4": ["v4_t001", "v4_t008", "v4_t044", "v4_t046", "v4_t056", "v4_t064", "v4_t066", "v4_t067", "v4_t076", "v4_t101", "v4_t116", "v4_t125", "v4_t127", "v4_t146", "v4_t158", "v4_t185", "v4_t197", "v4_t203", "v4_t204", "v4_t206", "v4_t214", "v4_t217", "v4_t222", "v4_t225", "v4_t233", "v4_t237", "v4_t262", "v4_t274", "v4_t282", "v4_t287", "v4_t324", "v4_t326", "v4_t341", "v4_t363", "v4_t371", "v4_t386"]}, "category_id": "cabinet", "confirmed_tracklet_ids_by_video": {}, "display_label_zh": "白色立柜", "visible_in": []}, {"anchor_id": "anchor_14", "candidate_tracklets_by_video": {"v1": ["v1_t004", "v1_t005", "v1_t006", "v1_t007", "v1_t008", "v1_t009", "v1_t010", "v1_t011", "v1_t012", "v1_t013", "v1_t014", "v1_t016", "v1_t019", "v1_t031", "v1_t042", "v1_t044", "v1_t045", "v1_t048", "v1_t051", "v1_t052", "v1_t061", "v1_t097", "v1_t098", "v1_t101", "v1_t109", "v1_t134", "v1_t135", "v1_t140", "v1_t144", "v1_t152", "v1_t159", "v1_t164", "v1_t193", "v1_t236", "v1_t242", "v1_t248", "v1_t253", "v1_t263", "v1_t264", "v1_t266", "v1_t267", "v1_t284", "v1_t310", "v1_t325", "v1_t326", "v1_t339", "v1_t362", "v1_t378", "v1_t380", "v1_t384", "v1_t388", "v1_t390", "v1_t391", "v1_t394", "v1_t398", "v1_t404", "v1_t405", "v1_t406", "v1_t407", "v1_t410", "v1_t416", "v1_t419", "v1_t431", "v1_t438", "v1_t441", "v1_t456", "v1_t499", "v1_t510", "v1_t512", "v1_t514", "v1_t517", "v1_t518", "v1_t519", "v1_t520", "v1_t523", "v1_t525", "v1_t527", "v1_t537", "v1_t538", "v1_t539", "v1_t540", "v1_t542", "v1_t543"], "v2": ["v2_t002", "v2_t003", "v2_t026", "v2_t051", "v2_t053", "v2_t062", "v2_t063", "v2_t073", "v2_t075", "v2_t078", "v2_t079", "v2_t080", "v2_t081", "v2_t082", "v2_t108", "v2_t122", "v2_t131", "v2_t135", "v2_t142", "v2_t145", "v2_t151", "v2_t156", "v2_t164", "v2_t171", "v2_t206", "v2_t230", "v2_t236", "v2_t242", "v2_t264", "v2_t268", "v2_t276", "v2_t278", "v2_t282", "v2_t292", "v2_t309", "v2_t359", "v2_t360", "v2_t361", "v2_t366", "v2_t376", "v2_t378", "v2_t402", "v2_t412", "v2_t421", "v2_t436", "v2_t476", "v2_t503", "v2_t504", "v2_t505", "v2_t508", "v2_t509", "v2_t510", "v2_t512", "v2_t513", "v2_t519", "v2_t520", "v2_t521", "v2_t526", "v2_t527", "v2_t528", "v2_t529", "v2_t530", "v2_t534", "v2_t535"], "v3": ["v3_t012", "v3_t026", "v3_t043", "v3_t046", "v3_t052", "v3_t057", "v3_t059", "v3_t070", "v3_t086", "v3_t087", "v3_t088", "v3_t089", "v3_t091", "v3_t103", "v3_t122", "v3_t148", "v3_t159", "v3_t171", "v3_t192", "v3_t205", "v3_t211", "v3_t251", "v3_t255", "v3_t281", "v3_t326", "v3_t327", "v3_t330", "v3_t363", "v3_t385", "v3_t387", "v3_t390", "v3_t395", "v3_t397", "v3_t398", "v3_t399", "v3_t401", "v3_t403", "v3_t405"], "v4": ["v4_t004", "v4_t034", "v4_t040", "v4_t041", "v4_t048", "v4_t052", "v4_t063", "v4_t074", "v4_t102", "v4_t150", "v4_t170", "v4_t172", "v4_t175", "v4_t192", "v4_t213", "v4_t219", "v4_t241", "v4_t252", "v4_t264", "v4_t266", "v4_t276", "v4_t283", "v4_t285", "v4_t286", "v4_t290", "v4_t294", "v4_t306", "v4_t311", "v4_t313", "v4_t343", "v4_t355", "v4_t367", "v4_t370", "v4_t372"]}, "category_id": "storage_box", "confirmed_tracklet_ids_by_video": {}, "display_label_zh": "收纳盒", "visible_in": []}, {"anchor_id": "anchor_15", "candidate_tracklets_by_video": {"v1": ["v1_t133", "v1_t136", "v1_t163", "v1_t290", "v1_t303", "v1_t324", "v1_t367", "v1_t375", "v1_t393", "v1_t395", "v1_t401", "v1_t424", "v1_t432", "v1_t442", "v1_t445", "v1_t449", "v1_t454", "v1_t487", "v1_t494", "v1_t508"], "v2": ["v2_t017", "v2_t024", "v2_t064", "v2_t071", "v2_t092", "v2_t094", "v2_t115", "v2_t118", "v2_t123", "v2_t170", "v2_t537"], "v3": ["v3_t019", "v3_t028", "v3_t071", "v3_t080", "v3_t134", "v3_t140", "v3_t165", "v3_t216"], "v4": ["v4_t200", "v4_t218", "v4_t242", "v4_t292", "v4_t329", "v4_t335", "v4_t369", "v4_t401"]}, "category_id": "laundry_container", "confirmed_tracklet_ids_by_video": {}, "display_label_zh": "脏衣篓", "visible_in": []}, {"anchor_id": "anchor_16", "candidate_tracklets_by_video": {"v1": ["v1_t065", "v1_t129", "v1_t132", "v1_t408", "v1_t427", "v1_t428", "v1_t440", "v1_t446", "v1_t448", "v1_t450", "v1_t500"], "v2": ["v2_t005", "v2_t014", "v2_t030", "v2_t046", "v2_t095", "v2_t096", "v2_t116", "v2_t128", "v2_t417", "v2_t418", "v2_t472"], "v3": ["v3_t025", "v3_t039", "v3_t060", "v3_t332", "v3_t344", "v3_t345"], "v4": ["v4_t002", "v4_t053", "v4_t065", "v4_t258", "v4_t315", "v4_t325", "v4_t354", "v4_t357", "v4_t365", "v4_t373"]}, "category_id": "suitcase", "confirmed_tracklet_ids_by_video": {}, "display_label_zh": "粉色行李箱", "visible_in": []}, {"anchor_id": "anchor_17", "candidate_tracklets_by_video": {"v1": ["v1_t447", "v1_t477", "v1_t481", "v1_t486"], "v2": ["v2_t001", "v2_t015", "v2_t045", "v2_t050", "v2_t113", "v2_t541"], "v3": ["v3_t001", "v3_t032", "v3_t051", "v3_t186", "v3_t400"], "v4": ["v4_t327", "v4_t358", "v4_t359", "v4_t378", "v4_t388", "v4_t397"]}, "category_id": "bed", "confirmed_tracklet_ids_by_video": {}, "display_label_zh": "床", "visible_in": []}], "hard_negative_pairs": [{"anchor_ids": ["anchor_04", "anchor_11"], "category_id": "bookshelf", "group_id": "A"}, {"anchor_ids": ["anchor_02", "anchor_16"], "category_id": "suitcase", "group_id": "B"}, {"anchor_ids": ["anchor_01", "anchor_13"], "category_id": "cabinet", "group_id": "C"}, {"anchor_ids": ["anchor_05", "anchor_10"], "category_id": "water_bottle", "group_id": "D"}], "note": "candidate_tracklets_by_video 为同 category 全集(未做任何相似度筛选);请对照 per-anchor jpg 把确认成员填入 confirmed_tracklet_ids_by_video。四组硬负真值 (A-D) 由 entities.template.json 的 hard_negative_pairs 在锚点确认后自动导出,无需单独标注。", "schema_version": "1.0", "status": "prefilled_candidates_pending_data_owner_confirmation"};
+const VIDEOS = ["v1", "v2", "v3", "v4"];
+const HN_PAIRS = REVIEW.hard_negative_pairs || [];
+const KEY = "anchor_review_v6_confirmed";
+const ANCHORS = REVIEW.entities;
+
+let store = JSON.parse(localStorage.getItem(KEY) || "null") || { anchors: {}, };
+ANCHORS.forEach(a => {
+  if (!store.anchors[a.anchor_id])
+    store.anchors[a.anchor_id] = { confirmed: {}, visible_in: [], note: "", done: false, extra: [] };
+});
+let cur = ANCHORS[0].anchor_id;
+
+const st = aid => store.anchors[aid];
+const isSel = (aid, id) => Object.values(st(aid).confirmed).some(l => l.includes(id));
+const save = () => {
+  localStorage.setItem(KEY, JSON.stringify(store));
+  document.getElementById("saveState").textContent = "已自动保存 " + new Date().toLocaleTimeString();
+};
+const anchorsOf = id => ANCHORS.filter(a => isSel(a.anchor_id, id)).map(a => a.anchor_id);
+const hnPartner = aid => {
+  for (const p of HN_PAIRS) {
+    if (p.anchor_ids[0] === aid) return p.anchor_ids[1];
+    if (p.anchor_ids[1] === aid) return p.anchor_ids[0];
+  }
+  return null;
+};
+
+function renderNav() {
+  const nav = document.getElementById("anchorNav");
+  if (!nav.childElementCount) {
+    ANCHORS.forEach(a => {
+      const b = document.createElement("button");
+      b.className = "anchor"; b.dataset.aid = a.anchor_id;
+      b.onclick = () => { cur = a.anchor_id; renderAnchor(); renderNav(); };
+      nav.appendChild(b);
+    });
+  }
+  [...nav.children].forEach(b => {
+    const a = ANCHORS.find(x => x.anchor_id === b.dataset.aid);
+    const n = Object.values(st(a.anchor_id).confirmed).reduce((s, l) => s + l.length, 0);
+    const hn = hnPartner(a.anchor_id);
+    b.innerHTML = `${a.anchor_id} ${a.display_label_zh} <span class="hint">(${n} 选)</span>` +
+      (hn ? ` <span class="hn">硬负↔${hn.replace("anchor_","")}</span>` : "");
+    b.classList.toggle("active", a.anchor_id === cur);
+    b.classList.toggle("done", !!st(a.anchor_id).done);
+  });
+  document.getElementById("doneCount").textContent =
+    ANCHORS.filter(a => st(a.anchor_id).done).length;
+}
+
+function toggle(id, video) {
+  const c = st(cur).confirmed;
+  c[video] = c[video] || [];
+  const i = c[video].indexOf(id);
+  if (i >= 0) c[video].splice(i, 1);
+  else {
+    c[video].push(id); c[video].sort();
+    if (!st(cur).visible_in.includes(video)) st(cur).visible_in.push(video); // 顺手勾出现视频
+  }
+  save(); refreshCards(); renderNav(); renderMeta();
+}
+
+// 点选只更新样式与角标,绝不重建卡片 DOM(重建会闪且丢滚动位置)
+function refreshCards() {
+  const partner = hnPartner(cur);
+  let dangers = [];
+  document.querySelectorAll("#content .card").forEach(card => {
+    const id = card.dataset.id;
+    card.classList.toggle("sel", isSel(cur, id));
+    const others = anchorsOf(id).filter(a => a !== cur);
+    const badge = card.querySelector(".badge");
+    badge.className = "badge"; badge.textContent = "";
+    if (others.length) {
+      const isDanger = others.includes(partner);
+      badge.className = "badge " + (isDanger ? "danger" : "warn");
+      badge.textContent = "也在 " + others.map(a => a.replace("anchor_", "#")).join(",");
+      if (isDanger && isSel(cur, id)) dangers.push(id);
+    }
+  });
+  const allDanger = [];
+  HN_PAIRS.forEach(p => {
+    const [x, y] = p.anchor_ids;
+    Object.values(st(x).confirmed).flat().forEach(id => {
+      if (isSel(y, id)) allDanger.push(`${p.group_id}组 ${id} 同时在 ${x}/${y}`);
+    });
+  });
+  const warn = document.getElementById("warn");
+  warn.style.display = allDanger.length ? "block" : "none";
+  warn.textContent = allDanger.length ? "⚠ 硬负冲突(同一轨勾进了硬负对两边,必须解除一边): " + allDanger.join("; ") : "";
+}
+
+function renderMeta() {
+  const a = ANCHORS.find(x => x.anchor_id === cur);
+  document.getElementById("title").textContent =
+    `${a.anchor_id} ${a.display_label_zh} (category=${a.category_id})`;
+  document.getElementById("anchorDone").checked = !!st(cur).done;
+  const meta = document.getElementById("metaRow");
+  if (!meta) return;
+  [...meta.querySelectorAll("input[type=checkbox][data-vid]")].forEach(cb => {
+    cb.checked = st(cur).visible_in.includes(cb.dataset.vid);
+  });
+  meta.querySelector("input[data-note]").value = st(cur).note || "";
+}
+
+function renderAnchor() {
+  const a = ANCHORS.find(x => x.anchor_id === cur);
+  const wrap = document.getElementById("content");
+  wrap.innerHTML = "";
+  const meta = document.createElement("div");
+  meta.className = "meta"; meta.id = "metaRow";
+  meta.innerHTML = "物品出现在:" +
+    VIDEOS.map(v => `<label><input type="checkbox" data-vid="${v}"> ${v}</label>`).join(" ") +
+    ` <label>备注 <input type="text" data-note placeholder="不确定项/说明,可留空"></label>` +
+    ` <label>补录轨 id <input type="text" data-extra placeholder="如 v2_t123(跨表捞漏)" size="14"></label>` +
+    `<button class="small" data-addextra>添加</button>`;
+  wrap.appendChild(meta);
+  meta.querySelectorAll("input[data-vid]").forEach(cb => cb.onchange = () => {
+    const v = st(cur).visible_in;
+    const i = v.indexOf(cb.dataset.vid);
+    if (cb.checked && i < 0) v.push(cb.dataset.vid);
+    if (!cb.checked && i >= 0) v.splice(i, 1);
+    save();
+  });
+  meta.querySelector("input[data-note]").onchange = e => { st(cur).note = e.target.value; save(); };
+  meta.querySelector("button[data-addextra]").onclick = () => {
+    const input = meta.querySelector("input[data-extra]");
+    const id = input.value.trim();
+    if (!/^v\d+_t\d+$/.test(id)) { alert("id 形如 v2_t123"); return; }
+    const video = id.split("_")[0];
+    if (!st(cur).extra.includes(id)) st(cur).extra.push(id);
+    if (!isSel(cur, id)) toggle(id, video);
+    input.value = "";
+    renderAnchor();
+  };
+
+  const byVideo = {};
+  VIDEOS.forEach(v => byVideo[v] = [...(a.candidate_tracklets_by_video[v] || [])]);
+  st(cur).extra.forEach(id => {
+    const v = id.split("_")[0];
+    if (byVideo[v] && !byVideo[v].includes(id)) byVideo[v].push(id);
+  });
+  VIDEOS.forEach(video => {
+    const ids = byVideo[video] || [];
+    if (!ids.length) return;
+    const h = document.createElement("h3");
+    h.className = "video"; h.textContent = `${video} (${ids.length} 候选)`;
+    wrap.appendChild(h);
+    const grid = document.createElement("div");
+    grid.className = "grid";
+    ids.forEach(id => {
+      const card = document.createElement("div");
+      card.className = "card"; card.dataset.id = id;
+      card.innerHTML = `<span class="badge"></span>` +
+        `<img loading="lazy" src="crops/${id}.jpg" onerror="this.style.opacity=.15">` +
+        `<div class="cap">${id}</div>`;
+      card.onclick = () => toggle(id, video);
+      grid.appendChild(card);
+    });
+    wrap.appendChild(grid);
+  });
+  renderMeta(); refreshCards();
+}
+
+document.getElementById("anchorDone").onchange = e => {
+  st(cur).done = e.target.checked; save(); renderNav();
+};
+document.getElementById("export").onclick = () => {
+  const conflicts = [];
+  HN_PAIRS.forEach(p => {
+    const [x, y] = p.anchor_ids;
+    Object.values(st(x).confirmed).flat().forEach(id => { if (isSel(y, id)) conflicts.push(id); });
+  });
+  if (conflicts.length && !confirm("存在硬负冲突未解除: " + conflicts.join(",") + "\n仍要导出?")) return;
+  const notDone = ANCHORS.filter(a => !st(a.anchor_id).done).map(a => a.anchor_id);
+  if (notDone.length && !confirm("未标完成的锚点: " + notDone.join(",") + "\n仍要导出?")) return;
+  const doc = JSON.parse(JSON.stringify(REVIEW));
+  doc.status = "data_owner_confirmed";
+  doc.confirmed_at = new Date().toISOString();
+  doc.entities.forEach(ent => {
+    const s = st(ent.anchor_id);
+    const confirmed = {};
+    Object.entries(s.confirmed).forEach(([v, l]) => { if (l.length) confirmed[v] = [...l].sort(); });
+    ent.confirmed_tracklet_ids_by_video = confirmed;
+    ent.visible_in = [...s.visible_in].sort();
+    if (s.note) ent.note = s.note;
+  });
+  const blob = new Blob([JSON.stringify(doc, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "anchor_review.v6.confirmed.json"; a.click();
+};
+const io = document.getElementById("io");
+document.getElementById("importBtn").onclick = () => {
+  document.getElementById("ioText").value = JSON.stringify(store, null, 2);
+  io.style.display = "flex";
+};
+document.getElementById("ioClose").onclick = () => io.style.display = "none";
+document.getElementById("ioImport").onclick = () => {
+  try {
+    const raw = JSON.parse(document.getElementById("ioText").value);
+    if (raw.entities) {  // 导出的 confirmed 文档
+      raw.entities.forEach(ent => {
+        const s = st(ent.anchor_id);
+        if (!s) return;
+        s.confirmed = {};
+        Object.entries(ent.confirmed_tracklet_ids_by_video || {}).forEach(([v, l]) => s.confirmed[v] = [...l]);
+        s.visible_in = [...(ent.visible_in || [])];
+        s.note = ent.note || "";
+      });
+    } else if (raw.anchors) { store = raw; ANCHORS.forEach(a => {
+      if (!store.anchors[a.anchor_id]) store.anchors[a.anchor_id] = { confirmed:{}, visible_in:[], note:"", done:false, extra:[] };
+      if (!store.anchors[a.anchor_id].extra) store.anchors[a.anchor_id].extra = [];
+    }); }
+    else throw new Error("unrecognised document");
+    save(); renderAnchor(); renderNav(); io.style.display = "none";
+  } catch (err) { alert("JSON 解析失败: " + err); }
+};
+renderNav(); renderAnchor();
+</script>
+</body>
+</html>

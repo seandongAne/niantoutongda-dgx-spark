@@ -20,7 +20,9 @@
 ## 红线(先于一切用途)
 
 1. **密钥只在本地 Mac 持久保存**——永不进 git、永不写入 Spark 磁盘。唯一例外是
-   赛方 SSH 限流后的 A1 工厂:一次性、可撤销 key 通过 stdin 进入远端进程内存，
+   赛方 SSH 限流后的 **Spark 原地工厂通道**(A1 工厂、词表工厂;通道纪律统一
+   实现在 `scripts/spark_factory_common.py`,新工厂必须复用不得另起炉灶):
+   一次性、可撤销 key 通过 stdin 进入远端进程内存，
    不进 argv / 日志 / 状态文件 / `.env`;云阶段结束立刻从环境移除，并从注入时起
    按已泄露处理，批次结束即撤销。非一次性 key 不得使用这个通道。
 2. **演示主链不调用云 API**——断网高光与"本地优先"是我们自己的评分叙事。
@@ -52,6 +54,7 @@ python scripts/a1_spark_factory.py launch \
   --max-new-tts 6 \
   --max-new-extractions 18 \
   --max-new-local 18 \
+  --revocation-delay-days 0 \
   --log logs/a1_factory_calibration_v3.log
 
 ssh spark 'tail -n 50 ~/proj/logs/a1_factory_calibration_v3.log'
@@ -62,6 +65,34 @@ ssh spark 'tail -n 50 ~/proj/logs/a1_factory_calibration_v3.log'
 泄露”后才传 `--acknowledge-key-exposure`;批次结束立即在控制台删除。密钥只通过 launch
 命令的 SSH stdin 发送一行，不得手工 `export` 到远端 shell，也不得为了 nohup 写入
 临时文件。状态文件 `factory-status.json` 只记录阶段、上限、错误和凭据策略，不含凭据。
+若负责人明确批准延迟撤销，必须用 `--revocation-delay-days N` 把例外写入状态与验收报告；
+该字段只负责审计，不会也不能代替控制台删除动作。
+
+## Spark 原地词表工厂（2026-07-16，同一凭据通道）
+
+用途②的原地版:云候选生成(一次 chat 调用)→ GDINO 扫描 → 判卷/死词摘要
+全部在节点数据平面完成,逐帧预测永不过境,本地只拉回 `ranking.json` 级小报告。
+物品清单是仓库内纯文本 fixture(经 deploy 上节点),零家庭数据出境。
+
+```bash
+./scripts/spark_healthcheck.sh && ./scripts/deploy.sh
+
+.venv/bin/python scripts/word_spark_factory.py launch \
+  --items fixtures/hero_s1/items.json \
+  --frames-dir fixtures/dev_a/hardval/frames \
+  --gt fixtures/dev_a/hardval/gt.json \
+  --run-dir results/wordfactory/<name> \
+  --report-dir results/acceptance/WORDS/<name> \
+  --log logs/word_factory_<name>.log \
+  --acknowledge-key-exposure
+
+ssh spark 'tail -n 30 ~/proj/logs/word_factory_<name>.log'
+```
+
+无 GT 时(英雄素材未对账前)省略 `--gt`,产出 `deadwords.json`(死词/
+触发计数)供人工预筛;正式入词表仍必须 GT 判卷。`--max-phrases`(默认 90)
+是 GPU 时长护栏。a1_spark_factory 与本工厂的公共纪律待其农场空闲后统一
+迁移到 `spark_factory_common.py`(迁移前两处实现保持一致)。
 
 ## 用途台账（含已停止项）
 

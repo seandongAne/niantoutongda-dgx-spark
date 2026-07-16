@@ -1,0 +1,8 @@
+{
+  "_comment": "词表工厂物品清单格式示例(兼工厂冒烟件,3 类均有 dev_a hardval GT);英雄清单照此格式建 fixtures/hero_s1/items.json",
+  "items": [
+    {"canonical_id": "night_light", "name_zh": "小夜灯", "description_zh": "白色柱体,表面有贴纸,顶部圆润"},
+    {"canonical_id": "luggage", "name_zh": "儿童行李箱", "description_zh": "粉色硬壳,带轮子和拉杆"},
+    {"canonical_id": "tumbler", "name_zh": "吸管杯", "description_zh": "带吸管的塑料水杯,浅色"}
+  ]
+}

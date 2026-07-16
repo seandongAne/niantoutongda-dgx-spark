@@ -1,0 +1,18 @@
+{
+  "caps": {
+    "cloud_extractions": 18,
+    "local_extractions": 18,
+    "tts": 6
+  },
+  "completed_at": "2026-07-16T11:23:03.620099+00:00",
+  "credential_policy": "stdin_memory_only_treat_as_exposed",
+  "phase": "complete",
+  "report_dir": "results/acceptance/A1/calibration-20260716-v3-spark",
+  "revocation_delay_days_after_completion": 6,
+  "run_dir": "local-data/a1/calibration-20260716-v3-spark",
+  "schema_version": "a1-spark-factory-v1",
+  "started_at": "2026-07-16T11:04:36.220909+00:00",
+  "state": "complete",
+  "transfer_policy": "code_and_small_reports_only_no_audio_over_ssh",
+  "updated_at": "2026-07-16T11:23:03.620106+00:00"
+}

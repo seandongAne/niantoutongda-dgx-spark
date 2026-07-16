@@ -1,0 +1,20 @@
+{
+  "audio_committed": false,
+  "code_revision": "a885291a6ad70a10d4cc64c792637f07ac76ab54-dirty",
+  "created_at": "2026-07-16T09:51:31.839782+00:00",
+  "models": {
+    "cloud": [
+      "stepaudio-2.5-chat"
+    ]
+  },
+  "observed_predictions": 9,
+  "plan_sha256": "e2c14cebfd38265d333ea5e3269c54a443bfc58908b12e5d466d5335da9e88b5",
+  "schema_version": "a1-robustness-v1",
+  "synthetic_audio_location": "local-data only; excluded from git and Spark deploy",
+  "usage": {
+    "calls": 9,
+    "completion_tokens": 1414,
+    "prompt_tokens": 3722,
+    "tts_calls": 4
+  }
+}

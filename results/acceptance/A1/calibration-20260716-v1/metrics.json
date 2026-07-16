@@ -1,0 +1,244 @@
+{
+  "backends": {
+    "cloud": {
+      "cases": 9,
+      "conditions": {
+        "clean": {
+          "cases": 3,
+          "exact_case_rate": {
+            "half_width": 0.365427,
+            "high": 0.93851,
+            "low": 0.207655,
+            "rate": 0.666667,
+            "successes": 2,
+            "total": 3
+          },
+          "item_precision": {
+            "half_width": 0.195172,
+            "high": 1.0,
+            "low": 0.609657,
+            "rate": 1.0,
+            "successes": 6,
+            "total": 6
+          },
+          "item_recall": {
+            "half_width": 0.195172,
+            "high": 1.0,
+            "low": 0.609657,
+            "rate": 1.0,
+            "successes": 6,
+            "total": 6
+          },
+          "parse_failures": 0,
+          "schema_valid_rate": {
+            "half_width": 0.280753,
+            "high": 1.0,
+            "low": 0.438494,
+            "rate": 1.0,
+            "successes": 3,
+            "total": 3
+          },
+          "slot_accuracy": {
+            "half_width": 0.097381,
+            "high": 0.981523,
+            "low": 0.786762,
+            "rate": 0.933333,
+            "successes": 28,
+            "total": 30
+          }
+        },
+        "noise20": {
+          "cases": 3,
+          "exact_case_rate": {
+            "half_width": 0.280753,
+            "high": 0.561506,
+            "low": 0.0,
+            "rate": 0.0,
+            "successes": 0,
+            "total": 3
+          },
+          "item_precision": {
+            "half_width": 0.195172,
+            "high": 1.0,
+            "low": 0.609657,
+            "rate": 1.0,
+            "successes": 6,
+            "total": 6
+          },
+          "item_recall": {
+            "half_width": 0.195172,
+            "high": 1.0,
+            "low": 0.609657,
+            "rate": 1.0,
+            "successes": 6,
+            "total": 6
+          },
+          "parse_failures": 0,
+          "schema_valid_rate": {
+            "half_width": 0.280753,
+            "high": 1.0,
+            "low": 0.438494,
+            "rate": 1.0,
+            "successes": 3,
+            "total": 3
+          },
+          "slot_accuracy": {
+            "half_width": 0.131141,
+            "high": 0.926636,
+            "low": 0.664353,
+            "rate": 0.833333,
+            "successes": 25,
+            "total": 30
+          }
+        },
+        "speed090": {
+          "cases": 3,
+          "exact_case_rate": {
+            "half_width": 0.365427,
+            "high": 0.792345,
+            "low": 0.06149,
+            "rate": 0.333333,
+            "successes": 1,
+            "total": 3
+          },
+          "item_precision": {
+            "half_width": 0.195172,
+            "high": 1.0,
+            "low": 0.609657,
+            "rate": 1.0,
+            "successes": 6,
+            "total": 6
+          },
+          "item_recall": {
+            "half_width": 0.195172,
+            "high": 1.0,
+            "low": 0.609657,
+            "rate": 1.0,
+            "successes": 6,
+            "total": 6
+          },
+          "parse_failures": 0,
+          "schema_valid_rate": {
+            "half_width": 0.280753,
+            "high": 1.0,
+            "low": 0.438494,
+            "rate": 1.0,
+            "successes": 3,
+            "total": 3
+          },
+          "slot_accuracy": {
+            "half_width": 0.121861,
+            "high": 0.946904,
+            "low": 0.703183,
+            "rate": 0.866667,
+            "successes": 26,
+            "total": 30
+          }
+        }
+      },
+      "coverage": {
+        "completeness": {
+          "full": 6,
+          "partial": 3
+        },
+        "condition_id": {
+          "clean": 3,
+          "noise20": 3,
+          "speed090": 3
+        },
+        "style": {
+          "conversational": 3,
+          "direct": 3,
+          "reordered": 3
+        },
+        "voice": {
+          "cixingnansheng": 6,
+          "linjiajiejie": 3
+        }
+      },
+      "exact_case_rate": {
+        "half_width": 0.262611,
+        "high": 0.645803,
+        "low": 0.120582,
+        "rate": 0.333333,
+        "successes": 3,
+        "total": 9
+      },
+      "item_precision": {
+        "half_width": 0.087942,
+        "high": 1.0,
+        "low": 0.824115,
+        "rate": 1.0,
+        "successes": 18,
+        "total": 18
+      },
+      "item_recall": {
+        "half_width": 0.087942,
+        "high": 1.0,
+        "low": 0.824115,
+        "rate": 1.0,
+        "successes": 18,
+        "total": 18
+      },
+      "parse_failures": 0,
+      "schema_valid_rate": {
+        "half_width": 0.149576,
+        "high": 1.0,
+        "low": 0.700847,
+        "rate": 1.0,
+        "successes": 9,
+        "total": 9
+      },
+      "slot_accuracy": {
+        "half_width": 0.068052,
+        "high": 0.930365,
+        "low": 0.794261,
+        "rate": 0.877778,
+        "successes": 79,
+        "total": 90
+      },
+      "stopping": {
+        "additional_base_cases_needed": 144,
+        "condition_ready": {
+          "clean": false,
+          "noise20": false,
+          "speed090": false
+        },
+        "minimum_observed_per_condition": 3,
+        "missing_conditions": [],
+        "reached": false,
+        "required_per_condition": 147,
+        "target_half_width": 0.08
+      }
+    }
+  },
+  "expected_predictions_per_backend": 18,
+  "generated_at": "2026-07-16T09:51:31.836076+00:00",
+  "observed_predictions": 9,
+  "plan": {
+    "base_case_count": 6,
+    "condition_ids": [
+      "clean",
+      "noise20",
+      "speed090"
+    ],
+    "observation_count_per_backend": 18,
+    "seed": 20260716,
+    "stopping_rule": {
+      "confidence": 0.95,
+      "maximum_observations": 2000,
+      "metric": "slot_accuracy",
+      "minimum_per_condition": 100,
+      "target_half_width": 0.08,
+      "target_reachable_in_plan": false,
+      "worst_case_required_per_condition": 147
+    }
+  },
+  "schema_version": "a1-robustness-v1",
+  "usage": {
+    "calls": 9,
+    "completion_tokens": 1414,
+    "prompt_tokens": 3722,
+    "tts_calls": 4
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "base_case_count": 6,
+  "completeness_coverage": [
+    "full",
+    "partial"
+  ],
+  "condition_ids": [
+    "clean",
+    "noise20",
+    "speed090"
+  ],
+  "item_count_coverage": [
+    1,
+    2,
+    3
+  ],
+  "observation_count_per_backend": 18,
+  "oracle": "deterministic_templates",
+  "plan_sha256": "e2c14cebfd38265d333ea5e3269c54a443bfc58908b12e5d466d5335da9e88b5",
+  "privacy": "synthetic_only_no_household_media",
+  "schema_version": "a1-robustness-v1",
+  "seed": 20260716,
+  "stopping_rule": {
+    "confidence": 0.95,
+    "maximum_observations": 2000,
+    "metric": "slot_accuracy",
+    "minimum_per_condition": 100,
+    "target_half_width": 0.08,
+    "target_reachable_in_plan": false,
+    "worst_case_required_per_condition": 147
+  },
+  "style_coverage": [
+    "conversational",
+    "direct",
+    "reordered"
+  ],
+  "voices": [
+    "cixingnansheng",
+    "linjiajiejie"
+  ]
+}

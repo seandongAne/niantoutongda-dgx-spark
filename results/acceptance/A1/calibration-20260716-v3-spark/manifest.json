@@ -1,0 +1,36 @@
+{
+  "audio_committed": false,
+  "backend_runtime": {
+    "local": {
+      "created_at": "2026-07-16T11:23:02.744695+00:00",
+      "mean_inference_seconds": 54.442838,
+      "model": "stepfun-ai/Step-Audio-2-mini",
+      "model_load_seconds": 124.864549,
+      "model_path": "/home/Developer/models/stepfun-ai__Step-Audio-2-mini",
+      "new_predictions": 18,
+      "peak_cuda_bytes": 17392368128,
+      "schema_version": "a1-robustness-v1",
+      "upstream_revision": "76e272b56c3917a8d7188f18bbb5a65dfc8a0845"
+    }
+  },
+  "code_revision": "3497a8129dd1fd73650d99a6c49fc743b3ed2dc8",
+  "created_at": "2026-07-16T11:32:02.068144+00:00",
+  "models": {
+    "cloud": [
+      "stepaudio-2.5-chat"
+    ],
+    "local": [
+      "stepfun-ai/Step-Audio-2-mini"
+    ]
+  },
+  "observed_predictions": 36,
+  "plan_sha256": "7d4a3ed32c2375a5af1ede090cc11634cc2516c6df9c2f7284c58fed582d8736",
+  "schema_version": "a1-robustness-v1",
+  "synthetic_audio_location": "local-data only; excluded from git and Spark deploy",
+  "usage": {
+    "calls": 18,
+    "completion_tokens": 2813,
+    "prompt_tokens": 7542,
+    "tts_calls": 6
+  }
+}

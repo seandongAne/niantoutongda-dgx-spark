@@ -29,8 +29,13 @@ import sys
 import urllib.error
 import urllib.request
 from pathlib import Path
+from typing import Any
 
 BASE_URL = os.environ.get("STEPFUN_BASE_URL", "https://api.stepfun.com/step_plan/v1")
+
+
+class StepfunAPIError(RuntimeError):
+    """A redacted API/network failure safe to persist in benchmark logs."""
 
 
 def load_key() -> str:
@@ -47,7 +52,7 @@ def load_key() -> str:
     return key
 
 
-def call(path: str, payload: dict | None = None) -> dict:
+def _request(path: str, payload: dict | None = None) -> bytes:
     req = urllib.request.Request(
         BASE_URL + path,
         data=json.dumps(payload).encode() if payload is not None else None,
@@ -59,9 +64,56 @@ def call(path: str, payload: dict | None = None) -> dict:
     )
     try:
         with urllib.request.urlopen(req, timeout=180) as r:
-            return json.load(r)
+            return r.read()
     except urllib.error.HTTPError as e:
-        sys.exit(f"HTTP {e.code} {path}: {e.read().decode(errors='replace')[:2000]}")
+        raise StepfunAPIError(
+            f"HTTP {e.code} {path}: {e.read().decode(errors='replace')[:2000]}"
+        ) from e
+    except (urllib.error.URLError, TimeoutError) as e:
+        raise StepfunAPIError(f"network error {path}: {e}") from e
+
+
+def call(path: str, payload: dict | None = None) -> dict[str, Any]:
+    try:
+        return json.loads(_request(path, payload))
+    except json.JSONDecodeError as e:
+        raise StepfunAPIError(f"invalid JSON response {path}: {e}") from e
+
+
+def chat_completion(
+    *,
+    model: str,
+    messages: list[dict[str, Any]],
+    temperature: float = 0.2,
+    max_tokens: int | None = None,
+) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "model": model,
+        "messages": messages,
+        "temperature": temperature,
+    }
+    if max_tokens is not None:
+        payload["max_tokens"] = max_tokens
+    return call("/chat/completions", payload)
+
+
+def synthesize_speech(
+    *,
+    text: str,
+    model: str,
+    voice: str,
+    instruction: str | None = None,
+    response_format: str = "wav",
+) -> bytes:
+    payload: dict[str, Any] = {
+        "model": model,
+        "input": text,
+        "voice": voice,
+        "response_format": response_format,
+    }
+    if instruction:
+        payload["instruction"] = instruction
+    return _request("/audio/speech", payload)
 
 
 def cmd_models(_: argparse.Namespace) -> None:
@@ -91,9 +143,10 @@ def cmd_chat(args: argparse.Namespace) -> None:
     if args.system:
         messages.append({"role": "system", "content": args.system})
     messages.append({"role": "user", "content": content})
-    data = call(
-        "/chat/completions",
-        {"model": args.model, "messages": messages, "temperature": args.temperature},
+    data = chat_completion(
+        model=args.model,
+        messages=messages,
+        temperature=args.temperature,
     )
     print(data["choices"][0]["message"]["content"])
     usage = data.get("usage", {})
@@ -105,24 +158,14 @@ def cmd_chat(args: argparse.Namespace) -> None:
 
 def cmd_tts(args: argparse.Namespace) -> None:
     """文本 → 语音(A1 预热用合成测试音频,不涉家庭素材)。"""
-    req = urllib.request.Request(
-        BASE_URL + "/audio/speech",
-        data=json.dumps(
-            {"model": args.model, "input": args.text, "voice": args.voice,
-             "response_format": "wav"}
-        ).encode(),
-        headers={
-            "Authorization": f"Bearer {load_key()}",
-            "Content-Type": "application/json",
-        },
-        method="POST",
+    audio = synthesize_speech(
+        text=args.text,
+        model=args.model,
+        voice=args.voice,
+        instruction=args.instruction,
     )
-    try:
-        with urllib.request.urlopen(req, timeout=180) as r:
-            Path(args.out).write_bytes(r.read())
-            print(f"wrote {args.out}")
-    except urllib.error.HTTPError as e:
-        sys.exit(f"HTTP {e.code} /audio/speech: {e.read().decode(errors='replace')[:2000]}")
+    Path(args.out).write_bytes(audio)
+    print(f"wrote {args.out}")
 
 
 def main() -> None:
@@ -133,6 +176,7 @@ def main() -> None:
     tts.add_argument("--model", default="stepaudio-2.5-tts")
     tts.add_argument("--text", required=True)
     tts.add_argument("--voice", default="linjiajiejie")
+    tts.add_argument("--instruction", default=None)
     tts.add_argument("--out", required=True)
     tts.set_defaults(func=cmd_tts)
     chat = sub.add_parser("chat")
@@ -143,7 +187,10 @@ def main() -> None:
     chat.add_argument("--temperature", type=float, default=0.2)
     chat.set_defaults(func=cmd_chat)
     args = ap.parse_args()
-    args.func(args)
+    try:
+        args.func(args)
+    except StepfunAPIError as exc:
+        sys.exit(str(exc))
 
 
 if __name__ == "__main__":

@@ -1,0 +1,133 @@
+{
+  "baseline": {
+    "artifact_sha256": "dd49cef1382f977a5d75bbffcce4738b5963e64d1a3b06334c4cb8734df4eba8",
+    "hero_ref_count": 290,
+    "keyframe_count": 183,
+    "observation_count": 1922,
+    "root": "local-data/ingest_a_v6_aborted_stationary0",
+    "timing": {
+      "detection_s": 339.4,
+      "videos": {
+        "v1": {
+          "detection_s": 339.4,
+          "frame_batch_size": 2,
+          "tile_selection_mode": "legacy_or_none",
+          "tiled_keyframe_count": 0,
+          "wall_s": 372
+        }
+      },
+      "wall_s": 372
+    },
+    "tracklet_count": 290,
+    "video_count": 1,
+    "videos": {
+      "v1": {
+        "canonical_tracklet_counts": {
+          "__unknown__": 12,
+          "bed": 4,
+          "bookshelf": 12,
+          "desk": 6,
+          "laundry_bag": 20,
+          "luggage": 11,
+          "mini_fridge": 25,
+          "night_light": 11,
+          "security_camera": 9,
+          "storage_box": 83,
+          "stuffed_animal": 20,
+          "table_lamp": 7,
+          "toy_storage_organizer": 45,
+          "tumbler": 6,
+          "wardrobe": 11,
+          "water_bottle": 8
+        },
+        "hero_ref_count": 290,
+        "hero_ref_coverage": 1.0,
+        "keyframe_count": 183,
+        "observation_count": 1922,
+        "tracklet_count": 290,
+        "unknown_raw_label_counts": {
+          "baby monitor storage box": 3,
+          "cylinder lamp luggage": 1,
+          "cylinder lamp mini fridge": 2,
+          "laundry bag toy storage organizer": 1,
+          "luggage mini fridge": 4,
+          "smart speaker toy storage organizer": 1
+        }
+      }
+    }
+  },
+  "candidate": {
+    "artifact_sha256": "7742c1399d83a7c3bc91c1296c62c9b2de84030b7ca4a92a7ffcb11f8aef14d5",
+    "hero_ref_count": 291,
+    "keyframe_count": 183,
+    "observation_count": 1976,
+    "root": "local-data/ingest_a_v6",
+    "timing": {
+      "detection_s": 436.8,
+      "videos": {
+        "v1": {
+          "detection_s": 436.8,
+          "frame_batch_size": 2,
+          "tile_selection_mode": "adaptive_low_motion_fallback",
+          "tiled_keyframe_count": 9,
+          "wall_s": 469
+        }
+      },
+      "wall_s": 469
+    },
+    "tracklet_count": 291,
+    "video_count": 1,
+    "videos": {
+      "v1": {
+        "canonical_tracklet_counts": {
+          "__unknown__": 12,
+          "bed": 4,
+          "bookshelf": 12,
+          "desk": 6,
+          "laundry_bag": 20,
+          "luggage": 11,
+          "mini_fridge": 25,
+          "night_light": 11,
+          "security_camera": 9,
+          "storage_box": 83,
+          "stuffed_animal": 21,
+          "table_lamp": 7,
+          "toy_storage_organizer": 45,
+          "tumbler": 6,
+          "wardrobe": 11,
+          "water_bottle": 8
+        },
+        "hero_ref_count": 291,
+        "hero_ref_coverage": 1.0,
+        "keyframe_count": 183,
+        "observation_count": 1976,
+        "tracklet_count": 291,
+        "unknown_raw_label_counts": {
+          "baby monitor storage box": 3,
+          "cylinder lamp luggage": 1,
+          "cylinder lamp mini fridge": 2,
+          "laundry bag toy storage organizer": 1,
+          "luggage mini fridge": 4,
+          "smart speaker toy storage organizer": 1
+        }
+      }
+    }
+  },
+  "comparison_type": "ground_truth_free_ingest_diagnostic",
+  "deltas": {
+    "observation_count": 54,
+    "per_video": {
+      "v1": {
+        "hero_ref_coverage": 1.0,
+        "observation_count_delta": 54,
+        "tracklet_count_delta": 1
+      }
+    },
+    "tracklet_count": 1,
+    "wall_ratio_candidate_over_baseline": 1.260752688172043,
+    "wall_s": 97
+  },
+  "hardval_blocker": "machine-readable manually boxed task-A hardval ground truth is absent; tracklet deltas are not recall, fragmentation, or false-positive metrics",
+  "hardval_metrics_evaluated": false,
+  "schema_version": "1.0"
+}

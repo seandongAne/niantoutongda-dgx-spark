@@ -1,0 +1,25 @@
+{
+  "concurrency": 8,
+  "escalated": 15,
+  "failed": 0,
+  "guided_json": true,
+  "model": "/models/nv-community__NVIDIA-Nemotron-Nano-12B-v2-VL-NVFP4-QAD",
+  "ok": 945,
+  "schema_version": "s5-attr-v1",
+  "tracklets": 945,
+  "unknown_rate": {
+    "color_primary": 0.0,
+    "color_secondary": 0.1386,
+    "material": 0.0011,
+    "pattern": 0.0042,
+    "shape": 0.0011,
+    "text_marks": 0.7302
+  },
+  "usage": {
+    "calls": 961,
+    "completion_tokens": 82734,
+    "errors": 0,
+    "prompt_tokens": 539121
+  },
+  "wall_seconds": 582.6
+}

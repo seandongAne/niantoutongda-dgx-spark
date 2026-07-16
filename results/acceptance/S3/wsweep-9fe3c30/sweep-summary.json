@@ -1,0 +1,38 @@
+{
+  "attributes": "results/s5/attributes_v6_s5v1.jsonl",
+  "base_config": "reid-dev-a-v3",
+  "grid": [
+    {
+      "attr_weight": 0.0,
+      "attribute_enriched_tracklet_count": 945,
+      "automatic_link_count": 156,
+      "clarification_count": 525,
+      "instance_weight": 0.8,
+      "matched_entity_count": 114
+    },
+    {
+      "attr_weight": 0.1,
+      "attribute_enriched_tracklet_count": 945,
+      "automatic_link_count": 151,
+      "clarification_count": 515,
+      "instance_weight": 0.7,
+      "matched_entity_count": 108
+    },
+    {
+      "attr_weight": 0.15,
+      "attribute_enriched_tracklet_count": 945,
+      "automatic_link_count": 153,
+      "clarification_count": 513,
+      "instance_weight": 0.65,
+      "matched_entity_count": 103
+    },
+    {
+      "attr_weight": 0.2,
+      "attribute_enriched_tracklet_count": 945,
+      "automatic_link_count": 162,
+      "clarification_count": 520,
+      "instance_weight": 0.6,
+      "matched_entity_count": 105
+    }
+  ]
+}

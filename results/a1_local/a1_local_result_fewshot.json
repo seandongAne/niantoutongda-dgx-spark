@@ -1,0 +1,88 @@
+{
+  "model": "/home/Developer/models/stepfun-ai__Step-Audio-2-mini",
+  "audio": "local-data/a1/test_narration.wav",
+  "audio_seconds": 17.7,
+  "temperature": 0.2,
+  "few_shot": true,
+  "load_s": 137.6,
+  "generate_s": 60.6,
+  "new_tokens": 227,
+  "raw_text": "[{\"label_zh\": \"蓝色水壶\", \"label_en\": \"blue kettle\", \"owner\": \"姐姐\", \"source_location\": \"白色书架第二层\", \"target_location\": \"主卧衣柜\", \"pack_group\": null, \"attributes\": {\"color\": \"蓝色\"}}, {\"label_zh\": \"史迪奇玩偶\", \"label_en\": \"Stitch doll\", \"owner\": \"姐姐\", \"source_location\": \"儿童房\", \"target_location\": \"床上用品\", \"pack_group\": \"床上用品\", \"attributes\": null}, {\"label_zh\": \"粉色行李箱\", \"label_en\": \"pink suitcase\", \"owner\": \"姐姐\", \"source_location\": \"儿童房\", \"target_location\": \"主卧衣柜\", \"pack_group\": null, \"attributes\": {\"color\": \"粉色\"}}, {\"label_zh\": \"冬天的衣服\", \"label_en\": \"winter clothes\", \"owner\": \"姐姐\", \"source_location\": \"粉色行李箱\", \"target_location\": \"主卧衣柜\", \"pack_group\": null, \"attributes\": null}]",
+  "items": [
+    {
+      "label_zh": "蓝色水壶",
+      "label_en": "blue kettle",
+      "owner": "姐姐",
+      "source_location": "白色书架第二层",
+      "target_location": "主卧衣柜",
+      "pack_group": null,
+      "attributes": {
+        "color": "蓝色"
+      }
+    },
+    {
+      "label_zh": "史迪奇玩偶",
+      "label_en": "Stitch doll",
+      "owner": "姐姐",
+      "source_location": "儿童房",
+      "target_location": "床上用品",
+      "pack_group": "床上用品",
+      "attributes": null
+    },
+    {
+      "label_zh": "粉色行李箱",
+      "label_en": "pink suitcase",
+      "owner": "姐姐",
+      "source_location": "儿童房",
+      "target_location": "主卧衣柜",
+      "pack_group": null,
+      "attributes": {
+        "color": "粉色"
+      }
+    },
+    {
+      "label_zh": "冬天的衣服",
+      "label_en": "winter clothes",
+      "owner": "姐姐",
+      "source_location": "粉色行李箱",
+      "target_location": "主卧衣柜",
+      "pack_group": null,
+      "attributes": null
+    }
+  ],
+  "json_ok": true,
+  "judgement": {
+    "items_expected": 3,
+    "items_extracted": 4,
+    "items_pass": 0,
+    "per_item": [
+      {
+        "label_zh": "蓝色水壶",
+        "verdict": "DIFF",
+        "diffs": [
+          "target_location"
+        ]
+      },
+      {
+        "label_zh": "史迪奇玩偶",
+        "verdict": "DIFF",
+        "diffs": [
+          "owner",
+          "source_location",
+          "target_location"
+        ]
+      },
+      {
+        "label_zh": "粉色行李箱",
+        "verdict": "DIFF",
+        "diffs": [
+          "owner",
+          "source_location"
+        ]
+      }
+    ],
+    "extra_items": [
+      "冬天的衣服"
+    ]
+  }
+}

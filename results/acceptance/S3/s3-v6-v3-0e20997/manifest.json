@@ -1,0 +1,21 @@
+{
+  "code_commit": "0e209975cacd437bb80fba57fa15b41f53ef07cc",
+  "config": {
+    "path": "configs/reid_dev_a_v3.yaml",
+    "sha256": "7681d0f087ee6367642ec7ced638c3a7bc7d45ce91378d845d99e571f3f9017d"
+  },
+  "constraints": {
+    "path": null,
+    "sha256": null
+  },
+  "created_at": "2026-07-16T08:03:53Z",
+  "ground_truth": null,
+  "ground_truth_status": "MISSING_MACHINE_READABLE_ANNOTATIONS",
+  "ingest_root": "local-data/ingest_a_v6",
+  "schema_version": "1.0",
+  "slice_id": "S3",
+  "vocab": {
+    "path": "fixtures/dev_a/vocab.json",
+    "sha256": "c33ae257261d79857bf59c9a01f43ff04ab9a468952526f79b177324d12bc5d6"
+  }
+}

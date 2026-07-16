@@ -14,6 +14,8 @@
 #   5. S5 前提:spark 上 vLLM/NVFP4 服务已起(docs/NEMOTRON_SPARK_SERVING.md);
 #      attributes 阶段带 curl 探活守卫,服务没起会快速失败而不是空跑。
 #   6. 验收照片 + 匹配勾选 → fixtures/hero_s1/acceptance.json 后把 verify 翻 true。
+#   7. SF1 训练完成后用 sf1_wire_reid.py 从冻结 W1/W2 生成派生配置，只把
+#      reid.spark_cmd 的 --config 换成该文件；原预注册工作点不改写。
 run_dir: results/hero/s1-w1
 trace_id: hero-s1-w1
 python: .venv/bin/python

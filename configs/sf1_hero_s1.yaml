@@ -1,0 +1,17 @@
+version: "sf1-l1-hero-s1-v1"
+created_at: "2026-07-16"
+owner: "物品记忆 Agent"
+scope: "HERO_S1_OFFICIAL"
+
+# 与 dev_a 完全同一训练协议；素材日只替换 --ingest-root 与 --labels。
+split_policy: "leave_last_video_out_v1"
+input_dim: 768
+hidden_dim: 256
+output_dim: 128
+epochs: 120
+learning_rate: 0.003
+weight_decay: 0.0001
+temperature: 0.07
+seeds: [20260716, 20260717, 20260718]
+selection_policy: "first_preregistered_seed"
+device: "cuda"

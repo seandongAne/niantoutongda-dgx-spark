@@ -434,7 +434,11 @@ def run_reid(
 ) -> ReIDRun:
     constraints = constraints or IdentityConstraints()
     original_features = load_features(
-        ingest_root, vocab=vocab, embedding_dim=config.embedding_dim, attributes=attributes
+        ingest_root,
+        vocab=vocab,
+        embedding_dim=config.embedding_dim,
+        attributes=attributes,
+        projection=config.projection,
     )
     if not original_features:
         raise ValueError("no embedded tracklets found")

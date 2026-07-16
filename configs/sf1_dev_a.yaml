@@ -1,0 +1,21 @@
+version: "sf1-l1-dev-a-v1"
+created_at: "2026-07-16"
+owner: "物品记忆 Agent"
+scope: "DEV_A_DIAGNOSTIC_ONLY_NOT_HERO_ACCEPTANCE"
+
+# 固定切分：每个 anchor 的最后一个 video_id 只做验证 query；其余视频做
+# gallery + SupCon 训练。身份两侧都有样本，但 tracklet 与视频不泄漏。
+split_policy: "leave_last_video_out_v1"
+
+input_dim: 768
+hidden_dim: 256
+output_dim: 128
+epochs: 120
+learning_rate: 0.003
+weight_decay: 0.0001
+temperature: 0.07
+
+# 第一颗种子是预注册主产物；其余只用于统计稳定性，不择优挑权重。
+seeds: [20260716, 20260717, 20260718]
+selection_policy: "first_preregistered_seed"
+device: "cuda"

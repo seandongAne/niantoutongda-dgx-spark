@@ -17,6 +17,7 @@ import yaml
 
 from backend.pipeline.vocab import Vocabulary
 from backend.schemas.core import Observation, Tracklet
+from backend.tools.sf1.projection import NumpyProjectionHead
 
 
 @dataclass(frozen=True)
@@ -64,6 +65,15 @@ class ClarifyConfig:
 
 
 @dataclass(frozen=True)
+class ProjectionConfig:
+    """SF1-L1 冻结投影头；启用时 artifact 与 sha256 缺一不可。"""
+
+    enabled: bool = False
+    artifact: str = ""
+    sha256: str = ""
+
+
+@dataclass(frozen=True)
 class ReIDConfig:
     version: str
     embedding_dim: int
@@ -73,6 +83,7 @@ class ReIDConfig:
     stitch: StitchConfig = StitchConfig()
     filter: FilterConfig = FilterConfig()
     clarify: ClarifyConfig = ClarifyConfig()
+    projection: ProjectionConfig = ProjectionConfig()
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> "ReIDConfig":
@@ -88,6 +99,7 @@ class ReIDConfig:
             stitch=StitchConfig(**raw.get("stitch", {})),
             filter=FilterConfig(**raw.get("filter", {})),
             clarify=ClarifyConfig(**raw.get("clarify", {})),
+            projection=ProjectionConfig(**raw.get("projection", {})),
         )
         config.validate()
         return config
@@ -114,6 +126,10 @@ class ReIDConfig:
             raise ValueError("filter.min_observations must be >= 1")
         if self.clarify.max_partners_per_tracklet < 0:
             raise ValueError("clarify.max_partners_per_tracklet cannot be negative")
+        if self.projection.enabled and not (
+            self.projection.artifact and self.projection.sha256
+        ):
+            raise ValueError("enabled projection requires artifact and sha256")
 
 
 @dataclass(frozen=True)
@@ -208,6 +224,7 @@ def load_features(
     vocab: Vocabulary,
     embedding_dim: int,
     attributes: dict[str, dict[str, str]] | None = None,
+    projection: ProjectionConfig | None = None,
 ) -> list[TrackFeature]:
     """读取每个视频目录的 Tracklet、Observation 与嵌入，顺序确定。
 
@@ -219,6 +236,17 @@ def load_features(
     if not root.is_dir():
         raise FileNotFoundError(f"ingest root not found: {root}")
 
+    projection = projection or ProjectionConfig()
+    projection_head = None
+    if projection.enabled:
+        artifact = _resolve_ref(projection.artifact, root)
+        projection_head = NumpyProjectionHead.load(
+            artifact, expected_sha256=projection.sha256
+        )
+        if projection_head.input_dim != embedding_dim:
+            raise ValueError(
+                f"projection expects {projection_head.input_dim} dims, config has {embedding_dim}"
+            )
     features: list[TrackFeature] = []
     for tracklet_path in sorted(root.glob("*/tracklets.jsonl")):
         observations = {
@@ -231,6 +259,8 @@ def load_features(
             if attributes and tracklet.tracklet_id in attributes:
                 tracklet.attributes.update(attributes[tracklet.tracklet_id])
             vector = _load_vector(tracklet.embedding_ref, root, embedding_dim)
+            if projection_head is not None:
+                vector = tuple(float(value) for value in projection_head.apply(vector))
             raw_label = str(tracklet.attributes.get("label", ""))
             vocab_match = vocab.match(raw_label)
             linked = [observations[ref] for ref in tracklet.observation_ids if ref in observations]

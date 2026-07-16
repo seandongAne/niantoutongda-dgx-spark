@@ -109,6 +109,11 @@ def main() -> int:
         "code_commit": _git_commit(),
         "ingest_root": str(args.ingest_root),
         "config": {"path": str(config_path), "sha256": _sha256(config_path)},
+        "projection": {
+            "enabled": config.projection.enabled,
+            "artifact": config.projection.artifact or None,
+            "sha256": config.projection.sha256 or None,
+        },
         "vocab": {"path": str(vocab_path), "sha256": _sha256(vocab_path)},
         "constraints": {
             "path": str(constraints_path) if constraints_path else None,

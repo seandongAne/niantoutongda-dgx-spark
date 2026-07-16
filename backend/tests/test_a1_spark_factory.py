@@ -74,3 +74,23 @@ def test_ensure_plan_is_resumable_but_rejects_a_different_plan(tmp_path):
     plan_path.write_text(json.dumps(first), encoding="utf-8")
     with pytest.raises(RuntimeError, match="existing plan differs"):
         a1_spark_factory.ensure_plan(args)
+
+
+def test_status_records_the_factory_code_revision(monkeypatch, tmp_path):
+    args = launch_args(tmp_path)
+    status_path = tmp_path / "factory-status.json"
+    monkeypatch.setattr(
+        a1_spark_factory.a1_robustness,
+        "git_revision",
+        lambda _repo: "deploy-revision",
+    )
+
+    a1_spark_factory._set_status(
+        status_path,
+        phase="plan",
+        state="running",
+        args=args,
+    )
+
+    status = json.loads(status_path.read_text(encoding="utf-8"))
+    assert status["factory_code_revision"] == "deploy-revision"

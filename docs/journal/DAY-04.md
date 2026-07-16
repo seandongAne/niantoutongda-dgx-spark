@@ -113,7 +113,7 @@
   含 gt.skeleton + v6 predictions 746 条 + 离线标注器 annotate.html,评测回环已对
   hardval_eval.py 验证);17 锚点候选审阅表 + 预填 review JSON
   (`results/acceptance/S3/anchor-review-v6/`,候选=同 category 全集,无相似度筛选);
-  四组硬负真值在锚点确认后自动导出。23 个 stitch 合并组目检表随 v2 产物留档。
+  四组硬负真值在锚点确认后自动导出。22 个 stitch 合并组(23 次合并)目检表随 v2 产物留档,目检未见硬负互并(无 GT,不算 PASS)。
 - **P2 顺手修复**:acceptance manifest `code_commit=unknown` — deploy.sh 现写 COMMIT 戳,
   reid_task 回退读取;本批 manifest 已带真实 commit。
 - 本地测试 75 passed;sp0 三次核心探针产物入库(c5b3e1d)。

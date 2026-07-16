@@ -20,8 +20,10 @@
 ## 红线(先于一切用途)
 
 1. **密钥只在本地 Mac 持久保存**——永不进 git、永不写入 Spark 磁盘。唯一例外是
-   赛方 SSH 限流后的 **Spark 原地工厂通道**(A1 工厂、词表工厂;通道纪律统一
-   实现在 `scripts/spark_factory_common.py`,新工厂必须复用不得另起炉灶):
+   赛方 SSH 限流后的 **Spark 原地工厂通道**,且只给云阶段必须贴着节点数据的
+   工厂用(音频工厂 = A1;词表工厂仅在本地网络不通时后备)——**纯文本云调用
+   一律本地跑,key 不出 Mac**。通道纪律统一实现在
+   `scripts/spark_factory_common.py`,新工厂必须复用不得另起炉灶:
    一次性、可撤销 key 通过 stdin 进入远端进程内存，
    不进 argv / 日志 / 状态文件 / `.env`;云阶段结束立刻从环境移除，并从注入时起
    按已泄露处理，批次结束即撤销。非一次性 key 不得使用这个通道。
@@ -68,26 +70,39 @@ ssh spark 'tail -n 50 ~/proj/logs/a1_factory_calibration_v3.log'
 若负责人明确批准延迟撤销，必须用 `--revocation-delay-days N` 把例外写入状态与验收报告；
 该字段只负责审计，不会也不能代替控制台删除动作。
 
-## Spark 原地词表工厂（2026-07-16，同一凭据通道）
+## 词表工厂(2026-07-16;扫描在节点,文本云调用默认在本地)
 
-用途②的原地版:云候选生成(一次 chat 调用)→ GDINO 扫描 → 判卷/死词摘要
-全部在节点数据平面完成,逐帧预测永不过境,本地只拉回 `ranking.json` 级小报告。
-物品清单是仓库内纯文本 fixture(经 deploy 上节点),零家庭数据出境。
+**分工口径(2026-07-16 Sean 裁决):音频工厂落节点(音频有数据引力,
+17MB/半小时的限流下不可过境);文本云调用走本地,key 不出 Mac。**
+词表工厂离不开节点的只有 GDINO 扫描,而扫描不需要任何凭据;
+逐帧预测(大头)永不过境,本地只拉回 `ranking.json` 级小报告。
+
+默认(免凭据)流程:
 
 ```bash
-./scripts/spark_healthcheck.sh && ./scripts/deploy.sh
-
-.venv/bin/python scripts/word_spark_factory.py launch \
+# 1. 本地产候选(key 只在本地 .env)
+.venv/bin/python scripts/vocab_candidates_gen.py \
   --items fixtures/hero_s1/items.json \
+  --out fixtures/wordgen/hero_s1.candidates.json
+# 2. 提交 + 部署(候选是 KB 级纯文本),再免凭据发射 scan-only worker
+git add fixtures/wordgen/ && git commit -m "..." && ./scripts/deploy.sh
+.venv/bin/python scripts/word_spark_factory.py launch \
+  --candidates fixtures/wordgen/hero_s1.candidates.json \
   --frames-dir fixtures/dev_a/hardval/frames \
   --gt fixtures/dev_a/hardval/gt.json \
   --run-dir results/wordfactory/<name> \
   --report-dir results/acceptance/WORDS/<name> \
-  --log logs/word_factory_<name>.log \
-  --acknowledge-key-exposure
+  --log logs/word_factory_<name>.log
 
 ssh spark 'tail -n 30 ~/proj/logs/word_factory_<name>.log'
 ```
+
+后备(带凭据)流程:本地到 StepFun 网络不可用时,把 `--candidates` 换成
+`--items fixtures/.../items.json` 并加 `--acknowledge-key-exposure`,
+worker 在节点原地 gen(一次 chat 调用,key 经 stdin、用完即弹,通道纪律
+同 A1 工厂)。已真机验证(2026-07-16 smoke-3cat):gen→scan→rank 端到端
+5 分钟,判卷与本地 48 词回路交叉一致(luggage recall 1.0/night_light
+0.857/tumbler 0)。
 
 无 GT 时(英雄素材未对账前)省略 `--gt`,产出 `deadwords.json`(死词/
 触发计数)供人工预筛;正式入词表仍必须 GT 判卷。`--max-phrases`(默认 90)

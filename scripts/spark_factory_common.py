@@ -46,14 +46,17 @@ def write_json(path: Path, payload: Any) -> None:
     temporary.replace(path)
 
 
-def launch_worker(host: str, remote_command: str, key: str) -> int:
-    """本地 → SSH 发射远端 worker;key 只走 stdin,绝不进命令行。"""
-    if not key:
+def launch_worker(host: str, remote_command: str, key: str | None) -> int:
+    """本地 → SSH 发射远端 worker;key 只走 stdin,绝不进命令行。
+
+    key=None 表示本次任务不含云阶段(免凭据),stdin 不送任何内容。
+    """
+    if key == "":
         raise SystemExit("missing disposable StepFun key")
     try:
         process = subprocess.run(
             ["ssh", host, remote_command],
-            input=key + "\n",
+            input=(key + "\n") if key is not None else "",
             text=True,
             capture_output=True,
             check=False,

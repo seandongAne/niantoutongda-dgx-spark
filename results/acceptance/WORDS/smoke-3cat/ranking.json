@@ -1,0 +1,165 @@
+{
+  "categories": {
+    "luggage": {
+      "gt_boxes": 2,
+      "ranking": [
+        {
+          "candidate": "c4",
+          "fp_per_frame": 0.725,
+          "fragmentation": 0.0,
+          "phrase": "pink pull handle luggage",
+          "recall": 1.0,
+          "score": 0.855
+        },
+        {
+          "candidate": "c0",
+          "fp_per_frame": 0.75,
+          "fragmentation": 0.0,
+          "phrase": "pink rolling kids luggage",
+          "recall": 1.0,
+          "score": 0.85
+        },
+        {
+          "candidate": "c3",
+          "fp_per_frame": 0.85,
+          "fragmentation": 0.0,
+          "phrase": "pink wheeled suitcase",
+          "recall": 1.0,
+          "score": 0.83
+        },
+        {
+          "candidate": "c5",
+          "fp_per_frame": 0.9,
+          "fragmentation": 0.0,
+          "phrase": "small pink suitcase",
+          "recall": 1.0,
+          "score": 0.82
+        },
+        {
+          "candidate": "c1",
+          "fp_per_frame": 0.725,
+          "fragmentation": 0.0,
+          "phrase": "pink hard shell luggage",
+          "recall": 0.5,
+          "score": 0.355
+        },
+        {
+          "candidate": "c2",
+          "fp_per_frame": 0.725,
+          "fragmentation": 0.0,
+          "phrase": "kids travel suitcase",
+          "recall": 0.5,
+          "score": 0.355
+        }
+      ]
+    },
+    "night_light": {
+      "gt_boxes": 7,
+      "ranking": [
+        {
+          "candidate": "c4",
+          "fp_per_frame": 0.575,
+          "fragmentation": 0.25,
+          "phrase": "white column night light",
+          "recall": 0.8571,
+          "score": 0.6421
+        },
+        {
+          "candidate": "c3",
+          "fp_per_frame": 0.625,
+          "fragmentation": 0.25,
+          "phrase": "bedside night light",
+          "recall": 0.8571,
+          "score": 0.6321
+        },
+        {
+          "candidate": "c2",
+          "fp_per_frame": 0.7,
+          "fragmentation": 0.25,
+          "phrase": "round top lamp",
+          "recall": 0.8571,
+          "score": 0.6171
+        },
+        {
+          "candidate": "c5",
+          "fp_per_frame": 1.0,
+          "fragmentation": 0.25,
+          "phrase": "small decorative lamp",
+          "recall": 0.8571,
+          "score": 0.5571
+        },
+        {
+          "candidate": "c0",
+          "fp_per_frame": 1.15,
+          "fragmentation": 0.25,
+          "phrase": "white cylinder night light",
+          "recall": 0.8571,
+          "score": 0.5271
+        },
+        {
+          "candidate": "c1",
+          "fp_per_frame": 0.6,
+          "fragmentation": 0.3333,
+          "phrase": "sticker covered night light",
+          "recall": 0.5714,
+          "score": 0.3181
+        }
+      ]
+    },
+    "tumbler": {
+      "gt_boxes": 1,
+      "ranking": [
+        {
+          "candidate": "c0",
+          "fp_per_frame": 0.75,
+          "fragmentation": 0.0,
+          "phrase": "light straw tumbler",
+          "recall": 0.0,
+          "score": -0.15
+        },
+        {
+          "candidate": "c1",
+          "fp_per_frame": 0.8,
+          "fragmentation": 0.0,
+          "phrase": "plastic straw cup",
+          "recall": 0.0,
+          "score": -0.16
+        },
+        {
+          "candidate": "c4",
+          "fp_per_frame": 1.0,
+          "fragmentation": 0.0,
+          "phrase": "light color drinking bottle",
+          "recall": 0.0,
+          "score": -0.2
+        },
+        {
+          "candidate": "c3",
+          "fp_per_frame": 1.05,
+          "fragmentation": 0.0,
+          "phrase": "transparent straw tumbler",
+          "recall": 0.0,
+          "score": -0.21
+        },
+        {
+          "candidate": "c2",
+          "fp_per_frame": 1.225,
+          "fragmentation": 0.0,
+          "phrase": "sippy cup",
+          "recall": 0.0,
+          "score": -0.245
+        },
+        {
+          "candidate": "c5",
+          "fp_per_frame": 1.5,
+          "fragmentation": 0.0,
+          "phrase": "kids straw cup",
+          "recall": 0.0,
+          "score": -0.3
+        }
+      ]
+    }
+  },
+  "lambda_fp": 0.2,
+  "mu_fragmentation": 0.4
+}

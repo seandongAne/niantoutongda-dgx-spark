@@ -1,16 +1,22 @@
 #!/usr/bin/env python
-"""词表工厂原地版 — 云候选生成 + GDINO 扫描 + 判卷全部在 Spark 数据平面。
+"""词表工厂 — GDINO 扫描 + 判卷在 Spark;云候选生成默认在本地。
 
-SSH 限流后的形态:本地只发射(launch)和收小报告;物品清单/GT/帧
-全部走 deploy 或本就长在节点上;逐帧预测(大头)永不过境。
+分工口径(2026-07-16 用户裁决):音频工厂落节点(音频有数据引力,
+17MB/半小时的 SSH 限流下不可过境);**文本云调用走本地,key 不出 Mac**。
+词表工厂真正离不开节点的只有 GDINO 扫描,而扫描不需要任何凭据。
 
-  launch(本地) --items fixtures/.../items.json --frames-dir ... [--gt ...]
-    → SSH stdin 送一次性 key → worker(spark)脱离后依次:
-      gen(云,一次 chat 调用,key 用完即弹) → scan(GDINO,先 free -h)
-      → rank(有 GT)或 deadwords 摘要(无 GT) → 小报告落 report-dir。
+默认(免凭据)流程:
+  1. 本地产候选:vocab_candidates_gen.py → fixtures/wordgen/<name>.candidates.json
+  2. 提交 + deploy(候选是 KB 级纯文本,走 deploy 不受限流影响)
+  3. launch --candidates fixtures/wordgen/<name>.candidates.json …
+     → worker(spark)免 key 脱离:scan(先 free -h)→ rank(有 GT)
+       或 deadwords 摘要(无 GT)→ 小报告落 report-dir,逐帧预测不过境。
 
-凭据纪律见 spark_factory_common.py;云端输出只是候选,入词表前
-必须过本判卷回路(有 GT)或后续人工裁决(无 GT)。
+后备(带凭据)流程:不给 --candidates 时 worker 在节点原地 gen(一次
+chat 调用),key 经 SSH stdin 注入、用完即弹——仅当本地到 StepFun 的
+网络不可用时使用,凭据纪律见 spark_factory_common.py。
+
+云端输出只是候选,入词表前必须过判卷回路(有 GT)或人工裁决(无 GT)。
 """
 
 from __future__ import annotations
@@ -47,7 +53,6 @@ def build_remote_command(args: argparse.Namespace) -> str:
     """固定代码的远端命令;key 有意不在参数里。"""
     worker_args = [
         "scripts/word_spark_factory.py", "worker",
-        "--items", args.items,
         "--frames-dir", args.frames_dir,
         "--run-dir", args.run_dir,
         "--report-dir", args.report_dir,
@@ -58,15 +63,35 @@ def build_remote_command(args: argparse.Namespace) -> str:
         "--max-phrases", str(args.max_phrases),
         "--log", args.log,
     ]
+    if args.candidates:
+        worker_args += ["--candidates", args.candidates]
+    else:
+        worker_args += ["--items", args.items]
     if args.gt:
         worker_args += ["--gt", args.gt]
     return "cd ~/proj && exec ~/venv/bin/python " + shlex.join(worker_args)
 
 
 def cmd_launch(args: argparse.Namespace) -> int:
+    if args.candidates:
+        # 免凭据路径:候选已在节点(经 deploy),不含云阶段,不送 key
+        return launch_worker(args.host, build_remote_command(args), None)
+    if not args.items:
+        raise SystemExit("--candidates 与 --items 必须二选一")
     if not args.acknowledge_key_exposure:
         raise SystemExit(ACK_REFUSAL)
     return launch_worker(args.host, build_remote_command(args), load_key())
+
+
+def _cap_check(args: argparse.Namespace, path: Path) -> None:
+    candidates = json.loads(path.read_text(encoding="utf-8"))
+    n_phrases = sum(len(v) for v in candidates.values())
+    if n_phrases > args.max_phrases:
+        raise RuntimeError(
+            f"候选短语 {n_phrases} 条超过 --max-phrases {args.max_phrases},"
+            "拒绝扫描;提高上限或减物品重跑"
+        )
+    print(f"candidates: {len(candidates)} categories, {n_phrases} phrases", flush=True)
 
 
 def _run_gen(args: argparse.Namespace, key: str) -> Path:
@@ -79,14 +104,7 @@ def _run_gen(args: argparse.Namespace, key: str) -> Path:
          "--temperature", str(args.temperature), "--out", str(out)],
         cwd=PROJ, check=True, env=env,
     )
-    candidates = json.loads(out.read_text(encoding="utf-8"))
-    n_phrases = sum(len(v) for v in candidates.values())
-    if n_phrases > args.max_phrases:
-        raise RuntimeError(
-            f"候选短语 {n_phrases} 条超过 --max-phrases {args.max_phrases},"
-            "拒绝扫描;提高上限或减物品重跑"
-        )
-    print(f"gen ok: {len(candidates)} categories, {n_phrases} phrases", flush=True)
+    _cap_check(args, out)
     return out
 
 
@@ -139,10 +157,15 @@ def run_worker(args: argparse.Namespace, key: str) -> int:
         )
 
     try:
-        status("gen", "running")
-        candidates = _run_gen(args, key)
-        key = ""
-        status("scan", "running", credential_released_at=utc_now())
+        if args.candidates:
+            candidates = Path(args.candidates)
+            status("scan", "running", credential_used=False)
+            _cap_check(args, candidates)
+        else:
+            status("gen", "running")
+            candidates = _run_gen(args, key)
+            key = ""
+            status("scan", "running", credential_released_at=utc_now())
 
         scan_dir = _run_scan(args, candidates)
 
@@ -152,12 +175,14 @@ def run_worker(args: argparse.Namespace, key: str) -> int:
             _run_rank(args, scan_dir)
         else:
             _write_deadwords(args, scan_dir)
-        # 报告目录自带扫描指纹与 token 账
+        # 报告目录自带扫描指纹;gen 模式再附 token 账
         for name in ("scan-manifest.json",):
             (Path(args.report_dir) / name).write_bytes((scan_dir / name).read_bytes())
-        (Path(args.report_dir) / "candidates.manifest.json").write_bytes(
-            candidates.with_suffix(".manifest.json").read_bytes()
-        )
+        gen_manifest = candidates.with_suffix(".manifest.json")
+        if gen_manifest.exists():
+            (Path(args.report_dir) / "candidates.manifest.json").write_bytes(
+                gen_manifest.read_bytes()
+            )
 
         status("complete", "complete", completed_at=utc_now())
         print("WORD_SPARK_FACTORY_DONE", flush=True)
@@ -176,7 +201,7 @@ def run_worker(args: argparse.Namespace, key: str) -> int:
 
 
 def cmd_worker(args: argparse.Namespace) -> int:
-    key = read_stdin_key()
+    key = "" if args.candidates else read_stdin_key()
     child_pid = redirect_and_detach(Path(args.log))
     if child_pid is not None:
         key = ""
@@ -187,7 +212,11 @@ def cmd_worker(args: argparse.Namespace) -> int:
 
 
 def add_job_arguments(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--items", required=True, help="物品清单 JSON(仓库内路径,经 deploy 上节点)")
+    parser.add_argument(
+        "--candidates", default=None,
+        help="已生成候选 JSON(节点上路径,经 deploy);给了它 = 免凭据 scan-only",
+    )
+    parser.add_argument("--items", default=None, help="物品清单 JSON(节点原地 gen 后备路径用)")
     parser.add_argument("--frames-dir", required=True, help="扫描帧目录(节点上)")
     parser.add_argument("--gt", default=None, help="GT JSON;缺省只出死词摘要不判卷")
     parser.add_argument("--run-dir", required=True)

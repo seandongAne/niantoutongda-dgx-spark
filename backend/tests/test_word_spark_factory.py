@@ -90,6 +90,49 @@ def test_worker_status_never_contains_credential(monkeypatch, tmp_path):
     assert data["credential_policy"].startswith("stdin_memory_only")
 
 
+def scan_only_args(tmp_path):
+    return word_spark_factory.build_parser().parse_args([
+        "launch",
+        "--candidates", "fixtures/wordgen/smoke.candidates.json",
+        "--frames-dir", "fixtures/dev_a/hardval/frames",
+        "--gt", "fixtures/dev_a/hardval/gt.json",
+        "--run-dir", str(tmp_path / "run"),
+        "--report-dir", str(tmp_path / "report"),
+        "--log", str(tmp_path / "factory.log"),
+    ])
+
+
+def test_scan_only_remote_command_uses_candidates_not_items(tmp_path):
+    command = word_spark_factory.build_remote_command(scan_only_args(tmp_path))
+    assert "--candidates fixtures/wordgen/smoke.candidates.json" in command
+    assert "--items" not in command
+
+
+def test_scan_only_launch_sends_no_key_and_needs_no_ack(monkeypatch, tmp_path):
+    captured = {}
+
+    def fake_run(command, **kwargs):
+        captured["command"] = command
+        captured.update(kwargs)
+        return SimpleNamespace(returncode=0, stdout="started\n", stderr="")
+
+    monkeypatch.setattr(
+        word_spark_factory, "load_key",
+        lambda: pytest.fail("scan-only launch must not touch the key"),
+    )
+    import scripts.spark_factory_common as common
+    monkeypatch.setattr(common.subprocess, "run", fake_run)
+
+    assert word_spark_factory.cmd_launch(scan_only_args(tmp_path)) == 0
+    assert captured["input"] == ""
+
+
+def test_gen_mode_requires_items(tmp_path):
+    args = launch_args(tmp_path, items=None)
+    with pytest.raises(SystemExit, match="二选一"):
+        word_spark_factory.cmd_launch(args)
+
+
 def test_deadwords_report_flags_zero_detection_phrases(tmp_path):
     args = launch_args(tmp_path, gt=None)
     scan_dir = tmp_path / "run" / "scan"

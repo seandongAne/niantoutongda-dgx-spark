@@ -41,12 +41,38 @@ class ThresholdConfig:
 
 
 @dataclass(frozen=True)
+class StitchConfig:
+    """同视频短轨 stitch。enabled=False 时 S3 行为与历史基线逐字节一致。"""
+
+    enabled: bool = False
+    min_cosine: float = 0.90
+    max_gap_ms: int = 0  # 0 = 不限制片段间时间间隔
+
+
+@dataclass(frozen=True)
+class FilterConfig:
+    """低证据轨过滤:观测数不足的轨不进跨视频配对,保留为单例实体。"""
+
+    min_observations: int = 1  # 1 = 不过滤
+
+
+@dataclass(frozen=True)
+class ClarifyConfig:
+    """澄清请求封顶:每条轨在每个视频对里最多保留的歧义伙伴数。"""
+
+    max_partners_per_tracklet: int = 0  # 0 = 不封顶
+
+
+@dataclass(frozen=True)
 class ReIDConfig:
     version: str
     embedding_dim: int
     top_k: int
     weights: WeightConfig
     thresholds: ThresholdConfig
+    stitch: StitchConfig = StitchConfig()
+    filter: FilterConfig = FilterConfig()
+    clarify: ClarifyConfig = ClarifyConfig()
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> "ReIDConfig":
@@ -59,6 +85,9 @@ class ReIDConfig:
             top_k=int(raw["top_k"]),
             weights=weights,
             thresholds=thresholds,
+            stitch=StitchConfig(**raw.get("stitch", {})),
+            filter=FilterConfig(**raw.get("filter", {})),
+            clarify=ClarifyConfig(**raw.get("clarify", {})),
         )
         config.validate()
         return config
@@ -77,6 +106,14 @@ class ReIDConfig:
             raise ValueError("thresholds must satisfy 0 <= new < match <= 1")
         if not 0 <= t.margin <= 1 or not 0 <= t.min_quality <= 1:
             raise ValueError("margin/min_quality must be in [0, 1]")
+        if not 0 <= self.stitch.min_cosine <= 1:
+            raise ValueError("stitch.min_cosine must be in [0, 1]")
+        if self.stitch.max_gap_ms < 0:
+            raise ValueError("stitch.max_gap_ms cannot be negative")
+        if self.filter.min_observations < 1:
+            raise ValueError("filter.min_observations must be >= 1")
+        if self.clarify.max_partners_per_tracklet < 0:
+            raise ValueError("clarify.max_partners_per_tracklet cannot be negative")
 
 
 @dataclass(frozen=True)
@@ -89,6 +126,7 @@ class TrackFeature:
     quality: float
     aspect_ratio: float | None
     area: float | None
+    timestamps_ms: tuple[int, ...] = ()  # 已链接观测的时间戳,升序;stitch 共现否决用
 
     @property
     def tracklet_id(self) -> str:
@@ -97,6 +135,10 @@ class TrackFeature:
     @property
     def video_id(self) -> str:
         return self.tracklet.video_id
+
+    @property
+    def observation_count(self) -> int:
+        return len(self.timestamps_ms)
 
 
 def _resolve_ref(ref: str, ingest_root: Path) -> Path:
@@ -154,6 +196,7 @@ def load_features(
             vocab_match = vocab.match(raw_label)
             linked = [observations[ref] for ref in tracklet.observation_ids if ref in observations]
             quality = max((observation.quality for observation in linked), default=0.0)
+            timestamps = tuple(sorted(observation.timestamp_ms for observation in linked))
             ratios: list[float] = []
             areas: list[float] = []
             for observation in linked:
@@ -172,6 +215,7 @@ def load_features(
                     quality=quality,
                     aspect_ratio=median(ratios) if ratios else None,
                     area=median(areas) if areas else None,
+                    timestamps_ms=timestamps,
                 )
             )
     features.sort(key=lambda feature: feature.tracklet_id)

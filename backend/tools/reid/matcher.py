@@ -19,6 +19,7 @@ from typing import Any
 from backend.schemas.core import ClarificationRequest, IdentityState, ObjectEntity
 from backend.tools.reid.assignment import maximise_assignment
 from backend.tools.reid.model import ReIDConfig, TrackFeature, Vocabulary, load_features
+from backend.tools.reid.stitch import split_low_evidence, stitch_features
 
 
 def _pair_key(a: str, b: str) -> tuple[str, str]:
@@ -83,6 +84,8 @@ class ReIDRun:
     candidates: list[dict[str, Any]]
     accepted_links: list[dict[str, Any]]
     metrics: dict[str, Any]
+    stitch_report: dict[str, Any] | None = None
+    filtered_tracklets: list[dict[str, Any]] | None = None
 
     def write(self, out_dir: str | Path) -> None:
         out = Path(out_dir)
@@ -97,6 +100,12 @@ class ReIDRun:
         (out / "metrics.json").write_text(
             json.dumps(self.metrics, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
         )
+        if self.stitch_report is not None:
+            (out / "stitch-map.json").write_text(
+                json.dumps(self.stitch_report, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+            )
+        if self.filtered_tracklets is not None:
+            _write_jsonl(out / "filtered-tracklets.jsonl", self.filtered_tracklets)
 
 
 def _write_jsonl(path: Path, rows) -> None:
@@ -181,12 +190,13 @@ def _pairwise_assignments(
     features: list[TrackFeature],
     config: ReIDConfig,
     constraints: IdentityConstraints,
-) -> tuple[list[PairScore], dict[tuple[str, str], tuple[str, ...]], list[dict[str, Any]]]:
+) -> tuple[list[PairScore], dict[tuple[str, str], tuple[tuple[str, ...], float]], list[dict[str, Any]]]:
     by_video: dict[str, list[TrackFeature]] = defaultdict(list)
     for feature in features:
         by_video[feature.video_id].append(feature)
     accepted: list[PairScore] = []
-    ambiguous: dict[tuple[str, str], tuple[str, ...]] = {}
+    # pair → (reason codes, 供澄清封顶排序用的分数)
+    ambiguous: dict[tuple[str, str], tuple[tuple[str, ...], float]] = {}
     candidates_out: list[dict[str, Any]] = []
 
     for video_a, video_b in combinations(sorted(by_video), 2):
@@ -240,7 +250,7 @@ def _pairwise_assignments(
                 accepted.append(chosen)
             elif chosen.total > config.thresholds.new:
                 decision = "SUSPECTED_DUPLICATE"
-                ambiguous[_pair_key(chosen.a, chosen.b)] = ("SCORE_OR_MARGIN_UNCERTAIN",)
+                ambiguous[_pair_key(chosen.a, chosen.b)] = (("SCORE_OR_MARGIN_UNCERTAIN",), chosen.total)
             row = chosen.as_dict()
             row.update(
                 {
@@ -259,7 +269,7 @@ def _pairwise_assignments(
             best = ranked[0]
             key = _pair_key(best.a, best.b)
             if best.total > config.thresholds.new and key not in assigned_pairs:
-                ambiguous.setdefault(key, ("GLOBAL_ASSIGNMENT_CONTENTION",))
+                ambiguous.setdefault(key, (("GLOBAL_ASSIGNMENT_CONTENTION",), best.total))
 
         for a, row in zip(left, score_rows):
             recalled_for_left = {_pair_key(score.a, score.b) for score in left_ranked[a.tracklet_id]}
@@ -336,6 +346,40 @@ def _entity_id(members: list[str]) -> str:
     return f"entity_{digest}"
 
 
+def _cap_clarifications(
+    ambiguous: dict[tuple[str, str], tuple[tuple[str, ...], float]],
+    max_partners: int,
+    video_of: dict[str, str],
+) -> tuple[dict[tuple[str, str], tuple[tuple[str, ...], float]], int]:
+    """互选封顶:pair 必须同时进入两端点各自(按对手视频)的 top-N 才保留。
+
+    "任一端点保留即保留"挡不住星型扇出——对面碎轨只有这一条请求,
+    自身 top-1 永远兜底。互选语义下,一条轨对某视频只发起 top-N 个提问,
+    对面也必须认可。实体的 SUSPECTED 状态必须在封顶前的歧义集上计算,
+    封顶只裁剪人工澄清队列,不粉饰不确定性。
+    """
+
+    if max_partners <= 0:
+        return ambiguous, 0
+    partners: dict[tuple[str, str], list[tuple[float, str, tuple[str, str]]]] = defaultdict(list)
+    for pair, (_, score) in ambiguous.items():
+        a, b = pair
+        partners[(a, video_of[b])].append((score, b, pair))
+        partners[(b, video_of[a])].append((score, a, pair))
+    allowed: dict[tuple[str, str], set[tuple[str, str]]] = {}
+    for key, entries in partners.items():
+        ranked = sorted(entries, key=lambda item: (-item[0], item[1]))
+        allowed[key] = {pair for _, _, pair in ranked[:max_partners]}
+    keep = {
+        pair
+        for pair in ambiguous
+        if pair in allowed[(pair[0], video_of[pair[1]])]
+        and pair in allowed[(pair[1], video_of[pair[0]])]
+    }
+    suppressed = len(ambiguous) - len(keep)
+    return {pair: value for pair, value in ambiguous.items() if pair in keep}, suppressed
+
+
 def _clarification(pair: tuple[str, str], reasons: tuple[str, ...]) -> ClarificationRequest:
     digest = hashlib.sha256("\n".join(pair).encode()).hexdigest()[:12]
     return ClarificationRequest(
@@ -354,20 +398,56 @@ def run_reid(
     constraints: IdentityConstraints | None = None,
 ) -> ReIDRun:
     constraints = constraints or IdentityConstraints()
-    features = load_features(ingest_root, vocab=vocab, embedding_dim=config.embedding_dim)
-    if not features:
+    original_features = load_features(ingest_root, vocab=vocab, embedding_dim=config.embedding_dim)
+    if not original_features:
         raise ValueError("no embedded tracklets found")
-    feature_by_id = {feature.tracklet_id: feature for feature in features}
+    original_ids = {feature.tracklet_id for feature in original_features}
     unknown_constraints = {
         item
         for pair in constraints.same | constraints.different
         for item in pair
-        if item not in feature_by_id
+        if item not in original_ids
     }
     if unknown_constraints:
         raise ValueError(f"constraints reference unknown tracklets: {sorted(unknown_constraints)}")
 
-    accepted, ambiguous, candidates = _pairwise_assignments(features, config, constraints)
+    # 同视频碎轨先收拢;约束在原始 id 空间校验后重映射到代表 id 空间。
+    stitch_result = stitch_features(
+        original_features,
+        config,
+        forced_same=constraints.same,
+        forbidden=constraints.different,
+    )
+    member_to_rep = {
+        member: rep for rep, members in stitch_result.members_by_rep.items() for member in members
+    }
+
+    def _rep(item: str) -> str:
+        return member_to_rep.get(item, item)
+
+    remapped_same = {
+        _pair_key(_rep(a), _rep(b)) for a, b in constraints.same if _rep(a) != _rep(b)
+    }
+    for a, b in constraints.different:
+        if _rep(a) == _rep(b):
+            raise ValueError(f"cannot-link pair was stitched into one track: {(a, b)}")
+    remapped_different = {_pair_key(_rep(a), _rep(b)) for a, b in constraints.different}
+    constraints = IdentityConstraints(
+        same=frozenset(remapped_same), different=frozenset(remapped_different)
+    )
+
+    matching_features, filtered_records = split_low_evidence(
+        stitch_result.features,
+        config,
+        stitch_result.members_by_rep,
+        protected=frozenset(
+            item for pair in constraints.same | constraints.different for item in pair
+        ),
+    )
+    feature_by_id = {feature.tracklet_id: feature for feature in matching_features}
+    stitched_by_id = {feature.tracklet_id: feature for feature in stitch_result.features}
+
+    accepted, ambiguous, candidates = _pairwise_assignments(matching_features, config, constraints)
     union_find = _UnionFind(sorted(feature_by_id))
     accepted_records: list[dict[str, Any]] = []
 
@@ -387,15 +467,26 @@ def run_reid(
                 {"tracklet_a": score.a, "tracklet_b": score.b, "mode": "automatic", "score": round(score.total, 8)}
             )
         else:
-            ambiguous.setdefault(key, ("GLOBAL_CLUSTER_CONFLICT",))
+            ambiguous.setdefault(key, (("GLOBAL_CLUSTER_CONFLICT",), score.total))
+
+    # 实体状态基于封顶前的完整歧义集(诚实);澄清队列基于互选封顶后的子集。
+    clarify_pairs, suppressed_count = _cap_clarifications(
+        ambiguous,
+        config.clarify.max_partners_per_tracklet,
+        {feature.tracklet_id: feature.video_id for feature in matching_features},
+    )
 
     clusters: dict[str, list[str]] = defaultdict(list)
     for tracklet_id in sorted(feature_by_id):
         clusters[union_find.find(tracklet_id)].append(tracklet_id)
     ambiguous_members = {item for pair in ambiguous for item in pair}
     entities: list[ObjectEntity] = []
-    for members in sorted((sorted(value) for value in clusters.values()), key=lambda value: value[0]):
-        member_features = [feature_by_id[item] for item in members]
+    filtered_rep_ids = {record["tracklet_id"] for record in filtered_records}
+    # 被低证据过滤的轨保留为单例实体,与匹配聚类一并按首成员排序输出。
+    member_lists = [sorted(value) for value in clusters.values()]
+    member_lists.extend([rep] for rep in filtered_rep_ids)
+    for members in sorted(member_lists, key=lambda value: value[0]):
+        member_features = [stitched_by_id[item] for item in members]
         labels = [
             feature.category_id or feature.canonical_id or feature.raw_label or "unknown"
             for feature in member_features
@@ -407,7 +498,10 @@ def run_reid(
             for pair, score in accepted_score_by_pair.items()
             if pair[0] in members and pair[1] in members
         ]
-        if len(members) > 1:
+        if members[0] in filtered_rep_ids:
+            state = IdentityState.NEW_ENTITY
+            confidence = 0.5  # 证据不足,不得声称高置信的"确为新物体"
+        elif len(members) > 1:
             state = IdentityState.MATCHED
             confidence = sum(link_scores) / len(link_scores) if link_scores else 1.0
         elif members[0] in ambiguous_members:
@@ -425,10 +519,14 @@ def run_reid(
         evidence = sorted(
             {reference for feature in member_features for reference in feature.tracklet.prototype_refs}
         )
+        # 对外一律展开回原始 tracklet id 空间;stitch 只是 S3 内部的视图。
+        full_members = sorted(
+            {original for item in members for original in stitch_result.expand(item)}
+        )
         entities.append(
             ObjectEntity(
-                entity_id=_entity_id(members),
-                tracklet_ids=members,
+                entity_id=_entity_id(full_members),
+                tracklet_ids=full_members,
                 label=label,
                 identity_state=state,
                 confidence=max(0.0, min(1.0, confidence)),
@@ -436,14 +534,21 @@ def run_reid(
             )
         )
 
-    clarifications = [_clarification(pair, ambiguous[pair]) for pair in sorted(ambiguous)]
+    clarifications = [_clarification(pair, clarify_pairs[pair][0]) for pair in sorted(clarify_pairs)]
     metrics = {
         "config_version": config.version,
         "baseline_only": True,
         "g2_evaluated": False,
         "g2_blocker": "machine-readable anchor-to-tracklet ground truth is absent",
-        "tracklet_count": len(features),
-        "known_category_tracklets": sum(feature.category_id is not None for feature in features),
+        "tracklet_count": len(original_features),
+        "known_category_tracklets": sum(
+            feature.category_id is not None for feature in original_features
+        ),
+        "stitch_enabled": config.stitch.enabled,
+        "stitch_merge_count": stitch_result.report["merge_count"],
+        "tracklet_count_after_stitch": len(stitch_result.features),
+        "low_evidence_excluded_count": len(filtered_records),
+        "clarifications_suppressed_by_cap": suppressed_count,
         "entity_count": len(entities),
         "matched_entity_count": sum(entity.identity_state == IdentityState.MATCHED for entity in entities),
         "new_entity_count": sum(entity.identity_state == IdentityState.NEW_ENTITY for entity in entities),
@@ -461,4 +566,6 @@ def run_reid(
         candidates=candidates,
         accepted_links=accepted_records,
         metrics=metrics,
+        stitch_report=stitch_result.report,
+        filtered_tracklets=filtered_records,
     )

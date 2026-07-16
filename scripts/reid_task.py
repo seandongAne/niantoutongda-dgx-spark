@@ -35,7 +35,12 @@ def _git_commit() -> str:
             ["git", "rev-parse", "HEAD"], cwd=PROJ, text=True, stderr=subprocess.DEVNULL
         ).strip()
     except (OSError, subprocess.CalledProcessError):
-        return "unknown"
+        pass
+    # spark 上没有 .git;deploy.sh 会把当前 commit 写进 COMMIT 文件
+    stamp = PROJ / "COMMIT"
+    if stamp.exists():
+        return stamp.read_text().strip() or "unknown"
+    return "unknown"
 
 
 def _run_payload(run) -> bytes:

@@ -30,7 +30,7 @@
 | # | 用途 | 模型 | 时机 | 说明 |
 |---|---|---|---|---|
 | 1 | **A1 prompt 预热** | stepaudio-2.5-* | 立即~Day 5 | 本地 Step-Audio 2 mini 环境就绪前,先在云上把"拍摄旁白→物品标签候选"的 prompt 与输出 JSON 协议调通、冻结;权重就绪后平移到本地。A1 时间盒只有 0.5 天,预热直接决定成败 |
-| 2 | **G0 预标注 + 词表工厂** | step-3.7-flash | G0~S2.5-3 | 纯文本零隐私成本:教师生成 Grounding DINO 英文检测词与同义词候选,直接送入 S2.5-3,在任务 A 人工真值上自动打分选优,替代手工多版试错 |
+| 2 | **G0 预标注 + 词表工厂** | step-3.7-flash | G0~S2.5-3 | 纯文本零隐私成本:教师生成 Grounding DINO 英文检测词与同义词候选,直接送入 S2.5-3,在任务 A 人工真值上自动打分选优,替代手工多版试错。**已落地工具(07-16):`scripts/vocab_candidates_gen.py`**——物品清单文本→每件 6 条候选(prompt 编入 D3 词表工程原则+48 词扫描胜出模式),产物直接对接 `word_candidate_scan.py`+`word_candidate_rank.py` 本地判卷;冒烟 3 品类 18 候选全合法,首发即含已判卷最优词 pink rolling kids luggage。英雄房间物品清单一到即可产词 |
 | 3 | **停止：S2.5-6 规模化视觉教师 + 数据工厂** | step-3.7-flash + step-image-edit-2 | 初赛不执行 | 不采集或生成大规模图片，不建立训练数据工厂；已有设计只作赛后备忘 |
 | 4 | **停止：R1 主动学习** | step-3.7-flash + step-image-edit-2 | 初赛不执行 | 不建立 R1 数据池、challenge、云端增强或循环训练 |
 | 5 | **LLM-judge** | step-3.7-flash | S3 起 | 跨视频匹配错误分析批处理、任务卡可读性评审;judge prompt 入库,结论只进 results/ 分析报告,不改数据 |

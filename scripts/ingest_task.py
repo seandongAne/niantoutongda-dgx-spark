@@ -3,9 +3,11 @@
 
 用法(节点主环境):
   python scripts/ingest_task.py --out local-data/ingest_a \
-      --config-version dev-a-vocab3 \
-      --prompts "toy storage organizer,wardrobe,..." \
+      --config-version dev-a-vocab6 \
+      --vocab fixtures/dev_a/vocab.json \
       --videos v1=local-data/g0_a_old1_v2.mp4 v2=local-data/g0_a_old2.mp4 v3=local-data/g0_a_old3.mp4
+
+旧的 ``--prompts "a,b,..."`` 入口仍保留，二者择一。
 
 产物: <out>/<video_id>/{keyframes,evidence,observations.jsonl,tracklets.jsonl,audit-events.jsonl}
 结尾打印逐视频标签×轨迹统计,供锚点对账。
@@ -27,7 +29,9 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", required=True)
     ap.add_argument("--config-version", required=True)
-    ap.add_argument("--prompts", required=True)
+    prompt_source = ap.add_mutually_exclusive_group(required=True)
+    prompt_source.add_argument("--vocab", help="canonical detection vocabulary JSON")
+    prompt_source.add_argument("--prompts", help="legacy comma-separated prompt list")
     ap.add_argument("--box-threshold", type=float, default=0.30)
     ap.add_argument("--videos", nargs="+", required=True, help="video_id=path ...")
     args = ap.parse_args()
@@ -35,13 +39,25 @@ def main() -> int:
     from backend.pipeline.detect import GroundingDinoDetector
     from backend.pipeline.embed import Dinov2Embedder
     from backend.pipeline.ingest import ingest_video
+    from backend.pipeline.vocab import load_vocabulary
+
+    if args.vocab:
+        prompts = load_vocabulary(args.vocab).compile()
+        print(
+            f"[vocab] {len(prompts)} prompts in {len(prompts.batches)} batches: "
+            + " | ".join(", ".join(batch) for batch in prompts.batches),
+            flush=True,
+        )
+    else:
+        prompts = [p.strip() for p in args.prompts.split(",") if p.strip()]
+        if not prompts:
+            ap.error("--prompts must contain at least one non-empty prompt")
 
     detector = GroundingDinoDetector(
         str(Path.home() / "models" / "IDEA-Research__grounding-dino-base"),
         box_threshold=args.box_threshold,
     )
     embedder = Dinov2Embedder(str(Path.home() / "models" / "facebook__dinov2-base"))
-    prompts = [p.strip() for p in args.prompts.split(",") if p.strip()]
 
     summaries = {}
     for spec in args.videos:

@@ -1,0 +1,127 @@
+{
+  "schema_version": "1.0",
+  "vocab_version": "dev-a-vocab6",
+  "batch_size": 4,
+  "entries": [
+    {
+      "canonical_id": "desk",
+      "category_id": "desk",
+      "display_label_zh": "书桌",
+      "detection_prompts": ["desk"],
+      "confusable_group": null,
+      "notes": "稳定的单提示词检测概念。"
+    },
+    {
+      "canonical_id": "water_bottle",
+      "category_id": "water_bottle",
+      "display_label_zh": "水壶",
+      "detection_prompts": ["water bottle"],
+      "confusable_group": "drink_container",
+      "notes": "与保温杯提示词分批，S3 仍按同一语义大类比较实例。"
+    },
+    {
+      "canonical_id": "bookshelf",
+      "category_id": "bookshelf",
+      "display_label_zh": "书架",
+      "detection_prompts": ["bookshelf"],
+      "confusable_group": "cabinet_shelf_box",
+      "notes": "柜、架、箱类提示词每批最多一个。"
+    },
+    {
+      "canonical_id": "security_camera",
+      "category_id": "camera",
+      "display_label_zh": "摄像头",
+      "detection_prompts": ["security camera", "baby monitor"],
+      "confusable_group": null,
+      "notes": "近景和中景别名归到同一检测概念。"
+    },
+    {
+      "canonical_id": "bed",
+      "category_id": "bed",
+      "display_label_zh": "床",
+      "detection_prompts": ["bed"],
+      "confusable_group": null,
+      "notes": "稳定的单提示词检测概念。"
+    },
+    {
+      "canonical_id": "tumbler",
+      "category_id": "water_bottle",
+      "display_label_zh": "保温杯",
+      "detection_prompts": ["tumbler"],
+      "confusable_group": "drink_container",
+      "notes": "与 water bottle 是不同检测概念、同一 S3 语义大类。"
+    },
+    {
+      "canonical_id": "storage_box",
+      "category_id": "storage_box",
+      "display_label_zh": "收纳盒",
+      "detection_prompts": ["storage box"],
+      "confusable_group": "cabinet_shelf_box",
+      "notes": "宽召回词，后续困难集单独衡量误报。"
+    },
+    {
+      "canonical_id": "laundry_bag",
+      "category_id": "laundry_container",
+      "display_label_zh": "脏衣篓",
+      "detection_prompts": ["laundry bag"],
+      "confusable_group": "soft_container",
+      "notes": "与 luggage 强制分批，避免批内互吞。"
+    },
+    {
+      "canonical_id": "night_light",
+      "category_id": "lamp",
+      "display_label_zh": "夜灯",
+      "detection_prompts": ["smart speaker", "cylinder lamp"],
+      "confusable_group": "lamp",
+      "notes": "两个外观描述别名归到同一夜灯检测概念。"
+    },
+    {
+      "canonical_id": "toy_storage_organizer",
+      "category_id": "cabinet",
+      "display_label_zh": "玩具柜",
+      "detection_prompts": ["toy storage organizer"],
+      "confusable_group": "cabinet_shelf_box",
+      "notes": "与 wardrobe 是不同检测概念、同一 S3 柜类。"
+    },
+    {
+      "canonical_id": "table_lamp",
+      "category_id": "lamp",
+      "display_label_zh": "台灯",
+      "detection_prompts": ["table lamp"],
+      "confusable_group": "lamp",
+      "notes": "与夜灯提示词强制分批。"
+    },
+    {
+      "canonical_id": "luggage",
+      "category_id": "suitcase",
+      "display_label_zh": "行李箱",
+      "detection_prompts": ["luggage"],
+      "confusable_group": "soft_container",
+      "notes": "与 laundry bag 强制分批。"
+    },
+    {
+      "canonical_id": "mini_fridge",
+      "category_id": "refrigerator",
+      "display_label_zh": "玩具冰箱",
+      "detection_prompts": ["mini fridge"],
+      "confusable_group": "cabinet_shelf_box",
+      "notes": "小型冰箱检测概念。"
+    },
+    {
+      "canonical_id": "wardrobe",
+      "category_id": "cabinet",
+      "display_label_zh": "立柜",
+      "detection_prompts": ["wardrobe"],
+      "confusable_group": "cabinet_shelf_box",
+      "notes": "与玩具柜是不同检测概念、同一 S3 柜类。"
+    },
+    {
+      "canonical_id": "stuffed_animal",
+      "category_id": "stuffed_animal",
+      "display_label_zh": "玩偶",
+      "detection_prompts": ["stuffed animal"],
+      "confusable_group": null,
+      "notes": "稳定的单提示词检测概念。"
+    }
+  ]
+}

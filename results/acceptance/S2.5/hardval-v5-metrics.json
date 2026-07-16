@@ -1,0 +1,1093 @@
+{
+  "counts": {
+    "fragmented_gt_instances": 1,
+    "frames": 40,
+    "matched_gt_instances": 27,
+    "matched_visible_gt_boxes": 32,
+    "prediction_boxes": 371,
+    "unmatched_predictions": 339,
+    "visible_gt_boxes": 69
+  },
+  "dataset_id": "dev_a_hardval_v1",
+  "frames": [
+    {
+      "frame_id": "000030",
+      "matched_boxes": 0,
+      "matches": [],
+      "prediction_boxes": 15,
+      "sequence_id": "v1",
+      "unmatched_prediction_track_ids": [
+        "v1_t001",
+        "v1_t002",
+        "v1_t003",
+        "v1_t004",
+        "v1_t005",
+        "v1_t006",
+        "v1_t007",
+        "v1_t008",
+        "v1_t009",
+        "v1_t010",
+        "v1_t011",
+        "v1_t012",
+        "v1_t013",
+        "v1_t014",
+        "v1_t018"
+      ],
+      "unmatched_predictions": 15,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "000450",
+      "matched_boxes": 0,
+      "matches": [],
+      "prediction_boxes": 4,
+      "sequence_id": "v1",
+      "unmatched_prediction_track_ids": [
+        "untracked_v1_f000450_d01",
+        "v1_t062",
+        "v1_t063",
+        "v1_t068"
+      ],
+      "unmatched_predictions": 4,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "000675",
+      "matched_boxes": 2,
+      "matches": [
+        {
+          "canonical_id": "bookshelf",
+          "frame_id": "000675",
+          "instance_id": "anchor_04",
+          "iou": 0.8046052374957596,
+          "sequence_id": "v1",
+          "track_id": "v1_t088"
+        },
+        {
+          "canonical_id": "water_bottle",
+          "frame_id": "000675",
+          "instance_id": "anchor_05",
+          "iou": 0.8165794633461876,
+          "sequence_id": "v1",
+          "track_id": "v1_t105"
+        }
+      ],
+      "prediction_boxes": 11,
+      "sequence_id": "v1",
+      "unmatched_prediction_track_ids": [
+        "v1_t082",
+        "v1_t097",
+        "v1_t098",
+        "v1_t099",
+        "v1_t101",
+        "v1_t106",
+        "v1_t107",
+        "v1_t108",
+        "v1_t109"
+      ],
+      "unmatched_predictions": 9,
+      "visible_gt_boxes": 4
+    },
+    {
+      "frame_id": "000900",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "night_light",
+          "frame_id": "000900",
+          "instance_id": "anchor_06",
+          "iou": 0.8626638718305633,
+          "sequence_id": "v1",
+          "track_id": "v1_t123"
+        }
+      ],
+      "prediction_boxes": 4,
+      "sequence_id": "v1",
+      "unmatched_prediction_track_ids": [
+        "v1_t125",
+        "v1_t133",
+        "v1_t134"
+      ],
+      "unmatched_predictions": 3,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "001350",
+      "matched_boxes": 0,
+      "matches": [],
+      "prediction_boxes": 8,
+      "sequence_id": "v1",
+      "unmatched_prediction_track_ids": [
+        "v1_t125",
+        "v1_t176",
+        "v1_t188",
+        "v1_t189",
+        "v1_t191",
+        "v1_t192",
+        "v1_t193",
+        "v1_t194"
+      ],
+      "unmatched_predictions": 8,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "001800",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "bookshelf",
+          "frame_id": "001800",
+          "instance_id": "anchor_11",
+          "iou": 0.8069863747680518,
+          "sequence_id": "v1",
+          "track_id": "v1_t201"
+        }
+      ],
+      "prediction_boxes": 7,
+      "sequence_id": "v1",
+      "unmatched_prediction_track_ids": [
+        "untracked_v1_f001800_d01",
+        "untracked_v1_f001800_d03",
+        "untracked_v1_f001800_d04",
+        "untracked_v1_f001800_d06",
+        "v1_t228",
+        "v1_t237"
+      ],
+      "unmatched_predictions": 6,
+      "visible_gt_boxes": 2
+    },
+    {
+      "frame_id": "002010",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "storage_box",
+          "frame_id": "002010",
+          "instance_id": "anchor_14",
+          "iou": 0.6252260634325778,
+          "sequence_id": "v1",
+          "track_id": "v1_t281"
+        }
+      ],
+      "prediction_boxes": 22,
+      "sequence_id": "v1",
+      "unmatched_prediction_track_ids": [
+        "untracked_v1_f002010_d12",
+        "untracked_v1_f002010_d15",
+        "untracked_v1_f002010_d17",
+        "untracked_v1_f002010_d21",
+        "v1_t254",
+        "v1_t259",
+        "v1_t261",
+        "v1_t262",
+        "v1_t267",
+        "v1_t270",
+        "v1_t274",
+        "v1_t276",
+        "v1_t277",
+        "v1_t278",
+        "v1_t280",
+        "v1_t282",
+        "v1_t283",
+        "v1_t287",
+        "v1_t288",
+        "v1_t289",
+        "v1_t294"
+      ],
+      "unmatched_predictions": 21,
+      "visible_gt_boxes": 2
+    },
+    {
+      "frame_id": "002070",
+      "matched_boxes": 0,
+      "matches": [],
+      "prediction_boxes": 12,
+      "sequence_id": "v1",
+      "unmatched_prediction_track_ids": [
+        "v1_t254",
+        "v1_t256",
+        "v1_t259",
+        "v1_t261",
+        "v1_t262",
+        "v1_t263",
+        "v1_t267",
+        "v1_t278",
+        "v1_t280",
+        "v1_t284",
+        "v1_t294",
+        "v1_t300"
+      ],
+      "unmatched_predictions": 12,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "002250",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "laundry_bag",
+          "frame_id": "002250",
+          "instance_id": "anchor_15",
+          "iou": 0.5440154525634063,
+          "sequence_id": "v1",
+          "track_id": "v1_t313"
+        }
+      ],
+      "prediction_boxes": 4,
+      "sequence_id": "v1",
+      "unmatched_prediction_track_ids": [
+        "untracked_v1_f002250_d02",
+        "v1_t317",
+        "v1_t318"
+      ],
+      "unmatched_predictions": 3,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "002700",
+      "matched_boxes": 0,
+      "matches": [],
+      "prediction_boxes": 18,
+      "sequence_id": "v1",
+      "unmatched_prediction_track_ids": [
+        "untracked_v1_f002700_d00",
+        "v1_t341",
+        "v1_t346",
+        "v1_t361",
+        "v1_t362",
+        "v1_t364",
+        "v1_t366",
+        "v1_t367",
+        "v1_t368",
+        "v1_t369",
+        "v1_t370",
+        "v1_t374",
+        "v1_t376",
+        "v1_t383",
+        "v1_t385",
+        "v1_t386",
+        "v1_t387",
+        "v1_t388"
+      ],
+      "unmatched_predictions": 18,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "000345",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "storage_box",
+          "frame_id": "000345",
+          "instance_id": "anchor_14",
+          "iou": 0.7006968104026192,
+          "sequence_id": "v2",
+          "track_id": "v2_t058"
+        }
+      ],
+      "prediction_boxes": 19,
+      "sequence_id": "v2",
+      "unmatched_prediction_track_ids": [
+        "untracked_v2_f000345_d16",
+        "v2_t020",
+        "v2_t037",
+        "v2_t044",
+        "v2_t046",
+        "v2_t047",
+        "v2_t048",
+        "v2_t049",
+        "v2_t053",
+        "v2_t055",
+        "v2_t056",
+        "v2_t057",
+        "v2_t059",
+        "v2_t060",
+        "v2_t062",
+        "v2_t064",
+        "v2_t066",
+        "v2_t067"
+      ],
+      "unmatched_predictions": 18,
+      "visible_gt_boxes": 2
+    },
+    {
+      "frame_id": "000660",
+      "matched_boxes": 2,
+      "matches": [
+        {
+          "canonical_id": "bookshelf",
+          "frame_id": "000660",
+          "instance_id": "anchor_11",
+          "iou": 0.7736624233371235,
+          "sequence_id": "v2",
+          "track_id": "v2_t119"
+        },
+        {
+          "canonical_id": "stuffed_animal",
+          "frame_id": "000660",
+          "instance_id": "anchor_12",
+          "iou": 0.8839114078478644,
+          "sequence_id": "v2",
+          "track_id": "v2_t145"
+        }
+      ],
+      "prediction_boxes": 8,
+      "sequence_id": "v2",
+      "unmatched_prediction_track_ids": [
+        "untracked_v2_f000660_d03",
+        "untracked_v2_f000660_d04",
+        "untracked_v2_f000660_d07",
+        "v2_t146",
+        "v2_t149",
+        "v2_t150"
+      ],
+      "unmatched_predictions": 6,
+      "visible_gt_boxes": 2
+    },
+    {
+      "frame_id": "000990",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "desk",
+          "frame_id": "000990",
+          "instance_id": "anchor_08",
+          "iou": 0.8265641840438313,
+          "sequence_id": "v2",
+          "track_id": "v2_t163"
+        }
+      ],
+      "prediction_boxes": 3,
+      "sequence_id": "v2",
+      "unmatched_prediction_track_ids": [
+        "v2_t181",
+        "v2_t183"
+      ],
+      "unmatched_predictions": 2,
+      "visible_gt_boxes": 2
+    },
+    {
+      "frame_id": "001245",
+      "matched_boxes": 0,
+      "matches": [],
+      "prediction_boxes": 8,
+      "sequence_id": "v2",
+      "unmatched_prediction_track_ids": [
+        "v2_t163",
+        "v2_t228",
+        "v2_t229",
+        "v2_t230",
+        "v2_t231",
+        "v2_t232",
+        "v2_t234",
+        "v2_t236"
+      ],
+      "unmatched_predictions": 8,
+      "visible_gt_boxes": 2
+    },
+    {
+      "frame_id": "001320",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "night_light",
+          "frame_id": "001320",
+          "instance_id": "anchor_06",
+          "iou": 0.9466665726089972,
+          "sequence_id": "v2",
+          "track_id": "v2_t221"
+        }
+      ],
+      "prediction_boxes": 6,
+      "sequence_id": "v2",
+      "unmatched_prediction_track_ids": [
+        "v2_t163",
+        "v2_t230",
+        "v2_t238",
+        "v2_t242",
+        "v2_t243"
+      ],
+      "unmatched_predictions": 5,
+      "visible_gt_boxes": 3
+    },
+    {
+      "frame_id": "001545",
+      "matched_boxes": 3,
+      "matches": [
+        {
+          "canonical_id": "mini_fridge",
+          "frame_id": "001545",
+          "instance_id": "anchor_03",
+          "iou": 0.8227931244657184,
+          "sequence_id": "v2",
+          "track_id": "v2_t258"
+        },
+        {
+          "canonical_id": "bookshelf",
+          "frame_id": "001545",
+          "instance_id": "anchor_04",
+          "iou": 0.686001332896991,
+          "sequence_id": "v2",
+          "track_id": "v2_t250"
+        },
+        {
+          "canonical_id": "water_bottle",
+          "frame_id": "001545",
+          "instance_id": "anchor_05",
+          "iou": 0.7972659746698444,
+          "sequence_id": "v2",
+          "track_id": "v2_t261"
+        }
+      ],
+      "prediction_boxes": 9,
+      "sequence_id": "v2",
+      "unmatched_prediction_track_ids": [
+        "v2_t253",
+        "v2_t254",
+        "v2_t260",
+        "v2_t262",
+        "v2_t266",
+        "v2_t270"
+      ],
+      "unmatched_predictions": 6,
+      "visible_gt_boxes": 5
+    },
+    {
+      "frame_id": "001650",
+      "matched_boxes": 0,
+      "matches": [],
+      "prediction_boxes": 6,
+      "sequence_id": "v2",
+      "unmatched_prediction_track_ids": [
+        "untracked_v2_f001650_d04",
+        "v2_t267",
+        "v2_t280",
+        "v2_t285",
+        "v2_t287",
+        "v2_t288"
+      ],
+      "unmatched_predictions": 6,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "001725",
+      "matched_boxes": 0,
+      "matches": [],
+      "prediction_boxes": 7,
+      "sequence_id": "v2",
+      "unmatched_prediction_track_ids": [
+        "untracked_v2_f001725_d01",
+        "untracked_v2_f001725_d02",
+        "untracked_v2_f001725_d03",
+        "untracked_v2_f001725_d04",
+        "untracked_v2_f001725_d05",
+        "v2_t289",
+        "v2_t295"
+      ],
+      "unmatched_predictions": 7,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "001980",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "toy_storage_organizer",
+          "frame_id": "001980",
+          "instance_id": "anchor_01",
+          "iou": 0.6550651098269549,
+          "sequence_id": "v2",
+          "track_id": "v2_t342"
+        }
+      ],
+      "prediction_boxes": 17,
+      "sequence_id": "v2",
+      "unmatched_prediction_track_ids": [
+        "untracked_v2_f001980_d00",
+        "untracked_v2_f001980_d07",
+        "untracked_v2_f001980_d15",
+        "v2_t327",
+        "v2_t330",
+        "v2_t334",
+        "v2_t338",
+        "v2_t341",
+        "v2_t343",
+        "v2_t344",
+        "v2_t347",
+        "v2_t348",
+        "v2_t350",
+        "v2_t351",
+        "v2_t352",
+        "v2_t353"
+      ],
+      "unmatched_predictions": 16,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "002040",
+      "matched_boxes": 0,
+      "matches": [],
+      "prediction_boxes": 16,
+      "sequence_id": "v2",
+      "unmatched_prediction_track_ids": [
+        "untracked_v2_f002040_d00",
+        "untracked_v2_f002040_d15",
+        "v2_t327",
+        "v2_t330",
+        "v2_t331",
+        "v2_t338",
+        "v2_t341",
+        "v2_t343",
+        "v2_t347",
+        "v2_t348",
+        "v2_t350",
+        "v2_t351",
+        "v2_t352",
+        "v2_t357",
+        "v2_t358",
+        "v2_t361"
+      ],
+      "unmatched_predictions": 16,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "000315",
+      "matched_boxes": 0,
+      "matches": [],
+      "prediction_boxes": 9,
+      "sequence_id": "v3",
+      "unmatched_prediction_track_ids": [
+        "untracked_v3_f000315_d07",
+        "v3_t026",
+        "v3_t029",
+        "v3_t033",
+        "v3_t035",
+        "v3_t037",
+        "v3_t039",
+        "v3_t040",
+        "v3_t041"
+      ],
+      "unmatched_predictions": 9,
+      "visible_gt_boxes": 2
+    },
+    {
+      "frame_id": "000465",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "storage_box",
+          "frame_id": "000465",
+          "instance_id": "anchor_14",
+          "iou": 0.915019573271707,
+          "sequence_id": "v3",
+          "track_id": "v3_t054"
+        }
+      ],
+      "prediction_boxes": 16,
+      "sequence_id": "v3",
+      "unmatched_prediction_track_ids": [
+        "untracked_v3_f000465_d14",
+        "v3_t032",
+        "v3_t033",
+        "v3_t040",
+        "v3_t041",
+        "v3_t048",
+        "v3_t052",
+        "v3_t055",
+        "v3_t056",
+        "v3_t057",
+        "v3_t058",
+        "v3_t059",
+        "v3_t062",
+        "v3_t065",
+        "v3_t069"
+      ],
+      "unmatched_predictions": 15,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "000615",
+      "matched_boxes": 2,
+      "matches": [
+        {
+          "canonical_id": "bookshelf",
+          "frame_id": "000615",
+          "instance_id": "anchor_11",
+          "iou": 0.5202931865021803,
+          "sequence_id": "v3",
+          "track_id": "v3_t064"
+        },
+        {
+          "canonical_id": "stuffed_animal",
+          "frame_id": "000615",
+          "instance_id": "anchor_12",
+          "iou": 0.6059083773040748,
+          "sequence_id": "v3",
+          "track_id": "v3_t081"
+        }
+      ],
+      "prediction_boxes": 8,
+      "sequence_id": "v3",
+      "unmatched_prediction_track_ids": [
+        "untracked_v3_f000615_d06",
+        "v3_t074",
+        "v3_t079",
+        "v3_t087",
+        "v3_t089",
+        "v3_t092"
+      ],
+      "unmatched_predictions": 6,
+      "visible_gt_boxes": 2
+    },
+    {
+      "frame_id": "000945",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "desk",
+          "frame_id": "000945",
+          "instance_id": "anchor_08",
+          "iou": 0.6306258439907229,
+          "sequence_id": "v3",
+          "track_id": "v3_t118"
+        }
+      ],
+      "prediction_boxes": 5,
+      "sequence_id": "v3",
+      "unmatched_prediction_track_ids": [
+        "v3_t134",
+        "v3_t138",
+        "v3_t141",
+        "v3_t142"
+      ],
+      "unmatched_predictions": 4,
+      "visible_gt_boxes": 2
+    },
+    {
+      "frame_id": "001035",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "table_lamp",
+          "frame_id": "001035",
+          "instance_id": "anchor_09",
+          "iou": 0.7762782865369229,
+          "sequence_id": "v3",
+          "track_id": "v3_t156"
+        }
+      ],
+      "prediction_boxes": 11,
+      "sequence_id": "v3",
+      "unmatched_prediction_track_ids": [
+        "untracked_v3_f001035_d10",
+        "v3_t118",
+        "v3_t144",
+        "v3_t145",
+        "v3_t147",
+        "v3_t148",
+        "v3_t152",
+        "v3_t153",
+        "v3_t154",
+        "v3_t155"
+      ],
+      "unmatched_predictions": 10,
+      "visible_gt_boxes": 3
+    },
+    {
+      "frame_id": "001260",
+      "matched_boxes": 0,
+      "matches": [],
+      "prediction_boxes": 9,
+      "sequence_id": "v3",
+      "unmatched_prediction_track_ids": [
+        "untracked_v3_f001260_d08",
+        "v3_t118",
+        "v3_t173",
+        "v3_t185",
+        "v3_t188",
+        "v3_t190",
+        "v3_t191",
+        "v3_t194",
+        "v3_t195"
+      ],
+      "unmatched_predictions": 9,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "001335",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "night_light",
+          "frame_id": "001335",
+          "instance_id": "anchor_06",
+          "iou": 0.660684696956883,
+          "sequence_id": "v3",
+          "track_id": "v3_t188"
+        }
+      ],
+      "prediction_boxes": 12,
+      "sequence_id": "v3",
+      "unmatched_prediction_track_ids": [
+        "untracked_v3_f001335_d05",
+        "untracked_v3_f001335_d09",
+        "untracked_v3_f001335_d10",
+        "untracked_v3_f001335_d11",
+        "v3_t173",
+        "v3_t185",
+        "v3_t187",
+        "v3_t190",
+        "v3_t198",
+        "v3_t199",
+        "v3_t201"
+      ],
+      "unmatched_predictions": 11,
+      "visible_gt_boxes": 3
+    },
+    {
+      "frame_id": "001575",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "mini_fridge",
+          "frame_id": "001575",
+          "instance_id": "anchor_03",
+          "iou": 0.6365098774767314,
+          "sequence_id": "v3",
+          "track_id": "v3_t226"
+        }
+      ],
+      "prediction_boxes": 8,
+      "sequence_id": "v3",
+      "unmatched_prediction_track_ids": [
+        "untracked_v3_f001575_d05",
+        "untracked_v3_f001575_d06",
+        "untracked_v3_f001575_d07",
+        "v3_t217",
+        "v3_t221",
+        "v3_t233",
+        "v3_t234"
+      ],
+      "unmatched_predictions": 7,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "001830",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "toy_storage_organizer",
+          "frame_id": "001830",
+          "instance_id": "anchor_01",
+          "iou": 0.7817759105252073,
+          "sequence_id": "v3",
+          "track_id": "v3_t260"
+        }
+      ],
+      "prediction_boxes": 12,
+      "sequence_id": "v3",
+      "unmatched_prediction_track_ids": [
+        "untracked_v3_f001830_d01",
+        "untracked_v3_f001830_d04",
+        "v3_t261",
+        "v3_t265",
+        "v3_t268",
+        "v3_t270",
+        "v3_t272",
+        "v3_t273",
+        "v3_t274",
+        "v3_t275",
+        "v3_t276"
+      ],
+      "unmatched_predictions": 11,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "001890",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "toy_storage_organizer",
+          "frame_id": "001890",
+          "instance_id": "anchor_01",
+          "iou": 0.7638772681832359,
+          "sequence_id": "v3",
+          "track_id": "v3_t260"
+        }
+      ],
+      "prediction_boxes": 10,
+      "sequence_id": "v3",
+      "unmatched_prediction_track_ids": [
+        "v3_t261",
+        "v3_t264",
+        "v3_t265",
+        "v3_t268",
+        "v3_t270",
+        "v3_t272",
+        "v3_t276",
+        "v3_t278",
+        "v3_t279"
+      ],
+      "unmatched_predictions": 9,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "000405",
+      "matched_boxes": 0,
+      "matches": [],
+      "prediction_boxes": 4,
+      "sequence_id": "v4",
+      "unmatched_prediction_track_ids": [
+        "untracked_v4_f000405_d03",
+        "v4_t046",
+        "v4_t053",
+        "v4_t055"
+      ],
+      "unmatched_predictions": 4,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "000510",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "night_light",
+          "frame_id": "000510",
+          "instance_id": "anchor_06",
+          "iou": 0.808124020750332,
+          "sequence_id": "v4",
+          "track_id": "v4_t060"
+        }
+      ],
+      "prediction_boxes": 6,
+      "sequence_id": "v4",
+      "unmatched_prediction_track_ids": [
+        "v4_t046",
+        "v4_t048",
+        "v4_t053",
+        "v4_t061",
+        "v4_t065"
+      ],
+      "unmatched_predictions": 5,
+      "visible_gt_boxes": 2
+    },
+    {
+      "frame_id": "000645",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "night_light",
+          "frame_id": "000645",
+          "instance_id": "anchor_06",
+          "iou": 0.9419485133335586,
+          "sequence_id": "v4",
+          "track_id": "v4_t060"
+        }
+      ],
+      "prediction_boxes": 8,
+      "sequence_id": "v4",
+      "unmatched_prediction_track_ids": [
+        "untracked_v4_f000645_d06",
+        "untracked_v4_f000645_d07",
+        "v4_t046",
+        "v4_t053",
+        "v4_t062",
+        "v4_t066",
+        "v4_t067"
+      ],
+      "unmatched_predictions": 7,
+      "visible_gt_boxes": 3
+    },
+    {
+      "frame_id": "000705",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "night_light",
+          "frame_id": "000705",
+          "instance_id": "anchor_06",
+          "iou": 0.857946641337224,
+          "sequence_id": "v4",
+          "track_id": "v4_t060"
+        }
+      ],
+      "prediction_boxes": 6,
+      "sequence_id": "v4",
+      "unmatched_prediction_track_ids": [
+        "v4_t046",
+        "v4_t053",
+        "v4_t062",
+        "v4_t066",
+        "v4_t067"
+      ],
+      "unmatched_predictions": 5,
+      "visible_gt_boxes": 3
+    },
+    {
+      "frame_id": "000810",
+      "matched_boxes": 0,
+      "matches": [],
+      "prediction_boxes": 6,
+      "sequence_id": "v4",
+      "unmatched_prediction_track_ids": [
+        "untracked_v4_f000810_d02",
+        "untracked_v4_f000810_d04",
+        "v4_t046",
+        "v4_t073",
+        "v4_t079",
+        "v4_t083"
+      ],
+      "unmatched_predictions": 6,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "001215",
+      "matched_boxes": 2,
+      "matches": [
+        {
+          "canonical_id": "bookshelf",
+          "frame_id": "001215",
+          "instance_id": "anchor_11",
+          "iou": 0.7139657837001974,
+          "sequence_id": "v4",
+          "track_id": "v4_t102"
+        },
+        {
+          "canonical_id": "stuffed_animal",
+          "frame_id": "001215",
+          "instance_id": "anchor_12",
+          "iou": 0.8395769389677901,
+          "sequence_id": "v4",
+          "track_id": "v4_t123"
+        }
+      ],
+      "prediction_boxes": 8,
+      "sequence_id": "v4",
+      "unmatched_prediction_track_ids": [
+        "untracked_v4_f001215_d03",
+        "untracked_v4_f001215_d05",
+        "v4_t112",
+        "v4_t117",
+        "v4_t118",
+        "v4_t121"
+      ],
+      "unmatched_predictions": 6,
+      "visible_gt_boxes": 2
+    },
+    {
+      "frame_id": "001425",
+      "matched_boxes": 2,
+      "matches": [
+        {
+          "canonical_id": "bookshelf",
+          "frame_id": "001425",
+          "instance_id": "anchor_11",
+          "iou": 0.8651064448381184,
+          "sequence_id": "v4",
+          "track_id": "v4_t102"
+        },
+        {
+          "canonical_id": "stuffed_animal",
+          "frame_id": "001425",
+          "instance_id": "anchor_12",
+          "iou": 0.7290464420362383,
+          "sequence_id": "v4",
+          "track_id": "v4_t150"
+        }
+      ],
+      "prediction_boxes": 7,
+      "sequence_id": "v4",
+      "unmatched_prediction_track_ids": [
+        "v4_t107",
+        "v4_t139",
+        "v4_t148",
+        "v4_t152",
+        "v4_t153"
+      ],
+      "unmatched_predictions": 5,
+      "visible_gt_boxes": 2
+    },
+    {
+      "frame_id": "001635",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "storage_box",
+          "frame_id": "001635",
+          "instance_id": "anchor_14",
+          "iou": 0.6103675597534629,
+          "sequence_id": "v4",
+          "track_id": "v4_t187"
+        }
+      ],
+      "prediction_boxes": 12,
+      "sequence_id": "v4",
+      "unmatched_prediction_track_ids": [
+        "untracked_v4_f001635_d08",
+        "untracked_v4_f001635_d11",
+        "v4_t162",
+        "v4_t164",
+        "v4_t167",
+        "v4_t169",
+        "v4_t174",
+        "v4_t177",
+        "v4_t183",
+        "v4_t184",
+        "v4_t188"
+      ],
+      "unmatched_predictions": 11,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "002025",
+      "matched_boxes": 0,
+      "matches": [],
+      "prediction_boxes": 3,
+      "sequence_id": "v4",
+      "unmatched_prediction_track_ids": [
+        "untracked_v4_f002025_d02",
+        "v4_t164",
+        "v4_t225"
+      ],
+      "unmatched_predictions": 3,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "002430",
+      "matched_boxes": 0,
+      "matches": [],
+      "prediction_boxes": 7,
+      "sequence_id": "v4",
+      "unmatched_prediction_track_ids": [
+        "v4_t259",
+        "v4_t261",
+        "v4_t262",
+        "v4_t263",
+        "v4_t264",
+        "v4_t265",
+        "v4_t267"
+      ],
+      "unmatched_predictions": 7,
+      "visible_gt_boxes": 1
+    }
+  ],
+  "iou_threshold": 0.5,
+  "metrics": {
+    "false_positives_per_frame": {
+      "frames": 40,
+      "unmatched_predictions": 339,
+      "value": 8.475
+    },
+    "fragmentation_rate": {
+      "fragmented_gt_instances": 1,
+      "matched_gt_instances": 27,
+      "value": 0.037037037037037035
+    },
+    "visible_instance_recall": {
+      "matched_visible_gt_boxes": 32,
+      "value": 0.463768115942029,
+      "visible_gt_boxes": 69
+    }
+  },
+  "schema_version": "1.0"
+}

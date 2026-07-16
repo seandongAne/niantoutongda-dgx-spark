@@ -1,0 +1,1596 @@
+{
+  "counts": {
+    "fragmented_gt_instances": 7,
+    "frames": 40,
+    "matched_gt_instances": 34,
+    "matched_visible_gt_boxes": 49,
+    "prediction_boxes": 746,
+    "unmatched_predictions": 697,
+    "visible_gt_boxes": 69
+  },
+  "dataset_id": "dev_a_hardval_v1",
+  "frames": [
+    {
+      "frame_id": "000030",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "toy_storage_organizer",
+          "frame_id": "000030",
+          "instance_id": "anchor_01",
+          "iou": 0.831715432494996,
+          "sequence_id": "v1",
+          "track_id": "v1_t002"
+        }
+      ],
+      "prediction_boxes": 37,
+      "sequence_id": "v1",
+      "unmatched_prediction_track_ids": [
+        "untracked_v1_f000030_d09",
+        "untracked_v1_f000030_d11",
+        "untracked_v1_f000030_d18",
+        "untracked_v1_f000030_d21",
+        "untracked_v1_f000030_d22",
+        "untracked_v1_f000030_d23",
+        "untracked_v1_f000030_d24",
+        "untracked_v1_f000030_d26",
+        "untracked_v1_f000030_d28",
+        "untracked_v1_f000030_d29",
+        "untracked_v1_f000030_d30",
+        "untracked_v1_f000030_d31",
+        "untracked_v1_f000030_d32",
+        "untracked_v1_f000030_d33",
+        "untracked_v1_f000030_d34",
+        "untracked_v1_f000030_d35",
+        "untracked_v1_f000030_d36",
+        "v1_t001",
+        "v1_t003",
+        "v1_t004",
+        "v1_t005",
+        "v1_t006",
+        "v1_t007",
+        "v1_t008",
+        "v1_t009",
+        "v1_t010",
+        "v1_t011",
+        "v1_t012",
+        "v1_t013",
+        "v1_t014",
+        "v1_t015",
+        "v1_t016",
+        "v1_t017",
+        "v1_t018",
+        "v1_t021",
+        "v1_t031"
+      ],
+      "unmatched_predictions": 36,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "000450",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "mini_fridge",
+          "frame_id": "000450",
+          "instance_id": "anchor_03",
+          "iou": 0.5044270269450662,
+          "sequence_id": "v1",
+          "track_id": "v1_t122"
+        }
+      ],
+      "prediction_boxes": 10,
+      "sequence_id": "v1",
+      "unmatched_prediction_track_ids": [
+        "v1_t097",
+        "v1_t105",
+        "v1_t109",
+        "v1_t110",
+        "v1_t112",
+        "v1_t115",
+        "v1_t119",
+        "v1_t121",
+        "v1_t123"
+      ],
+      "unmatched_predictions": 9,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "000675",
+      "matched_boxes": 3,
+      "matches": [
+        {
+          "canonical_id": "bookshelf",
+          "frame_id": "000675",
+          "instance_id": "anchor_04",
+          "iou": 0.8046052342828913,
+          "sequence_id": "v1",
+          "track_id": "v1_t153"
+        },
+        {
+          "canonical_id": "water_bottle",
+          "frame_id": "000675",
+          "instance_id": "anchor_05",
+          "iou": 0.8165796014060445,
+          "sequence_id": "v1",
+          "track_id": "v1_t170"
+        },
+        {
+          "canonical_id": "security_camera",
+          "frame_id": "000675",
+          "instance_id": "anchor_07",
+          "iou": 0.7029720917735691,
+          "sequence_id": "v1",
+          "track_id": "v1_t173"
+        }
+      ],
+      "prediction_boxes": 24,
+      "sequence_id": "v1",
+      "unmatched_prediction_track_ids": [
+        "untracked_v1_f000675_d10",
+        "untracked_v1_f000675_d13",
+        "untracked_v1_f000675_d14",
+        "untracked_v1_f000675_d16",
+        "untracked_v1_f000675_d17",
+        "untracked_v1_f000675_d19",
+        "untracked_v1_f000675_d20",
+        "untracked_v1_f000675_d21",
+        "untracked_v1_f000675_d22",
+        "untracked_v1_f000675_d23",
+        "v1_t125",
+        "v1_t144",
+        "v1_t155",
+        "v1_t160",
+        "v1_t164",
+        "v1_t166",
+        "v1_t169",
+        "v1_t171",
+        "v1_t172",
+        "v1_t174",
+        "v1_t176"
+      ],
+      "unmatched_predictions": 21,
+      "visible_gt_boxes": 4
+    },
+    {
+      "frame_id": "000900",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "night_light",
+          "frame_id": "000900",
+          "instance_id": "anchor_06",
+          "iou": 0.8422729927739517,
+          "sequence_id": "v1",
+          "track_id": "v1_t194"
+        }
+      ],
+      "prediction_boxes": 9,
+      "sequence_id": "v1",
+      "unmatched_prediction_track_ids": [
+        "v1_t189",
+        "v1_t196",
+        "v1_t207",
+        "v1_t208",
+        "v1_t209",
+        "v1_t211",
+        "v1_t212",
+        "v1_t213"
+      ],
+      "unmatched_predictions": 8,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "001350",
+      "matched_boxes": 0,
+      "matches": [],
+      "prediction_boxes": 9,
+      "sequence_id": "v1",
+      "unmatched_prediction_track_ids": [
+        "untracked_v1_f001350_d08",
+        "v1_t189",
+        "v1_t269",
+        "v1_t284",
+        "v1_t285",
+        "v1_t288",
+        "v1_t289",
+        "v1_t290",
+        "v1_t291"
+      ],
+      "unmatched_predictions": 9,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "001800",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "bookshelf",
+          "frame_id": "001800",
+          "instance_id": "anchor_11",
+          "iou": 0.8069861967018026,
+          "sequence_id": "v1",
+          "track_id": "v1_t298"
+        }
+      ],
+      "prediction_boxes": 7,
+      "sequence_id": "v1",
+      "unmatched_prediction_track_ids": [
+        "untracked_v1_f001800_d00",
+        "untracked_v1_f001800_d04",
+        "untracked_v1_f001800_d05",
+        "v1_t327",
+        "v1_t335",
+        "v1_t358"
+      ],
+      "unmatched_predictions": 6,
+      "visible_gt_boxes": 2
+    },
+    {
+      "frame_id": "002010",
+      "matched_boxes": 2,
+      "matches": [
+        {
+          "canonical_id": "wardrobe",
+          "frame_id": "002010",
+          "instance_id": "anchor_13",
+          "iou": 0.5372816656448466,
+          "sequence_id": "v1",
+          "track_id": "v1_t397"
+        },
+        {
+          "canonical_id": "storage_box",
+          "frame_id": "002010",
+          "instance_id": "anchor_14",
+          "iou": 0.9162968501771965,
+          "sequence_id": "v1",
+          "track_id": "v1_t407"
+        }
+      ],
+      "prediction_boxes": 24,
+      "sequence_id": "v1",
+      "unmatched_prediction_track_ids": [
+        "untracked_v1_f002010_d15",
+        "untracked_v1_f002010_d22",
+        "untracked_v1_f002010_d23",
+        "v1_t372",
+        "v1_t378",
+        "v1_t384",
+        "v1_t385",
+        "v1_t388",
+        "v1_t389",
+        "v1_t393",
+        "v1_t394",
+        "v1_t398",
+        "v1_t401",
+        "v1_t404",
+        "v1_t405",
+        "v1_t406",
+        "v1_t408",
+        "v1_t410",
+        "v1_t414",
+        "v1_t415",
+        "v1_t416",
+        "v1_t419"
+      ],
+      "unmatched_predictions": 22,
+      "visible_gt_boxes": 2
+    },
+    {
+      "frame_id": "002070",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "laundry_bag",
+          "frame_id": "002070",
+          "instance_id": "anchor_15",
+          "iou": 0.6616295473463417,
+          "sequence_id": "v1",
+          "track_id": "v1_t432"
+        }
+      ],
+      "prediction_boxes": 21,
+      "sequence_id": "v1",
+      "unmatched_prediction_track_ids": [
+        "v1_t378",
+        "v1_t380",
+        "v1_t384",
+        "v1_t385",
+        "v1_t386",
+        "v1_t388",
+        "v1_t389",
+        "v1_t390",
+        "v1_t393",
+        "v1_t394",
+        "v1_t397",
+        "v1_t400",
+        "v1_t406",
+        "v1_t411",
+        "v1_t419",
+        "v1_t425",
+        "v1_t427",
+        "v1_t428",
+        "v1_t429",
+        "v1_t431"
+      ],
+      "unmatched_predictions": 20,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "002250",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "laundry_bag",
+          "frame_id": "002250",
+          "instance_id": "anchor_15",
+          "iou": 0.5434545037656235,
+          "sequence_id": "v1",
+          "track_id": "v1_t445"
+        }
+      ],
+      "prediction_boxes": 6,
+      "sequence_id": "v1",
+      "unmatched_prediction_track_ids": [
+        "v1_t441",
+        "v1_t444",
+        "v1_t447",
+        "v1_t448",
+        "v1_t449"
+      ],
+      "unmatched_predictions": 5,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "002700",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "toy_storage_organizer",
+          "frame_id": "002700",
+          "instance_id": "anchor_01",
+          "iou": 0.8054864752678497,
+          "sequence_id": "v1",
+          "track_id": "v1_t501"
+        }
+      ],
+      "prediction_boxes": 26,
+      "sequence_id": "v1",
+      "unmatched_prediction_track_ids": [
+        "untracked_v1_f002700_d00",
+        "untracked_v1_f002700_d18",
+        "v1_t479",
+        "v1_t481",
+        "v1_t486",
+        "v1_t495",
+        "v1_t499",
+        "v1_t509",
+        "v1_t510",
+        "v1_t511",
+        "v1_t512",
+        "v1_t514",
+        "v1_t517",
+        "v1_t518",
+        "v1_t519",
+        "v1_t523",
+        "v1_t525",
+        "v1_t526",
+        "v1_t528",
+        "v1_t534",
+        "v1_t536",
+        "v1_t537",
+        "v1_t538",
+        "v1_t539",
+        "v1_t540"
+      ],
+      "unmatched_predictions": 25,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "000345",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "storage_box",
+          "frame_id": "000345",
+          "instance_id": "anchor_14",
+          "iou": 0.6928228798504917,
+          "sequence_id": "v2",
+          "track_id": "v2_t081"
+        }
+      ],
+      "prediction_boxes": 39,
+      "sequence_id": "v2",
+      "unmatched_prediction_track_ids": [
+        "untracked_v2_f000345_d09",
+        "untracked_v2_f000345_d16",
+        "untracked_v2_f000345_d18",
+        "untracked_v2_f000345_d21",
+        "untracked_v2_f000345_d25",
+        "untracked_v2_f000345_d30",
+        "untracked_v2_f000345_d33",
+        "untracked_v2_f000345_d34",
+        "untracked_v2_f000345_d36",
+        "untracked_v2_f000345_d37",
+        "untracked_v2_f000345_d38",
+        "v2_t026",
+        "v2_t028",
+        "v2_t051",
+        "v2_t056",
+        "v2_t062",
+        "v2_t063",
+        "v2_t064",
+        "v2_t069",
+        "v2_t070",
+        "v2_t071",
+        "v2_t072",
+        "v2_t073",
+        "v2_t074",
+        "v2_t075",
+        "v2_t077",
+        "v2_t078",
+        "v2_t079",
+        "v2_t080",
+        "v2_t082",
+        "v2_t083",
+        "v2_t086",
+        "v2_t090",
+        "v2_t091",
+        "v2_t092",
+        "v2_t093",
+        "v2_t095",
+        "v2_t096"
+      ],
+      "unmatched_predictions": 38,
+      "visible_gt_boxes": 2
+    },
+    {
+      "frame_id": "000660",
+      "matched_boxes": 2,
+      "matches": [
+        {
+          "canonical_id": "bookshelf",
+          "frame_id": "000660",
+          "instance_id": "anchor_11",
+          "iou": 0.7736622252789043,
+          "sequence_id": "v2",
+          "track_id": "v2_t077"
+        },
+        {
+          "canonical_id": "stuffed_animal",
+          "frame_id": "000660",
+          "instance_id": "anchor_12",
+          "iou": 0.8983349844938846,
+          "sequence_id": "v2",
+          "track_id": "v2_t190"
+        }
+      ],
+      "prediction_boxes": 8,
+      "sequence_id": "v2",
+      "unmatched_prediction_track_ids": [
+        "untracked_v2_f000660_d02",
+        "untracked_v2_f000660_d03",
+        "v2_t130",
+        "v2_t152",
+        "v2_t193",
+        "v2_t194"
+      ],
+      "unmatched_predictions": 6,
+      "visible_gt_boxes": 2
+    },
+    {
+      "frame_id": "000990",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "desk",
+          "frame_id": "000990",
+          "instance_id": "anchor_08",
+          "iou": 0.8265638034891434,
+          "sequence_id": "v2",
+          "track_id": "v2_t210"
+        }
+      ],
+      "prediction_boxes": 6,
+      "sequence_id": "v2",
+      "unmatched_prediction_track_ids": [
+        "v2_t235",
+        "v2_t236",
+        "v2_t238",
+        "v2_t239",
+        "v2_t242"
+      ],
+      "unmatched_predictions": 5,
+      "visible_gt_boxes": 2
+    },
+    {
+      "frame_id": "001245",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "security_camera",
+          "frame_id": "001245",
+          "instance_id": "anchor_07",
+          "iou": 0.8845487397761657,
+          "sequence_id": "v2",
+          "track_id": "v2_t298"
+        }
+      ],
+      "prediction_boxes": 23,
+      "sequence_id": "v2",
+      "unmatched_prediction_track_ids": [
+        "untracked_v2_f001245_d02",
+        "untracked_v2_f001245_d19",
+        "untracked_v2_f001245_d20",
+        "untracked_v2_f001245_d21",
+        "v2_t210",
+        "v2_t264",
+        "v2_t270",
+        "v2_t289",
+        "v2_t290",
+        "v2_t291",
+        "v2_t292",
+        "v2_t296",
+        "v2_t297",
+        "v2_t301",
+        "v2_t304",
+        "v2_t305",
+        "v2_t307",
+        "v2_t308",
+        "v2_t309",
+        "v2_t310",
+        "v2_t313",
+        "v2_t317"
+      ],
+      "unmatched_predictions": 22,
+      "visible_gt_boxes": 2
+    },
+    {
+      "frame_id": "001320",
+      "matched_boxes": 2,
+      "matches": [
+        {
+          "canonical_id": "water_bottle",
+          "frame_id": "001320",
+          "instance_id": "anchor_05",
+          "iou": 0.9355538280349605,
+          "sequence_id": "v2",
+          "track_id": "v2_t328"
+        },
+        {
+          "canonical_id": "security_camera",
+          "frame_id": "001320",
+          "instance_id": "anchor_07",
+          "iou": 0.6942190274636514,
+          "sequence_id": "v2",
+          "track_id": "v2_t324"
+        }
+      ],
+      "prediction_boxes": 22,
+      "sequence_id": "v2",
+      "unmatched_prediction_track_ids": [
+        "untracked_v2_f001320_d01",
+        "untracked_v2_f001320_d03",
+        "untracked_v2_f001320_d04",
+        "untracked_v2_f001320_d05",
+        "untracked_v2_f001320_d10",
+        "untracked_v2_f001320_d19",
+        "untracked_v2_f001320_d21",
+        "v2_t210",
+        "v2_t297",
+        "v2_t313",
+        "v2_t317",
+        "v2_t322",
+        "v2_t327",
+        "v2_t329",
+        "v2_t330",
+        "v2_t331",
+        "v2_t332",
+        "v2_t338",
+        "v2_t339",
+        "v2_t340"
+      ],
+      "unmatched_predictions": 20,
+      "visible_gt_boxes": 3
+    },
+    {
+      "frame_id": "001545",
+      "matched_boxes": 3,
+      "matches": [
+        {
+          "canonical_id": "mini_fridge",
+          "frame_id": "001545",
+          "instance_id": "anchor_03",
+          "iou": 0.5663433426072728,
+          "sequence_id": "v2",
+          "track_id": "v2_t367"
+        },
+        {
+          "canonical_id": "bookshelf",
+          "frame_id": "001545",
+          "instance_id": "anchor_04",
+          "iou": 0.6860013108779156,
+          "sequence_id": "v2",
+          "track_id": "v2_t350"
+        },
+        {
+          "canonical_id": "water_bottle",
+          "frame_id": "001545",
+          "instance_id": "anchor_05",
+          "iou": 0.7972659285093042,
+          "sequence_id": "v2",
+          "track_id": "v2_t370"
+        }
+      ],
+      "prediction_boxes": 32,
+      "sequence_id": "v2",
+      "unmatched_prediction_track_ids": [
+        "untracked_v2_f001545_d04",
+        "untracked_v2_f001545_d06",
+        "untracked_v2_f001545_d13",
+        "untracked_v2_f001545_d15",
+        "untracked_v2_f001545_d19",
+        "untracked_v2_f001545_d20",
+        "untracked_v2_f001545_d21",
+        "untracked_v2_f001545_d22",
+        "untracked_v2_f001545_d23",
+        "untracked_v2_f001545_d25",
+        "untracked_v2_f001545_d26",
+        "untracked_v2_f001545_d27",
+        "untracked_v2_f001545_d28",
+        "untracked_v2_f001545_d29",
+        "untracked_v2_f001545_d30",
+        "untracked_v2_f001545_d31",
+        "v2_t352",
+        "v2_t356",
+        "v2_t359",
+        "v2_t361",
+        "v2_t363",
+        "v2_t366",
+        "v2_t368",
+        "v2_t373",
+        "v2_t375",
+        "v2_t376",
+        "v2_t377",
+        "v2_t380",
+        "v2_t383"
+      ],
+      "unmatched_predictions": 29,
+      "visible_gt_boxes": 5
+    },
+    {
+      "frame_id": "001650",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "mini_fridge",
+          "frame_id": "001650",
+          "instance_id": "anchor_03",
+          "iou": 0.6803584184541155,
+          "sequence_id": "v2",
+          "track_id": "v2_t367"
+        }
+      ],
+      "prediction_boxes": 11,
+      "sequence_id": "v2",
+      "unmatched_prediction_track_ids": [
+        "untracked_v2_f001650_d06",
+        "v2_t352",
+        "v2_t376",
+        "v2_t402",
+        "v2_t410",
+        "v2_t413",
+        "v2_t414",
+        "v2_t416",
+        "v2_t417",
+        "v2_t424"
+      ],
+      "unmatched_predictions": 10,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "001725",
+      "matched_boxes": 0,
+      "matches": [],
+      "prediction_boxes": 29,
+      "sequence_id": "v2",
+      "unmatched_prediction_track_ids": [
+        "untracked_v2_f001725_d02",
+        "untracked_v2_f001725_d04",
+        "untracked_v2_f001725_d06",
+        "untracked_v2_f001725_d07",
+        "untracked_v2_f001725_d09",
+        "untracked_v2_f001725_d10",
+        "untracked_v2_f001725_d12",
+        "untracked_v2_f001725_d13",
+        "untracked_v2_f001725_d14",
+        "untracked_v2_f001725_d15",
+        "untracked_v2_f001725_d16",
+        "untracked_v2_f001725_d17",
+        "untracked_v2_f001725_d20",
+        "untracked_v2_f001725_d21",
+        "untracked_v2_f001725_d22",
+        "untracked_v2_f001725_d23",
+        "untracked_v2_f001725_d24",
+        "untracked_v2_f001725_d25",
+        "untracked_v2_f001725_d26",
+        "untracked_v2_f001725_d27",
+        "untracked_v2_f001725_d28",
+        "v2_t402",
+        "v2_t404",
+        "v2_t410",
+        "v2_t424",
+        "v2_t430",
+        "v2_t431",
+        "v2_t436",
+        "v2_t438"
+      ],
+      "unmatched_predictions": 29,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "001980",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "toy_storage_organizer",
+          "frame_id": "001980",
+          "instance_id": "anchor_01",
+          "iou": 0.6666625756535466,
+          "sequence_id": "v2",
+          "track_id": "v2_t518"
+        }
+      ],
+      "prediction_boxes": 19,
+      "sequence_id": "v2",
+      "unmatched_prediction_track_ids": [
+        "untracked_v2_f001980_d16",
+        "untracked_v2_f001980_d18",
+        "v2_t502",
+        "v2_t503",
+        "v2_t508",
+        "v2_t512",
+        "v2_t516",
+        "v2_t519",
+        "v2_t520",
+        "v2_t521",
+        "v2_t524",
+        "v2_t525",
+        "v2_t526",
+        "v2_t527",
+        "v2_t528",
+        "v2_t529",
+        "v2_t530",
+        "v2_t531"
+      ],
+      "unmatched_predictions": 18,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "002040",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "toy_storage_organizer",
+          "frame_id": "002040",
+          "instance_id": "anchor_01",
+          "iou": 0.814894956065243,
+          "sequence_id": "v2",
+          "track_id": "v2_t500"
+        }
+      ],
+      "prediction_boxes": 33,
+      "sequence_id": "v2",
+      "unmatched_prediction_track_ids": [
+        "untracked_v2_f002040_d07",
+        "untracked_v2_f002040_d21",
+        "untracked_v2_f002040_d23",
+        "untracked_v2_f002040_d24",
+        "untracked_v2_f002040_d27",
+        "untracked_v2_f002040_d28",
+        "untracked_v2_f002040_d29",
+        "untracked_v2_f002040_d30",
+        "untracked_v2_f002040_d31",
+        "untracked_v2_f002040_d32",
+        "v2_t501",
+        "v2_t502",
+        "v2_t503",
+        "v2_t508",
+        "v2_t509",
+        "v2_t516",
+        "v2_t519",
+        "v2_t520",
+        "v2_t524",
+        "v2_t525",
+        "v2_t526",
+        "v2_t527",
+        "v2_t528",
+        "v2_t529",
+        "v2_t531",
+        "v2_t534",
+        "v2_t535",
+        "v2_t536",
+        "v2_t537",
+        "v2_t539",
+        "v2_t540",
+        "v2_t541"
+      ],
+      "unmatched_predictions": 32,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "000315",
+      "matched_boxes": 0,
+      "matches": [],
+      "prediction_boxes": 11,
+      "sequence_id": "v3",
+      "unmatched_prediction_track_ids": [
+        "untracked_v3_f000315_d10",
+        "v3_t043",
+        "v3_t045",
+        "v3_t046",
+        "v3_t050",
+        "v3_t052",
+        "v3_t056",
+        "v3_t057",
+        "v3_t059",
+        "v3_t070",
+        "v3_t071"
+      ],
+      "unmatched_predictions": 11,
+      "visible_gt_boxes": 2
+    },
+    {
+      "frame_id": "000465",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "storage_box",
+          "frame_id": "000465",
+          "instance_id": "anchor_14",
+          "iou": 0.915019955693716,
+          "sequence_id": "v3",
+          "track_id": "v3_t087"
+        }
+      ],
+      "prediction_boxes": 23,
+      "sequence_id": "v3",
+      "unmatched_prediction_track_ids": [
+        "untracked_v3_f000465_d19",
+        "v3_t050",
+        "v3_t052",
+        "v3_t056",
+        "v3_t057",
+        "v3_t070",
+        "v3_t071",
+        "v3_t080",
+        "v3_t083",
+        "v3_t086",
+        "v3_t088",
+        "v3_t089",
+        "v3_t090",
+        "v3_t091",
+        "v3_t092",
+        "v3_t093",
+        "v3_t095",
+        "v3_t098",
+        "v3_t103",
+        "v3_t107",
+        "v3_t108",
+        "v3_t109"
+      ],
+      "unmatched_predictions": 22,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "000615",
+      "matched_boxes": 2,
+      "matches": [
+        {
+          "canonical_id": "bookshelf",
+          "frame_id": "000615",
+          "instance_id": "anchor_11",
+          "iou": 0.5202927714386949,
+          "sequence_id": "v3",
+          "track_id": "v3_t100"
+        },
+        {
+          "canonical_id": "stuffed_animal",
+          "frame_id": "000615",
+          "instance_id": "anchor_12",
+          "iou": 0.5994996964300268,
+          "sequence_id": "v3",
+          "track_id": "v3_t125"
+        }
+      ],
+      "prediction_boxes": 25,
+      "sequence_id": "v3",
+      "unmatched_prediction_track_ids": [
+        "untracked_v3_f000615_d03",
+        "untracked_v3_f000615_d06",
+        "untracked_v3_f000615_d08",
+        "untracked_v3_f000615_d15",
+        "untracked_v3_f000615_d17",
+        "untracked_v3_f000615_d18",
+        "untracked_v3_f000615_d20",
+        "untracked_v3_f000615_d21",
+        "untracked_v3_f000615_d22",
+        "untracked_v3_f000615_d23",
+        "untracked_v3_f000615_d24",
+        "v3_t115",
+        "v3_t122",
+        "v3_t123",
+        "v3_t124",
+        "v3_t129",
+        "v3_t134",
+        "v3_t135",
+        "v3_t136",
+        "v3_t137",
+        "v3_t138",
+        "v3_t145",
+        "v3_t148"
+      ],
+      "unmatched_predictions": 23,
+      "visible_gt_boxes": 2
+    },
+    {
+      "frame_id": "000945",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "desk",
+          "frame_id": "000945",
+          "instance_id": "anchor_08",
+          "iou": 0.6306256734287407,
+          "sequence_id": "v3",
+          "track_id": "v3_t175"
+        }
+      ],
+      "prediction_boxes": 5,
+      "sequence_id": "v3",
+      "unmatched_prediction_track_ids": [
+        "v3_t192",
+        "v3_t193",
+        "v3_t198",
+        "v3_t203"
+      ],
+      "unmatched_predictions": 4,
+      "visible_gt_boxes": 2
+    },
+    {
+      "frame_id": "001035",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "table_lamp",
+          "frame_id": "001035",
+          "instance_id": "anchor_09",
+          "iou": 0.7754283446605871,
+          "sequence_id": "v3",
+          "track_id": "v3_t225"
+        }
+      ],
+      "prediction_boxes": 29,
+      "sequence_id": "v3",
+      "unmatched_prediction_track_ids": [
+        "untracked_v3_f001035_d13",
+        "untracked_v3_f001035_d14",
+        "untracked_v3_f001035_d15",
+        "untracked_v3_f001035_d16",
+        "untracked_v3_f001035_d20",
+        "untracked_v3_f001035_d21",
+        "untracked_v3_f001035_d23",
+        "untracked_v3_f001035_d24",
+        "untracked_v3_f001035_d25",
+        "untracked_v3_f001035_d26",
+        "untracked_v3_f001035_d27",
+        "untracked_v3_f001035_d28",
+        "v3_t175",
+        "v3_t192",
+        "v3_t193",
+        "v3_t198",
+        "v3_t201",
+        "v3_t205",
+        "v3_t207",
+        "v3_t208",
+        "v3_t210",
+        "v3_t212",
+        "v3_t213",
+        "v3_t214",
+        "v3_t215",
+        "v3_t216",
+        "v3_t221",
+        "v3_t222"
+      ],
+      "unmatched_predictions": 28,
+      "visible_gt_boxes": 3
+    },
+    {
+      "frame_id": "001260",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "security_camera",
+          "frame_id": "001260",
+          "instance_id": "anchor_07",
+          "iou": 0.7436812648502535,
+          "sequence_id": "v3",
+          "track_id": "v3_t273"
+        }
+      ],
+      "prediction_boxes": 26,
+      "sequence_id": "v3",
+      "unmatched_prediction_track_ids": [
+        "untracked_v3_f001260_d03",
+        "untracked_v3_f001260_d08",
+        "untracked_v3_f001260_d11",
+        "untracked_v3_f001260_d12",
+        "untracked_v3_f001260_d13",
+        "untracked_v3_f001260_d14",
+        "untracked_v3_f001260_d16",
+        "untracked_v3_f001260_d19",
+        "untracked_v3_f001260_d20",
+        "untracked_v3_f001260_d21",
+        "untracked_v3_f001260_d23",
+        "untracked_v3_f001260_d24",
+        "untracked_v3_f001260_d25",
+        "v3_t175",
+        "v3_t249",
+        "v3_t255",
+        "v3_t261",
+        "v3_t264",
+        "v3_t265",
+        "v3_t269",
+        "v3_t270",
+        "v3_t271",
+        "v3_t272",
+        "v3_t281",
+        "v3_t285"
+      ],
+      "unmatched_predictions": 25,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "001335",
+      "matched_boxes": 3,
+      "matches": [
+        {
+          "canonical_id": "water_bottle",
+          "frame_id": "001335",
+          "instance_id": "anchor_05",
+          "iou": 0.736883356448452,
+          "sequence_id": "v3",
+          "track_id": "v3_t268"
+        },
+        {
+          "canonical_id": "night_light",
+          "frame_id": "001335",
+          "instance_id": "anchor_06",
+          "iou": 0.6579104690306217,
+          "sequence_id": "v3",
+          "track_id": "v3_t269"
+        },
+        {
+          "canonical_id": "security_camera",
+          "frame_id": "001335",
+          "instance_id": "anchor_07",
+          "iou": 0.7112386076711139,
+          "sequence_id": "v3",
+          "track_id": "v3_t297"
+        }
+      ],
+      "prediction_boxes": 28,
+      "sequence_id": "v3",
+      "unmatched_prediction_track_ids": [
+        "untracked_v3_f001335_d11",
+        "untracked_v3_f001335_d12",
+        "untracked_v3_f001335_d13",
+        "untracked_v3_f001335_d17",
+        "untracked_v3_f001335_d22",
+        "untracked_v3_f001335_d24",
+        "untracked_v3_f001335_d25",
+        "untracked_v3_f001335_d26",
+        "untracked_v3_f001335_d27",
+        "v3_t246",
+        "v3_t255",
+        "v3_t261",
+        "v3_t264",
+        "v3_t265",
+        "v3_t267",
+        "v3_t270",
+        "v3_t272",
+        "v3_t281",
+        "v3_t285",
+        "v3_t290",
+        "v3_t291",
+        "v3_t292",
+        "v3_t293",
+        "v3_t294",
+        "v3_t295"
+      ],
+      "unmatched_predictions": 25,
+      "visible_gt_boxes": 3
+    },
+    {
+      "frame_id": "001575",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "mini_fridge",
+          "frame_id": "001575",
+          "instance_id": "anchor_03",
+          "iou": 0.7936871887314129,
+          "sequence_id": "v3",
+          "track_id": "v3_t313"
+        }
+      ],
+      "prediction_boxes": 18,
+      "sequence_id": "v3",
+      "unmatched_prediction_track_ids": [
+        "untracked_v3_f001575_d09",
+        "untracked_v3_f001575_d10",
+        "untracked_v3_f001575_d13",
+        "untracked_v3_f001575_d14",
+        "untracked_v3_f001575_d17",
+        "v3_t323",
+        "v3_t325",
+        "v3_t326",
+        "v3_t327",
+        "v3_t329",
+        "v3_t330",
+        "v3_t335",
+        "v3_t337",
+        "v3_t338",
+        "v3_t344",
+        "v3_t345",
+        "v3_t350"
+      ],
+      "unmatched_predictions": 17,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "001830",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "toy_storage_organizer",
+          "frame_id": "001830",
+          "instance_id": "anchor_01",
+          "iou": 0.823646365651345,
+          "sequence_id": "v3",
+          "track_id": "v3_t384"
+        }
+      ],
+      "prediction_boxes": 15,
+      "sequence_id": "v3",
+      "unmatched_prediction_track_ids": [
+        "v3_t382",
+        "v3_t385",
+        "v3_t387",
+        "v3_t390",
+        "v3_t392",
+        "v3_t393",
+        "v3_t394",
+        "v3_t395",
+        "v3_t396",
+        "v3_t397",
+        "v3_t398",
+        "v3_t399",
+        "v3_t400",
+        "v3_t401"
+      ],
+      "unmatched_predictions": 14,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "001890",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "toy_storage_organizer",
+          "frame_id": "001890",
+          "instance_id": "anchor_01",
+          "iou": 0.7640961446361798,
+          "sequence_id": "v3",
+          "track_id": "v3_t384"
+        }
+      ],
+      "prediction_boxes": 29,
+      "sequence_id": "v3",
+      "unmatched_prediction_track_ids": [
+        "untracked_v3_f001890_d04",
+        "untracked_v3_f001890_d09",
+        "untracked_v3_f001890_d10",
+        "untracked_v3_f001890_d12",
+        "untracked_v3_f001890_d13",
+        "untracked_v3_f001890_d17",
+        "untracked_v3_f001890_d19",
+        "untracked_v3_f001890_d20",
+        "untracked_v3_f001890_d23",
+        "untracked_v3_f001890_d24",
+        "untracked_v3_f001890_d25",
+        "untracked_v3_f001890_d26",
+        "untracked_v3_f001890_d27",
+        "untracked_v3_f001890_d28",
+        "v3_t382",
+        "v3_t387",
+        "v3_t389",
+        "v3_t390",
+        "v3_t392",
+        "v3_t393",
+        "v3_t394",
+        "v3_t395",
+        "v3_t396",
+        "v3_t397",
+        "v3_t398",
+        "v3_t401",
+        "v3_t403",
+        "v3_t405"
+      ],
+      "unmatched_predictions": 28,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "000405",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "water_bottle",
+          "frame_id": "000405",
+          "instance_id": "anchor_05",
+          "iou": 0.760936014625069,
+          "sequence_id": "v4",
+          "track_id": "v4_t094"
+        }
+      ],
+      "prediction_boxes": 10,
+      "sequence_id": "v4",
+      "unmatched_prediction_track_ids": [
+        "v4_t038",
+        "v4_t066",
+        "v4_t083",
+        "v4_t095",
+        "v4_t096",
+        "v4_t097",
+        "v4_t099",
+        "v4_t103",
+        "v4_t104"
+      ],
+      "unmatched_predictions": 9,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "000510",
+      "matched_boxes": 2,
+      "matches": [
+        {
+          "canonical_id": "water_bottle",
+          "frame_id": "000510",
+          "instance_id": "anchor_05",
+          "iou": 0.9341583201826971,
+          "sequence_id": "v4",
+          "track_id": "v4_t094"
+        },
+        {
+          "canonical_id": "night_light",
+          "frame_id": "000510",
+          "instance_id": "anchor_06",
+          "iou": 0.7962564640831253,
+          "sequence_id": "v4",
+          "track_id": "v4_t077"
+        }
+      ],
+      "prediction_boxes": 15,
+      "sequence_id": "v4",
+      "unmatched_prediction_track_ids": [
+        "untracked_v4_f000510_d11",
+        "untracked_v4_f000510_d13",
+        "v4_t083",
+        "v4_t095",
+        "v4_t096",
+        "v4_t107",
+        "v4_t108",
+        "v4_t109",
+        "v4_t110",
+        "v4_t111",
+        "v4_t113",
+        "v4_t114",
+        "v4_t116"
+      ],
+      "unmatched_predictions": 13,
+      "visible_gt_boxes": 2
+    },
+    {
+      "frame_id": "000645",
+      "matched_boxes": 2,
+      "matches": [
+        {
+          "canonical_id": "water_bottle",
+          "frame_id": "000645",
+          "instance_id": "anchor_05",
+          "iou": 0.9411034342869841,
+          "sequence_id": "v4",
+          "track_id": "v4_t094"
+        },
+        {
+          "canonical_id": "night_light",
+          "frame_id": "000645",
+          "instance_id": "anchor_06",
+          "iou": 0.9379848921584588,
+          "sequence_id": "v4",
+          "track_id": "v4_t077"
+        }
+      ],
+      "prediction_boxes": 21,
+      "sequence_id": "v4",
+      "unmatched_prediction_track_ids": [
+        "untracked_v4_f000645_d03",
+        "untracked_v4_f000645_d08",
+        "untracked_v4_f000645_d12",
+        "untracked_v4_f000645_d19",
+        "v4_t083",
+        "v4_t095",
+        "v4_t096",
+        "v4_t107",
+        "v4_t109",
+        "v4_t110",
+        "v4_t111",
+        "v4_t116",
+        "v4_t120",
+        "v4_t125",
+        "v4_t127",
+        "v4_t130",
+        "v4_t132",
+        "v4_t133",
+        "v4_t135"
+      ],
+      "unmatched_predictions": 19,
+      "visible_gt_boxes": 3
+    },
+    {
+      "frame_id": "000705",
+      "matched_boxes": 2,
+      "matches": [
+        {
+          "canonical_id": "water_bottle",
+          "frame_id": "000705",
+          "instance_id": "anchor_05",
+          "iou": 0.8946856629944232,
+          "sequence_id": "v4",
+          "track_id": "v4_t094"
+        },
+        {
+          "canonical_id": "night_light",
+          "frame_id": "000705",
+          "instance_id": "anchor_06",
+          "iou": 0.8518380367676737,
+          "sequence_id": "v4",
+          "track_id": "v4_t077"
+        }
+      ],
+      "prediction_boxes": 19,
+      "sequence_id": "v4",
+      "unmatched_prediction_track_ids": [
+        "untracked_v4_f000705_d13",
+        "untracked_v4_f000705_d15",
+        "untracked_v4_f000705_d18",
+        "v4_t083",
+        "v4_t095",
+        "v4_t096",
+        "v4_t109",
+        "v4_t110",
+        "v4_t116",
+        "v4_t120",
+        "v4_t125",
+        "v4_t127",
+        "v4_t130",
+        "v4_t132",
+        "v4_t133",
+        "v4_t135",
+        "v4_t136"
+      ],
+      "unmatched_predictions": 17,
+      "visible_gt_boxes": 3
+    },
+    {
+      "frame_id": "000810",
+      "matched_boxes": 0,
+      "matches": [],
+      "prediction_boxes": 10,
+      "sequence_id": "v4",
+      "unmatched_prediction_track_ids": [
+        "untracked_v4_f000810_d04",
+        "untracked_v4_f000810_d06",
+        "untracked_v4_f000810_d09",
+        "v4_t083",
+        "v4_t107",
+        "v4_t109",
+        "v4_t146",
+        "v4_t150",
+        "v4_t158",
+        "v4_t160"
+      ],
+      "unmatched_predictions": 10,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "001215",
+      "matched_boxes": 2,
+      "matches": [
+        {
+          "canonical_id": "bookshelf",
+          "frame_id": "001215",
+          "instance_id": "anchor_11",
+          "iou": 0.7139655633420993,
+          "sequence_id": "v4",
+          "track_id": "v4_t194"
+        },
+        {
+          "canonical_id": "stuffed_animal",
+          "frame_id": "001215",
+          "instance_id": "anchor_12",
+          "iou": 0.8383219163604909,
+          "sequence_id": "v4",
+          "track_id": "v4_t216"
+        }
+      ],
+      "prediction_boxes": 11,
+      "sequence_id": "v4",
+      "unmatched_prediction_track_ids": [
+        "v4_t200",
+        "v4_t206",
+        "v4_t207",
+        "v4_t208",
+        "v4_t213",
+        "v4_t214",
+        "v4_t217",
+        "v4_t218",
+        "v4_t219"
+      ],
+      "unmatched_predictions": 9,
+      "visible_gt_boxes": 2
+    },
+    {
+      "frame_id": "001425",
+      "matched_boxes": 2,
+      "matches": [
+        {
+          "canonical_id": "bookshelf",
+          "frame_id": "001425",
+          "instance_id": "anchor_11",
+          "iou": 0.8651068284341391,
+          "sequence_id": "v4",
+          "track_id": "v4_t194"
+        },
+        {
+          "canonical_id": "stuffed_animal",
+          "frame_id": "001425",
+          "instance_id": "anchor_12",
+          "iou": 0.7159187375457224,
+          "sequence_id": "v4",
+          "track_id": "v4_t257"
+        }
+      ],
+      "prediction_boxes": 23,
+      "sequence_id": "v4",
+      "unmatched_prediction_track_ids": [
+        "untracked_v4_f001425_d04",
+        "untracked_v4_f001425_d09",
+        "untracked_v4_f001425_d11",
+        "untracked_v4_f001425_d15",
+        "untracked_v4_f001425_d17",
+        "untracked_v4_f001425_d20",
+        "untracked_v4_f001425_d21",
+        "untracked_v4_f001425_d22",
+        "v4_t200",
+        "v4_t206",
+        "v4_t213",
+        "v4_t214",
+        "v4_t220",
+        "v4_t222",
+        "v4_t242",
+        "v4_t248",
+        "v4_t252",
+        "v4_t258",
+        "v4_t262",
+        "v4_t264",
+        "v4_t266"
+      ],
+      "unmatched_predictions": 21,
+      "visible_gt_boxes": 2
+    },
+    {
+      "frame_id": "001635",
+      "matched_boxes": 1,
+      "matches": [
+        {
+          "canonical_id": "storage_box",
+          "frame_id": "001635",
+          "instance_id": "anchor_14",
+          "iou": 0.7145012183388834,
+          "sequence_id": "v4",
+          "track_id": "v4_t311"
+        }
+      ],
+      "prediction_boxes": 16,
+      "sequence_id": "v4",
+      "unmatched_prediction_track_ids": [
+        "untracked_v4_f001635_d15",
+        "v4_t274",
+        "v4_t276",
+        "v4_t283",
+        "v4_t284",
+        "v4_t286",
+        "v4_t287",
+        "v4_t290",
+        "v4_t294",
+        "v4_t300",
+        "v4_t301",
+        "v4_t303",
+        "v4_t306",
+        "v4_t312",
+        "v4_t313"
+      ],
+      "unmatched_predictions": 15,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "002025",
+      "matched_boxes": 0,
+      "matches": [],
+      "prediction_boxes": 6,
+      "sequence_id": "v4",
+      "unmatched_prediction_track_ids": [
+        "v4_t341",
+        "v4_t353",
+        "v4_t355",
+        "v4_t357",
+        "v4_t365",
+        "v4_t366"
+      ],
+      "unmatched_predictions": 6,
+      "visible_gt_boxes": 1
+    },
+    {
+      "frame_id": "002430",
+      "matched_boxes": 0,
+      "matches": [],
+      "prediction_boxes": 11,
+      "sequence_id": "v4",
+      "unmatched_prediction_track_ids": [
+        "v4_t371",
+        "v4_t372",
+        "v4_t377",
+        "v4_t392",
+        "v4_t395",
+        "v4_t396",
+        "v4_t397",
+        "v4_t398",
+        "v4_t399",
+        "v4_t401",
+        "v4_t402"
+      ],
+      "unmatched_predictions": 11,
+      "visible_gt_boxes": 1
+    }
+  ],
+  "iou_threshold": 0.5,
+  "metrics": {
+    "false_positives_per_frame": {
+      "frames": 40,
+      "unmatched_predictions": 697,
+      "value": 17.425
+    },
+    "fragmentation_rate": {
+      "fragmented_gt_instances": 7,
+      "matched_gt_instances": 34,
+      "value": 0.20588235294117646
+    },
+    "visible_instance_recall": {
+      "matched_visible_gt_boxes": 49,
+      "value": 0.7101449275362319,
+      "visible_gt_boxes": 69
+    }
+  },
+  "schema_version": "1.0"
+}

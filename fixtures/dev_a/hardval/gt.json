@@ -1,0 +1,1026 @@
+{
+  "dataset_id": "dev_a_hardval_v1",
+  "frames": [
+    {
+      "sequence_id": "v1",
+      "frame_id": "000030",
+      "instances": [
+        {
+          "instance_id": "anchor_01",
+          "canonical_id": "toy_storage_organizer",
+          "bbox": [
+            13,
+            739.5,
+            1034,
+            1589.5
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v1",
+      "frame_id": "000450",
+      "instances": [
+        {
+          "instance_id": "anchor_03",
+          "canonical_id": "mini_fridge",
+          "bbox": [
+            175,
+            751,
+            623,
+            1662
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v1",
+      "frame_id": "000675",
+      "instances": [
+        {
+          "instance_id": "anchor_04",
+          "canonical_id": "bookshelf",
+          "bbox": [
+            59,
+            439.5,
+            789,
+            1696
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_05",
+          "canonical_id": "water_bottle",
+          "bbox": [
+            160,
+            3.5,
+            292,
+            307.5
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_07",
+          "canonical_id": "security_camera",
+          "bbox": [
+            683,
+            35.5,
+            837,
+            326.5
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_08",
+          "canonical_id": "desk",
+          "bbox": [
+            840,
+            857.5,
+            1077,
+            1230.5
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v1",
+      "frame_id": "000900",
+      "instances": [
+        {
+          "instance_id": "anchor_06",
+          "canonical_id": "night_light",
+          "bbox": [
+            165,
+            282,
+            812,
+            1685
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v1",
+      "frame_id": "001350",
+      "instances": [
+        {
+          "instance_id": "anchor_09",
+          "canonical_id": "table_lamp",
+          "bbox": [
+            40,
+            199.5,
+            555,
+            1471.5
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v1",
+      "frame_id": "001800",
+      "instances": [
+        {
+          "instance_id": "anchor_12",
+          "canonical_id": "stuffed_animal",
+          "bbox": [
+            383,
+            438.5,
+            622,
+            715.5
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_11",
+          "canonical_id": "bookshelf",
+          "bbox": [
+            296,
+            701,
+            1040,
+            1914
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v1",
+      "frame_id": "002010",
+      "instances": [
+        {
+          "instance_id": "anchor_14",
+          "canonical_id": "storage_box",
+          "bbox": [
+            3,
+            140,
+            325,
+            582
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_13",
+          "canonical_id": "wardrobe",
+          "bbox": [
+            7,
+            556.5,
+            967,
+            1428.5
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v1",
+      "frame_id": "002070",
+      "instances": [
+        {
+          "instance_id": "anchor_15",
+          "canonical_id": "laundry_bag",
+          "bbox": [
+            461,
+            455,
+            1061,
+            1119
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v1",
+      "frame_id": "002250",
+      "instances": [
+        {
+          "instance_id": "anchor_15",
+          "canonical_id": "laundry_bag",
+          "bbox": [
+            53,
+            799.5,
+            854,
+            1627
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v1",
+      "frame_id": "002700",
+      "instances": [
+        {
+          "instance_id": "anchor_01",
+          "canonical_id": "toy_storage_organizer",
+          "bbox": [
+            333,
+            442.5,
+            1071,
+            1191.5
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v2",
+      "frame_id": "000345",
+      "instances": [
+        {
+          "instance_id": "anchor_14",
+          "canonical_id": "storage_box",
+          "bbox": [
+            40,
+            309.5,
+            446,
+            635.5
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_13",
+          "canonical_id": "wardrobe",
+          "bbox": [
+            125,
+            611,
+            953,
+            1396
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v2",
+      "frame_id": "000660",
+      "instances": [
+        {
+          "instance_id": "anchor_12",
+          "canonical_id": "stuffed_animal",
+          "bbox": [
+            313,
+            610,
+            601,
+            947
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_11",
+          "canonical_id": "bookshelf",
+          "bbox": [
+            157,
+            898.5,
+            1065,
+            1883
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v2",
+      "frame_id": "000990",
+      "instances": [
+        {
+          "instance_id": "anchor_08",
+          "canonical_id": "desk",
+          "bbox": [
+            5,
+            1135,
+            1075,
+            1908
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_09",
+          "canonical_id": "table_lamp",
+          "bbox": [
+            295,
+            611.5,
+            654,
+            1202.5
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v2",
+      "frame_id": "001245",
+      "instances": [
+        {
+          "instance_id": "anchor_07",
+          "canonical_id": "security_camera",
+          "bbox": [
+            334,
+            737.5,
+            619,
+            1295.5
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_06",
+          "canonical_id": "night_light",
+          "bbox": [
+            2,
+            510.5,
+            199,
+            1229.5
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v2",
+      "frame_id": "001320",
+      "instances": [
+        {
+          "instance_id": "anchor_06",
+          "canonical_id": "night_light",
+          "bbox": [
+            268,
+            558.5,
+            656,
+            1369.5
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_07",
+          "canonical_id": "security_camera",
+          "bbox": [
+            851,
+            910.5,
+            1078,
+            1399.5
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_05",
+          "canonical_id": "water_bottle",
+          "bbox": [
+            1,
+            743.5,
+            200,
+            1348.5
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v2",
+      "frame_id": "001545",
+      "instances": [
+        {
+          "instance_id": "anchor_04",
+          "canonical_id": "bookshelf",
+          "bbox": [
+            198,
+            664,
+            712,
+            1667
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_05",
+          "canonical_id": "water_bottle",
+          "bbox": [
+            371,
+            327,
+            472,
+            572
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_07",
+          "canonical_id": "security_camera",
+          "bbox": [
+            720,
+            429,
+            819,
+            645
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_06",
+          "canonical_id": "night_light",
+          "bbox": [
+            523,
+            333,
+            657,
+            580
+          ],
+          "visible": false
+        },
+        {
+          "instance_id": "anchor_08",
+          "canonical_id": "desk",
+          "bbox": [
+            821,
+            1027.5,
+            1079,
+            1387.5
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_03",
+          "canonical_id": "mini_fridge",
+          "bbox": [
+            5,
+            953.5,
+            159,
+            1446.5
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v2",
+      "frame_id": "001650",
+      "instances": [
+        {
+          "instance_id": "anchor_03",
+          "canonical_id": "mini_fridge",
+          "bbox": [
+            216,
+            615.5,
+            616,
+            1646
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v2",
+      "frame_id": "001725",
+      "instances": [
+        {
+          "instance_id": "anchor_03",
+          "canonical_id": "mini_fridge",
+          "bbox": [
+            707,
+            1121.5,
+            872,
+            1510.5
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v2",
+      "frame_id": "001980",
+      "instances": [
+        {
+          "instance_id": "anchor_01",
+          "canonical_id": "toy_storage_organizer",
+          "bbox": [
+            37,
+            897,
+            808,
+            1586
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v2",
+      "frame_id": "002040",
+      "instances": [
+        {
+          "instance_id": "anchor_01",
+          "canonical_id": "toy_storage_organizer",
+          "bbox": [
+            87,
+            768.5,
+            982,
+            1431.5
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v3",
+      "frame_id": "000315",
+      "instances": [
+        {
+          "instance_id": "anchor_15",
+          "canonical_id": "laundry_bag",
+          "bbox": [
+            245,
+            493.5,
+            717,
+            970.5
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_16",
+          "canonical_id": "luggage",
+          "bbox": [
+            891,
+            1037.5,
+            1073,
+            1261.5
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v3",
+      "frame_id": "000465",
+      "instances": [
+        {
+          "instance_id": "anchor_14",
+          "canonical_id": "storage_box",
+          "bbox": [
+            3,
+            2.5,
+            522,
+            364.5
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v3",
+      "frame_id": "000615",
+      "instances": [
+        {
+          "instance_id": "anchor_11",
+          "canonical_id": "bookshelf",
+          "bbox": [
+            37,
+            438.5,
+            762,
+            1085.5
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_12",
+          "canonical_id": "stuffed_animal",
+          "bbox": [
+            128,
+            279.5,
+            335,
+            511.5
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v3",
+      "frame_id": "000945",
+      "instances": [
+        {
+          "instance_id": "anchor_09",
+          "canonical_id": "table_lamp",
+          "bbox": [
+            244,
+            320.5,
+            685,
+            885.5
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_08",
+          "canonical_id": "desk",
+          "bbox": [
+            22,
+            865.5,
+            1065,
+            1601
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v3",
+      "frame_id": "001035",
+      "instances": [
+        {
+          "instance_id": "anchor_09",
+          "canonical_id": "table_lamp",
+          "bbox": [
+            386,
+            407.5,
+            720,
+            784.5
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_10",
+          "canonical_id": "tumbler",
+          "bbox": [
+            845,
+            916.5,
+            1004,
+            1303.5
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_08",
+          "canonical_id": "desk",
+          "bbox": [
+            40,
+            763.5,
+            814,
+            1226.5
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v3",
+      "frame_id": "001260",
+      "instances": [
+        {
+          "instance_id": "anchor_07",
+          "canonical_id": "security_camera",
+          "bbox": [
+            429,
+            561.5,
+            571,
+            857.5
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_06",
+          "canonical_id": "night_light",
+          "bbox": [
+            59,
+            407.5,
+            327,
+            805.5
+          ],
+          "visible": false
+        }
+      ]
+    },
+    {
+      "sequence_id": "v3",
+      "frame_id": "001335",
+      "instances": [
+        {
+          "instance_id": "anchor_07",
+          "canonical_id": "security_camera",
+          "bbox": [
+            684,
+            661.5,
+            863,
+            996.5
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_06",
+          "canonical_id": "night_light",
+          "bbox": [
+            283,
+            407.5,
+            579,
+            880.5
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_05",
+          "canonical_id": "water_bottle",
+          "bbox": [
+            5,
+            405.5,
+            272,
+            793.5
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v3",
+      "frame_id": "001575",
+      "instances": [
+        {
+          "instance_id": "anchor_03",
+          "canonical_id": "mini_fridge",
+          "bbox": [
+            453,
+            415.5,
+            701,
+            905.5
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v3",
+      "frame_id": "001830",
+      "instances": [
+        {
+          "instance_id": "anchor_01",
+          "canonical_id": "toy_storage_organizer",
+          "bbox": [
+            9,
+            584.5,
+            861,
+            1143.5
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v3",
+      "frame_id": "001890",
+      "instances": [
+        {
+          "instance_id": "anchor_01",
+          "canonical_id": "toy_storage_organizer",
+          "bbox": [
+            16,
+            570.5,
+            947,
+            1114.5
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v4",
+      "frame_id": "000405",
+      "instances": [
+        {
+          "instance_id": "anchor_05",
+          "canonical_id": "water_bottle",
+          "bbox": [
+            388,
+            366.5,
+            787,
+            1438.5
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v4",
+      "frame_id": "000510",
+      "instances": [
+        {
+          "instance_id": "anchor_06",
+          "canonical_id": "night_light",
+          "bbox": [
+            225,
+            620.5,
+            699,
+            1477
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_05",
+          "canonical_id": "water_bottle",
+          "bbox": [
+            0,
+            817.5,
+            200,
+            1406.5
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v4",
+      "frame_id": "000645",
+      "instances": [
+        {
+          "instance_id": "anchor_06",
+          "canonical_id": "night_light",
+          "bbox": [
+            369,
+            690.5,
+            731,
+            1436.5
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_07",
+          "canonical_id": "security_camera",
+          "bbox": [
+            948,
+            951.5,
+            1077,
+            1479.5
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_05",
+          "canonical_id": "water_bottle",
+          "bbox": [
+            1,
+            788.5,
+            292,
+            1489.5
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v4",
+      "frame_id": "000705",
+      "instances": [
+        {
+          "instance_id": "anchor_06",
+          "canonical_id": "night_light",
+          "bbox": [
+            355,
+            691.5,
+            769,
+            1455.5
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_07",
+          "canonical_id": "security_camera",
+          "bbox": [
+            945,
+            973.5,
+            1074,
+            1483.5
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_05",
+          "canonical_id": "water_bottle",
+          "bbox": [
+            0,
+            774.5,
+            314,
+            1483.5
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v4",
+      "frame_id": "000810",
+      "instances": [
+        {
+          "instance_id": "anchor_07",
+          "canonical_id": "security_camera",
+          "bbox": [
+            147,
+            753.5,
+            386,
+            1119.5
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v4",
+      "frame_id": "001215",
+      "instances": [
+        {
+          "instance_id": "anchor_11",
+          "canonical_id": "bookshelf",
+          "bbox": [
+            91,
+            498.5,
+            823,
+            1546
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_12",
+          "canonical_id": "stuffed_animal",
+          "bbox": [
+            195,
+            218.5,
+            421,
+            521.5
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v4",
+      "frame_id": "001425",
+      "instances": [
+        {
+          "instance_id": "anchor_12",
+          "canonical_id": "stuffed_animal",
+          "bbox": [
+            83,
+            571.5,
+            195,
+            738.5
+          ],
+          "visible": true
+        },
+        {
+          "instance_id": "anchor_11",
+          "canonical_id": "bookshelf",
+          "bbox": [
+            51,
+            665,
+            675,
+            1541
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v4",
+      "frame_id": "001635",
+      "instances": [
+        {
+          "instance_id": "anchor_14",
+          "canonical_id": "storage_box",
+          "bbox": [
+            201,
+            595,
+            896,
+            1134
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v4",
+      "frame_id": "002025",
+      "instances": [
+        {
+          "instance_id": "anchor_15",
+          "canonical_id": "laundry_bag",
+          "bbox": [
+            146,
+            736.5,
+            774,
+            1537
+          ],
+          "visible": true
+        }
+      ]
+    },
+    {
+      "sequence_id": "v4",
+      "frame_id": "002430",
+      "instances": [
+        {
+          "instance_id": "anchor_16",
+          "canonical_id": "luggage",
+          "bbox": [
+            213,
+            1188.5,
+            431,
+            1471.5
+          ],
+          "visible": true
+        }
+      ]
+    }
+  ]
+}

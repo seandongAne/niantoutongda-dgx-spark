@@ -68,8 +68,41 @@ case "$PHASE" in
     esac
     pip install -U -r "$REQ" -i "$MIRROR"
     if [ "$NAME" = "nemotron_vl" ]; then
-      # CUDA 扩展现场编译,失败不静默 — 记录后走 NGC 容器兜底
-      pip install "mamba-ssm==2.2.5" causal_conv1d --no-build-isolation -i "$MIRROR" \
+      # CUDA 扩展现场编译。2026-07-15 三个根因逐一修复:
+      # ① 节点缺 python3.12-dev 且无 sudo → apt-get download + dpkg -x 解包到
+      #    ~/local,经 CPATH 注入。父目录与 python3.12 叶目录都要在:
+      #    <Python.h> 走叶目录,pyconfig.h 桩按
+      #    <aarch64-linux-gnu/python3.12/pyconfig.h> 相对引用走父目录。
+      # ② aarch64 上 torch cpp_extension 默认 Jetson 架构表 → 钉真实算力。
+      # ③ mamba-ssm 2.2.5 与 CUDA 13 有两处源码级不兼容(架构表 + CCCL 3
+      #    删除的 CUB 符号) → 取 sdist 经 patch_mamba_gb10.py 补丁后本地安装。
+      TORCH_CUDA_ARCH_LIST="$(python -c 'import torch; print(".".join(map(str, torch.cuda.get_device_capability(0))))')"
+      export TORCH_CUDA_ARCH_LIST
+      # 跳过 GitHub 预编译轮子探测(本平台必 404,纯噪音)
+      export MAMBA_FORCE_BUILD=TRUE CAUSAL_CONV1D_FORCE_BUILD=TRUE
+      if [ ! -f /usr/include/python3.12/Python.h ]; then
+        if [ ! -f "$HOME/local/usr/include/python3.12/Python.h" ]; then
+          mkdir -p ~/tmp/pydev ~/local
+          ( cd ~/tmp/pydev && apt-get download libpython3.12-dev python3.12-dev \
+              && for d in *.deb; do dpkg -x "$d" ~/local; done ) \
+            || { echo "PYDEV_HEADERS_FAILED — fallback: NGC PyTorch container" >&2; exit 4; }
+        fi
+        export CPATH="$HOME/local/usr/include/python3.12:$HOME/local/usr/include${CPATH:+:$CPATH}"
+      fi
+      echo "build env: TORCH_CUDA_ARCH_LIST=$TORCH_CUDA_ARCH_LIST CPATH=${CPATH:-<system>}"
+      pip install causal_conv1d --no-build-isolation -i "$MIRROR" \
+        || { echo "CAUSAL_BUILD_FAILED — fallback: NGC PyTorch container" >&2; exit 3; }
+      MAMBA_SRC="$HOME/tmp/mamba_src/mamba_ssm-2.2.5"
+      if [ ! -f "$MAMBA_SRC/setup.py" ]; then
+        mkdir -p "$HOME/tmp/mamba_src"
+        curl -fsSLo "$HOME/tmp/mamba_src/mamba_ssm-2.2.5.tar.gz" \
+          "https://mirrors.aliyun.com/pypi/packages/ba/2d/fbd909f6e6d48c491a9ed7ae68e8a890d8409aba4a6356741e2a9c6adad5/mamba_ssm-2.2.5.tar.gz" \
+          || { echo "MAMBA_SDIST_FETCH_FAILED" >&2; exit 5; }
+        tar xf "$HOME/tmp/mamba_src/mamba_ssm-2.2.5.tar.gz" -C "$HOME/tmp/mamba_src"
+      fi
+      python "$PROJ_DIR/scripts/patch_mamba_gb10.py" "$MAMBA_SRC" "$TORCH_CUDA_ARCH_LIST" \
+        || { echo "MAMBA_PATCH_FAILED" >&2; exit 5; }
+      pip install "$MAMBA_SRC" --no-build-isolation -i "$MIRROR" \
         || { echo "MAMBA_BUILD_FAILED — fallback: NGC PyTorch container" >&2; exit 3; }
     fi
     cuda_probe

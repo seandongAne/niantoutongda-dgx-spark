@@ -58,7 +58,7 @@
 
 - **codex 提案裁决(教师-学生循环 + TAO 微调 GDINO)**:诊断照单全收(它抓到 `detect.py` 跨批 NMS 无类别去重会误删堆叠实体的真缺陷),处方砍一半——**TAO 微调设三条件门**(推理修复后仍不达标 ∧ 主链闭环 ∧ ≤Day 5;评分矩阵属"明确可舍弃",单房间微调打冻结验收 = 过拟合撞枪口),Mask/SAM、R1 伪标签同缓。采纳六项(canonical_id 词表编译 / alias-group NMS / prompt 自动搜索 / 停留段瓦片化 / 30–50 帧困难验证集 / 视觉教师+数据工厂分阶段损失)打包为 **S2.5 批次,一次性重跑 ingest**,专档文档 `docs/AI搬家复原Agent_S2.5_检测推理修复批次.md`。教训:**外部方案先过评分矩阵与泛化风险,再谈技术美感——"必须先修推理路径"这句 codex 自己说对了,结论却排了微调,取舍要自己做**。
 - **v5 全量 ingest 收官**:v1 191 / v2 165 / v3 142 / v4 123 tracklets。G0 量化线达标(17 锚点每个 ≥2/3 旧段、≥12 词全三段);弱点入册当 S2.5 靶子:security camera 全程零轨迹、table lamp v1 缺、luggage v3 全灭、storage box 过火(71 条/段)、复合标签伪影 5 种。
-- **Nemotron VL 本地环境失利**:mamba-ssm 与 causal_conv1d 在节点双双编译失败,按预案转 NGC PyTorch 容器兜底;若容器也不通,属性抽取执行者切 StepFun 云 VLM(仅开发期,演示主链不接云)。
+- **Nemotron VL 本地环境:编译失败 → 当夜修复(未动用 NGC 兜底)**。三个根因逐一击破:①节点缺 python3.12-dev 且无 sudo → `apt-get download + dpkg -x` 用户态解包,经 CPATH 注入(父目录必须在内——Ubuntu pyconfig.h 是桩,相对引用 `<aarch64-linux-gnu/python3.12/pyconfig.h>`);②aarch64 上 torch cpp_extension 默认 Jetson 架构表(sm_53 起,CUDA 13 已删)→ 钉 `TORCH_CUDA_ARCH_LIST=12.1`;③mamba-ssm 2.2.5 setup.py **硬编码**同款架构表且不读环境变量,外加 CCCL 3.x 删除了 `cub::CTA_SYNC`/`cub::LaneId` → sdist 双补丁(`scripts/patch_mamba_gb10.py`,幂等)。causal_conv1d 1.6.2.post1 无架构问题只需①。验收:selective_scan fwd+**bwd**(bwd 正是补丁内核)+ 完整 Mamba block GB10 真机冒烟全过,transformers 4.53.3 合规(>4.53,<4.54)。教训:**"兜底预案存在"不等于"该走兜底"——三个报错(`Python.h missing`/`compute_53`/`cub has no member`)每个都指向可修的具体原因,先读报错再谈降级**。
 - 会话勘误:本轮对话误开在 Brief-CC 仓库目录下(文件操作全走绝对路径,无实际影响);仓库根 `.env` 已补建(空 `STEPFUN_API_KEY=`,gitignore+deploy 双排除),Sean 拿到 key 直接填入即可。
 
 ## 失败与教训

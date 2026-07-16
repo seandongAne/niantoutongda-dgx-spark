@@ -71,6 +71,9 @@
 **完成定义**:v6 三指标不劣于 v5 且小物/堆叠召回可见提升;S3 硬负样本对
 (4 组同类不同实例)在 v6 上的判定不回退;journal 记录消融行。
 
-> Nemotron VL 本地环境注:mamba-ssm 与 causal_conv1d 在节点双双编译失败
-> (2026-07-15 夜),按预案走 **NGC PyTorch 容器**兜底;若容器路径也超时,
-> 属性抽取的执行者可切 StepFun 云 VLM(仅开发期工具用途,演示主链不接云)。
+> Nemotron VL 本地环境注:mamba-ssm/causal_conv1d 编译失败已于当夜**修复**
+> (三根因:python3.12-dev 缺失无 sudo → 用户态解包 deb + CPATH;torch 默认
+> Jetson 架构表 → 钉 TORCH_CUDA_ARCH_LIST=12.1;mamba-ssm 硬编码 sm_53..87 +
+> CCCL 3 删除 CTA_SYNC/LaneId → sdist 补丁 `scripts/patch_mamba_gb10.py`)。
+> selective_scan fwd+bwd + Mamba block 已在 GB10 真机冒烟通过,SP0-score
+> 探针解锁;NGC 容器兜底**未动用**。

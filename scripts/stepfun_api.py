@@ -103,10 +103,38 @@ def cmd_chat(args: argparse.Namespace) -> None:
     )
 
 
+def cmd_tts(args: argparse.Namespace) -> None:
+    """文本 → 语音(A1 预热用合成测试音频,不涉家庭素材)。"""
+    req = urllib.request.Request(
+        BASE_URL + "/audio/speech",
+        data=json.dumps(
+            {"model": args.model, "input": args.text, "voice": args.voice,
+             "response_format": "wav"}
+        ).encode(),
+        headers={
+            "Authorization": f"Bearer {load_key()}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=180) as r:
+            Path(args.out).write_bytes(r.read())
+            print(f"wrote {args.out}")
+    except urllib.error.HTTPError as e:
+        sys.exit(f"HTTP {e.code} /audio/speech: {e.read().decode(errors='replace')[:2000]}")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("models").set_defaults(func=cmd_models)
+    tts = sub.add_parser("tts")
+    tts.add_argument("--model", default="stepaudio-2.5-tts")
+    tts.add_argument("--text", required=True)
+    tts.add_argument("--voice", default="linjiajiejie")
+    tts.add_argument("--out", required=True)
+    tts.set_defaults(func=cmd_tts)
     chat = sub.add_parser("chat")
     chat.add_argument("--model", required=True)
     chat.add_argument("--prompt", default=None, help="缺省从 stdin 读")

@@ -1,0 +1,35 @@
+[
+  {
+    "label_zh": "蓝色水壶",
+    "label_en": "Blue water bottle",
+    "owner": "姐姐",
+    "source_location": "白色书架第二层",
+    "target_location": null,
+    "pack_group": null,
+    "attributes": {
+      "color": "蓝色"
+    }
+  },
+  {
+    "label_zh": "史迪奇玩偶",
+    "label_en": "Stitch doll",
+    "owner": null,
+    "source_location": null,
+    "target_location": null,
+    "pack_group": "床上用品",
+    "attributes": {
+      "color": null
+    }
+  },
+  {
+    "label_zh": "粉色行李箱",
+    "label_en": "Pink suitcase",
+    "owner": null,
+    "source_location": null,
+    "target_location": "主卧衣柜",
+    "pack_group": null,
+    "attributes": {
+      "color": "粉色"
+    }
+  }
+]

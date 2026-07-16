@@ -22,6 +22,7 @@ PROJ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJ))
 
 import librosa  # noqa: E402
+import soundfile as sf  # noqa: E402
 import torch  # noqa: E402
 import torch.nn.functional as F  # noqa: E402
 import torchaudio  # noqa: E402
@@ -57,7 +58,11 @@ def write_json(path: Path, payload: Any) -> None:
 
 
 def load_audio(path: Path, target_rate: int = 16_000) -> torch.Tensor:
-    waveform, sample_rate = torchaudio.load(path)
+    # torchaudio.load delegates decoding to TorchCodec in the Spark runtime, while
+    # the benchmark only needs ordinary WAV input.  SoundFile is already proven by
+    # a1_local_probe and keeps decoding independent from that optional package.
+    data, sample_rate = sf.read(path, dtype="float32", always_2d=True)
+    waveform = torch.from_numpy(data.T)
     if sample_rate != target_rate:
         waveform = torchaudio.transforms.Resample(sample_rate, target_rate)(waveform)
     return waveform[0]

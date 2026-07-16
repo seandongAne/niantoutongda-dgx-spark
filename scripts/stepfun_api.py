@@ -2,9 +2,10 @@
 """Stepfun Step Plan API 本地客户端(赛方 2000M token 配额)。
 
 红线:
-- STEPFUN_API_KEY 只存本地 .env / 环境变量;永不进 git、永不上 Spark 节点
-  (.gitignore 与 deploy.sh 均已排除 .env)。本脚本部署到节点无害(无密钥即退出),
-  但设计用途是只在本地 Mac 运行。
+- STEPFUN_API_KEY 的持久副本只存本地 .env / 环境变量;永不进 git、永不写入
+  Spark 磁盘(.gitignore 与 deploy.sh 均已排除 .env)。赛方限制 SSH 文件传输后，
+  ``a1_spark_factory.py`` 可把一次性 key 仅经 stdin 注入 Spark 进程内存；该 key
+  必须视为已暴露并在任务后撤销，绝不进入 argv、日志、状态文件或远端 .env。
 - 演示主链不调用云 API。本工具只服务 dev-time 用途——A1 prompt 预热、
   G0 预标注/词表、LLM-judge、文案润色,见 docs/STEPFUN_API_PLAYBOOK.md。
 - 云端输出永远是"候选/评审意见",不得自动写入真值或契约对象。
@@ -48,7 +49,7 @@ def load_key() -> str:
                     key = line.split("=", 1)[1].strip().strip('"').strip("'")
                     break
     if not key:
-        sys.exit("missing STEPFUN_API_KEY — 写入仓库根 .env(已 gitignore)或导出环境变量")
+        sys.exit("missing STEPFUN_API_KEY — 写入本地仓库根 .env(已 gitignore)或导出环境变量")
     return key
 
 

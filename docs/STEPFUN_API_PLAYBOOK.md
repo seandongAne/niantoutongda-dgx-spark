@@ -5,7 +5,8 @@
 > 当前执行以 `docs/初赛范围冻结_2026-07-16.md` 为准。
 >
 > 赛方提供的阶跃 API 配额(约 2000M Credit)。接入信息来自开发平台控制台;
-> 客户端 = `scripts/stepfun_api.py`(仅本地运行)。
+> 控制端 = 本地 `scripts/stepfun_api.py`;A1 批处理可由
+> `scripts/a1_spark_factory.py` 在 Spark 原地生成音频和完成云/本地 A/B。
 
 ## 接入事实(2026-07-15 控制台截图)
 
@@ -13,17 +14,51 @@
 - 双协议:Chat Completions(OpenAI 兼容 `/chat/completions`)+ Messages(Claude 兼容 `/messages`)
 - 已验证用途覆盖:step-3.7-flash、stepaudio-2.5-*、step-image-edit-2;**权威清单以
   `python scripts/stepfun_api.py models` 实调结果为准,不凭截图猜**。
-- 密钥:仓库根 `.env` 的 `STEPFUN_API_KEY`(已被 .gitignore 与 deploy.sh 双重排除)。
+- 密钥持久副本:本地仓库根 `.env` 的 `STEPFUN_API_KEY`(已被 .gitignore 与
+  deploy.sh 双重排除)。Spark 不落盘任何密钥。
 
 ## 红线(先于一切用途)
 
-1. **密钥只存本地 Mac**——永不进 git、永不上 Spark 节点(节点零凭据纪律)。
+1. **密钥只在本地 Mac 持久保存**——永不进 git、永不写入 Spark 磁盘。唯一例外是
+   赛方 SSH 限流后的 A1 工厂:一次性、可撤销 key 通过 stdin 进入远端进程内存，
+   不进 argv / 日志 / 状态文件 / `.env`;云阶段结束立刻从环境移除，并从注入时起
+   按已泄露处理，批次结束即撤销。非一次性 key 不得使用这个通道。
 2. **演示主链不调用云 API**——断网高光与"本地优先"是我们自己的评分叙事。
    云用途全部是 dev-time。
 3. **云端输出只是候选/评审意见**:预标注须人工校对后才能进真值;judge 结论
    只进分析报告,不改数据;不得让云输出自动写入任何契约对象。
 4. **涉家庭影像/语音出境前必须脱敏**(G0 纪律),且逐批由 Sean 拍板。
-5. 每个批量任务记录 token 用量(客户端 stderr 已带 usage 行)。
+5. 每个批量任务记录 token 用量。用量是预算护栏与可审计账本，不是越高越好的 KPI；
+   A1 成功指标是覆盖完整性与统计稳定性。
+
+## Spark 原地 A1 工厂（2026-07-16 SSH 限流后）
+
+赛方要求尽量避免 SSH 文件传输后，A1 改为数据平面原地运行：只用 deploy 同步小体积
+代码；确定性计划、TTS WAV、扰动音频、云端预测和本地预测全部在 `spark:~/proj/`
+生成。任务完成后只拉回 `results/acceptance/A1/<run_id>/` 的小体积判卷摘要，绝不
+rsync 音频池。
+
+```bash
+./scripts/spark_healthcheck.sh
+./scripts/deploy.sh
+ssh spark 'free -h'
+
+python scripts/a1_spark_factory.py launch \
+  --run-dir local-data/a1/calibration-20260716-v3-spark \
+  --report-dir results/acceptance/A1/calibration-20260716-v3-spark \
+  --base-cases 6 \
+  --conditions clean,noise20,speed090 \
+  --max-new-tts 6 \
+  --max-new-extractions 18 \
+  --max-new-local 18 \
+  --log logs/a1_factory_calibration_v3.log
+
+ssh spark 'tail -n 50 ~/proj/logs/a1_factory_calibration_v3.log'
+```
+
+工厂可断点续跑，调用上限仍由三个 `--max-new-*` 参数控制。密钥只通过上述 launch
+命令的 SSH stdin 发送一行，不得手工 `export` 到远端 shell，也不得为了 nohup 写入
+临时文件。状态文件 `factory-status.json` 只记录阶段、上限、错误和凭据策略，不含凭据。
 
 ## 用途台账（含已停止项）
 
@@ -72,7 +107,7 @@ Messages API(Claude 兼容)意味着也能给本地 agent CLI 供模型——评
 ## 加分角度
 
 dev-time 使用阶跃 API 本身就是 Stepfun 生态投入的额外证据——每次批量任务
-在当天十日谈记一笔(用途 + token 量),与本地 Step-Audio 推理形成
+在当天十日谈记一笔(用途 + token 量),与 Spark 本地 Step-Audio 推理形成
 "云上调优、端上部署"的完整叙事。
 
 ## 第一步(key 到手后)

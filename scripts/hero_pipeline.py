@@ -44,6 +44,7 @@ STAGE_ORDER = [
     "group",
     "layout",
     "taskcards",
+    "report",
     "bundle",
 ]
 
@@ -193,6 +194,18 @@ def build_stages(cfg: dict, py: str) -> dict[str, Stage]:
                   "--out-dir", str(out_dir)],
             inputs=inputs,
             outputs=[out_dir / "taskcards.jsonl", out_dir / "taskcards.md"],
+        )
+
+    if sc("report").get("enabled"):
+        inputs = [run / "naming/display.jsonl", run / "group/groups.jsonl",
+                  run / "layout/layout.json", run / "regions/regions.json",
+                  run / "taskcards/taskcards.jsonl"]
+        stages["report"] = Stage(
+            "report", "local",
+            argv=[py, str(PROJ / "scripts/results_page.py"),
+                  "--run-dir", str(run)],
+            inputs=inputs,
+            outputs=[run / "index.html"],
         )
 
     if sc("bundle").get("enabled", True):

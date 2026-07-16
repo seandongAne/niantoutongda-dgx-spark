@@ -37,5 +37,8 @@ stages:
   taskcards:
     enabled: true
 
+  report:
+    enabled: true
+
   bundle:
     enabled: true

@@ -33,9 +33,11 @@ def test_full_chain_then_resume_then_from_stage(tmp_path):
     cards = (run_dir / "taskcards/taskcards.md").read_text(encoding="utf-8")
     assert "水壶(蓝色)" in cards and "水壶(粉色)" in cards
 
+    assert (run_dir / "index.html").exists()
+
     second = run_pipeline(run_dir)
     assert second.returncode == 0, second.stderr
-    assert second.stdout.count("[skip]") == 6
+    assert second.stdout.count("[skip]") == 7
     assert "[run ] naming" not in second.stdout
 
     third = run_pipeline(run_dir, "--from-stage", "layout")

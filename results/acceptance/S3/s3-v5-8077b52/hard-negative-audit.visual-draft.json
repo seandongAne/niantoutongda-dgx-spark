@@ -1,0 +1,376 @@
+{
+  "anchors": {
+    "anchor_01": {
+      "annotated_tracklet_count": 5,
+      "excess_output_entity_count_after_mutex_floor": 2,
+      "mapping_completeness": "partial",
+      "minimum_entity_count_under_one_track_per_video": 2,
+      "output_entity_count": 4,
+      "output_entity_ids": [
+        "entity_4ade80575a78",
+        "entity_7faa306ed7b2",
+        "entity_bb7dcaab6194",
+        "entity_f5d3ac4c3bd9"
+      ],
+      "review_confidence": "medium",
+      "same_anchor_accepted_links": [
+        {
+          "mode": "automatic",
+          "score": 0.88543996,
+          "tracklet_a": "v1_t023",
+          "tracklet_b": "v2_t325"
+        }
+      ],
+      "same_video_extra_fragment_count": 2,
+      "same_video_fragment_groups": {
+        "v1": [
+          "v1_t021",
+          "v1_t023"
+        ],
+        "v2": [
+          "v2_t325",
+          "v2_t342"
+        ]
+      },
+      "videos_observed": [
+        "v1",
+        "v2",
+        "v3"
+      ]
+    },
+    "anchor_02": {
+      "annotated_tracklet_count": 2,
+      "excess_output_entity_count_after_mutex_floor": 0,
+      "mapping_completeness": "partial",
+      "minimum_entity_count_under_one_track_per_video": 1,
+      "output_entity_count": 1,
+      "output_entity_ids": [
+        "entity_84451ac07aec"
+      ],
+      "review_confidence": "high",
+      "same_anchor_accepted_links": [
+        {
+          "mode": "automatic",
+          "score": 0.93084738,
+          "tracklet_a": "v1_t355",
+          "tracklet_b": "v2_t008"
+        }
+      ],
+      "same_video_extra_fragment_count": 0,
+      "same_video_fragment_groups": {},
+      "videos_observed": [
+        "v1",
+        "v2"
+      ]
+    },
+    "anchor_04": {
+      "annotated_tracklet_count": 6,
+      "excess_output_entity_count_after_mutex_floor": 1,
+      "mapping_completeness": "partial",
+      "minimum_entity_count_under_one_track_per_video": 3,
+      "output_entity_count": 4,
+      "output_entity_ids": [
+        "entity_36e3a4294703",
+        "entity_81de79c7bde5",
+        "entity_8848794205e3",
+        "entity_abe5ae0c7ae6"
+      ],
+      "review_confidence": "high",
+      "same_anchor_accepted_links": [
+        {
+          "mode": "automatic",
+          "score": 0.95060199,
+          "tracklet_a": "v1_t088",
+          "tracklet_b": "v2_t250"
+        },
+        {
+          "mode": "automatic",
+          "score": 0.86604589,
+          "tracklet_a": "v3_t215",
+          "tracklet_b": "v4_t037"
+        }
+      ],
+      "same_video_extra_fragment_count": 2,
+      "same_video_fragment_groups": {
+        "v2": [
+          "v2_t205",
+          "v2_t211",
+          "v2_t250"
+        ]
+      },
+      "videos_observed": [
+        "v1",
+        "v2",
+        "v3",
+        "v4"
+      ]
+    },
+    "anchor_05": {
+      "annotated_tracklet_count": 6,
+      "excess_output_entity_count_after_mutex_floor": 3,
+      "mapping_completeness": "partial",
+      "minimum_entity_count_under_one_track_per_video": 3,
+      "output_entity_count": 6,
+      "output_entity_ids": [
+        "entity_3dfc62afe550",
+        "entity_5b1f1e39dc7e",
+        "entity_5dfa2c724361",
+        "entity_937f2e63ee64",
+        "entity_d2c8754d8147",
+        "entity_d2e57be945ad"
+      ],
+      "review_confidence": "high",
+      "same_anchor_accepted_links": [],
+      "same_video_extra_fragment_count": 3,
+      "same_video_fragment_groups": {
+        "v2": [
+          "v2_t214",
+          "v2_t251",
+          "v2_t261"
+        ],
+        "v3": [
+          "v3_t155",
+          "v3_t171"
+        ]
+      },
+      "videos_observed": [
+        "v1",
+        "v2",
+        "v3"
+      ]
+    },
+    "anchor_10": {
+      "annotated_tracklet_count": 9,
+      "excess_output_entity_count_after_mutex_floor": 5,
+      "mapping_completeness": "partial",
+      "minimum_entity_count_under_one_track_per_video": 3,
+      "output_entity_count": 8,
+      "output_entity_ids": [
+        "entity_17c702a65d1e",
+        "entity_1b8a505eaf79",
+        "entity_5987c59d142a",
+        "entity_61e0ce6053ce",
+        "entity_b31b5ef9245f",
+        "entity_bb317bf1162a",
+        "entity_c11ebb013ba7",
+        "entity_d9551d5fac6e"
+      ],
+      "review_confidence": "high",
+      "same_anchor_accepted_links": [
+        {
+          "mode": "automatic",
+          "score": 0.88614803,
+          "tracklet_a": "v2_t161",
+          "tracklet_b": "v4_t087"
+        }
+      ],
+      "same_video_extra_fragment_count": 5,
+      "same_video_fragment_groups": {
+        "v1": [
+          "v1_t165",
+          "v1_t168"
+        ],
+        "v2": [
+          "v2_t161",
+          "v2_t191"
+        ],
+        "v3": [
+          "v3_t124",
+          "v3_t150",
+          "v3_t154"
+        ],
+        "v4": [
+          "v4_t087",
+          "v4_t135"
+        ]
+      },
+      "videos_observed": [
+        "v1",
+        "v2",
+        "v3",
+        "v4"
+      ]
+    },
+    "anchor_11": {
+      "annotated_tracklet_count": 7,
+      "excess_output_entity_count_after_mutex_floor": 1,
+      "mapping_completeness": "partial",
+      "minimum_entity_count_under_one_track_per_video": 4,
+      "output_entity_count": 5,
+      "output_entity_ids": [
+        "entity_11cfaa3172da",
+        "entity_27b891aa1090",
+        "entity_3b03dd5af729",
+        "entity_9e729eac14a3",
+        "entity_b04b3acd95f6"
+      ],
+      "review_confidence": "high",
+      "same_anchor_accepted_links": [
+        {
+          "mode": "automatic",
+          "score": 0.86905539,
+          "tracklet_a": "v1_t201",
+          "tracklet_b": "v3_t064"
+        },
+        {
+          "mode": "automatic",
+          "score": 0.957206,
+          "tracklet_a": "v2_t119",
+          "tracklet_b": "v4_t102"
+        }
+      ],
+      "same_video_extra_fragment_count": 3,
+      "same_video_fragment_groups": {
+        "v3": [
+          "v3_t064",
+          "v3_t080",
+          "v3_t103",
+          "v3_t113"
+        ]
+      },
+      "videos_observed": [
+        "v1",
+        "v2",
+        "v3",
+        "v4"
+      ]
+    },
+    "anchor_13": {
+      "annotated_tracklet_count": 3,
+      "excess_output_entity_count_after_mutex_floor": 0,
+      "mapping_completeness": "partial",
+      "minimum_entity_count_under_one_track_per_video": 1,
+      "output_entity_count": 1,
+      "output_entity_ids": [
+        "entity_06e6c87266a7"
+      ],
+      "review_confidence": "medium",
+      "same_anchor_accepted_links": [
+        {
+          "mode": "automatic",
+          "score": 0.91197774,
+          "tracklet_a": "v1_t284",
+          "tracklet_b": "v2_t063"
+        },
+        {
+          "mode": "automatic",
+          "score": 0.86550738,
+          "tracklet_a": "v2_t063",
+          "tracklet_b": "v3_t065"
+        }
+      ],
+      "same_video_extra_fragment_count": 0,
+      "same_video_fragment_groups": {},
+      "videos_observed": [
+        "v1",
+        "v2",
+        "v3"
+      ]
+    },
+    "anchor_16": {
+      "annotated_tracklet_count": 5,
+      "excess_output_entity_count_after_mutex_floor": 2,
+      "mapping_completeness": "partial",
+      "minimum_entity_count_under_one_track_per_video": 2,
+      "output_entity_count": 4,
+      "output_entity_ids": [
+        "entity_04505d7a5a15",
+        "entity_2d688970cfb0",
+        "entity_726e20277ec8",
+        "entity_80b031054afe"
+      ],
+      "review_confidence": "high",
+      "same_anchor_accepted_links": [
+        {
+          "mode": "automatic",
+          "score": 0.95202439,
+          "tracklet_a": "v1_t317",
+          "tracklet_b": "v2_t081"
+        }
+      ],
+      "same_video_extra_fragment_count": 2,
+      "same_video_fragment_groups": {
+        "v1": [
+          "v1_t317",
+          "v1_t319"
+        ],
+        "v4": [
+          "v4_t220",
+          "v4_t225"
+        ]
+      },
+      "videos_observed": [
+        "v1",
+        "v2",
+        "v4"
+      ]
+    }
+  },
+  "data_owner_confirmation_required": true,
+  "dataset_version": "dev-a-vocab5",
+  "diagnostic_only": true,
+  "fragmentation_note": "same-video fragment groups are upstream tracklet segmentation evidence; the S3 one-track-per-video constraint intentionally cannot merge them",
+  "g2_blocker": "full data-owner-confirmed 17-anchor mapping is outside this four-pair audit",
+  "g2_evaluated": false,
+  "groups": [
+    {
+      "anchor_ids": [
+        "anchor_04",
+        "anchor_11"
+      ],
+      "category_id": "bookshelf",
+      "direct_accepted_crossings": [],
+      "entity_crossings": [],
+      "group_id": "A",
+      "mapping_completeness": "partial",
+      "opposite_merge_observed": false,
+      "verdict": "VISUAL_DRAFT_NO_CROSSING_OBSERVED_PARTIAL_MAPPING"
+    },
+    {
+      "anchor_ids": [
+        "anchor_02",
+        "anchor_16"
+      ],
+      "category_id": "suitcase",
+      "direct_accepted_crossings": [],
+      "entity_crossings": [],
+      "group_id": "B",
+      "mapping_completeness": "partial",
+      "opposite_merge_observed": false,
+      "verdict": "VISUAL_DRAFT_NO_CROSSING_OBSERVED_PARTIAL_MAPPING"
+    },
+    {
+      "anchor_ids": [
+        "anchor_01",
+        "anchor_13"
+      ],
+      "category_id": "cabinet",
+      "direct_accepted_crossings": [],
+      "entity_crossings": [],
+      "group_id": "C",
+      "mapping_completeness": "partial",
+      "opposite_merge_observed": false,
+      "verdict": "VISUAL_DRAFT_NO_CROSSING_OBSERVED_PARTIAL_MAPPING"
+    },
+    {
+      "anchor_ids": [
+        "anchor_05",
+        "anchor_10"
+      ],
+      "category_id": "water_bottle",
+      "direct_accepted_crossings": [],
+      "entity_crossings": [],
+      "group_id": "D",
+      "mapping_completeness": "partial",
+      "opposite_merge_observed": false,
+      "verdict": "VISUAL_DRAFT_NO_CROSSING_OBSERVED_PARTIAL_MAPPING"
+    }
+  ],
+  "hard_negative_evaluated": false,
+  "mapping_completion_required": true,
+  "opposite_merge_group_count": 0,
+  "opposite_merge_groups": [],
+  "review_status": "visual_draft_pending_data_owner",
+  "schema_version": "1.0",
+  "slice_id": "S3-hard-negative-audit"
+}

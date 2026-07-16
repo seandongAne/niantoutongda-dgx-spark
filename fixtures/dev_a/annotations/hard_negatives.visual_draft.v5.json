@@ -1,0 +1,100 @@
+{
+  "schema_version": "1.0",
+  "dataset_version": "dev-a-vocab5",
+  "review_status": "visual_draft_pending_data_owner",
+  "reviewer_role": "codex_contact_sheet_visual_draft",
+  "g2_eligible": false,
+  "scope_note": "Selected visually recognisable first-prototype crops only. This is a machine-readable diagnostic draft, not Sean's data-owner truth and not an exhaustive anchor-to-tracklet mapping.",
+  "evidence_refs": [
+    "results/acceptance/S3/s3-v5-8077b52/contact-sheets/hard-negative-bookshelf.jpg",
+    "results/acceptance/S3/s3-v5-8077b52/contact-sheets/hard-negative-suitcase.jpg",
+    "results/acceptance/S3/s3-v5-8077b52/contact-sheets/hard-negative-cabinet.jpg",
+    "results/acceptance/S3/s3-v5-8077b52/contact-sheets/hard-negative-water_bottle.jpg"
+  ],
+  "anchors": {
+    "anchor_01": {
+      "display_label_zh": "玩具柜",
+      "mapping_completeness": "partial",
+      "review_confidence": "medium",
+      "tracklet_ids_by_video": {
+        "v1": ["v1_t021", "v1_t023"],
+        "v2": ["v2_t325", "v2_t342"],
+        "v3": ["v3_t260"]
+      },
+      "note": "Colourful open toy-cubby crops; data owner must confirm the partial/occluded fragments."
+    },
+    "anchor_02": {
+      "display_label_zh": "玩具行李箱",
+      "mapping_completeness": "partial",
+      "review_confidence": "high",
+      "tracklet_ids_by_video": {
+        "v1": ["v1_t355"],
+        "v2": ["v2_t008"]
+      }
+    },
+    "anchor_04": {
+      "display_label_zh": "黑色书架",
+      "mapping_completeness": "partial",
+      "review_confidence": "high",
+      "tracklet_ids_by_video": {
+        "v1": ["v1_t088"],
+        "v2": ["v2_t205", "v2_t211", "v2_t250"],
+        "v3": ["v3_t215"],
+        "v4": ["v4_t037"]
+      }
+    },
+    "anchor_05": {
+      "display_label_zh": "蓝色水壶",
+      "mapping_completeness": "partial",
+      "review_confidence": "high",
+      "tracklet_ids_by_video": {
+        "v1": ["v1_t105"],
+        "v2": ["v2_t214", "v2_t251", "v2_t261"],
+        "v3": ["v3_t155", "v3_t171"]
+      }
+    },
+    "anchor_10": {
+      "display_label_zh": "玫红色水壶",
+      "mapping_completeness": "partial",
+      "review_confidence": "high",
+      "tracklet_ids_by_video": {
+        "v1": ["v1_t165", "v1_t168"],
+        "v2": ["v2_t161", "v2_t191"],
+        "v3": ["v3_t124", "v3_t150", "v3_t154"],
+        "v4": ["v4_t087", "v4_t135"]
+      }
+    },
+    "anchor_11": {
+      "display_label_zh": "白色书架",
+      "mapping_completeness": "partial",
+      "review_confidence": "high",
+      "tracklet_ids_by_video": {
+        "v1": ["v1_t201"],
+        "v2": ["v2_t119"],
+        "v3": ["v3_t064", "v3_t080", "v3_t103", "v3_t113"],
+        "v4": ["v4_t102"]
+      }
+    },
+    "anchor_13": {
+      "display_label_zh": "白色立柜",
+      "mapping_completeness": "partial",
+      "review_confidence": "medium",
+      "tracklet_ids_by_video": {
+        "v1": ["v1_t284"],
+        "v2": ["v2_t063"],
+        "v3": ["v3_t065"]
+      },
+      "note": "White vertical cabinet beside the coloured drawers; especially requires data-owner confirmation."
+    },
+    "anchor_16": {
+      "display_label_zh": "粉色行李箱",
+      "mapping_completeness": "partial",
+      "review_confidence": "high",
+      "tracklet_ids_by_video": {
+        "v1": ["v1_t317", "v1_t319"],
+        "v2": ["v2_t081"],
+        "v4": ["v4_t220", "v4_t225"]
+      }
+    }
+  }
+}

@@ -63,6 +63,23 @@ def test_category_layer_keeps_cabinet_hard_negative_in_scope():
     assert "CATEGORY_CONFLICT" not in score.gate_reasons
 
 
+def test_attribute_score_ignores_pipeline_metadata_keys():
+    config = _config()
+    a = _feature("v1_a", "v1", "bookshelf", [1, 0], category="bookshelf")
+    b = _feature("v2_b", "v2", "bookshelf", [1, 0], category="bookshelf")
+    for feature in (a, b):
+        feature.tracklet.attributes.update(
+            {
+                "hero_ref": f"{feature.tracklet_id}.jpg",
+                "hero_score": "0.50000000",
+                "hero_scoring_version": "area-sharpness-completeness-v1",
+            }
+        )
+    score = score_pair(a, b, config, IdentityConstraints())
+    # 仅有元数据键时属性证据缺失,必须回到中性 0.5,不得因常量版本串恒等于 1.0。
+    assert score.attribute == 0.5
+
+
 def test_hard_gates_same_video_category_and_user_negative():
     config = _config()
     a = _feature("v1_a", "v1", "bookshelf", [1, 0], category="bookshelf")

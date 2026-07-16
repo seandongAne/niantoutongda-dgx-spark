@@ -110,7 +110,7 @@ def _cosine(a: tuple[float, ...], b: tuple[float, ...]) -> float:
 
 
 def _attribute_score(a: TrackFeature, b: TrackFeature) -> float:
-    ignored = {"label", "hero_ref", "hero_score"}
+    ignored = {"label", "hero_ref", "hero_score", "hero_scoring_version"}
     shared = sorted((set(a.tracklet.attributes) & set(b.tracklet.attributes)) - ignored)
     if not shared:
         return 0.5

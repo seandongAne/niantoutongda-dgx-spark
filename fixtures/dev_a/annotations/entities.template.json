@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "dataset_version": "dev-a-vocab5",
+  "status": "pending_data_owner_tracklet_mapping",
+  "video_ids": ["v1", "v2", "v3", "v4"],
+  "evaluation_anchor_ids": [
+    "anchor_01", "anchor_02", "anchor_03", "anchor_04", "anchor_05", "anchor_06",
+    "anchor_07", "anchor_08", "anchor_09", "anchor_10", "anchor_11", "anchor_12",
+    "anchor_13", "anchor_14", "anchor_15", "anchor_16", "anchor_17"
+  ],
+  "gate": {
+    "complete_merge_min": 15,
+    "high_confidence_false_merge_max": 0,
+    "recall_at_1_min": 0.85,
+    "clarification_max": 3,
+    "note": "17-anchor task-A proportional gate; final mapping must be confirmed from contact sheets, never inferred from similarity"
+  },
+  "entities": [
+    {"anchor_id": "anchor_01", "display_label_zh": "玩具柜", "category_id": "cabinet", "visible_in": [], "tracklet_ids_by_video": {}},
+    {"anchor_id": "anchor_02", "display_label_zh": "玩具行李箱", "category_id": "suitcase", "visible_in": [], "tracklet_ids_by_video": {}},
+    {"anchor_id": "anchor_03", "display_label_zh": "玩具冰箱", "category_id": "refrigerator", "visible_in": [], "tracklet_ids_by_video": {}},
+    {"anchor_id": "anchor_04", "display_label_zh": "黑色书架", "category_id": "bookshelf", "visible_in": [], "tracklet_ids_by_video": {}},
+    {"anchor_id": "anchor_05", "display_label_zh": "蓝色水壶", "category_id": "water_bottle", "visible_in": [], "tracklet_ids_by_video": {}},
+    {"anchor_id": "anchor_06", "display_label_zh": "夜灯", "category_id": "lamp", "visible_in": [], "tracklet_ids_by_video": {}},
+    {"anchor_id": "anchor_07", "display_label_zh": "摄像头", "category_id": "camera", "visible_in": [], "tracklet_ids_by_video": {}},
+    {"anchor_id": "anchor_08", "display_label_zh": "书桌", "category_id": "desk", "visible_in": [], "tracklet_ids_by_video": {}},
+    {"anchor_id": "anchor_09", "display_label_zh": "台灯", "category_id": "lamp", "visible_in": [], "tracklet_ids_by_video": {}},
+    {"anchor_id": "anchor_10", "display_label_zh": "玫红色水壶", "category_id": "water_bottle", "visible_in": [], "tracklet_ids_by_video": {}},
+    {"anchor_id": "anchor_11", "display_label_zh": "白色书架", "category_id": "bookshelf", "visible_in": [], "tracklet_ids_by_video": {}},
+    {"anchor_id": "anchor_12", "display_label_zh": "史迪奇玩偶", "category_id": "stuffed_animal", "visible_in": [], "tracklet_ids_by_video": {}},
+    {"anchor_id": "anchor_13", "display_label_zh": "白色立柜", "category_id": "cabinet", "visible_in": [], "tracklet_ids_by_video": {}},
+    {"anchor_id": "anchor_14", "display_label_zh": "收纳盒", "category_id": "storage_box", "visible_in": [], "tracklet_ids_by_video": {}},
+    {"anchor_id": "anchor_15", "display_label_zh": "脏衣篓", "category_id": "laundry_container", "visible_in": [], "tracklet_ids_by_video": {}},
+    {"anchor_id": "anchor_16", "display_label_zh": "粉色行李箱", "category_id": "suitcase", "visible_in": [], "tracklet_ids_by_video": {}},
+    {"anchor_id": "anchor_17", "display_label_zh": "床", "category_id": "bed", "visible_in": [], "tracklet_ids_by_video": {}}
+  ],
+  "hard_negative_pairs": [
+    {"group_id": "A", "anchor_ids": ["anchor_04", "anchor_11"], "category_id": "bookshelf"},
+    {"group_id": "B", "anchor_ids": ["anchor_02", "anchor_16"], "category_id": "suitcase"},
+    {"group_id": "C", "anchor_ids": ["anchor_01", "anchor_13"], "category_id": "cabinet"},
+    {"group_id": "D", "anchor_ids": ["anchor_05", "anchor_10"], "category_id": "water_bottle"}
+  ]
+}

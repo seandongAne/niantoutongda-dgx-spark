@@ -1,0 +1,178 @@
+"""S3 配置、词表与 v5 Tracklet 特征读取。
+
+v5 只保存每条轨迹的 DINOv2 Top-3 均值向量和 raw detector label；属性、
+上下文与逐视角向量尚未生成。因此本模块显式保留缺失值，不能把 baseline
+包装成完整特征消融。
+"""
+
+from __future__ import annotations
+
+import json
+import math
+from dataclasses import dataclass
+from pathlib import Path
+from statistics import median
+
+import yaml
+
+from backend.pipeline.vocab import Vocabulary
+from backend.schemas.core import Observation, Tracklet
+
+
+@dataclass(frozen=True)
+class WeightConfig:
+    instance: float
+    semantic: float
+    attribute: float
+    context: float
+    geometry: float
+
+    @property
+    def total(self) -> float:
+        return self.instance + self.semantic + self.attribute + self.context + self.geometry
+
+
+@dataclass(frozen=True)
+class ThresholdConfig:
+    match: float
+    new: float
+    margin: float
+    min_quality: float
+
+
+@dataclass(frozen=True)
+class ReIDConfig:
+    version: str
+    embedding_dim: int
+    top_k: int
+    weights: WeightConfig
+    thresholds: ThresholdConfig
+
+    @classmethod
+    def from_yaml(cls, path: str | Path) -> "ReIDConfig":
+        raw = yaml.safe_load(Path(path).read_text())
+        weights = WeightConfig(**raw["weights"])
+        thresholds = ThresholdConfig(**raw["thresholds"])
+        config = cls(
+            version=str(raw["version"]),
+            embedding_dim=int(raw["embedding_dim"]),
+            top_k=int(raw["top_k"]),
+            weights=weights,
+            thresholds=thresholds,
+        )
+        config.validate()
+        return config
+
+    def validate(self) -> None:
+        if self.embedding_dim <= 0:
+            raise ValueError("embedding_dim must be positive")
+        if self.top_k <= 0:
+            raise ValueError("top_k must be positive")
+        if self.weights.total <= 0:
+            raise ValueError("at least one ReID weight must be positive")
+        if any(value < 0 for value in self.weights.__dict__.values()):
+            raise ValueError("ReID weights cannot be negative")
+        t = self.thresholds
+        if not 0 <= t.new < t.match <= 1:
+            raise ValueError("thresholds must satisfy 0 <= new < match <= 1")
+        if not 0 <= t.margin <= 1 or not 0 <= t.min_quality <= 1:
+            raise ValueError("margin/min_quality must be in [0, 1]")
+
+
+@dataclass(frozen=True)
+class TrackFeature:
+    tracklet: Tracklet
+    vector: tuple[float, ...]
+    raw_label: str
+    canonical_id: str | None
+    category_id: str | None
+    quality: float
+    aspect_ratio: float | None
+    area: float | None
+
+    @property
+    def tracklet_id(self) -> str:
+        return self.tracklet.tracklet_id
+
+    @property
+    def video_id(self) -> str:
+        return self.tracklet.video_id
+
+
+def _resolve_ref(ref: str, ingest_root: Path) -> Path:
+    path = Path(ref)
+    if path.is_absolute() and path.exists():
+        return path
+    for base in (Path.cwd(), ingest_root, *ingest_root.parents):
+        candidate = base / path
+        if candidate.exists():
+            return candidate
+    raise FileNotFoundError(f"cannot resolve artifact reference: {ref}")
+
+
+def _read_jsonl(path: Path, model_type):
+    if not path.exists():
+        return []
+    return [model_type.model_validate_json(line) for line in path.read_text().splitlines() if line]
+
+
+def _load_vector(ref: str, ingest_root: Path, expected_dim: int) -> tuple[float, ...]:
+    path = _resolve_ref(ref, ingest_root)
+    raw = json.loads(path.read_text())
+    values = tuple(float(value) for value in raw["vector"])
+    if len(values) != expected_dim:
+        raise ValueError(f"{path}: expected {expected_dim} dims, got {len(values)}")
+    norm = math.sqrt(sum(value * value for value in values))
+    if not math.isfinite(norm) or norm < 1e-12:
+        raise ValueError(f"{path}: invalid embedding norm {norm}")
+    return tuple(value / norm for value in values)
+
+
+def load_features(
+    ingest_root: str | Path,
+    *,
+    vocab: Vocabulary,
+    embedding_dim: int,
+) -> list[TrackFeature]:
+    """读取每个视频目录的 Tracklet、Observation 与嵌入，顺序确定。"""
+
+    root = Path(ingest_root)
+    if not root.is_dir():
+        raise FileNotFoundError(f"ingest root not found: {root}")
+
+    features: list[TrackFeature] = []
+    for tracklet_path in sorted(root.glob("*/tracklets.jsonl")):
+        observations = {
+            observation.observation_id: observation
+            for observation in _read_jsonl(tracklet_path.parent / "observations.jsonl", Observation)
+        }
+        for tracklet in _read_jsonl(tracklet_path, Tracklet):
+            if not tracklet.embedding_ref:
+                continue
+            vector = _load_vector(tracklet.embedding_ref, root, embedding_dim)
+            raw_label = str(tracklet.attributes.get("label", ""))
+            vocab_match = vocab.match(raw_label)
+            linked = [observations[ref] for ref in tracklet.observation_ids if ref in observations]
+            quality = max((observation.quality for observation in linked), default=0.0)
+            ratios: list[float] = []
+            areas: list[float] = []
+            for observation in linked:
+                x1, y1, x2, y2 = observation.bbox
+                width, height = max(0.0, x2 - x1), max(0.0, y2 - y1)
+                if width > 0 and height > 0:
+                    ratios.append(width / height)
+                    areas.append(width * height)
+            features.append(
+                TrackFeature(
+                    tracklet=tracklet,
+                    vector=vector,
+                    raw_label=raw_label,
+                    canonical_id=vocab_match.canonical_id,
+                    category_id=vocab_match.category_id,
+                    quality=quality,
+                    aspect_ratio=median(ratios) if ratios else None,
+                    area=median(areas) if areas else None,
+                )
+            )
+    features.sort(key=lambda feature: feature.tracklet_id)
+    return features

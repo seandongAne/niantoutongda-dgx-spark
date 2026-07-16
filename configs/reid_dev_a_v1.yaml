@@ -1,0 +1,24 @@
+version: "reid-dev-a-v1"
+created_at: "2026-07-16"
+owner: "物品记忆 Agent"
+reason: "S3 v5 instance-embedding baseline; thresholds remain task-A calibration values"
+applies_to_dataset: "dev_a"
+frozen: false
+
+embedding_dim: 768
+top_k: 5
+
+# v5 只有 DINOv2 均值嵌入、raw label 与框几何；属性/上下文仍显式为 0，
+# 不能把本配置称为完整特征消融。
+weights:
+  instance: 0.80
+  semantic: 0.15
+  attribute: 0.00
+  context: 0.00
+  geometry: 0.05
+
+thresholds:
+  match: 0.86
+  new: 0.70
+  margin: 0.04
+  min_quality: 0.28

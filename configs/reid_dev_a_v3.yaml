@@ -1,0 +1,49 @@
+version: "reid-dev-a-v3"
+created_at: "2026-07-16"
+owner: "物品记忆 Agent"
+reason: "GT 授权的阈值校准:match 0.86→0.84、margin 0.04→0.00;其余与 v2 逐字段一致"
+applies_to_dataset: "dev_a"
+frozen: true
+
+embedding_dim: 768
+top_k: 5
+
+# 与 reid-dev-a-v2 完全一致 —— 本版只动 match/margin 两个阈值
+weights:
+  instance: 0.80
+  semantic: 0.15
+  attribute: 0.00
+  context: 0.00
+  geometry: 0.05
+
+# 校准依据(2026-07-16,sweep-4482129 + anchor_gt_eval):
+# 12 组合 match×margin 网格全网格误合并=0、危险澄清恒=4(语义门+一对一分配兜底);
+# m0.84-g0.00 为帕累托点:链接 85→156(+71 无丢失)、澄清 564→525、完整合并 2→4。
+# margin=0.04 会掐死 3/4 的 ≥0.86 同锚点合格链接(碎轨近邻平分),故归零;
+# 数据所有者 2026-07-16 目检 71 对新增链接(new-links-m084g000.jpg)全部正确。
+# 注意:GT 只覆盖 161/945 轨,非锚点部分依赖目检;完整合并门(15/17)校准不可达,
+# 结构解 = 属性接线,不得再用降阈值追门。
+thresholds:
+  match: 0.84
+  new: 0.70
+  margin: 0.00
+  min_quality: 0.28
+
+# 参数依据 = stitch-probe/probe-v6.json(2026-07-16 真机探针):
+# 同视频同标签对 12743 个,余弦 p99=0.816;0.85 阈值 23 merges/56 共现否决,
+# 0.80 时 108 否决说明高余弦对里多数是共现的不同物体 → 取保守 0.85;
+# 22 合并组目检干净(2026-07-16)。
+stitch:
+  enabled: true
+  min_cosine: 0.85
+  max_gap_ms: 0
+
+# v6 观测数直方图 {2:238, 3:153, 4:104, 5+:450},无 1 观测轨(ingest min_track_len=2)。
+# 语义 = 低证据轨保留匹配/自动链接资格,仅吊销"提问权"(歧义对不进澄清队列):
+# 07-16 A/B 证明彻底剔除会丢 13 条 0.865+ 的弱类自动链接(security_camera/storage_box 等)
+filter:
+  min_observations: 3
+
+# 互选封顶:每轨对每个对手视频最多 2 个双向 top-N 澄清伙伴
+clarify:
+  max_partners_per_tracklet: 2

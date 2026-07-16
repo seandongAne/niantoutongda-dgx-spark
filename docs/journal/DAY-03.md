@@ -65,6 +65,7 @@
 - **codex 提速提案裁决(五项采纳四项半)+ 单 tile A/B 验证**:tile 账精确命中(默认 5 tile prompt 1322 tok,单 tile 298 tok,codex 预言 299);但它给的 `use_thumbnail:false` kwarg 是错的(NanoNemotronVLProcessor 不收,TypeError 拒启;源码 tile=1 时 thumbnail 自动不加,只传 `{"max_num_tiles":1}` 即可)。单请求 tok/s 25.4→26.0 基本持平——**收益不在单请求,在批量:每调用省 ~1024 tok prefill + KV 足迹缩 4.4×**。裁决落点:#1 服务端已生效、letterbox 归 S5;#2 32-token JSON schema 归 S5(冒烟保 128 为可比性);#3 hero 评分进 S2.5-8、条件升级归 S5;#4 服务参数已生效、并发扫等 S5 客户端;#5 缓存+指标重构归 S5 设计;A/B 顺序半保留(测量顺序对,工程顺序不对——提速不许插队 S3)。全档 `docs/NEMOTRON_SPARK_SERVING.md`。教训:**外部提案的算术可以全对、API 细节仍要上手核(源码 30 秒查清 kwarg 签名,省一轮盲试)**。
 - **S2.5 批次扩容(Sean 拍板)**:+S2.5-7 GDINO 帧批处理(0.4s/帧是管线真瓶颈,与瓦片化同文件同批施工,验收=bit-等价+墙钟下降)、+S2.5-8 hero crop 综合评分(面积×清晰度×截断惩罚);TensorRT 明确**维持 SF1-L2 原排期不提前**,进设门表。
 - **Spark Docker 非 root 权限已打通**：会话安全门先过 `✅ SPARK CLEAN`（load=0.31，8888→8072 / 9000→9072 未暴露）；节点已预装 Docker 28.3.3 且存在 `docker` 组，但 `Developer` 原先只有 `Developer,sudo`。按授权执行 `sudo usermod -aG docker Developer` 后，先以不复用 ControlMaster 的全新 SSH 连接确认权限，再关闭旧 master、用默认 `ssh spark` 重建连接；最终验收输出为 `Developer sudo docker`，`docker version` 的 client/server 均为 28.3.3，确认后续默认登录也可无需 sudo 访问 daemon。凭据仅从本地凭据表读取并经 SSH 标准输入提交，未写入命令行、仓库或远端文件。未验证边界：本次只验组权限与 daemon API，未启动或拉取任何容器镜像。
+- **StepFun 多余额度转为 R1 主动学习储备（commit `8676639`）**：`STEPFUN_API_PLAYBOOK.md` 从四条用途补齐为 A1 prompt 预热 / G0 词表工厂 / S2.5-6 视觉教师与数据工厂 / R1 失败驱动主动学习 / LLM-judge / D9 文案六类；S2.5 专档把原一行“R1 伪标签难例挖掘”展开为四门触发、按 `failure_type` 路由、人工复核、独立 challenge 复验和无增益即停的闭环。关键边界：任务 B 永不进入训练或选词；完全漏检/堆叠框被吞先回检测路径，不能靠投影头训练冒充修复；多余额度不设消耗 KPI。未验证边界：本次仅完成使用场景与计划裁决，尚未产生 R1 批次、API 用量或训练增益证据。
 
 ## 失败与教训
 

@@ -1,0 +1,32 @@
+{
+  "enabled": false,
+  "groups": {},
+  "max_gap_ms": 0,
+  "merge_count": 0,
+  "merges": [],
+  "min_cosine": 0.9,
+  "per_video": {
+    "v1": {
+      "after": 291,
+      "before": 291
+    },
+    "v2": {
+      "after": 251,
+      "before": 251
+    },
+    "v3": {
+      "after": 189,
+      "before": 189
+    },
+    "v4": {
+      "after": 214,
+      "before": 214
+    }
+  },
+  "tracklets_after": 945,
+  "tracklets_before": 945,
+  "vetoes": {
+    "cannot_link": 0,
+    "co_occurrence": 0
+  }
+}

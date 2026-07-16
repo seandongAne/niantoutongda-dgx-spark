@@ -1,0 +1,27 @@
+{
+  "automatic_link_count": 83,
+  "baseline_only": true,
+  "clarification_count": 921,
+  "clarifications_suppressed_by_cap": 0,
+  "config_version": "reid-dev-a-v1",
+  "deterministic": true,
+  "entity_count": 871,
+  "g2_blocker": "machine-readable anchor-to-tracklet ground truth is absent",
+  "g2_evaluated": false,
+  "known_category_tracklets": 912,
+  "low_evidence_excluded_count": 0,
+  "matched_entity_count": 59,
+  "new_entity_count": 195,
+  "repeat_count": 3,
+  "run_hashes": [
+    "e0fdc61b7fbb0458fd146e3ed6dc43912ec39926c24ad0aa04f3b89acc66b666",
+    "e0fdc61b7fbb0458fd146e3ed6dc43912ec39926c24ad0aa04f3b89acc66b666",
+    "e0fdc61b7fbb0458fd146e3ed6dc43912ec39926c24ad0aa04f3b89acc66b666"
+  ],
+  "stitch_enabled": false,
+  "stitch_merge_count": 0,
+  "suspected_entity_count": 617,
+  "tracklet_count": 945,
+  "tracklet_count_after_stitch": 945,
+  "user_same_link_count": 0
+}

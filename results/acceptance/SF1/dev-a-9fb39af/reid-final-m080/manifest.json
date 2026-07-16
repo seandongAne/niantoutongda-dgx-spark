@@ -1,0 +1,30 @@
+{
+  "attributes": {
+    "path": null,
+    "sha256": null
+  },
+  "code_commit": "1fea5abab6a550ede2565ee69cb8e1f05542e7e9",
+  "config": {
+    "path": "configs/reid_dev_a_v3_sf1.yaml",
+    "sha256": "a172a580b163280e95f21b982adde7c6bea3a5b97f0baf6f01d3638dccac8f99"
+  },
+  "constraints": {
+    "path": null,
+    "sha256": null
+  },
+  "created_at": "2026-07-16T18:41:28Z",
+  "ground_truth": null,
+  "ground_truth_status": "MISSING_MACHINE_READABLE_ANNOTATIONS",
+  "ingest_root": "local-data/ingest_a_v6",
+  "projection": {
+    "artifact": "results/acceptance/SF1/dev-a-9fb39af/projection.npz",
+    "enabled": true,
+    "sha256": "c9db736623daec95075592120c399a9a163697aed1b087ffe21419a196079cfa"
+  },
+  "schema_version": "1.0",
+  "slice_id": "S3",
+  "vocab": {
+    "path": "fixtures/dev_a/vocab.json",
+    "sha256": "c33ae257261d79857bf59c9a01f43ff04ab9a468952526f79b177324d12bc5d6"
+  }
+}

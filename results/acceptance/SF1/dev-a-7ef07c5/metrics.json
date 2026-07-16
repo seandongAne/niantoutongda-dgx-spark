@@ -1,0 +1,150 @@
+{
+  "baseline": {
+    "finite": true,
+    "gallery": 119,
+    "hardest_negative_cosine_mean": 0.577068,
+    "hardest_negative_cosine_p95": 0.740452,
+    "identities": 17,
+    "mean_reciprocal_rank": 0.922619,
+    "positive_cosine_mean": 0.578364,
+    "queries": 42,
+    "recall_at_1": 0.880952,
+    "recall_at_5": 0.97619,
+    "top1_margin_mean": 0.194555,
+    "top1_margin_min": -0.088166
+  },
+  "deltas": {
+    "hardest_negative_cosine_mean": 0.259038,
+    "mean_reciprocal_rank": -0.00119,
+    "positive_cosine_mean": 0.272326,
+    "recall_at_1": 0.0,
+    "recall_at_5": 0.0,
+    "top1_margin_mean": -0.119013
+  },
+  "gate": {
+    "finite": true,
+    "learned_checkpoint_found": true,
+    "pass": false,
+    "recall_at_1_non_degrading": true,
+    "recall_at_5_non_degrading": true,
+    "top1_margin_improved": false
+  },
+  "per_seed": [
+    {
+      "eligible_checkpoint_found": true,
+      "metrics": {
+        "finite": true,
+        "gallery": 119,
+        "hardest_negative_cosine_mean": 0.836106,
+        "hardest_negative_cosine_p95": 0.932119,
+        "identities": 17,
+        "mean_reciprocal_rank": 0.921429,
+        "positive_cosine_mean": 0.85069,
+        "queries": 42,
+        "recall_at_1": 0.880952,
+        "recall_at_5": 0.97619,
+        "top1_margin_mean": 0.075542,
+        "top1_margin_min": -0.037113
+      },
+      "seed": 20260716,
+      "selected_epoch": 5
+    },
+    {
+      "eligible_checkpoint_found": true,
+      "metrics": {
+        "finite": true,
+        "gallery": 119,
+        "hardest_negative_cosine_mean": 0.73303,
+        "hardest_negative_cosine_p95": 0.913445,
+        "identities": 17,
+        "mean_reciprocal_rank": 0.904198,
+        "positive_cosine_mean": 0.79556,
+        "queries": 42,
+        "recall_at_1": 0.880952,
+        "recall_at_5": 0.97619,
+        "top1_margin_mean": 0.130834,
+        "top1_margin_min": -0.126191
+      },
+      "seed": 20260717,
+      "selected_epoch": 15
+    },
+    {
+      "eligible_checkpoint_found": true,
+      "metrics": {
+        "finite": true,
+        "gallery": 119,
+        "hardest_negative_cosine_mean": 0.75875,
+        "hardest_negative_cosine_p95": 0.925767,
+        "identities": 17,
+        "mean_reciprocal_rank": 0.91746,
+        "positive_cosine_mean": 0.80998,
+        "queries": 42,
+        "recall_at_1": 0.880952,
+        "recall_at_5": 1.0,
+        "top1_margin_mean": 0.11666,
+        "top1_margin_min": -0.041343
+      },
+      "seed": 20260718,
+      "selected_epoch": 10
+    }
+  ],
+  "primary_seed": {
+    "eligible_checkpoint_found": true,
+    "metrics": {
+      "finite": true,
+      "gallery": 119,
+      "hardest_negative_cosine_mean": 0.836106,
+      "hardest_negative_cosine_p95": 0.932119,
+      "identities": 17,
+      "mean_reciprocal_rank": 0.921429,
+      "positive_cosine_mean": 0.85069,
+      "queries": 42,
+      "recall_at_1": 0.880952,
+      "recall_at_5": 0.97619,
+      "top1_margin_mean": 0.075542,
+      "top1_margin_min": -0.037113
+    },
+    "seed": 20260716,
+    "selected_epoch": 5
+  },
+  "scope": "DEV_A_DIAGNOSTIC_ONLY_NOT_HERO_ACCEPTANCE",
+  "selection_policy": "first_preregistered_seed; checkpoint=max_margin_subject_to_R1_R5_non_degrading",
+  "stability": {
+    "hardest_negative_cosine_mean": {
+      "max": 0.836106,
+      "mean": 0.775962,
+      "min": 0.73303,
+      "std": 0.043805
+    },
+    "mean_reciprocal_rank": {
+      "max": 0.921429,
+      "mean": 0.914362,
+      "min": 0.904198,
+      "std": 0.007368
+    },
+    "positive_cosine_mean": {
+      "max": 0.85069,
+      "mean": 0.818743,
+      "min": 0.79556,
+      "std": 0.023344
+    },
+    "recall_at_1": {
+      "max": 0.880952,
+      "mean": 0.880952,
+      "min": 0.880952,
+      "std": 0.0
+    },
+    "recall_at_5": {
+      "max": 1.0,
+      "mean": 0.984127,
+      "min": 0.97619,
+      "std": 0.011224
+    },
+    "top1_margin_mean": {
+      "max": 0.130834,
+      "mean": 0.107679,
+      "min": 0.075542,
+      "std": 0.023449
+    }
+  }
+}

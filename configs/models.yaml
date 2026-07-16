@@ -30,8 +30,8 @@ capabilities:
       ecosystem: community
       runtime: transformers
       env: main
-      status: pending_probe
-      note: "冻结骨干 + 轻量投影头(SF1-L1 在 Spark 上训练)"
+      status: probed_spark_sf1_l1
+      note: "冻结 DINOv2 + 229,760 参数 concat 投影头；GB10 三种子训练与完整 ReID 接线已过，dev_a 诊断证据见 results/acceptance/SF1/dev-a-9fb39af（正式 hero 仍需重训）"
   tracking:
     primary:
       id: bytetrack

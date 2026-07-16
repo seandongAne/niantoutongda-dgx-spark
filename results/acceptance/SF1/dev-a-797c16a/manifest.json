@@ -1,0 +1,41 @@
+{
+  "code_commit": "797c16a0fb0d67fccf6a91bc0efeacfcba127966",
+  "config": {
+    "path": "configs/sf1_dev_a.yaml",
+    "sha256": "b42e5c920510569663eb6dec22ccc795125d5beefa5578586ae8effd0c08d8a7"
+  },
+  "created_at": "2026-07-16T18:26:47+00:00",
+  "dataset_fingerprint": "e4df8423e8a62f279dd116ae8b9c5eced8297cb0be6f5833a577cd5d066173c8",
+  "elapsed_seconds": 6.167,
+  "gate": {
+    "finite": true,
+    "pass": true,
+    "recall_at_1_non_degrading": true,
+    "top1_margin_improved": true
+  },
+  "labels": {
+    "path": "fixtures/dev_a/annotations/anchor_review.v6.confirmed.json",
+    "sha256": "c4d8b10fafb4dbe406e9813899ccebd3305d25a0c7a43a2be243d99d87c03c6f"
+  },
+  "primary_seed": 20260716,
+  "projection": {
+    "format": "sf1-projection-v1",
+    "hidden_dim": 256,
+    "input_dim": 768,
+    "output_dim": 128,
+    "parameters": 229760,
+    "path": "results/acceptance/SF1/dev-a-797c16a/projection.npz",
+    "sha256": "75a4a7f5a1ddb53471d02174f5baeea9e9fbf86410dc7fe96593a3718f858d5b"
+  },
+  "runtime": {
+    "cuda_device": "NVIDIA GB10",
+    "device": "cuda",
+    "torch_version": "2.13.0+cu130"
+  },
+  "schema_version": "1.0",
+  "scope": "DEV_A_DIAGNOSTIC_ONLY_NOT_HERO_ACCEPTANCE",
+  "selection_policy": "first_preregistered_seed",
+  "slice_id": "SF1-L1",
+  "split_policy": "leave_last_video_out_v1",
+  "version": "sf1-l1-dev-a-v1"
+}

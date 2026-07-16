@@ -1,0 +1,33 @@
+{
+  "base_config": "reid-dev-a-v3+sf1-c9db7366",
+  "grid": [
+    {
+      "automatic_link_count": 257,
+      "clarification_count": 505,
+      "margin": 0.0,
+      "match": 0.8,
+      "matched_entity_count": 162
+    },
+    {
+      "automatic_link_count": 218,
+      "clarification_count": 534,
+      "margin": 0.0,
+      "match": 0.82,
+      "matched_entity_count": 143
+    },
+    {
+      "automatic_link_count": 177,
+      "clarification_count": 561,
+      "margin": 0.0,
+      "match": 0.84,
+      "matched_entity_count": 125
+    },
+    {
+      "automatic_link_count": 143,
+      "clarification_count": 588,
+      "margin": 0.0,
+      "match": 0.86,
+      "matched_entity_count": 100
+    }
+  ]
+}

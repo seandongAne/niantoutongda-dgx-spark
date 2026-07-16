@@ -1,0 +1,4 @@
+projection:
+  enabled: true
+  artifact: results/acceptance/SF1/dev-a-9fb39af/projection.npz
+  sha256: c9db736623daec95075592120c399a9a163697aed1b087ffe21419a196079cfa

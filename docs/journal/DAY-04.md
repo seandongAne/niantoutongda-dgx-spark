@@ -323,3 +323,27 @@
   三结局)。
 - Commits:`b3c823e`(A1 裁决)、`cc5815d`(verify 切片)、`6a99dbc`
   (s1+W1/W2 配置+阶段序修复)、`df70a2c`(词表生成器)。
+
+## 增量 D4-6:StepFun 工厂数据平面分工定案(深夜)
+
+- **背景**:赛方公告限流 SSH 文件传输(实测 17MB 音频半小时)。Sean 裁决
+  分工口径:**音频工厂落节点(音频有数据引力,不可过境);文本云调用走
+  本地,key 不出 Mac**。
+- **公共凭据通道模块** scripts/spark_factory_common.py:一次性密钥纪律的
+  唯一实现点(stdin 单行入进程内存/云阶段用完即弹/状态文件只记策略/
+  fork+setsid 断连免疫/日志 0600)。a1_spark_factory(农场活跃,本轮不动)
+  待空闲后迁移,迁移前两处实现保持一致。
+- **词表工厂两形态落地** scripts/word_spark_factory.py:
+  - 默认 = **免凭据 scan-only**:本地 vocab_candidates_gen 产候选(KB 级
+    纯文本)→ commit+deploy → 节点 worker 只跑 GDINO 扫描+判卷,全程无
+    凭据;逐帧预测不过境,本地只拉 ranking.json 级小报告。
+  - 后备 = 节点原地 gen(本地到 StepFun 网络不通时):key 走 A1 工厂同款
+    stdin 通道,--acknowledge-key-exposure 强制确认。
+- **真机冒烟(smoke-3cat,gen 在节点的后备形态)**:端到端 5 分钟
+  (一次 chat 374+2948 tokens → 18 短语×40 帧扫描 272s → 判卷),与本地
+  48 词回路交叉对账一致:luggage recall 1.0(pink pull handle luggage,
+  不同措辞同样满召回)/night_light 0.8571(与本地判卷完全一致)/
+  tumbler 0(GT 仅 1 框,同本地)。工厂可信,英雄物品清单一到即可产词判卷。
+- 测试 **135 passed**(词表工厂 9 测:远端命令无凭据/stdin 唯一通道/
+  ack 强制/scan-only 不碰 key/短语上限护栏/状态文件无凭据/死词摘要)。
+- Commits:`1eb09f0`(工厂+通道)、`72fd0eb`(免凭据默认路径+冒烟证据)。

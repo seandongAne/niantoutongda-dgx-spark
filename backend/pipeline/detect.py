@@ -155,7 +155,7 @@ class GroundingDinoDetector:
         box_threshold: float = 0.35,
         text_threshold: float = 0.25,
         nms_iou_threshold: float = 0.8,
-        image_batch_size: int = 8,
+        image_batch_size: int = 2,
         tile_box_threshold: float = 0.22,
         tile_overlap: float = 0.20,
         clutter_tile_count: int = 2,

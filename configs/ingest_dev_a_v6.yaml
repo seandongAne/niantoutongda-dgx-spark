@@ -1,0 +1,39 @@
+version: "dev-a-vocab6"
+created_at: "2026-07-16"
+owner: "物品记忆 Agent"
+reason: "S2.5 one-shot task-A rerun; parameters frozen after GB10 batch probes"
+applies_to_dataset: "dev_a"
+frozen: true
+
+vocabulary: "fixtures/dev_a/vocab.json"
+target_fps: 2.0
+box_threshold: 0.28
+tracking:
+  iou_threshold: 0.20
+  max_missed: 4
+  min_track_len: 2
+
+frame_batching:
+  size: 2
+  evidence:
+    batch_2_speedup: 1.158
+    batch_4_speedup: 1.112
+    batch_8_speedup: 0.969
+    decision_equivalence_tolerance:
+      score: 0.001
+      box_px: 0.5
+
+stationary_tiles:
+  enabled: true
+  stationary_min_ms: 2000
+  grids: [2, 3]
+  overlap: 0.20
+  selective_3x3_count: 2
+  box_threshold: 0.22
+  max_full_frame_area_ratio: 0.12
+  edge_margin_ratio: 0.03
+  max_supplements_per_canonical: 3
+
+hero_scoring:
+  version: "area-sharpness-completeness-v1"
+  prototype_top_k: 3

@@ -34,7 +34,12 @@ def main() -> int:
     prompt_source.add_argument("--prompts", help="legacy comma-separated prompt list")
     ap.add_argument("--box-threshold", type=float, default=0.30)
     ap.add_argument("--tile-box-threshold", type=float, default=0.22)
-    ap.add_argument("--frame-batch-size", type=int, default=8)
+    ap.add_argument("--frame-batch-size", type=int, default=2)
+    ap.add_argument("--tile-overlap", type=float, default=0.20)
+    ap.add_argument("--clutter-tile-count", type=int, default=2)
+    ap.add_argument("--tile-max-area-ratio", type=float, default=0.12)
+    ap.add_argument("--tile-edge-margin-ratio", type=float, default=0.03)
+    ap.add_argument("--tile-max-per-canonical", type=int, default=3)
     ap.add_argument("--stationary-min-ms", type=int, default=2000)
     ap.add_argument(
         "--no-stationary-tiles",
@@ -66,6 +71,11 @@ def main() -> int:
         box_threshold=args.box_threshold,
         tile_box_threshold=args.tile_box_threshold,
         image_batch_size=args.frame_batch_size,
+        tile_overlap=args.tile_overlap,
+        clutter_tile_count=args.clutter_tile_count,
+        tile_max_area_ratio=args.tile_max_area_ratio,
+        tile_edge_margin_ratio=args.tile_edge_margin_ratio,
+        tile_max_per_canonical=args.tile_max_per_canonical,
     )
     embedder = Dinov2Embedder(str(Path.home() / "models" / "facebook__dinov2-base"))
 

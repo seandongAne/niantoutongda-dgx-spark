@@ -32,26 +32,80 @@ SYSTEM_PROMPT = (
 USER_TEXT = "解析这段旁白。"
 SLOT_KEYS = ("owner", "source_location", "target_location", "pack_group")
 
+# few-shot 一例(协议 v1 待办预案):示范 pack_group 与 target_location 的
+# 区分、attributes 恒为对象、旁白没说的槽位置 null。system prompt 不动。
+FEW_SHOT_USER = (
+    "解析这段旁白。旁白:绿色台灯,哥哥的,现在在客厅角落,"
+    "搬过去放书房桌上,和路由器打包在一起。"
+)
+FEW_SHOT_ASSISTANT = json.dumps(
+    [
+        {
+            "label_zh": "绿色台灯",
+            "label_en": "green desk lamp",
+            "owner": "哥哥",
+            "source_location": "客厅角落",
+            "target_location": "书房桌上",
+            "pack_group": "路由器",
+            "attributes": {"color": "绿色"},
+        }
+    ],
+    ensure_ascii=False,
+)
+
+
+# ---- 以下三个辅助函数照抄官方 utils.py(Apache-2.0);模型仓的
+# modeling 文件用相对导入,无法作为顶层模块引用,故内联。 ----
+
+
+def load_audio(file_path: str, target_rate: int = 16000) -> torch.Tensor:
+    # 新版 torchaudio.load 依赖 torchcodec(env 未装);soundfile 解码 +
+    # torchaudio 纯张量重采样,行为与官方 load_audio 等价(单声道、16k)。
+    import soundfile as sf
+    import torchaudio
+
+    data, sample_rate = sf.read(file_path, dtype="float32", always_2d=True)
+    waveform = torch.from_numpy(data.T)
+    if sample_rate != target_rate:
+        waveform = torchaudio.transforms.Resample(
+            orig_freq=sample_rate, new_freq=target_rate
+        )(waveform)
+    return waveform[0]
+
+
+def log_mel_spectrogram(audio: torch.Tensor, n_mels: int = 128, padding: int = 479):
+    import librosa
+    import torch.nn.functional as F
+
+    if padding > 0:
+        audio = F.pad(audio, (0, padding))
+    window = torch.hann_window(400)
+    stft = torch.stft(audio, 400, 160, window=window, return_complex=True)
+    magnitudes = stft[..., :-1].abs() ** 2
+    filters = torch.from_numpy(librosa.filters.mel(sr=16000, n_fft=400, n_mels=n_mels))
+    mel_spec = filters @ magnitudes
+    log_spec = torch.clamp(mel_spec, min=1e-10).log10()
+    log_spec = torch.maximum(log_spec, log_spec.max() - 8.0)
+    return (log_spec + 4.0) / 4.0
+
+
+def compute_token_num(max_feature_len: int) -> int:
+    encoder_output_dim = (max_feature_len - 2 + 1) // 2 // 2
+    return (encoder_output_dim + 2 * 1 - 3) // 2 + 1
+
 
 def padding_mels(mels: list[torch.Tensor]):
-    """官方 utils.padding_mels 等价实现:(128,T) 列表 → (B,Tmax,128) 与长度。"""
+    """官方 utils.padding_mels 等价实现:(128,T) 列表 → (B,128,Tmax) 与长度。"""
     lengths = torch.tensor([m.size(1) - 2 for m in mels], dtype=torch.int32)
     feats = [m.t() for m in mels]
     max_len = max(f.size(0) for f in feats)
     batch = torch.zeros(len(feats), max_len, feats[0].size(1), dtype=feats[0].dtype)
     for i, f in enumerate(feats):
         batch[i, : f.size(0)] = f
-    return batch, lengths
+    return batch.transpose(1, 2), lengths
 
 
-def build_prompt(tokenizer, model_dir: str, audio_path: str):
-    sys.path.insert(0, model_dir)
-    from modeling_step_audio_2 import (  # noqa: E402
-        compute_token_num,
-        load_audio,
-        log_mel_spectrogram,
-    )
-
+def build_prompt(tokenizer, model_dir: str, audio_path: str, few_shot: bool = False):
     audio = load_audio(audio_path)
     mels, audio_segments = [], []
     for i in range(0, audio.shape[0], 16000 * 25):
@@ -59,8 +113,13 @@ def build_prompt(tokenizer, model_dir: str, audio_path: str):
         mels.append(mel)
         n_tokens = compute_token_num(mel.shape[1])
         audio_segments.append(f"<audio_start>{'<audio_patch>' * n_tokens}<audio_end>")
+    example = (
+        f"<|BOT|>human\n{FEW_SHOT_USER}<|EOT|>"
+        f"<|BOT|>assistant\n{FEW_SHOT_ASSISTANT}<|EOT|>"
+    ) if few_shot else ""
     text = (
         f"<|BOT|>system\n{SYSTEM_PROMPT}<|EOT|>"
+        f"{example}"
         f"<|BOT|>human\n{USER_TEXT}{''.join(audio_segments)}<|EOT|>"
         f"<|BOT|>assistant\n"
     )
@@ -110,6 +169,7 @@ def main() -> int:
     ap.add_argument("--audio", required=True)
     ap.add_argument("--reference", type=Path, default=None)
     ap.add_argument("--temperature", type=float, default=0.2)
+    ap.add_argument("--few-shot", action="store_true")
     ap.add_argument("--max-new-tokens", type=int, default=512)
     ap.add_argument("--out-dir", required=True, type=Path)
     args = ap.parse_args()
@@ -125,7 +185,7 @@ def main() -> int:
     t_load = time.time() - t0
 
     ids, wavs, wav_lens, audio_seconds = build_prompt(
-        tokenizer, args.model, args.audio
+        tokenizer, args.model, args.audio, few_shot=args.few_shot
     )
     t1 = time.time()
     outputs = model.generate(
@@ -155,6 +215,7 @@ def main() -> int:
         "audio": args.audio,
         "audio_seconds": round(audio_seconds, 1),
         "temperature": args.temperature,
+        "few_shot": args.few_shot,
         "load_s": round(t_load, 1),
         "generate_s": round(t_gen, 1),
         "new_tokens": len(out_ids),
@@ -172,7 +233,8 @@ def main() -> int:
         result["error"] = str(exc)
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
-    (args.out_dir / "a1_local_result.json").write_text(
+    out_name = "a1_local_result_fewshot.json" if args.few_shot else "a1_local_result.json"
+    (args.out_dir / out_name).write_text(
         json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
     print(json.dumps(

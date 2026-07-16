@@ -1,0 +1,33 @@
+{
+  "run_id": "sp0core_20260715_2031",
+  "created_at": "2026-07-15T20:31:11Z",
+  "image_mode": "synthetic_load_probe_only",
+  "torch": {
+    "version": "2.13.0+cu130",
+    "cuda_available": true,
+    "device": "NVIDIA GB10",
+    "matmul_4096_s": 0.491,
+    "result_shape": [
+      4096,
+      4096
+    ]
+  },
+  "detection": {
+    "error": "GroundingDinoProcessor.post_process_grounded_object_detection() got an unexpected keyword argument 'box_threshold'"
+  },
+  "embedding": {
+    "model": "dinov2-base@/home/Developer/models/facebook__dinov2-base",
+    "load_s": 2.44,
+    "infer_s_per_image": 0.03,
+    "peak_mem_gb": 1.25,
+    "dim": 768,
+    "self_cosine": 1.0
+  },
+  "cpsat": {
+    "optimal_status": "PLAN_READY",
+    "infeasible_status": "NEW_SPACE_INCOMPATIBLE"
+  },
+  "failures": [
+    "detection: TypeError: GroundingDinoProcessor.post_process_grounded_object_detection() got an unexpected keyword argument 'box_threshold'"
+  ]
+}

@@ -117,3 +117,32 @@
 - **P2 顺手修复**:acceptance manifest `code_commit=unknown` — deploy.sh 现写 COMMIT 戳,
   reid_task 回退读取;本批 manifest 已带真实 commit。
 - 本地测试 75 passed;sp0 三次核心探针产物入库(c5b3e1d)。
+
+## D4 夜间增量:真值落地,首批正式判卷(commit ba90e1f→ec4de2d)
+
+- **数据所有者真值双双落地**:17 锚点确认(161 轨,零重复归属、零硬负冲突,
+  17/17 跨视频)+ hardval 40 帧 71 框。数据门解除。
+- **hardval v5/v6 首次真实对照**:召回 0.464→0.710(+24.6pp;security_camera
+  0/9→5/9、water_bottle 2/8→8/8、玩具收纳 3/6→6/6),但碎轨率 0.037→0.206、
+  FP/帧 8.5→17.4。S2.5 双门诚实结论:目标失败指标(弱类召回)大幅改善,
+  碎轨/FP 回退,账单已转 S3 前处理与属性链。luggage 0/2、tumbler 0/1、
+  table_lamp 1/4 仍死——进阶跃词表工厂。
+- **G2 首次正式判卷**(v1 与 v2 运行):四组硬负 **4/4 正式 PASS**、高置信误合并
+  **0**(红线守住);Recall@1 0.81(门 0.85);完整合并 **2/17**(门 15)。
+  机制定位:65 条同锚点对分数 ≥0.86 但只有 16 条成链——margin 掐死四分之三
+  合格链接;同锚点分数 p50=0.673 vs 跨锚点 0.534,嵌入可分性是结构性天花板。
+- **GT 授权的阈值扫描**(12 组合 match×margin):全网格误合并=0、危险澄清恒=4;
+  完整合并上限 4/17(margin=0)——**校准无法补足 15/17 的缺口,属性接线才是
+  结构解**。帕累托点 m0.84-g0.00:链接 85→156(+71 无丢失)、澄清 564→525。
+  **v3 冻结待 Sean 目检 71 对新增链接**(`new-links-m084g000.jpg`;锚点 GT 只
+  覆盖 161/945 轨,新增链接的非锚点部分未被测量)。
+- **阶跃 Step Plan 启用**(用途①②,均 dev-time、零家庭素材出境):
+  - ①A1 预热:客户端补 tts 动词;合成旁白→stepaudio-2.5-chat 抽取回环一次通,
+    3/3 物品 owner/来源/去向/打包组全对;协议 v1 冻结
+    (`results/stepfun/a1_warmup/PROTOCOL.md`),本地 Step-Audio mini 直接继承。
+  - ②词表工厂:step-3.7-flash 产 48 个外观化检测短语候选(六个弱词),
+    经 S2.5-3 prompt_search 用新 GT 打分后才可入词表。token 用量已记账。
+- 判卷工具链固化:`anchor_gt_eval.py`(冻结 gate 判卷器)、
+  `reid_threshold_sweep.py`(GT 授权扫描)、`link_pair_sheet.py`(链接目检表)。
+- 下一战排序(依据今日证据):P1 属性接线(S5 Nemotron→tracklet.attributes→
+  matcher,结构性缺口唯一解)> v3 阈值冻结(等目检)> 词候选 GDINO 打分。

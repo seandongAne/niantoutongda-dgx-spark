@@ -41,6 +41,9 @@ def main() -> int:
     ap.add_argument("--tile-edge-margin-ratio", type=float, default=0.03)
     ap.add_argument("--tile-max-per-canonical", type=int, default=3)
     ap.add_argument("--stationary-min-ms", type=int, default=2000)
+    ap.add_argument("--adaptive-tile-quantile", type=float, default=0.10)
+    ap.add_argument("--adaptive-tile-max", type=int, default=12)
+    ap.add_argument("--adaptive-tile-min-gap-ms", type=int, default=2000)
     ap.add_argument(
         "--no-stationary-tiles",
         action="store_true",
@@ -93,6 +96,9 @@ def main() -> int:
             config_version=args.config_version,
             stationary_min_ms=args.stationary_min_ms,
             enable_stationary_tiles=not args.no_stationary_tiles,
+            adaptive_tile_quantile=args.adaptive_tile_quantile,
+            adaptive_tile_max_count=args.adaptive_tile_max,
+            adaptive_tile_min_gap_ms=args.adaptive_tile_min_gap_ms,
         )
         labels = Counter(t.attributes["label"] for t in result.tracklets)
         summaries[video_id] = labels
@@ -100,7 +106,7 @@ def main() -> int:
             f"[{video_id}] {len(result.keyframes)} kf, {len(result.observations)} obs, "
             f"{len(result.tracklets)} tracklets, {time.perf_counter() - t0:.0f}s "
             f"(detect={result.detection_elapsed_s:.1f}s, batch={args.frame_batch_size if result.frame_batching_used else 1}, "
-            f"tiled_kf={result.tiled_keyframe_count})",
+            f"tiled_kf={result.tiled_keyframe_count}, tile_mode={result.tile_selection_mode})",
             flush=True,
         )
 

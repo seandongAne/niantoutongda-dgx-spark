@@ -9,7 +9,12 @@ import pytest
 
 from backend.pipeline.detect import RawDetection
 from backend.pipeline.ingest import hero_crop_score, ingest_video
-from backend.pipeline.keyframes import sample_keyframes
+from backend.pipeline.keyframes import (
+    Keyframe,
+    median_global_motion,
+    sample_keyframes,
+    select_tiled_keyframes,
+)
 from backend.schemas.core import Observation, Tracklet
 
 FRAME_W, FRAME_H, FPS, N_FRAMES = 320, 240, 10.0, 40
@@ -86,6 +91,36 @@ def test_keyframes_dedup_static_video(tmp_path):
     kfs = sample_keyframes(path, tmp_path / "kf", target_fps=5.0)
     assert len(kfs) == 1  # 全静止只留第一帧
     assert kfs[0].stationary_ms >= 2500
+
+
+def test_global_motion_and_adaptive_tile_selection():
+    rng = np.random.default_rng(7)
+    frame = rng.integers(0, 256, size=(64, 64), dtype=np.uint8)
+    shifted = np.roll(frame, 3, axis=1)
+    assert median_global_motion(frame, frame) < 1e-3
+    assert median_global_motion(frame, shifted) > 0.5
+
+    frames = [
+        Keyframe(index, index * 1000, f"f{index}.jpg", motion_score=score)
+        for index, score in enumerate((5.0, 0.10, 0.20, 0.05, 0.30))
+    ]
+    selected, mode = select_tiled_keyframes(
+        frames,
+        stationary_min_ms=2000,
+        adaptive_quantile=0.6,
+        adaptive_max_count=2,
+        adaptive_min_gap_ms=2000,
+    )
+    assert mode == "adaptive_low_motion_fallback"
+    assert [frame.timestamp_ms for frame in selected] == [1000, 3000]
+
+    strict = [Keyframe(9, 9000, "strict.jpg", stationary_ms=2500, motion_score=9.0)]
+    selected, mode = select_tiled_keyframes(
+        frames + strict,
+        stationary_min_ms=2000,
+    )
+    assert mode == "strict_stationary"
+    assert selected == strict
 
 
 def test_ingest_end_to_end(synthetic_video, tmp_path):

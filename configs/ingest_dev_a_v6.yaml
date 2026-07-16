@@ -26,6 +26,10 @@ frame_batching:
 stationary_tiles:
   enabled: true
   stationary_min_ms: 2000
+  selection_fallback: "lowest-motion 10 percent, temporal NMS 2000ms, max 12 per video"
+  adaptive_quantile: 0.10
+  adaptive_max_count: 12
+  adaptive_min_gap_ms: 2000
   grids: [2, 3]
   overlap: 0.20
   selective_3x3_count: 2

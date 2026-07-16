@@ -21,7 +21,7 @@ from typing import Protocol
 import cv2
 
 from backend.pipeline.detect import RawDetection
-from backend.pipeline.keyframes import Keyframe, sample_keyframes
+from backend.pipeline.keyframes import Keyframe, sample_keyframes, select_tiled_keyframes
 from backend.pipeline.track import Box, FrameDetection, GreedyIoUTracker, Track
 from backend.schemas.core import AuditEvent, Observation, Tracklet
 from backend.tools.audit.store import append_event
@@ -51,6 +51,7 @@ class IngestResult:
     tiled_keyframe_count: int = 0
     detection_elapsed_s: float = 0.0
     frame_batching_used: bool = False
+    tile_selection_mode: str = "none"
 
 
 def _utc_now() -> str:
@@ -131,6 +132,9 @@ def ingest_video(
     min_track_len: int = 2,
     stationary_min_ms: int = 2000,
     enable_stationary_tiles: bool = True,
+    adaptive_tile_quantile: float = 0.10,
+    adaptive_tile_max_count: int = 12,
+    adaptive_tile_min_gap_ms: int = 2000,
 ) -> IngestResult:
     if stationary_min_ms < 0:
         raise ValueError("stationary_min_ms cannot be negative")
@@ -158,11 +162,17 @@ def ingest_video(
     )
     frame_path_by_index: dict[int, str] = {kf.frame_index: kf.path for kf in keyframes}
     image_paths = [kf.path for kf in keyframes]
-    tiled_paths = {
-        kf.path
-        for kf in keyframes
-        if enable_stationary_tiles and kf.stationary_ms >= stationary_min_ms
-    }
+    if enable_stationary_tiles:
+        tiled_keyframes, tile_selection_mode = select_tiled_keyframes(
+            keyframes,
+            stationary_min_ms=stationary_min_ms,
+            adaptive_quantile=adaptive_tile_quantile,
+            adaptive_max_count=adaptive_tile_max_count,
+            adaptive_min_gap_ms=adaptive_tile_min_gap_ms,
+        )
+    else:
+        tiled_keyframes, tile_selection_mode = [], "disabled"
+    tiled_paths = {kf.path for kf in tiled_keyframes}
     detect_many = getattr(detector, "detect_many", None)
     detection_started = time.perf_counter()
     if callable(detect_many):
@@ -291,4 +301,5 @@ def ingest_video(
         tiled_keyframe_count=len(tiled_paths),
         detection_elapsed_s=detection_elapsed_s,
         frame_batching_used=frame_batching_used,
+        tile_selection_mode=tile_selection_mode,
     )

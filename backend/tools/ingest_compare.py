@@ -20,7 +20,8 @@ from backend.pipeline.vocab import Vocabulary
 _LOG_LINE = re.compile(
     r"^\[(?P<video>[^]]+)] (?P<keyframes>\d+) kf, (?P<observations>\d+) obs, "
     r"(?P<tracklets>\d+) tracklets, (?P<wall>\d+)s"
-    r"(?: \(detect=(?P<detect>[0-9.]+)s, batch=(?P<batch>\d+), tiled_kf=(?P<tiled>\d+)\))?$"
+    r"(?: \(detect=(?P<detect>[0-9.]+)s, batch=(?P<batch>\d+), tiled_kf=(?P<tiled>\d+)"
+    r"(?:, tile_mode=(?P<tile_mode>[a-z_]+))?\))?$"
 )
 
 
@@ -111,6 +112,7 @@ def parse_ingest_log(path: str | Path | None) -> dict[str, Any] | None:
             "detection_s": float(values["detect"]) if values["detect"] else None,
             "frame_batch_size": int(values["batch"]) if values["batch"] else 1,
             "tiled_keyframe_count": int(values["tiled"]) if values["tiled"] else 0,
+            "tile_selection_mode": values["tile_mode"] or "legacy_or_none",
         }
     return {
         "videos": rows,

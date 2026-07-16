@@ -5,9 +5,16 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
+from pathlib import Path
 
 import cv2
 import numpy as np
+
+PROJ = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(PROJ))
+
+from backend.pipeline.keyframes import Keyframe, select_tiled_keyframes
 
 
 def _quantiles(values):
@@ -76,6 +83,22 @@ def analyze(path, target_fps):
             differences.append(float(np.abs(small.astype(np.float32) - previous).mean()))
         previous = small
     cap.release()
+    motion_frames = [
+        Keyframe(
+            frame_index=index,
+            timestamp_ms=round((index + 1) / target_fps * 1000),
+            path=f"probe-{index}",
+            motion_score=score,
+        )
+        for index, score in enumerate(flows)
+    ]
+    selected, selection_mode = select_tiled_keyframes(
+        motion_frames,
+        stationary_min_ms=2000,
+        adaptive_quantile=0.10,
+        adaptive_max_count=12,
+        adaptive_min_gap_ms=2000,
+    )
     return {
         "path": path,
         "sampled_frames": sampled,
@@ -89,6 +112,12 @@ def analyze(path, target_fps):
         "mad_thresholds": {
             str(value): _runs(differences, value, target_fps)
             for value in (2.0, 3.0, 4.0, 6.0, 8.0, 10.0)
+        },
+        "adaptive_selection": {
+            "mode": selection_mode,
+            "count": len(selected),
+            "timestamp_ms": [frame.timestamp_ms for frame in selected],
+            "motion_scores": [round(float(frame.motion_score), 6) for frame in selected],
         },
     }
 

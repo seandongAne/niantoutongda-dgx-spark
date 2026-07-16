@@ -251,3 +251,46 @@
   **105 passed**。素材到手后:复制 dev 配置为 s1 配置,启用 spark 四阶段,
   换真实 entities/attributes/誊写稿/区域表即可全链复跑。
 - Commit:`b83746e`(合同+GROUP+适配)、`475ef1c`(主链+阶段脚本+夹具)。
+
+## 增量 D4-5:等片窗口清仓——验收门/A1 裁决/verify 切片/素材日就绪(深夜)
+
+- **预注册验收门写死入库**(docs/英雄场景预注册验收门_2026-07-16.md):
+  G1 素材门~G7 复跑门全部在素材到手前定死;§0 预注册两个工作点
+  W1=v3(attr0.00) vs W2=attr0.15 判卷二选一;§4 校准白名单(一次迭代,
+  白名单外=挪门);§5 表述红线。防临场挪门的制度化落地。
+- **A1 本地化裁决收官**:spark 建 stepaudio 独立 env,官方报文构造内联
+  (三连败教训:相对导入/torchcodec/padding_mels 转置);四组对照
+  (0.2/贪心 × 零-shot/few-shot)结论一致——**本地协议定稿 = 零-shot 贪心**
+  (判卷 1/3,label 3/3 全对,失分全在槽位保真);few-shot 两温度均 0/3
+  且稳定幻化打包搭子"冬天的衣服"成独立物品,否决。定位结论:mini 边界=
+  "听得准认得出",槽位结构化不达云参考 → 主链走"本地誊写+确定性解析器",
+  mini 结构化只作对照。裁决全文入 results/stepfun/a1_warmup/PROTOCOL.md。
+  Sean 并行在建 TTS 语音鲁棒性测试农场(云 TTS 造噪声/口音变体)补判据。
+- **48 词候选判卷回路验证**:word_candidate_scan(单短语单批 GDINO 全帧
+  扫 hardval 40 帧)+ word_candidate_rank(冻结公式 λ0.2/μ0.4)。
+  luggage(曾全灭)最优 pink rolling kids luggage recall 1.0;
+  night_light 0.857、table_lamp(曾死词)0.75;tumbler GT 仅 1 框只作方向。
+  词表候选→真机打分→选优的回路首次全自动闭合。
+- **成果页 HeroUI 化**:不引 React 构建链(演示关键路径保零依赖 file://
+  直开),手写 HeroUI 设计语言(暗色 token/语义 chip/统计瓦片/浅色套);
+  六区块浏览器验收通过。
+- **verify 切片接进主链(G7b 就绪)**:AcceptanceManifest 合同(照片声明
+  区域+实体匹配,来源 reid/manual)→ acceptance.py 确定性执行器(MEM 只答
+  在不在/SPACE 只答区域对不对/EXEC 走 derive_verdict 汇总;消息 id 由
+  card_id 确定性派生,复跑逐字节一致)→ verify_task.py 薄 CLI 接进
+  STAGE_ORDER;夹具三卡演三结局:VERIFIED / FAILED(缺件 NOT_SEEN) /
+  NEEDS_USER(低置信)。成果页新增"验收复核"区块+任务卡 verdict chip。
+  FAILED/NEEDS_USER 是合法业务结局不改卡状态,留用户裁决,不代写。
+- **素材日按按钮配置**:configs/hero_pipeline_s1.yaml(spark 四阶段真实
+  命令,S5 带 vLLM 探活守卫,TODO 只剩素材路径)+ 预注册 reid 配置
+  reid_hero_s1_w1/w2.yaml(W2 权重按让渡规则 instance 0.65/attr 0.15,
+  依据 wsweep-9fe3c30)。**修主链阶段序:attributes(S5)必须在 reid 前**
+  (reid 属性分量吃 S5 产物;dev 夹具全禁用故此前未暴露)。
+- **StepFun 词表候选生成器**(playbook 用途②落地,scripts/
+  vocab_candidates_gen.py):物品清单纯文本→每件 6 条 GDINO 候选,prompt
+  编入 D3 原则+48 词胜出模式;冒烟 3 品类 18 候选全合法,首发即含已判卷
+  最优词。云端只出候选,判卷永远走本地冻结回路。英雄物品清单一到即产词。
+- 测试:**121 passed**(+9 acceptance,+更新主链 e2e 钉住 verify 阶段与
+  三结局)。
+- Commits:`b3c823e`(A1 裁决)、`cc5815d`(verify 切片)、`6a99dbc`
+  (s1+W1/W2 配置+阶段序修复)、`df70a2c`(词表生成器)。

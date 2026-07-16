@@ -1,0 +1,73 @@
+{
+  "model": "/home/Developer/models/stepfun-ai__Step-Audio-2-mini",
+  "audio": "local-data/a1/test_narration.wav",
+  "audio_seconds": 17.7,
+  "temperature": 0.0,
+  "few_shot": false,
+  "load_s": 146.2,
+  "generate_s": 40.5,
+  "new_tokens": 164,
+  "raw_text": "[{\"label_zh\": \"蓝色水壶\", \"label_en\": \"blue water bottle\", \"owner\": \"姐姐\", \"source_location\": \"白色书架第二层\", \"target_location\": null, \"pack_group\": null, \"attributes\": {\"color\": \"蓝色\"}}, {\"label_zh\": \"史迪奇玩偶\", \"label_en\": \"Stitch doll\", \"owner\": null, \"source_location\": \"儿童房\", \"target_location\": \"床上用品\", \"pack_group\": null, \"attributes\": null}, {\"label_zh\": \"粉色行李箱\", \"label_en\": \"pink suitcase\", \"owner\": null, \"source_location\": \"儿童房\", \"target_location\": \"主卧衣柜\", \"pack_group\": null, \"attributes\": null}]",
+  "items": [
+    {
+      "label_zh": "蓝色水壶",
+      "label_en": "blue water bottle",
+      "owner": "姐姐",
+      "source_location": "白色书架第二层",
+      "target_location": null,
+      "pack_group": null,
+      "attributes": {
+        "color": "蓝色"
+      }
+    },
+    {
+      "label_zh": "史迪奇玩偶",
+      "label_en": "Stitch doll",
+      "owner": null,
+      "source_location": "儿童房",
+      "target_location": "床上用品",
+      "pack_group": null,
+      "attributes": null
+    },
+    {
+      "label_zh": "粉色行李箱",
+      "label_en": "pink suitcase",
+      "owner": null,
+      "source_location": "儿童房",
+      "target_location": "主卧衣柜",
+      "pack_group": null,
+      "attributes": null
+    }
+  ],
+  "json_ok": true,
+  "judgement": {
+    "items_expected": 3,
+    "items_extracted": 3,
+    "items_pass": 1,
+    "per_item": [
+      {
+        "label_zh": "蓝色水壶",
+        "verdict": "PASS",
+        "diffs": []
+      },
+      {
+        "label_zh": "史迪奇玩偶",
+        "verdict": "DIFF",
+        "diffs": [
+          "source_location",
+          "target_location",
+          "pack_group"
+        ]
+      },
+      {
+        "label_zh": "粉色行李箱",
+        "verdict": "DIFF",
+        "diffs": [
+          "source_location",
+          "attributes.color"
+        ]
+      }
+    ],
+    "extra_items": []
+  }
+}

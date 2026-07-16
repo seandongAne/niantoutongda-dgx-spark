@@ -36,3 +36,24 @@ User turn 固定为 "解析这段旁白。" + input_audio(wav)。temperature=0.2
   加 few-shot 一例。
 - 真实拍摄旁白噪声(脚步/风扇)下的鲁棒性未测——用赛程内自录素材补,
   不用家庭历史音频。
+
+## 本地化裁决(2026-07-16,Step-Audio-2-mini @ spark)
+
+四组对照(`scripts/a1_local_probe.py`,判卷基准 = 云 stepaudio-2.5-chat 参考输出):
+
+| 变体 | 温度 | 判卷 | 备注 |
+|---|---|---|---|
+| 零-shot | 0.2 | 1/3 | 采样单次,仅参考 |
+| few-shot | 0.2 | 0/3 | 幻化多余物品"冬天的衣服" |
+| **零-shot(定稿)** | **0** | **1/3** | 证据 `results/a1_greedy/a1_local_result.json` |
+| few-shot | 0 | 0/3 | 仍幻化"冬天的衣服";否决 |
+
+- **本地协议定稿:零-shot + 温度 0(贪心)**。few-shot 在两种温度下均更差,
+  且稳定把旁白中的打包搭子("和冬天的衣服放一起")抽成独立物品——否决。
+- 失分模式全部是槽位保真而非识别:label_zh 3/3 全对、JSON 全合法;
+  DIFF 集中在 pack_group 值串入 target_location、attributes 漏成 null、
+  source_location 补语境词("儿童房")。
+- **定位结论:mini 的可靠边界是"听得准、认得出"(誊写/物品名/颜色词),
+  槽位结构化不达云参考。** 主链沿用"本地誊写 + 确定性 narration 解析器"
+  路线;mini 的结构化输出只作对照,不入契约对象。
+- 鲁棒性(噪声/口音/语速)由 TTS 测试农场(进行中)补充判据,不改本协议。

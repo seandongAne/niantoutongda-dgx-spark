@@ -63,6 +63,22 @@ def test_zero_initialized_residual_head_is_identity_mapping(tmp_path):
     )
 
 
+def test_concat_head_preserves_raw_branch_and_adds_learned_branch():
+    head = NumpyProjectionHead(
+        weight1=np.eye(2, dtype=np.float32),
+        bias1=np.zeros(2, dtype=np.float32),
+        weight2=np.eye(2, dtype=np.float32),
+        bias2=np.zeros(2, dtype=np.float32),
+        mode="concat",
+        residual_scale=0.4,
+    )
+    output = head.apply(np.asarray([0.6, 0.8], dtype=np.float32))
+    expected = np.asarray([0.6, 0.8, 0.24, 0.32], dtype=np.float32)
+    expected /= np.linalg.norm(expected)
+    assert head.output_dim == 4
+    assert output.tolist() == pytest.approx(expected.tolist())
+
+
 def test_leave_video_out_split_has_no_tracklet_or_video_leakage():
     samples = []
     for identity, vector in (("a", [1.0, 0.0]), ("b", [0.0, 1.0])):

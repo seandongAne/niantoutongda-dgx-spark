@@ -6,10 +6,10 @@ scope: "HERO_S1_OFFICIAL"
 # 与 dev_a 完全同一训练协议；素材日只替换 --ingest-root 与 --labels。
 split_policy: "leave_last_video_out_v1"
 input_dim: 768
-hidden_dim: 128
-output_dim: 768
-mode: "residual"
-residual_scale: 0.25
+hidden_dim: 256
+output_dim: 128
+mode: "concat"
+residual_scale: 0.40
 epochs: 120
 eval_every: 5
 learning_rate: 0.003

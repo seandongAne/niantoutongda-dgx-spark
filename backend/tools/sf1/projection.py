@@ -27,8 +27,8 @@ class NumpyProjectionHead:
     bias1: np.ndarray  # [hidden]
     weight2: np.ndarray  # [output, hidden]
     bias2: np.ndarray  # [output]
-    mode: str = "plain"  # plain / residual
-    residual_scale: float = 1.0
+    mode: str = "plain"  # plain / residual / concat
+    residual_scale: float = 1.0  # residual 或 concat 分支的固定 scale
 
     def __post_init__(self) -> None:
         arrays = (self.weight1, self.bias1, self.weight2, self.bias2)
@@ -42,7 +42,7 @@ class NumpyProjectionHead:
             raise ValueError("hidden dimension mismatch")
         if self.bias2.shape != (self.weight2.shape[0],):
             raise ValueError("bias2 shape mismatch")
-        if self.mode not in {"plain", "residual"}:
+        if self.mode not in {"plain", "residual", "concat"}:
             raise ValueError(f"unsupported projection mode: {self.mode}")
         if self.mode == "residual" and self.weight2.shape[0] != self.input_dim:
             raise ValueError("residual projection output must equal input dimension")
@@ -61,6 +61,8 @@ class NumpyProjectionHead:
 
     @property
     def output_dim(self) -> int:
+        if self.mode == "concat":
+            return self.input_dim + int(self.weight2.shape[0])
         return int(self.weight2.shape[0])
 
     def apply(self, vectors: np.ndarray) -> np.ndarray:
@@ -74,11 +76,17 @@ class NumpyProjectionHead:
             )
         hidden = np.maximum(values @ self.weight1.T + self.bias1, 0.0)
         learned = hidden @ self.weight2.T + self.bias2
-        output = (
-            values + self.residual_scale * learned
-            if self.mode == "residual"
-            else learned
-        )
+        if self.mode == "residual":
+            output = values + self.residual_scale * learned
+        elif self.mode == "concat":
+            learned_norm = learned / np.clip(
+                np.linalg.norm(learned, axis=1, keepdims=True), 1e-12, None
+            )
+            output = np.concatenate(
+                [values, self.residual_scale * learned_norm], axis=1
+            )
+        else:
+            output = learned
         norms = np.linalg.norm(output, axis=1, keepdims=True)
         if (norms < 1e-12).any() or not np.isfinite(norms).all():
             raise ValueError("projection produced zero or non-finite vector")

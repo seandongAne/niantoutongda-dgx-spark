@@ -15,6 +15,7 @@ import argparse
 import json
 import os
 import shlex
+import shutil
 import subprocess
 import sys
 import traceback
@@ -52,6 +53,13 @@ def _csv(value: str) -> list[str]:
     return parsed
 
 
+def _nonnegative_int(value: str) -> int:
+    parsed = int(value)
+    if parsed < 0:
+        raise argparse.ArgumentTypeError("value must be non-negative")
+    return parsed
+
+
 def build_remote_command(args: argparse.Namespace) -> str:
     """Build a fixed-code remote command; the API key deliberately is not an arg."""
     worker_args = [
@@ -81,6 +89,8 @@ def build_remote_command(args: argparse.Namespace) -> str:
         str(args.max_new_extractions),
         "--max-new-local",
         str(args.max_new_local),
+        "--revocation-delay-days",
+        str(args.revocation_delay_days),
         "--log",
         args.log,
     ]
@@ -175,7 +185,8 @@ def _set_status(path: Path, *, phase: str, state: str, args: argparse.Namespace,
         "phase": phase,
         "run_dir": args.run_dir,
         "report_dir": args.report_dir,
-        "credential_policy": "stdin_memory_only_treat_as_exposed_revoke_after_job",
+        "credential_policy": "stdin_memory_only_treat_as_exposed",
+        "revocation_delay_days_after_completion": args.revocation_delay_days,
         "transfer_policy": "code_and_small_reports_only_no_audio_over_ssh",
         "caps": {
             "tts": args.max_new_tts,
@@ -264,6 +275,9 @@ def run_worker(args: argparse.Namespace, key: str) -> int:
             started_at=started_at,
             completed_at=utc_now(),
         )
+        report_status = Path(args.report_dir) / "factory-status.json"
+        report_status.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(status_path, report_status)
         print("A1_SPARK_FACTORY_DONE", flush=True)
         return 0
     except BaseException as exc:
@@ -311,6 +325,12 @@ def add_job_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--max-new-tts", type=int, default=6)
     parser.add_argument("--max-new-extractions", type=int, default=18)
     parser.add_argument("--max-new-local", type=int, default=18)
+    parser.add_argument(
+        "--revocation-delay-days",
+        type=_nonnegative_int,
+        default=0,
+        help="audited delay after completion before the disposable key is deleted",
+    )
     parser.add_argument("--log", required=True)
 
 

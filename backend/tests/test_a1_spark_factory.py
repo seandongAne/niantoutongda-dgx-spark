@@ -26,6 +26,7 @@ def test_remote_command_contains_job_config_but_never_a_credential(tmp_path):
     assert "a1_spark_factory.py worker" in command
     assert "--conditions clean,noise20,speed090" in command
     assert "--ci-half-width 0.08" in command
+    assert "--revocation-delay-days 0" in command
     assert "STEPFUN_API_KEY" not in command
 
 

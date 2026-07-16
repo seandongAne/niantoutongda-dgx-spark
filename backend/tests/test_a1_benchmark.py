@@ -13,7 +13,7 @@ from backend.tools.a1_benchmark import (
     score_case,
     wilson_interval,
 )
-from scripts.a1_robustness import add_noise_at_snr, build_parser
+from scripts.a1_robustness import add_noise_at_snr, build_parser, git_revision
 
 
 def test_plan_is_deterministic_balanced_and_capped():
@@ -190,3 +190,8 @@ def test_noise_injection_is_deterministic_and_hits_requested_snr(tmp_path):
 def test_formal_cloud_runner_defaults_to_greedy_decoding():
     args = build_parser().parse_args(["cloud", "--run-dir", "example"])
     assert args.temperature == 0.0
+
+
+def test_git_revision_falls_back_to_deploy_stamp(tmp_path):
+    (tmp_path / "COMMIT").write_text("abc123\n", encoding="utf-8")
+    assert git_revision(tmp_path) == "abc123"

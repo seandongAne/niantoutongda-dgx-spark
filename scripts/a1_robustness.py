@@ -398,16 +398,20 @@ def _status_summary(metrics: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def git_revision() -> str:
+def git_revision(project_dir: Path = PROJ) -> str:
     try:
         revision = subprocess.check_output(
-            ["git", "rev-parse", "HEAD"], cwd=PROJ, text=True, stderr=subprocess.DEVNULL
+            ["git", "rev-parse", "HEAD"], cwd=project_dir, text=True, stderr=subprocess.DEVNULL
         ).strip()
         dirty = subprocess.run(
-            ["git", "diff", "--quiet", "HEAD"], cwd=PROJ, check=False
+            ["git", "diff", "--quiet", "HEAD"], cwd=project_dir, check=False
         ).returncode != 0
         return revision + ("-dirty" if dirty else "")
     except (OSError, subprocess.CalledProcessError):
+        deployed = project_dir / "COMMIT"
+        if deployed.exists():
+            revision = deployed.read_text(encoding="utf-8").strip()
+            return revision or "unknown"
         return "unknown"
 
 

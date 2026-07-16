@@ -219,3 +219,35 @@
 - **裁决建议**:v3 仍为 dev_a 冻结口径;attr 0.15 作英雄场景候选工作点
   (R@1+2pp/澄清-12/零误合并),待英雄素材再定;完整运行目录不入库
   (10M 冗余,可由 attributes+config 确定性复现),只留 summary+判卷。
+
+## 增量 D4-4:等片窗口 P0——hero_bundle 合同 + GROUP + 一键主链(晚)
+
+- **裁决吸收**:GROUP 不依赖"画面空间邻近聚类"——移动镜头二维远近≠真实
+  空间关系;证据优先级定为 **旁白明确分组 > 用户轻确认 > 模板语义 >
+  画面共现(只佐证,永不产生归属)**,契约层直接禁止共现作主导证据
+  (HeroGroup 校验器拒绝)。缺口盘点扩为三件:GROUP、new_1.mp4→
+  CandidateRegion 适配、布局组装+任务卡渲染,全部落地。
+- **hero_bundle 数据合同**(backend/schemas/hero_bundle.py):NarrationItem
+  (是什么/谁的/在哪/去哪/和谁一组)、NarrationResolution(歧义不猜,进轻
+  确认)、GroupEvidence/HeroGroup、RegionManifest(每区域必须带 new_1 画面
+  证据引用)、TaskCard、HeroBundleManifest;core.py 冻结不动,能落 core
+  的(LifeGroup/Region/PlacementPlan)一律转换后落 core。
+- **GROUP 模块**(backend/tools/grouping/):旁白句式启发式切分 + 名称/颜色
+  实体解析(同款不同色靠 color_primary 消歧,唯一命中才算解析成功);
+  build_groups 四层裁决,轻确认与旁白冲突时旁白胜出并记录 conflict;
+  未归组实体全部进轻确认队列。
+- **区域适配与布局组装**:region_adapter(manifest→CandidateRegion,
+  容量粗估 small=2/medium=4/large=6)+ assemble(旁白去向提示进 CP-SAT
+  得分,共现不进分)+ taskcards(确定性拼装,验收清单对齐验收消息族口径)。
+- **一键主链** scripts/hero_pipeline.py:阶段=独立子进程(不同模型绝不同
+  进程),state 记录 cmd+脚本+输入+产物 sha256,内容寻址续跑(上游重跑但
+  产物未变,下游不陪跑);--from-stage/--only/--dry-run;spark 阶段自动
+  前插 healthcheck、nohup+done 轮询、ssh 255 重试一次。合成夹具全链路
+  演练通过:6 实体→3 组合(0 澄清)→PLAN_READY(目标 30)→3 张任务卡。
+- **展示层补强**:实体命名脚本落地命名权威原则(展示名只来自 S5 VLM,
+  GDINO 标签只作内部召回键),并做同款不同色重名消歧——任务卡上
+  "水壶(蓝色)→床头柜面 / 水壶(粉色)→柜子隔层" 直接可读。
+- 测试:新增 25 测(合同 5/GROUP 9/区域布局 6/主链 e2e 3+2),全套
+  **105 passed**。素材到手后:复制 dev 配置为 s1 配置,启用 spark 四阶段,
+  换真实 entities/attributes/誊写稿/区域表即可全链复跑。
+- Commit:`b83746e`(合同+GROUP+适配)、`475ef1c`(主链+阶段脚本+夹具)。

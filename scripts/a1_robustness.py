@@ -115,12 +115,64 @@ def ffmpeg(*arguments: str) -> None:
         raise RuntimeError(f"ffmpeg failed: {process.stderr[-2000:]}")
 
 
-def canonical_wav(source: Path, output: Path, *, audio_filter: str | None = None) -> None:
+def _canonical_wav_pcm16(
+    source: Path,
+    output: Path,
+    *,
+    speed_ratio: float,
+    target_rate: int = 16_000,
+) -> None:
+    """Normalize uncompressed mono PCM16 without an external media binary.
+
+    StepAudio TTS currently returns 24 kHz mono PCM16 WAV.  Spark intentionally has
+    no ffmpeg package, so the factory uses deterministic linear interpolation for
+    the clean/speed benchmark conditions.  Codec round-trips still require ffmpeg.
+    """
+    with wave.open(str(source), "rb") as reader:
+        params = reader.getparams()
+        if params.nchannels != 1 or params.sampwidth != 2 or params.comptype != "NONE":
+            raise RuntimeError(
+                "ffmpeg-free normalization requires mono uncompressed PCM16 WAV"
+            )
+        samples = array("h")
+        samples.frombytes(reader.readframes(params.nframes))
+    if sys.byteorder != "little":
+        samples.byteswap()
+    if not samples:
+        raise RuntimeError("cannot normalize an empty WAV")
+    if speed_ratio <= 0:
+        raise RuntimeError("speed_ratio must be positive")
+
+    source_step = params.framerate * speed_ratio / target_rate
+    output_length = max(1, round(len(samples) / source_step))
+    normalized = array("h")
+    for output_index in range(output_length):
+        position = min(output_index * source_step, len(samples) - 1)
+        left = int(position)
+        right = min(left + 1, len(samples) - 1)
+        fraction = position - left
+        value = round(samples[left] * (1.0 - fraction) + samples[right] * fraction)
+        normalized.append(max(-32768, min(32767, value)))
+    if sys.byteorder != "little":
+        normalized.byteswap()
+
     output.parent.mkdir(parents=True, exist_ok=True)
     temporary = output.with_name(output.stem + ".tmp.wav")
+    with wave.open(str(temporary), "wb") as writer:
+        writer.setparams((1, 2, target_rate, 0, "NONE", "not compressed"))
+        writer.writeframes(normalized.tobytes())
+    temporary.replace(output)
+
+
+def canonical_wav(source: Path, output: Path, *, speed_ratio: float = 1.0) -> None:
+    output.parent.mkdir(parents=True, exist_ok=True)
+    if shutil.which("ffmpeg") is None:
+        _canonical_wav_pcm16(source, output, speed_ratio=speed_ratio)
+        return
+    temporary = output.with_name(output.stem + ".tmp.wav")
     command = ["-i", str(source), "-ac", "1", "-ar", "16000"]
-    if audio_filter:
-        command.extend(["-filter:a", audio_filter])
+    if speed_ratio != 1.0:
+        command.extend(["-filter:a", f"atempo={speed_ratio:.3f}"])
     command.extend(["-c:a", "pcm_s16le", str(temporary)])
     ffmpeg(*command)
     temporary.replace(output)
@@ -159,7 +211,7 @@ def render_condition(source: Path, output: Path, condition: dict[str, Any], *, s
     if kind == "clean":
         canonical_wav(source, output)
     elif kind == "speed":
-        canonical_wav(source, output, audio_filter=f"atempo={float(condition['ratio']):.3f}")
+        canonical_wav(source, output, speed_ratio=float(condition["ratio"]))
     elif kind == "noise":
         with tempfile.TemporaryDirectory(prefix="a1-noise-") as directory:
             clean = Path(directory) / "clean.wav"

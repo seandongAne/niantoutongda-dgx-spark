@@ -13,7 +13,12 @@ from backend.tools.a1_benchmark import (
     score_case,
     wilson_interval,
 )
-from scripts.a1_robustness import add_noise_at_snr, build_parser, git_revision
+from scripts.a1_robustness import (
+    add_noise_at_snr,
+    build_parser,
+    canonical_wav,
+    git_revision,
+)
 
 
 def test_plan_is_deterministic_balanced_and_capped():
@@ -185,6 +190,27 @@ def test_noise_injection_is_deterministic_and_hits_requested_snr(tmp_path):
     noise_power = sum((a - b) ** 2 for a, b in zip(noisy, samples, strict=True)) / len(samples)
     measured_snr = 10 * math.log10(signal_power / noise_power)
     assert measured_snr == pytest.approx(20.0, abs=0.25)
+
+
+def test_pcm16_normalization_without_ffmpeg(monkeypatch, tmp_path):
+    source = tmp_path / "source-24k.wav"
+    clean = tmp_path / "clean-16k.wav"
+    slow = tmp_path / "slow-16k.wav"
+    samples = array("h", [round(10_000 * math.sin(index / 20)) for index in range(24_000)])
+    with wave.open(str(source), "wb") as writer:
+        writer.setparams((1, 2, 24_000, 0, "NONE", "not compressed"))
+        writer.writeframes(samples.tobytes())
+
+    monkeypatch.setattr("scripts.a1_robustness.shutil.which", lambda _: None)
+    canonical_wav(source, clean)
+    canonical_wav(source, slow, speed_ratio=0.9)
+
+    with wave.open(str(clean), "rb") as reader:
+        assert reader.getparams()[:3] == (1, 2, 16_000)
+        assert reader.getnframes() == 16_000
+    with wave.open(str(slow), "rb") as reader:
+        assert reader.getparams()[:3] == (1, 2, 16_000)
+        assert reader.getnframes() == pytest.approx(16_000 / 0.9, abs=1)
 
 
 def test_formal_cloud_runner_defaults_to_greedy_decoding():

@@ -1,0 +1,41 @@
+# 英雄主链 · 合成夹具配置 — 素材未到期间的本地全链路演练。
+# 真实英雄素材到手后复制为 hero_pipeline_s1.yaml:启用 spark 阶段
+# (ingest/reid/attributes/pull),把 naming 输入换成拉回的真实产物,
+# narration.transcript 换成旁白誊写(或 ASR 产物),regions.manifest
+# 换成对照 new_1.mp4 登记的区域表。
+run_dir: results/hero/dev-fixture
+python: .venv/bin/python
+
+stages:
+  healthcheck: { enabled: false }   # 无 spark 阶段,不需要
+  ingest: { enabled: false }        # 待素材:spark_cmd 见 s1 配置
+  reid: { enabled: false }
+  attributes: { enabled: false }
+  pull: { enabled: false }
+
+  naming:
+    enabled: true
+    entities: fixtures/hero_dev/entities.jsonl
+    attributes: fixtures/hero_dev/attributes.jsonl
+
+  narration:
+    enabled: true
+    transcript: fixtures/hero_dev/transcript.txt
+    audio_ref: fixtures/hero_dev/narration.m4a
+
+  regions:
+    enabled: true
+    manifest: fixtures/hero_dev/regions.json
+
+  group:
+    enabled: true
+    config_version: group-v1
+
+  layout:
+    enabled: true
+
+  taskcards:
+    enabled: true
+
+  bundle:
+    enabled: true

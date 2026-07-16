@@ -32,6 +32,13 @@ COLOR_WORDS_ZH: dict[str, str] = {
 }
 _COLOR_KEYS = sorted(COLOR_WORDS_ZH, key=len, reverse=True)
 
+# 展示用反向映射:S5 color_primary → 中文颜色词(取规范双字词)
+COLOR_ZH: dict[str, str] = {
+    "blue": "蓝色", "pink": "粉色", "red": "红色", "white": "白色",
+    "black": "黑色", "gray": "灰色", "green": "绿色", "yellow": "黄色",
+    "orange": "橙色", "purple": "紫色", "brown": "棕色", "beige": "米色",
+}
+
 _SPLIT = re.compile(r"[,,。;;.]+")
 _PARTNER = re.compile(r"[和跟与](?P<names>.+?)(?:一组|一起|打包)")
 _PARTNER_SEP = re.compile(r"[、和跟与]")

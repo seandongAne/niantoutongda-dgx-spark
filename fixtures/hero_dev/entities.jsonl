@@ -1,0 +1,6 @@
+{"confidence": 0.91, "entity_id": "e_kettle_blue", "evidence_refs": ["fixtures/hero_dev/crops/kettle_blue.jpg"], "identity_state": "MATCHED", "label": "kettle", "schema_version": "1.0", "tracklet_ids": ["t_kb"]}
+{"confidence": 0.9, "entity_id": "e_kettle_pink", "evidence_refs": ["fixtures/hero_dev/crops/kettle_pink.jpg"], "identity_state": "MATCHED", "label": "kettle", "schema_version": "1.0", "tracklet_ids": ["t_kp"]}
+{"confidence": 0.93, "entity_id": "e_lamp", "evidence_refs": ["fixtures/hero_dev/crops/lamp.jpg"], "identity_state": "MATCHED", "label": "table lamp", "schema_version": "1.0", "tracklet_ids": ["t_lamp"]}
+{"confidence": 0.88, "entity_id": "e_book", "evidence_refs": ["fixtures/hero_dev/crops/book.jpg"], "identity_state": "MATCHED", "label": "book", "schema_version": "1.0", "tracklet_ids": ["t_book"]}
+{"confidence": 0.87, "entity_id": "e_headphones", "evidence_refs": ["fixtures/hero_dev/crops/headphones.jpg"], "identity_state": "MATCHED", "label": "headphones", "schema_version": "1.0", "tracklet_ids": ["t_hp"]}
+{"confidence": 0.9, "entity_id": "e_box", "evidence_refs": ["fixtures/hero_dev/crops/box.jpg"], "identity_state": "MATCHED", "label": "storage box", "schema_version": "1.0", "tracklet_ids": ["t_box"]}

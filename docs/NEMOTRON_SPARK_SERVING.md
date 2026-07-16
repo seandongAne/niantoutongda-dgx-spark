@@ -41,6 +41,33 @@
   `sudo usermod -aG docker Developer` 后重新登录。无 podman,无 rootless 前置。
 - 磁盘 2.5T 空闲,128G 统一内存,容器拉取无资源压力(跨境慢,夜里 nohup 拉)。
 
+## BF16 实测(2026-07-15 深夜,`scripts/bench_nemotron_bf16.py`,判据:decode ≥20 tok/s 则不迁移)
+
+| 工况 | prefill(温机) | decode(温机) |
+|---|---|---|
+| 文本-only(33 tok prompt) | 0.13 s | **7.8 tok/s** |
+| 图文(真实 S5 证据 crop,1323 tok prompt) | 0.72 s | **1.7 tok/s** |
+
+加载 211 s;峰值显存 27.7 GB;首轮含 triton JIT 预热(~5 s,一次性)。
+输出质量合格:对 ingest 证据 crop 正确输出了逐物品"类别/颜色/材质/文字标记"
+(样例:"Toy Washing Machine: Category: Toy, Color: White with pink...")。
+
+**判据击穿 → 迁移 vLLM+NVFP4 成立。** 真实 S5 工况(图文)1.7 tok/s 意味着
+128-token 属性抽取一次 ~75 s;百次级别的批量任务在 transformers 路线上不可用。
+图文比纯文本慢 4.6×(1323 tok 上下文的注意力层 KV 开销 + HF generate 低效),
+vLLM 的连续批处理恰好是这类多 crop 批量工况的对症药。
+
+### 运行时坑位(已固化进 bootstrap / bench 脚本)
+
+- ModelScope 镜像目录的嵌套 `auto_map` 指向 HF 原站(LLM 骨干 + RADIO 视觉塔
+  的 .py 代码文件)→ 节点不可达;解法 `HF_ENDPOINT=https://hf-mirror.com`
+  (只拉 KB 级代码文件,一次性缓存;权重仍走 ModelScope,不违反纪律)。
+- NemotronH 推理时 triton JIT 现场编译 `cuda_utils.c`,同样吃 Python.h →
+  CPATH 需在**运行时**在场;已用 `.pth` import 行注入 venv(sitecustomize.py
+  方案不可用:Debian 在 /usr/lib/python3.12 有同名文件且路径序在前,会遮蔽)。
+- processor 输出的 `num_patches` 键必须过滤后再喂 `generate`(README 官方
+  示例只传 input_ids/attention_mask/pixel_values 三键,是有原因的)。
+
 ## 决策建议(待 Sean 拍板)
 
 1. vLLM + NVFP4-QAD 立为 S5 属性抽取的**服务路线**;已修好的

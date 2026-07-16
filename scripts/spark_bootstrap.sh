@@ -89,6 +89,14 @@ case "$PHASE" in
         fi
         export CPATH="$HOME/local/usr/include/python3.12:$HOME/local/usr/include${CPATH:+:$CPATH}"
       fi
+      # 运行时同样要 CPATH:NemotronH 推理时 triton JIT 现场编译 cuda_utils.c,
+      # 也吃 Python.h — 用 .pth 的 import 行在解释器启动时自动注入,不依赖调用方
+      # 记得传。(不能用 sitecustomize.py:Debian 在 /usr/lib/python3.12 有同名
+      # 文件且路径序在前,venv 内的会被遮蔽 — 实测踩过。)
+      SITE_DIR="$(python -c 'import site; print(site.getsitepackages()[0])')"
+      cat > "$SITE_DIR/zz_gb10_cpath.pth" <<'PYEOF'
+import os; _i = os.path.expanduser("~/local/usr/include"); (os.environ.__setitem__("CPATH", _i + "/python3.12:" + _i + ((":" + os.environ["CPATH"]) if os.environ.get("CPATH") else "")) if (os.path.isdir(_i) and _i not in os.environ.get("CPATH", "")) else None)
+PYEOF
       echo "build env: TORCH_CUDA_ARCH_LIST=$TORCH_CUDA_ARCH_LIST CPATH=${CPATH:-<system>}"
       pip install causal_conv1d --no-build-isolation -i "$MIRROR" \
         || { echo "CAUSAL_BUILD_FAILED — fallback: NGC PyTorch container" >&2; exit 3; }

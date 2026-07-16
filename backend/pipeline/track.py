@@ -36,6 +36,7 @@ class FrameDetection:
     label: str
     score: float
     ref: str = ""  # 上游 Observation id 等外部引用,追踪器本身不使用
+    hero_score: float = 0.0  # 面积 x 清晰度 x 完整度；只用于证据帧排序
 
 
 @dataclass

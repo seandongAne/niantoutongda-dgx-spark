@@ -12,6 +12,7 @@
 from __future__ import annotations
 
 import json
+import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -47,6 +48,9 @@ class IngestResult:
     observations: list[Observation]
     tracklets: list[Tracklet]
     workdir: str
+    tiled_keyframe_count: int = 0
+    detection_elapsed_s: float = 0.0
+    frame_batching_used: bool = False
 
 
 def _utc_now() -> str:
@@ -60,6 +64,54 @@ def _crop(frame_path: str, box: tuple[float, float, float, float], out_path: Pat
     if x2 <= x1 or y2 <= y1:
         raise ValueError(f"degenerate box {box} for {frame_path}")
     cv2.imwrite(str(out_path), img[y1:y2, x1:x2])
+
+
+def _hero_crop_score_image(
+    image,
+    box: tuple[float, float, float, float],
+) -> float:
+    """Area x sharpness x completeness score for the S5 representative crop.
+
+    Sharpness is normalized Laplacian variance.  A box touching the outer 2%
+    of the frame is treated as truncated; touching two or more edges is
+    penalized again.  The score is only compared within one tracklet.
+    """
+
+    if image is None or image.size == 0:
+        return 0.0
+    height, width = image.shape[:2]
+    x1 = max(0, min(width, int(box[0])))
+    y1 = max(0, min(height, int(box[1])))
+    x2 = max(0, min(width, int(box[2])))
+    y2 = max(0, min(height, int(box[3])))
+    if x2 <= x1 or y2 <= y1:
+        return 0.0
+    crop = image[y1:y2, x1:x2]
+    gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
+    sharpness_variance = float(cv2.Laplacian(gray, cv2.CV_64F).var())
+    sharpness = sharpness_variance / (sharpness_variance + 100.0)
+    area = ((x2 - x1) * (y2 - y1)) / float(width * height)
+
+    margin_x, margin_y = max(2, round(width * 0.02)), max(2, round(height * 0.02))
+    touched_edges = sum(
+        (
+            x1 <= margin_x,
+            y1 <= margin_y,
+            x2 >= width - margin_x,
+            y2 >= height - margin_y,
+        )
+    )
+    completeness = 1.0 if touched_edges == 0 else (0.45 if touched_edges == 1 else 0.20)
+    return max(0.0, min(1.0, area * sharpness * completeness))
+
+
+def hero_crop_score(
+    frame_path: str | Path,
+    box: tuple[float, float, float, float],
+) -> float:
+    """Public path-based helper kept separate for deterministic unit tests."""
+
+    return _hero_crop_score_image(cv2.imread(str(frame_path)), box)
 
 
 def ingest_video(
@@ -77,7 +129,11 @@ def ingest_video(
     iou_threshold: float = 0.2,
     max_missed: int = 4,
     min_track_len: int = 2,
+    stationary_min_ms: int = 2000,
+    enable_stationary_tiles: bool = True,
 ) -> IngestResult:
+    if stationary_min_ms < 0:
+        raise ValueError("stationary_min_ms cannot be negative")
     workdir = Path(workdir)
     (workdir / "evidence").mkdir(parents=True, exist_ok=True)
     audit_path = workdir / "audit-events.jsonl"
@@ -101,8 +157,28 @@ def ingest_video(
         iou_threshold=iou_threshold, max_missed=max_missed, min_track_len=min_track_len
     )
     frame_path_by_index: dict[int, str] = {kf.frame_index: kf.path for kf in keyframes}
-    for kf in keyframes:
-        raw = detector.detect(kf.path, prompts)
+    image_paths = [kf.path for kf in keyframes]
+    tiled_paths = {
+        kf.path
+        for kf in keyframes
+        if enable_stationary_tiles and kf.stationary_ms >= stationary_min_ms
+    }
+    detect_many = getattr(detector, "detect_many", None)
+    detection_started = time.perf_counter()
+    if callable(detect_many):
+        raw_by_frame = detect_many(image_paths, prompts, tiled_image_paths=tiled_paths)
+        frame_batching_used = True
+    else:
+        raw_by_frame = [detector.detect(path, prompts) for path in image_paths]
+        frame_batching_used = False
+    detection_elapsed_s = time.perf_counter() - detection_started
+    if len(raw_by_frame) != len(keyframes):
+        raise ValueError(
+            f"detector returned {len(raw_by_frame)} frame results for {len(keyframes)} keyframes"
+        )
+
+    for kf, raw in zip(keyframes, raw_by_frame):
+        frame_image = cv2.imread(kf.path) if raw else None
         frame_dets: list[FrameDetection] = []
         for di, d in enumerate(raw):
             ob = Observation(
@@ -123,6 +199,7 @@ def ingest_video(
                     label=d.label,
                     score=d.score,
                     ref=ob.observation_id,
+                    hero_score=_hero_crop_score_image(frame_image, d.box),
                 )
             )
         tracker.update(frame_dets)
@@ -143,7 +220,10 @@ def ingest_video(
     tracklets: list[Tracklet] = []
     obs_by_id = {ob.observation_id: ob for ob in observations}
     for t in tracks:
-        top = sorted(t.detections, key=lambda d: (-d.score, d.frame_index))[:PROTOTYPE_TOP_K]
+        top = sorted(
+            t.detections,
+            key=lambda d: (-d.hero_score, -d.score, d.frame_index),
+        )[:PROTOTYPE_TOP_K]
         prototype_refs: list[str] = []
         for det in top:
             crop_path = workdir / "evidence" / f"{video_id}_t{t.track_id:03d}_f{det.frame_index:06d}.jpg"
@@ -174,7 +254,12 @@ def ingest_video(
                 observation_ids=obs_ids,
                 prototype_refs=prototype_refs,
                 embedding_ref=embedding_ref,
-                attributes={"label": t.label},
+                attributes={
+                    "label": t.label,
+                    "hero_ref": prototype_refs[0] if prototype_refs else "",
+                    "hero_score": f"{top[0].hero_score:.8f}" if top else "0.00000000",
+                    "hero_scoring_version": "area-sharpness-completeness-v1",
+                },
             )
         )
     append_event(
@@ -203,4 +288,7 @@ def ingest_video(
         observations=observations,
         tracklets=tracklets,
         workdir=str(workdir),
+        tiled_keyframe_count=len(tiled_paths),
+        detection_elapsed_s=detection_elapsed_s,
+        frame_batching_used=frame_batching_used,
     )

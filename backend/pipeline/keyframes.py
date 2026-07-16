@@ -17,6 +17,9 @@ class Keyframe:
     frame_index: int  # 源视频帧号
     timestamp_ms: int
     path: str
+    # 该采样视角之后与其近似静止的持续时间。S2.5 仅对 >=2s 的用户停留
+    # 视角做瓦片检测，避免把多尺度成本摊到整段视频。
+    stationary_ms: int = 0
 
 
 def sample_keyframes(
@@ -51,10 +54,20 @@ def sample_keyframes(
         small = cv2.resize(
             cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), (64, 64), interpolation=cv2.INTER_AREA
         ).astype(np.float32)
+        timestamp_ms = int(frame_index / src_fps * 1000)
         if last_small is not None and float(np.abs(small - last_small).mean()) < diff_threshold:
+            # 不额外落重复帧，但把用户在这个视角停留了多久记到代表帧上。
+            # 后续检测只需看这一帧即可放大小物，仍保持原有去重语义。
+            previous = kept[-1]
+            stationary_ms = max(previous.stationary_ms, timestamp_ms - previous.timestamp_ms)
+            kept[-1] = Keyframe(
+                frame_index=previous.frame_index,
+                timestamp_ms=previous.timestamp_ms,
+                path=previous.path,
+                stationary_ms=stationary_ms,
+            )
             continue
         last_small = small
-        timestamp_ms = int(frame_index / src_fps * 1000)
         path = out_dir / f"kf_{frame_index:06d}.jpg"
         cv2.imwrite(str(path), frame, [cv2.IMWRITE_JPEG_QUALITY, jpeg_quality])
         kept.append(Keyframe(frame_index=frame_index, timestamp_ms=timestamp_ms, path=str(path)))

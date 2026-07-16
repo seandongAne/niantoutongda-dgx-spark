@@ -8,8 +8,9 @@ ingest.Detector 协议注入 fake。torch/transformers 延迟导入,导入本模
 from __future__ import annotations
 
 import re
+from math import ceil
 from dataclasses import dataclass
-from typing import Mapping
+from typing import Any, Mapping, Sequence
 
 from backend.pipeline.vocab import CompiledPrompts, normalize_label
 
@@ -22,6 +23,50 @@ class RawDetection:
     canonical_id: str | None = None
     category_id: str | None = None
     raw_label: str | None = None
+
+
+@dataclass(frozen=True)
+class _ImageView:
+    """One full-frame or tiled view mapped back to its source image."""
+
+    source_index: int
+    image: Any
+    offset_x: int
+    offset_y: int
+    score_threshold: float
+
+
+def overlapping_tile_boxes(
+    width: int,
+    height: int,
+    *,
+    grid: int,
+    overlap: float = 0.2,
+) -> tuple[tuple[int, int, int, int], ...]:
+    """Return deterministic full-coverage ``grid x grid`` overlapping tiles."""
+
+    if width <= 0 or height <= 0:
+        raise ValueError("image dimensions must be positive")
+    if grid < 2:
+        raise ValueError("tile grid must be >= 2")
+    if not 0.0 <= overlap < 1.0:
+        raise ValueError("tile overlap must be in [0, 1)")
+
+    tile_w = min(width, ceil(width / (grid - (grid - 1) * overlap)))
+    tile_h = min(height, ceil(height / (grid - (grid - 1) * overlap)))
+    max_x, max_y = width - tile_w, height - tile_h
+    xs = [round(index * max_x / (grid - 1)) for index in range(grid)]
+    ys = [round(index * max_y / (grid - 1)) for index in range(grid)]
+    return tuple((x, y, x + tile_w, y + tile_h) for y in ys for x in xs)
+
+
+def _clutter_score(image: Any) -> float:
+    """Cheap deterministic edge-density proxy used to select 3x3 tiles."""
+
+    from PIL import ImageFilter, ImageStat
+
+    edges = image.convert("L").filter(ImageFilter.FIND_EDGES)
+    return float(ImageStat.Stat(edges).mean[0])
 
 
 def _resolve_label(label: str, mapping: Mapping[str, str]) -> str | None:
@@ -107,6 +152,10 @@ class GroundingDinoDetector:
         box_threshold: float = 0.35,
         text_threshold: float = 0.25,
         nms_iou_threshold: float = 0.8,
+        image_batch_size: int = 8,
+        tile_box_threshold: float = 0.22,
+        tile_overlap: float = 0.20,
+        clutter_tile_count: int = 2,
     ):
         import torch
         from transformers import AutoModelForZeroShotObjectDetection, AutoProcessor
@@ -115,6 +164,18 @@ class GroundingDinoDetector:
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.box_threshold = box_threshold
         self.text_threshold = text_threshold
+        if image_batch_size <= 0:
+            raise ValueError("image_batch_size must be positive")
+        if not 0.0 <= tile_box_threshold <= 1.0:
+            raise ValueError("tile_box_threshold must be in [0, 1]")
+        if not 0.0 <= tile_overlap < 1.0:
+            raise ValueError("tile_overlap must be in [0, 1)")
+        if clutter_tile_count < 0:
+            raise ValueError("clutter_tile_count cannot be negative")
+        self.image_batch_size = image_batch_size
+        self.tile_box_threshold = tile_box_threshold
+        self.tile_overlap = tile_overlap
+        self.clutter_tile_count = clutter_tile_count
         if not 0.0 <= nms_iou_threshold <= 1.0:
             raise ValueError("nms_iou_threshold must be in [0, 1]")
         self.nms_iou_threshold = nms_iou_threshold
@@ -130,10 +191,69 @@ class GroundingDinoDetector:
     PROMPT_BATCH_SIZE = 4
 
     def detect(self, image_path: str, prompts: list[str]) -> list[RawDetection]:
+        return self.detect_many([image_path], prompts)[0]
+
+    def detect_many(
+        self,
+        image_paths: Sequence[str],
+        prompts: list[str],
+        *,
+        tiled_image_paths: set[str] | frozenset[str] | None = None,
+    ) -> list[list[RawDetection]]:
+        """Run frame batching and optional stationary-view tiled detection.
+
+        Every frame always contributes one full-frame view.  Paths selected by
+        ingest as >=2s stationary additionally contribute overlapping 2x2
+        tiles and the highest-edge-density 3x3 tiles.  All tile boxes are
+        translated to full-frame coordinates before canonical-aware NMS.
+        """
+
         from PIL import Image
 
-        image = Image.open(image_path).convert("RGB")
-        detections: list[RawDetection] = []
+        if not image_paths:
+            return []
+        tiled = {str(path) for path in (tiled_image_paths or ())}
+        views: list[_ImageView] = []
+        for source_index, path in enumerate(image_paths):
+            with Image.open(path) as opened:
+                image = opened.convert("RGB")
+            views.append(
+                _ImageView(source_index, image, 0, 0, self.box_threshold)
+            )
+            if str(path) not in tiled:
+                continue
+            width, height = image.size
+            for x1, y1, x2, y2 in overlapping_tile_boxes(
+                width, height, grid=2, overlap=self.tile_overlap
+            ):
+                views.append(
+                    _ImageView(
+                        source_index,
+                        image.crop((x1, y1, x2, y2)),
+                        x1,
+                        y1,
+                        self.tile_box_threshold,
+                    )
+                )
+            if self.clutter_tile_count:
+                clutter_candidates = []
+                for box in overlapping_tile_boxes(
+                    width, height, grid=3, overlap=self.tile_overlap
+                ):
+                    tile = image.crop(box)
+                    clutter_candidates.append((_clutter_score(tile), box, tile))
+                clutter_candidates.sort(key=lambda item: (-item[0], item[1]))
+                for _, (x1, y1, _, _), tile in clutter_candidates[: self.clutter_tile_count]:
+                    views.append(
+                        _ImageView(
+                            source_index,
+                            tile,
+                            x1,
+                            y1,
+                            self.tile_box_threshold,
+                        )
+                    )
+
         if isinstance(prompts, CompiledPrompts):
             batches = prompts.batches
             prompt_to_canonical = prompts.prompt_to_canonical
@@ -145,33 +265,78 @@ class GroundingDinoDetector:
             )
             prompt_to_canonical = {}
             prompt_to_category = {}
-        for batch in batches:
-            detections += self._detect_batch(image, list(batch))
-        return canonical_aware_nms(
-            detections,
-            prompt_to_canonical=prompt_to_canonical,
-            prompt_to_category=prompt_to_category,
-            iou_threshold=self.nms_iou_threshold,
-        )
 
-    def _detect_batch(self, image, prompts: list[str]) -> list[RawDetection]:
+        detections_by_source: list[list[RawDetection]] = [[] for _ in image_paths]
+        for batch in batches:
+            for start in range(0, len(views), self.image_batch_size):
+                chunk = views[start : start + self.image_batch_size]
+                detected = self._detect_view_batch(chunk, list(batch))
+                for view, view_detections in zip(chunk, detected):
+                    for detection in view_detections:
+                        if detection.score < view.score_threshold:
+                            continue
+                        x1, y1, x2, y2 = detection.box
+                        detections_by_source[view.source_index].append(
+                            RawDetection(
+                                label=detection.label,
+                                score=detection.score,
+                                box=(
+                                    x1 + view.offset_x,
+                                    y1 + view.offset_y,
+                                    x2 + view.offset_x,
+                                    y2 + view.offset_y,
+                                ),
+                                raw_label=detection.raw_label,
+                            )
+                        )
+        return [
+            canonical_aware_nms(
+                detections,
+                prompt_to_canonical=prompt_to_canonical,
+                prompt_to_category=prompt_to_category,
+                iou_threshold=self.nms_iou_threshold,
+            )
+            for detections in detections_by_source
+        ]
+
+    def _detect_view_batch(
+        self, views: Sequence[_ImageView], prompts: list[str]
+    ) -> list[list[RawDetection]]:
         # Grounding DINO 文本约定:小写、句点分隔
         text = ". ".join(p.strip().lower() for p in prompts) + "."
-        inputs = self.processor(images=image, text=text, return_tensors="pt").to(self.device)
+        images = [view.image for view in views]
+        inputs = self.processor(
+            images=images,
+            text=[text] * len(images),
+            padding=True,
+            return_tensors="pt",
+        ).to(self.device)
         with self._torch.no_grad():
             outputs = self.model(**inputs)
         results = self.processor.post_process_grounded_object_detection(
             outputs,
             inputs.input_ids,
-            threshold=self.box_threshold,  # transformers 4.51+ 改名(原 box_threshold)
+            # 先用低阈值解码，随后按 full/tile 各自阈值过滤。
+            threshold=min(self.box_threshold, self.tile_box_threshold),
             text_threshold=self.text_threshold,
-            target_sizes=[image.size[::-1]],
-        )[0]
-        labels = results.get("text_labels", results["labels"])  # 新版文本标签迁到 text_labels
-        return [
-            RawDetection(label=label, score=float(score), box=tuple(float(v) for v in box))
-            for label, score, box in zip(labels, results["scores"], results["boxes"])
-        ]
+            target_sizes=[view.image.size[::-1] for view in views],
+        )
+        detected: list[list[RawDetection]] = []
+        for result in results:
+            labels = result.get(
+                "text_labels", result["labels"]
+            )  # 新版文本标签迁到 text_labels
+            detected.append(
+                [
+                    RawDetection(
+                        label=str(label),
+                        score=float(score),
+                        box=tuple(float(value) for value in box),
+                    )
+                    for label, score, box in zip(labels, result["scores"], result["boxes"])
+                ]
+            )
+        return detected
 
 
 def _iou(a: tuple[float, float, float, float], b: tuple[float, float, float, float]) -> float:

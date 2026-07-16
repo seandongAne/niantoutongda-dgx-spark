@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 
 from backend.pipeline.detect import RawDetection
-from backend.pipeline.ingest import ingest_video
+from backend.pipeline.ingest import hero_crop_score, ingest_video
 from backend.pipeline.keyframes import sample_keyframes
 from backend.schemas.core import Observation, Tracklet
 
@@ -57,6 +57,15 @@ class FakeDetector:
         return out
 
 
+class FakeBatchDetector(FakeDetector):
+    def __init__(self):
+        self.calls = []
+
+    def detect_many(self, image_paths, prompts, *, tiled_image_paths=None):
+        self.calls.append((tuple(image_paths), frozenset(tiled_image_paths or ())))
+        return [self.detect(path, prompts) for path in image_paths]
+
+
 class FakeEmbedder:
     model_version = "fake-embedder@test"
 
@@ -76,6 +85,7 @@ def test_keyframes_dedup_static_video(tmp_path):
     writer.release()
     kfs = sample_keyframes(path, tmp_path / "kf", target_fps=5.0)
     assert len(kfs) == 1  # 全静止只留第一帧
+    assert kfs[0].stationary_ms >= 2500
 
 
 def test_ingest_end_to_end(synthetic_video, tmp_path):
@@ -99,6 +109,8 @@ def test_ingest_end_to_end(synthetic_video, tmp_path):
         for p in t.prototype_refs:
             assert Path(p).exists()
         assert t.embedding_ref and Path(t.embedding_ref).exists()
+        assert t.attributes["hero_ref"] == t.prototype_refs[0]
+        assert 0.0 <= float(t.attributes["hero_score"]) <= 1.0
         vec = json.loads(Path(t.embedding_ref).read_text())["vector"]
         assert abs(sum(v * v for v in vec) - 1.0) < 1e-6  # 归一化
 
@@ -142,3 +154,35 @@ def test_ingest_deterministic(synthetic_video, tmp_path):
             [(t.tracklet_id, t.attributes["label"], tuple(t.observation_ids)) for t in r.tracklets]
         )
     assert runs[0] == runs[1]
+
+
+def test_ingest_prefers_detector_frame_batch_api(synthetic_video, tmp_path):
+    detector = FakeBatchDetector()
+    result = ingest_video(
+        video_id="v_batch",
+        video_path=synthetic_video,
+        prompts=["red box", "blue box"],
+        workdir=tmp_path / "batch",
+        detector=detector,
+        config_version="test-v1",
+    )
+
+    assert len(detector.calls) == 1
+    assert len(detector.calls[0][0]) == len(result.keyframes)
+    assert result.frame_batching_used is True
+
+
+def test_hero_crop_penalizes_blur_and_frame_edge(tmp_path):
+    frame = np.full((200, 200, 3), 128, np.uint8)
+    for y in range(60, 140, 8):
+        for x in range(60, 140, 8):
+            if (x // 8 + y // 8) % 2:
+                frame[y : y + 8, x : x + 8] = 255
+            else:
+                frame[y : y + 8, x : x + 8] = 0
+    path = tmp_path / "hero.jpg"
+    cv2.imwrite(str(path), frame)
+
+    clear_complete = hero_crop_score(path, (60.0, 60.0, 140.0, 140.0))
+    blurred_truncated = hero_crop_score(path, (0.0, 0.0, 55.0, 55.0))
+    assert clear_complete > blurred_truncated

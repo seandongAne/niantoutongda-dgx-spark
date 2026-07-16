@@ -33,6 +33,14 @@ def main() -> int:
     prompt_source.add_argument("--vocab", help="canonical detection vocabulary JSON")
     prompt_source.add_argument("--prompts", help="legacy comma-separated prompt list")
     ap.add_argument("--box-threshold", type=float, default=0.30)
+    ap.add_argument("--tile-box-threshold", type=float, default=0.22)
+    ap.add_argument("--frame-batch-size", type=int, default=8)
+    ap.add_argument("--stationary-min-ms", type=int, default=2000)
+    ap.add_argument(
+        "--no-stationary-tiles",
+        action="store_true",
+        help="disable 2x2 + selective 3x3 tiles for >=stationary-min-ms views",
+    )
     ap.add_argument("--videos", nargs="+", required=True, help="video_id=path ...")
     args = ap.parse_args()
 
@@ -56,6 +64,8 @@ def main() -> int:
     detector = GroundingDinoDetector(
         str(Path.home() / "models" / "IDEA-Research__grounding-dino-base"),
         box_threshold=args.box_threshold,
+        tile_box_threshold=args.tile_box_threshold,
+        image_batch_size=args.frame_batch_size,
     )
     embedder = Dinov2Embedder(str(Path.home() / "models" / "facebook__dinov2-base"))
 
@@ -71,12 +81,16 @@ def main() -> int:
             detector=detector,
             embedder=embedder,
             config_version=args.config_version,
+            stationary_min_ms=args.stationary_min_ms,
+            enable_stationary_tiles=not args.no_stationary_tiles,
         )
         labels = Counter(t.attributes["label"] for t in result.tracklets)
         summaries[video_id] = labels
         print(
             f"[{video_id}] {len(result.keyframes)} kf, {len(result.observations)} obs, "
-            f"{len(result.tracklets)} tracklets, {time.perf_counter() - t0:.0f}s",
+            f"{len(result.tracklets)} tracklets, {time.perf_counter() - t0:.0f}s "
+            f"(detect={result.detection_elapsed_s:.1f}s, batch={args.frame_batch_size if result.frame_batching_used else 1}, "
+            f"tiled_kf={result.tiled_keyframe_count})",
             flush=True,
         )
 

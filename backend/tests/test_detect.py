@@ -1,6 +1,11 @@
 """Alias/canonical-aware cross-batch NMS tests (no torch required)."""
 
-from backend.pipeline.detect import RawDetection, canonical_aware_nms
+from backend.pipeline.detect import (
+    GroundingDinoDetector,
+    RawDetection,
+    canonical_aware_nms,
+    overlapping_tile_boxes,
+)
 
 
 BOX = (0.0, 0.0, 100.0, 100.0)
@@ -88,3 +93,44 @@ def test_unique_truncated_text_label_resolves_but_ambiguous_one_does_not():
 
     assert kept[0].canonical_id == "security_camera"
     assert kept[1].canonical_id is None
+
+
+def test_overlapping_tiles_cover_frame_and_are_deterministic():
+    boxes = overlapping_tile_boxes(100, 80, grid=2, overlap=0.2)
+
+    assert boxes == overlapping_tile_boxes(100, 80, grid=2, overlap=0.2)
+    assert len(boxes) == 4
+    assert boxes[0][:2] == (0, 0)
+    assert boxes[-1][2:] == (100, 80)
+    left, right = boxes[0], boxes[1]
+    assert left[2] > right[0]
+
+
+def test_frame_batch_results_equal_single_frame_path(tmp_path):
+    from PIL import Image
+
+    paths = []
+    for index in range(3):
+        path = tmp_path / f"frame-{index}.jpg"
+        Image.new("RGB", (100, 80), color=(index * 20, 0, 0)).save(path)
+        paths.append(str(path))
+
+    detector = object.__new__(GroundingDinoDetector)
+    detector.box_threshold = 0.3
+    detector.tile_box_threshold = 0.22
+    detector.tile_overlap = 0.2
+    detector.clutter_tile_count = 0
+    detector.image_batch_size = 2
+    detector.nms_iou_threshold = 0.8
+
+    def fake_detect_view_batch(views, prompts):
+        return [
+            [RawDetection(label=prompts[0], score=0.9, box=(10.0, 10.0, 40.0, 40.0))]
+            for _ in views
+        ]
+
+    detector._detect_view_batch = fake_detect_view_batch
+
+    sequential = [detector.detect(path, ["desk"]) for path in paths]
+    batched = detector.detect_many(paths, ["desk"])
+    assert batched == sequential

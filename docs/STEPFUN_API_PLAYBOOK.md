@@ -44,6 +44,7 @@ rsync 音频池。
 ssh spark 'free -h'
 
 python scripts/a1_spark_factory.py launch \
+  --acknowledge-key-exposure \
   --run-dir local-data/a1/calibration-20260716-v3-spark \
   --report-dir results/acceptance/A1/calibration-20260716-v3-spark \
   --base-cases 6 \
@@ -56,7 +57,9 @@ python scripts/a1_spark_factory.py launch \
 ssh spark 'tail -n 50 ~/proj/logs/a1_factory_calibration_v3.log'
 ```
 
-工厂可断点续跑，调用上限仍由三个 `--max-new-*` 参数控制。密钥只通过上述 launch
+工厂可断点续跑，调用上限仍由三个 `--max-new-*` 参数控制。公开文档未说明 API Key
+支持单 key 调用上限或自动过期，因此每次必须新建一次性 key，并在明确接受“注入即视为
+泄露”后才传 `--acknowledge-key-exposure`;批次结束立即在控制台删除。密钥只通过 launch
 命令的 SSH stdin 发送一行，不得手工 `export` 到远端 shell，也不得为了 nohup 写入
 临时文件。状态文件 `factory-status.json` 只记录阶段、上限、错误和凭据策略，不含凭据。
 

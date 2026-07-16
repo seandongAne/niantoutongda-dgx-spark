@@ -15,6 +15,7 @@ def launch_args(tmp_path):
         str(tmp_path / "report"),
         "--log",
         str(tmp_path / "factory.log"),
+        "--acknowledge-key-exposure",
     ])
 
 
@@ -44,6 +45,19 @@ def test_launch_sends_disposable_key_only_on_stdin(monkeypatch, tmp_path):
     assert captured["input"] == "disposable-secret\n"
     assert "disposable-secret" not in " ".join(captured["command"])
     assert "disposable-secret" not in captured["command"][-1]
+
+
+def test_launch_requires_explicit_key_exposure_acknowledgement(monkeypatch, tmp_path):
+    args = launch_args(tmp_path)
+    args.acknowledge_key_exposure = False
+    monkeypatch.setattr(
+        a1_spark_factory.subprocess,
+        "run",
+        lambda *_args, **_kwargs: pytest.fail("SSH must not start without acknowledgement"),
+    )
+
+    with pytest.raises(SystemExit, match="refusing to expose"):
+        a1_spark_factory.cmd_launch(args)
 
 
 def test_ensure_plan_is_resumable_but_rejects_a_different_plan(tmp_path):

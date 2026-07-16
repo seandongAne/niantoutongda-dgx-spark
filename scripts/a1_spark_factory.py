@@ -88,6 +88,12 @@ def build_remote_command(args: argparse.Namespace) -> str:
 
 
 def cmd_launch(args: argparse.Namespace) -> int:
+    if not args.acknowledge_key_exposure:
+        raise SystemExit(
+            "refusing to expose a credential to Spark; create a disposable key, "
+            "accept that it is compromised on injection, and pass "
+            "--acknowledge-key-exposure only for that one run"
+        )
     key = load_key()
     command = build_remote_command(args)
     try:
@@ -313,6 +319,11 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
     launch = sub.add_parser("launch", help="send a disposable key on stdin and start Spark worker")
     launch.add_argument("--host", default="spark")
+    launch.add_argument(
+        "--acknowledge-key-exposure",
+        action="store_true",
+        help="confirm this one-run key is treated as compromised and will be revoked",
+    )
     add_job_arguments(launch)
     launch.set_defaults(func=cmd_launch)
     worker = sub.add_parser("worker", help="Spark-side detached worker")

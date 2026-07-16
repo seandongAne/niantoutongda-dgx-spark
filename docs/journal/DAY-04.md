@@ -81,10 +81,16 @@
     3 个物品，其中一条 `attributes=null` 触发 schema mismatch。scorer 不为数字放宽。
   - 本地模型加载 124.865s、18 条均值 54.443s、峰值 CUDA 17,392,368,128 bytes；
     云端用量 6 TTS + 18 抽取、7542 prompt + 2813 completion tokens。全套
-    **137 passed**；codec32 已由 Spark 原地安装 aarch64 `imageio-ffmpeg` 并回环为
+    **138 passed**；codec32 已由 Spark 原地安装 aarch64 `imageio-ffmpeg` 并回环为
     16kHz PCM16。key 云阶段后进程副本已清除，平台 key 按负责人批准在批次完成后 6 天删除。
-  - 147×5=735/后端正式统计批次尚未启动：启动动作在执行前被凭据安全门拒绝，未创建
-    formal run、未再次发送 key；需负责人针对“147 TTS + 735 云抽取”的更大暴露单独确认。
+  - 负责人已逐字确认更大暴露范围；`formal-20260716-v1-spark` 于
+    `2026-07-16T17:26:07Z` 后台启动（PID 1159833，生成代码 `7e92c28`）。启动前增强
+    自检为 `✅ SPARK CLEAN`，Spark 121GiB 总内存、46GiB used、75GiB available、
+    0 swap，且无 A1/Step-Audio 冲突进程。状态文件冻结 147 个基础题、5 条件、云/本地
+    各 735 条，上限 147 TTS / 735 云抽取 / 735 本地抽取，撤销延迟 6 天；命令行无 key。
+  - 启动后约 1 分钟已在 Spark 原地产出前 5 个 case 的 source 与
+    clean/noise20/noise10/speed090/codec32 音频，证明 worker 已实际推进而非空启动；
+    当前仍为 `phase=cloud`，最终覆盖、稳定性和删除日期均尚未形成，不提前写成完成。
 
 ## 失败与教训
 
@@ -114,10 +120,10 @@
 - P1：把已产出的 hero crop 接入 NVFP4 属性抽取，形成颜色/材质/文字标记等多证据原型，再复验蓝色与玫红水壶等同类不同实例。
 - P1：修正 S3 缺失属性的默认相似度语义，使 missing/unknown 不再产生恒定 1.0；属性产生方差且有标注验证后，才从 0 调高 `attribute/context` 权重。
 - P2：hardval 证明 tile 有真实收益后，才保留按类/按场景触发；否则缩减或关闭低运动 fallback，避免为候选膨胀支付 32.8% 墙钟成本。
-- A1：取得对“147 TTS + 735 云抽取期间同一 key 在受侵 Spark 进程内临时暴露”的
-  单独明确确认后，启动 `formal-20260716-v1-spark`（147×5，云/本地各 735）。正式门
-  同时要求 `coverage_progress.complete=true` 与每条件 95% CI 半宽≤0.08；未满覆盖不得
-  因局部区间看似稳定提前停止，也不得按额度剩余追加。
+- A1：持续监控 `formal-20260716-v1-spark`；云阶段完成后先验证 Spark 进程环境中的
+  key 副本已清除，再允许加载本地 mini。最终只拉回小体积 acceptance 摘要，并同时要求
+  `coverage_progress.complete=true` 与每条件 95% CI 半宽≤0.08；批次完成时间确定后，
+  登记平台 key 的第 6 天删除时点，未满覆盖不得提前停止，也不得按额度剩余追加。
 
 ## D4 午后增量(stitch + GT 物料,commit 4482129)
 

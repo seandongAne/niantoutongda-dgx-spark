@@ -186,6 +186,39 @@ class TaskCard(_HeroContract):
     status: TaskStatus = TaskStatus.REGION_PLANNED
 
 
+class AcceptanceMatch(_HeroContract):
+    """验收照片里对单个实体的匹配结论 — 只答"出现与否",不答摆放。"""
+
+    entity_id: str
+    present: bool
+    match_score: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    evidence_refs: list[str] = []
+
+
+class AcceptancePhoto(_HeroContract):
+    """一张验收照片:声明它拍的是哪个区域,以及照片内的实体匹配。
+
+    matches 的来源要么是 spark 侧 ReID 匹配(reid),要么是对账 UI 人工
+    勾选(manual)——两者都只是 presence 证据,verdict 一律走消息族裁决。
+    """
+
+    photo_ref: str
+    region_id: str
+    matches: list[AcceptanceMatch] = []
+    match_source: Literal["reid", "manual"] = "manual"
+
+
+class AcceptanceManifest(_HeroContract):
+    photos: list[AcceptancePhoto] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _unique_photo_refs(self) -> "AcceptanceManifest":
+        refs = [p.photo_ref for p in self.photos]
+        if len(refs) != len(set(refs)):
+            raise ValueError("photo_ref 重复")
+        return self
+
+
 class StageArtifact(_HeroContract):
     stage: str
     path: str

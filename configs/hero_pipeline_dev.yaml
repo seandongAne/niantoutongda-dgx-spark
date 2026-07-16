@@ -37,6 +37,12 @@ stages:
   taskcards:
     enabled: true
 
+  verify:
+    enabled: true
+    # 夹具演练三种结局:card-01 VERIFIED / card-02 FAILED(缺件) /
+    # card-03 NEEDS_USER(低置信)。真实素材时由 ReID 匹配或对账 UI 产生。
+    photos: fixtures/hero_dev/acceptance.json
+
   report:
     enabled: true
 

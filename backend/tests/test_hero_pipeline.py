@@ -29,15 +29,22 @@ def test_full_chain_then_resume_then_from_stage(tmp_path):
     assert "✅ 主链完成" in first.stdout
     bundle = json.loads((run_dir / "bundle.json").read_text(encoding="utf-8"))
     stages_in_bundle = {a["stage"] for a in bundle["artifacts"]}
-    assert {"naming", "narration", "regions", "group", "layout", "taskcards"} <= stages_in_bundle
+    assert {"naming", "narration", "regions", "group", "layout", "taskcards",
+            "verify"} <= stages_in_bundle
     cards = (run_dir / "taskcards/taskcards.md").read_text(encoding="utf-8")
     assert "水壶(蓝色)" in cards and "水壶(粉色)" in cards
 
+    verdicts = json.loads(
+        (run_dir / "verify/verdicts.json").read_text(encoding="utf-8")
+    )
+    assert {v["verdict"] for v in verdicts.values()} == {
+        "VERIFIED", "FAILED", "NEEDS_USER"
+    }
     assert (run_dir / "index.html").exists()
 
     second = run_pipeline(run_dir)
     assert second.returncode == 0, second.stderr
-    assert second.stdout.count("[skip]") == 7
+    assert second.stdout.count("[skip]") == 8
     assert "[run ] naming" not in second.stdout
 
     third = run_pipeline(run_dir, "--from-stage", "layout")

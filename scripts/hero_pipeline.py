@@ -44,6 +44,7 @@ STAGE_ORDER = [
     "group",
     "layout",
     "taskcards",
+    "verify",
     "report",
     "bundle",
 ]
@@ -196,10 +197,27 @@ def build_stages(cfg: dict, py: str) -> dict[str, Stage]:
             outputs=[out_dir / "taskcards.jsonl", out_dir / "taskcards.md"],
         )
 
+    if sc("verify").get("enabled"):
+        c = sc("verify")
+        photos = _p(c["photos"])
+        cards = run / "taskcards/taskcards.jsonl"
+        out_dir = run / "verify"
+        stages["verify"] = Stage(
+            "verify", "local",
+            argv=[py, str(PROJ / "scripts/verify_task.py"),
+                  "--cards", str(cards), "--photos", str(photos),
+                  "--out-dir", str(out_dir)],
+            inputs=[cards, photos],
+            outputs=[out_dir / "messages.jsonl", out_dir / "verdicts.json",
+                     out_dir / "taskcards_verified.jsonl"],
+        )
+
     if sc("report").get("enabled"):
         inputs = [run / "naming/display.jsonl", run / "group/groups.jsonl",
                   run / "layout/layout.json", run / "regions/regions.json",
                   run / "taskcards/taskcards.jsonl"]
+        if sc("verify").get("enabled"):
+            inputs.append(run / "verify/verdicts.json")
         stages["report"] = Stage(
             "report", "local",
             argv=[py, str(PROJ / "scripts/results_page.py"),

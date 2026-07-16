@@ -1,0 +1,31 @@
+{
+  "photos": [
+    {
+      "photo_ref": "acceptance/desk_after.jpg",
+      "region_id": "desk_top",
+      "match_source": "manual",
+      "matches": [
+        {"entity_id": "e_book", "present": true, "match_score": 0.83},
+        {"entity_id": "e_headphones", "present": true, "match_score": 0.78}
+      ]
+    },
+    {
+      "photo_ref": "acceptance/closet_after.jpg",
+      "region_id": "closet_shelf",
+      "match_source": "manual",
+      "matches": [
+        {"entity_id": "e_box", "present": true, "match_score": 0.8},
+        {"entity_id": "e_kettle_pink", "present": false}
+      ]
+    },
+    {
+      "photo_ref": "acceptance/bedside_after.jpg",
+      "region_id": "bedside",
+      "match_source": "manual",
+      "matches": [
+        {"entity_id": "e_kettle_blue", "present": true, "match_score": 0.52},
+        {"entity_id": "e_lamp", "present": true, "match_score": 0.81}
+      ]
+    }
+  ]
+}

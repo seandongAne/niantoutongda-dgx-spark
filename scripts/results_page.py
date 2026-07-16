@@ -92,6 +92,7 @@ def build_page(run_dir: Path) -> str:
     layout = load_json(run_dir / "layout/layout.json", {})
     regions = load_json(run_dir / "regions/regions.json", {})
     cards = load_jsonl(run_dir / "taskcards/taskcards.jsonl")
+    verdicts = load_json(run_dir / "verify/verdicts.json", {})
     bundle = load_json(run_dir / "bundle.json", {})
 
     group_of = {eid: g for g in groups for eid in g.get("entity_ids", [])}
@@ -106,6 +107,9 @@ def build_page(run_dir: Path) -> str:
         (len(cards), "任务卡"),
         (len(clarifications), "待澄清"),
     ]
+    if verdicts:
+        n_verified = sum(1 for v in verdicts.values() if v["verdict"] == "VERIFIED")
+        stats.append((f"{n_verified}/{len(verdicts)}", "验收通过"))
     stat_tiles = "".join(
         f'<div class="stat"><div class="stat-n">{n}</div>'
         f'<div class="stat-l">{esc(label)}</div></div>'
@@ -184,8 +188,16 @@ def build_page(run_dir: Path) -> str:
     )
 
     # ---- 任务卡 ----
+    VERDICT_LABEL = {
+        "VERIFIED": ("✓ 已验收", "success"),
+        "NEEDS_USER": ("待用户裁决", "warning"),
+        "FAILED": ("验收未通过", "danger"),
+    }
     card_secs = []
     for c in cards:
+        verdict_chip = ""
+        if v := verdicts.get(c["card_id"]):
+            verdict_chip = chip(*VERDICT_LABEL.get(v["verdict"], (v["verdict"], "neutral")))
         items = "".join(
             f'<li>{img_tag(run_dir, i.get("hero_crop_ref", ""), "thumb")}'
             f"<span>{esc(i['display_name_zh'])}</span></li>"
@@ -198,13 +210,53 @@ def build_page(run_dir: Path) -> str:
         card_secs.append(
             f'<div class="card taskcard"><div class="cardbody">'
             f'<div class="panel-head"><div class="name">{esc(c["box_label_zh"])}</div>'
-            f'<span class="mono dim">{esc(c["card_id"])}</span></div>'
+            f'<span class="mono dim">{esc(c["card_id"])}</span>{verdict_chip}</div>'
             f'<div class="target">目标区域 <b>{esc(c["target_region_name_zh"])}</b>'
             + (f' <span class="dim">备选 {esc(region_names.get(c["alternative_region_id"], c["alternative_region_id"]))}</span>'
                if c.get("alternative_region_id") else "")
             + f'</div><ul class="items">{items}</ul>'
             f'<div class="check-title">验收清单</div><ul class="checks">{checks}</ul>'
             "</div></div>"
+        )
+
+    # ---- 验收复核 ----
+    def reason_zh(code: str) -> str:
+        kind, _, rest = code.partition(":")
+        eid, _, detail = rest.partition(":")
+        name = display.get(eid, {}).get("display_name_zh", eid)
+        if kind == "NOT_SEEN":
+            return f"照片中未找到「{name}」"
+        if kind == "MISPLACED":
+            return f"「{name}」摆放不符({detail})"
+        if kind == "LOW_CONFIDENCE":
+            return f"「{name}」匹配置信度低,需人工确认"
+        return code
+
+    verify_rows = []
+    for c in cards:
+        v = verdicts.get(c["card_id"])
+        if not v:
+            continue
+        reasons = "<br>".join(esc(reason_zh(r)) for r in v["reason_codes"]) or \
+            '<span class="dim">presence 与 compliance 全部通过</span>'
+        photos = "<br>".join(
+            f'<span class="mono dim">{esc(p)}</span>' for p in v["photo_refs"]
+        ) or "—"
+        verify_rows.append(
+            f'<tr><td>{esc(c["box_label_zh"])} '
+            f'<span class="mono dim">{esc(c["card_id"])}</span></td>'
+            f'<td>{chip(*VERDICT_LABEL.get(v["verdict"], (v["verdict"], "neutral")))}</td>'
+            f'<td class="detail">{reasons}</td><td>{photos}</td></tr>'
+        )
+    verify_sec = ""
+    if verify_rows:
+        verify_sec = (
+            '<h2 id="verify">验收复核 '
+            '<span class="note">MEM 答"在不在" ∧ 确定性校验答"对不对" → EXEC 裁决;'
+            "消息链见 verify/messages.jsonl</span></h2>"
+            '<div class="panel"><table><thead><tr><th>任务卡</th><th>结论</th>'
+            "<th>原因</th><th>依据照片</th></tr></thead>"
+            f"<tbody>{''.join(verify_rows)}</tbody></table></div>"
         )
 
     # ---- 澄清与冲突 ----
@@ -345,7 +397,7 @@ footer {{ color:var(--muted); font-size:12px; margin-top:28px; }}
 <header>
   <div class="brand"><i></i>AI 搬家复原</div>
   <nav><a href="#entities">实体</a><a href="#groups">生活组合</a><a href="#layout">布局</a>
-  <a href="#cards">任务卡</a><a href="#clarify">澄清</a><a href="#trace">复跑指纹</a></nav>
+  <a href="#cards">任务卡</a>{'<a href="#verify">验收</a>' if verify_rows else ''}<a href="#clarify">澄清</a><a href="#trace">复跑指纹</a></nav>
   <div class="spacer"></div>
   {chip(bundle_id, "primary")}
 </header>
@@ -363,6 +415,7 @@ footer {{ color:var(--muted); font-size:12px; margin-top:28px; }}
 {layout_sec}
 <h2 id="cards">任务卡</h2>
 <div class="cards">{"".join(card_secs)}</div>
+{verify_sec}
 <h2 id="clarify">澄清队列与冲突记录</h2>
 <div class="panel"><table><thead><tr><th>实体</th><th>问题</th><th>原因</th></tr></thead>
 <tbody>{clar_rows}</tbody></table>

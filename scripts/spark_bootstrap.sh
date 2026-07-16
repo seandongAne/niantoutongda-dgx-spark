@@ -6,11 +6,13 @@
 #   deps       : ~/venv 装视觉主链推理依赖,>1min,必须 nohup(与 torch 串行,勿并发写 venv)
 #   env <name> : 建独立 venv ~/envs/<name>,装 torch + configs/env_<name>.txt
 #
-# 环境拆分(评审 P0-3):Step-Audio 钉 transformers==4.49.0,Nemotron VL 要
-# >4.53,<4.54,单一 venv 不可能同时满足。三套环境:
+# 环境拆分(评审 P0-3):Step-Audio 钉 transformers==4.49.0,Nemotron VL
+# BF16 fallback 要 >4.53,<4.54,单一 venv 不可能同时满足。
+# 三套隔离 venv + 一个不由本脚本管理的 NVFP4 主路容器:
 #   ~/venv               = 下载器 + 视觉主链(grounding-dino / dinov2 / CP-SAT)
 #   ~/envs/stepaudio     = Step-Audio 2 mini / TTS-3B
-#   ~/envs/nemotron_vl   = Nemotron VL-12B / 9B(mamba-ssm 需现场编译,见 env 文件注释)
+#   ~/envs/nemotron_vl   = Nemotron VL-12B BF16 fallback(mamba-ssm 需现场编译,见 env 文件注释)
+#   vllm_container       = Nemotron VL-12B NVFP4-QAD 主路
 # pip 缓存共享(~/.cache/pip),第二三次 torch 安装走缓存不重复跨境下载。
 set -uo pipefail
 MIRROR="https://mirrors.aliyun.com/pypi/simple/"

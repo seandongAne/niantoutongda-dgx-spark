@@ -22,7 +22,7 @@ v0.2 替代了“尽量先做简单盘点、布局以后再说”的保守路线
 6. 产品必须显式呈现 `NOT_SEEN`（未看到）、`SUSPECTED_DUPLICATE`（疑似重复）和 `NEW_SPACE_INCOMPATIBLE`（新空间不适配）。
 7. 模型指标、DGX Spark 角色、隐私边界、非技术队员分工和七日硬门槛均进入主计划，不作为最后补写材料。
 8. **官方六项评审标准每一项都有明确得分载体与文档锚点**（§4.4 评分对齐矩阵）；载体分三档——必须得分载体 / 有条件增强 / 明确可舍弃——裁剪争议以矩阵按档仲裁，不允许“全部不可裁剪”式的假优先级。
-9. **双生态各一个主链模型是必须档**：NVIDIA = Nemotron VL 区域属性抽取，Stepfun = Step-Audio 2 mini 拍摄语音旁白理解（能力路径 A1，时间盒约束，不阻塞主链），两者必须在最终演示中真实运行。Step-Audio-TTS-3B 播报与 Nemotron 9B 文案为有条件增强；语音理解质量不达标时以 Step-Audio 2 mini 文本输出模式生成任务卡朗读稿兜底（Stepfun 开源文本旗舰为 321B 级 MoE，128GB 统一内存不可行，不存在独立文本模型兜底）。模型依赖钉版冲突由三套隔离环境解决（§9.2）。
+9. **双生态各一个主链模型是必须档**：NVIDIA = 已在 Spark 跑通的 Nemotron VL NVFP4-QAD/vLLM 区域属性抽取，Stepfun = Step-Audio 2 mini 拍摄语音旁白理解（能力路径 A1，时间盒约束，不阻塞主链），两者必须在最终演示中真实运行。Step-Audio-TTS-3B 播报与复用同一 Nemotron 12B 服务的纯文本任务卡润色为有条件增强；任务卡主路始终是确定性结构化渲染，润色失败或未启用不影响任务执行。语音理解质量不达标时以 Step-Audio 2 mini 文本输出模式生成任务卡朗读稿兜底（Stepfun 开源文本旗舰为 321B 级 MoE，128GB 统一内存不可行，不存在独立文本模型兜底）。Step-Audio 与 Nemotron BF16 fallback 的依赖钉版冲突由隔离环境解决（§9.2）。
 10. 评审的“演示效果”评的是**成品视频**而不是原始录屏：V1 交付 3～4 分钟分镜成片，核心闭环压在 90 秒内；“本地优先”的宣称必须有断网高光镜头背书。
 11. 赛事征文（十日谈）按项目纪律（AGENTS.md）**每日强制更新**，D9 汇编；不是赛末补写材料。
 12. 搬家执行 Agent 的 `VERIFIED` 结论必须经**验收复核消息族**闭环（§5.2）：物品记忆 Agent 出具“出现”结论、空间规划侧出具“摆放合规”结论，两者同时通过才 `VERIFIED`——**物品出现在照片里但放错位置不是 `VERIFIED`**；请求、双结果、裁决、用户裁决均为独立不可变消息（correlation/causation/producer/payload_hash），不允许由前端或人工口头判定；该往返消息链同时是“智能体融合”评分的协同证据。
@@ -229,11 +229,11 @@ stateDiagram-v2
 | 项目实用性、行业落地价值与技术创新性 | 25% | “第一晚生活秩序”痛点 + 用户访谈；跨视频实例重识别 + 生活组合图 + 约束求解布局的组合创新（§1–§3、§10） | 搬家公司 B2B2C 叙事细化 | — |
 | 智能体融合与模型优化技术深度 | 25% | 四 Agent 协同 trace 可回放（结构化消息链：MEM→UI 二选一 + EXEC 发起的验收复核消息族，含 correlation/causation/producer/payload_hash）；SF1-L1 投影头度量学习（§5、§6.4、手册 S3/S7/SF1） | SF1-L2 TensorRT 部署对比、SF1-L3 工作点消融 | — |
 | 项目完整性 | 20% | 旧家视频→实体库→组合→区域→布局→任务卡→验收→审计回放全闭环；切片验收证据体系（§3、§8、手册 S8） | 六界面全量打磨、一键重置演示 | — |
-| 平台适配性 | 15% | **每生态各一个真实进入主链的模型**：NVIDIA = Nemotron VL 区域属性抽取（S5 必经产出方），Stepfun = Step-Audio 2 mini 旁白理解；Spark 单机“训练+推理”（投影头）；权重只从 ModelScope 拉取（§9、手册 SP0/A1/SF1） | TTS-3B 播报镜头、Nemotron 9B 任务卡文案 | NVFP4 量化、TAO 微调、NvDINOv2 换骨干 |
+| 平台适配性 | 15% | **每生态各一个真实进入主链的模型**：NVIDIA = Nemotron VL NVFP4-QAD/vLLM 区域属性抽取（S5 必经产出方，Spark 已实测），Stepfun = Step-Audio 2 mini 旁白理解；Spark 单机“训练+推理”（投影头）；权重只从 ModelScope 拉取（§9、手册 SP0/A1/SF1） | TTS-3B 播报镜头、同一 Nemotron 12B 服务可选纯文本任务卡润色 | TAO 微调、NvDINOv2 换骨干 |
 | 演示效果（Demo 视频） | 10% | 3～4 分钟成品分镜：90 秒主闭环 + 架构与双生态 trace 动画 + 断网高光 + 指标与边界收尾（§11、手册 V1） | 调优对比段、语音能力段 | — |
 | 赛事征文（十日谈） | 5% | `docs/journal/DAY-XX.md` 每日强制更新（AGENTS.md 纪律），D9 汇编 `docs/十日谈_念头通达.md`（手册 E1） | — | — |
 
-> 解读：第 2、4 两项合计 40% 的**必须档**是三个载体——协同 trace（含验收复核消息族）、SF1-L1 投影头、双生态各一个主链模型。双生态“出场”指真实进入产品主链，不是演示片尾放个 logo；但它不等于 Stepfun/NVIDIA 的每个候选模型都必须保留——TTS 与 9B 文案是增强，超时就按预案降。另需清醒：本选题在第 1 项的“行业落地价值”叙事上先天弱于 ToB 深场景，必须靠第 2、3 项的工程深度和完整性补分——访谈证据（§10.2）必须做实。口径红线：材料中“TAO”字样只允许在真的执行过 TAO 训练/部署流程后出现，社区 checkpoint 转 TensorRT 的正确口径是“TensorRT 部署”。
+> 解读：第 2、4 两项合计 40% 的**必须档**是三个载体——协同 trace（含验收复核消息族）、SF1-L1 投影头、双生态各一个主链模型。双生态“出场”指真实进入产品主链，不是演示片尾放个 logo；但它不等于每个增强模型或能力都必须保留——TTS 与同一 12B 服务的纯文本润色是增强，结构化任务卡不依赖生成式文案。另需清醒：本选题在第 1 项的“行业落地价值”叙事上先天弱于 ToB 深场景，必须靠第 2、3 项的工程深度和完整性补分——访谈证据（§10.2）必须做实。口径红线：材料中“TAO”字样只允许在真的执行过 TAO 训练/部署流程后出现，社区 checkpoint 转 TensorRT 的正确口径是“TensorRT 部署”。
 
 ---
 
@@ -683,13 +683,13 @@ results/jobs/<job_id>/audit/events.jsonl
 | 实例分割 | 与检测框配套的轻量分割 | 只用于改善裁剪，不让分割阻塞主链 |
 | 实例嵌入 | DINOv2 冻结骨干 + 投影头度量学习（SF1-L1，Spark 单机训练）；NvDINOv2 为可舍弃的换骨干路径 | 冻结骨干，训练小型投影头或末层 |
 | 单视频追踪 | ByteTrack/等价确定性追踪器 | 不训练，调关联阈值 |
-| 属性与区域抽取 | **Nemotron-Nano-12B-v2-VL（NVIDIA 生态主链载体）**：探针通过后为 S5 区域/物品属性候选的必经产出方；探针未过前的规则+检测类别兜底是降级路径，须 P1 上报且演示口径不得称 VLM 在场 | 结构化输出；不逐帧调用 |
+| 属性与区域抽取 | **Nemotron-Nano-12B-v2-VL-NVFP4-QAD + vLLM（NVIDIA 生态主链载体）**：已在 Spark 真实图文工况通过（25.4 tok/s），服务常驻 `127.0.0.1:8000` 且单 tile 生效；BF16/transformers 为已验证 fallback | 32-token 结构化属性输出；hero crop 单调用、条件升级，不逐帧调用 |
 | 自动布局 | OR-Tools CP-SAT | 冻结约束和整数权重 |
 | 语音旁白理解 | Stepfun Step-Audio 2 mini（能力路径 A1：拍摄旁白→物品语义标签候选，候选证据不改写实体身份） | 不训练；SP0 探针 + A1 时间盒，与主链解耦 |
 | 任务卡语音播报 | Stepfun Step-Audio-TTS-3B（条件路径：SP0 30 分钟时间盒探针 `PASS` 才纳入演示） | 不训练 |
-| 任务文案 | 结构模板为主，本地语言模型可润色（语音两级质量不达标时，Step-Audio 2 mini 文本输出模式生成任务卡朗读稿，为双生态出场兜底载体） | 不得修改事实字段 |
+| 任务文案 | **结构化任务卡为主路**；可选纯文本润色复用同一 Nemotron 12B vLLM 服务（语音两级质量不达标时，Step-Audio 2 mini 文本输出模式生成任务卡朗读稿，为双生态出场兜底载体） | 润色不得修改事实字段；生成失败仍渲染结构化任务卡 |
 
-口径红线：把社区 checkpoint 转成 TensorRT engine 的正确说法是“TensorRT 部署”，**不是“TAO 路线”**——“TAO”字样只允许在真的执行过 TAO 训练/部署流程后出现在任何材料里（TAO 官方流程覆盖 Grounding DINO 微调→ONNX→TensorRT，作为明确可舍弃的升级路径记录在案）。NVIDIA 生态的主链出场载体是 Nemotron VL 属性抽取，不靠 TAO 字样撑场面。模型依赖钉版冲突（Step-Audio `transformers==4.49.0` vs Nemotron VL `>4.53,<4.54`）由三套隔离环境解决（`scripts/spark_bootstrap.sh env`，`configs/env_*.txt`）。Step-Audio 2 mini 与 Step-Audio-TTS-3B 在 ModelScope 开源、有 Spark/aarch64 可行性证据（海事线已核实），实际可用性以 SP0 实测为准。
+口径红线：把社区 checkpoint 转成 TensorRT engine 的正确说法是“TensorRT 部署”，**不是“TAO 路线”**——“TAO”字样只允许在真的执行过 TAO 训练/部署流程后出现在任何材料里（TAO 官方流程覆盖 Grounding DINO 微调→ONNX→TensorRT，作为明确可舍弃的升级路径记录在案）。NVIDIA 生态的主链出场载体是已实测的 Nemotron VL NVFP4-QAD/vLLM 属性抽取，不靠 TAO 字样撑场面。主路运行在 `vllm_container`；Step-Audio `transformers==4.49.0` 与 Nemotron VL BF16 fallback `>4.53,<4.54` 的钉版冲突由隔离 venv 解决（`scripts/spark_bootstrap.sh env`，`configs/env_*.txt`）。Step-Audio 2 mini 与 Step-Audio-TTS-3B 在 ModelScope 开源、有 Spark/aarch64 可行性证据（海事线已核实），实际可用性以 SP0 实测为准。
 
 **双生态出场是评分硬载体**（§4.4）：NVIDIA 与 Stepfun 各至少一个模型必须在最终演示中真实运行；型号、版本与生态归属（`ecosystem: nvidia / stepfun / deterministic`）写入 `configs/models.yaml`，SP0 实测后冻结。降级只允许在同生态内就近换型号或沿 A1 降级阶梯（旁白理解 → TTS 播报 → Step-Audio 2 mini 文本输出）下移，不允许移出生态。注意阶梯的适用边界：第三级覆盖的是“模型能加载但语音理解/合成质量不达标”；若两个音频模型在 Spark 上连加载都失败，按 SP0 纪律在 Stepfun 生态内就近换型号并按 P1 上报，不得静默放弃双生态载体。
 

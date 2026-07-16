@@ -1,45 +1,51 @@
-# Nemotron 在 DGX Spark 上的官方服务路线调研(2026-07-15 夜)
+# Nemotron 在 DGX Spark 上的服务路线与实测(2026-07-16 凌晨)
 
 > 触发:Sean 质疑 mamba-ssm/causal_conv1d 是否本不必要(NVIDIA 应有原生适配),
-> 并提议 NVFP4 量化。结论:**两条路线并存,vLLM 容器路线不需要那两个包**。
+> 并提议 NVFP4 量化。当前结论:**NVFP4/vLLM 是已上线主路,
+> transformers/BF16 是已验证 fallback;vLLM 容器路线不需要那两个包**。
 
 ## 我们用的模型
 
-- `nv-community/NVIDIA-Nemotron-Nano-12B-v2-VL-BF16`(vlm_attributes 主链载体)
-- `nv-community/NVIDIA-Nemotron-Nano-9B-v2`(task_copy,增强档)
+- 主路:`nv-community/NVIDIA-Nemotron-Nano-12B-v2-VL-NVFP4-QAD`
+  (`vlm_attributes`,vLLM 容器,已在 Spark 实测通过)。
+- 已验证 fallback:`nv-community/NVIDIA-Nemotron-Nano-12B-v2-VL-BF16`
+  (transformers + `nemotron_vl` venv)。
+- 已裁撤独立 9B `task_copy`:结构化任务卡仍是确定性主路;如需纯文本润色,
+  复用同一 12B 服务且不得修改事实字段。
 - 12B v2 VL 是 **NemotronH 混合 Mamba-Transformer** 架构 —— 这正是
-  transformers 路线需要 mamba-ssm/causal_conv1d 的原因(模型卡官方要求),
-  不是我们配置错误。
+  BF16/transformers fallback 需要 mamba-ssm/causal_conv1d 的原因
+  (模型卡官方要求),不是我们配置错误。
 
 ## 两条路线
 
-| | transformers 路线(已修好) | vLLM 容器路线(官方 playbook) |
+| | transformers/BF16 fallback | vLLM/NVFP4 主路 |
 |---|---|---|
 | mamba-ssm/causal_conv1d | 需要(已在 GB10 原生编译通过,`patch_mamba_gb10.py`) | **不需要**(vLLM 内置 mamba2 内核) |
 | 量化 | BF16(~24GB 权重) | **NVFP4-QAD**(~4 分之一体积,Blackwell 原生 FP4) |
 | 接入方式 | nemotron_vl venv 内 python | OpenAI 兼容 HTTP :8000(主 venv 直接 curl) |
-| 前置条件 | 无(已就绪) | docker 权限(见下)+ 容器拉取 ~20GB |
-| 状态 | fwd+bwd+Mamba block 冒烟通过 | 待跑通(Day 4 时间盒) |
+| 运行载体 | `~/envs/nemotron_vl`(已就绪) | 容器 `vllm-nvfp4`,仅绑定 `127.0.0.1:8000` |
+| 状态 | **已验证 fallback**:fwd+bwd+Mamba block 与图文质量通过 | **已上线主路**:真实图文 25.4 tok/s,单 tile 已生效 |
 
 ## NVFP4 结论
 
 - 官方 QAD(量化感知蒸馏)checkpoint 存在且 **ModelScope 已核验 200**:
   `nv-community/NVIDIA-Nemotron-Nano-12B-v2-VL-NVFP4-QAD`
   (架构字段 NemotronH_Nano_VL_V2;HF 侧同物异名 `Nemotron-Nano-VL-12B-V2-FP4-QAD`)。
-- 社区 playbook(NVIDIA 论坛置顶)实跑配方:
+- 社区 playbook(NVIDIA 论坛置顶)给出的起始配方:
   `vllm serve <model> --quantization modelopt_fp4 --max-model-len 24000
-  --gpu-memory-utilization 0.3 --port 8000`;基底镜像 nvidia/vllm:25.10 时代
-  需打 Nemotron v2 VL 支持补丁,26.x / `vllm/vllm-openai:cu130-nightly`
-  预期已含上游支持 —— **首次 serve 必须实测验证**。
+  --gpu-memory-utilization 0.3 --port 8000`;项目已在
+  `nvcr.io/nvidia/vllm:26.06-py3` 无补丁跑通,并按真实 S5 工况收紧为
+  max-model-len 4096、单 tile 等参数(完整实测见下)。
 - "全部选 NVFP4"的现实边界:只有 Nemotron 槽位有官方 NVFP4;GDINO/DINOv2
   体量小走 TensorRT FP16 即可(SF1-L2 口径),Step-Audio 属阶跃生态无此选项。
 
-## 节点现状与堵点
+## 节点当前服务状态
 
-- docker 28.3.3 已装,但 docker 组只有 xsuper;**Developer 在 sudo 组**
-  (`sudo -n` 失败只是因为要密码)→ 解锁 = Sean 在节点上执行
-  `sudo usermod -aG docker Developer` 后重新登录。无 podman,无 rootless 前置。
-- 磁盘 2.5T 空闲,128G 统一内存,容器拉取无资源压力(跨境慢,夜里 nohup 拉)。
+- docker 28.3.3 已装;`Developer` 已加入 docker 组并经全新 SSH 登录验证,
+  client/server 均为 28.3.3。
+- `vllm-nvfp4` 已常驻,服务只绑定 `127.0.0.1:8000`;权重位于
+  `~/models/nv-community__NVIDIA-Nemotron-Nano-12B-v2-VL-NVFP4-QAD`。
+- 后续 S5 客户端直接走 OpenAI 兼容接口;服务端主配方不再待跑。
 
 ## BF16 实测(2026-07-15 深夜,`scripts/bench_nemotron_bf16.py`,判据:decode ≥20 tok/s 则不迁移)
 
@@ -115,15 +121,16 @@ tile 账精确命中:1322=5×256+42 文本,298=256+42)。单请求 128-token 输
 | — | 它建议的 A/B 顺序(基线→单tile→schema→hero→并发) | **半保留**:作测量顺序对,作工程顺序不对——#2/#3/#5 是 S5 实现内容,S5 排在 S3 跨视频匹配之后,提速优化不许插队到 S3 前面。今晚只做到基线+单tile 对照为止 | 本文档 |
 | — | "暂别折腾 speculative decoding / prefix cache / 激进显存" | **同意**,与我方判断一致 | — |
 
-## 决策建议(待 Sean 拍板)
+## 已拍板并生效的决策
 
 1. vLLM + NVFP4-QAD 立为 S5 属性抽取的**服务路线**——**已实测成立**
    (上表,图文 ~15×);已修好的 transformers+BF16 env 降为**已验证兜底**。
    服务常驻配置 = codex 基线参数 + `{"max_num_tiles":1}`,升级工况
    (需读字/冲突复核)由 S5 客户端按 #3 策略**发局部放大的第二张 crop**
    (mm-processor-kwargs 是服务级参数,升级不靠换服务配置)。
-2. 顺手简化:VL 模型纯文本 prompt 也能答 → **裁撤 9B-v2 task_copy 槽位**,
-   一个模型双职,少一份权重/一次探针(models.yaml v0.3 一并改)。
+2. VL 模型纯文本 prompt 也能答 → **已裁撤 9B-v2 task_copy 槽位**。
+   任务卡主路保持结构化渲染;可选润色复用同一 12B 服务,少一份权重和
+   一次探针,且生成失败不影响任务执行。
 3. 评审口径红利:"NVFP4-QAD 跑在 GB10 Blackwell 原生 FP4 tensor core 上,
    走 NVIDIA 官方 DGX Spark playbook 路线" —— 平台适配 15% 的直球叙事。
 

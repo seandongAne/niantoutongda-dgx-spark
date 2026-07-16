@@ -20,7 +20,7 @@
 4. 用户介入必须受指标约束：冻结任务中二选一率不得超过 20%，主演示最多出现一次。
 5. 所有切片必须产生可见结果、机器可读指标、失败案例和可回放证据；“代码写了但没接通”不算完成。
 6. 第六天结束后冻结新功能，第七天只修阻断问题、复验、录制和包装。
-7. **裁剪争议一律以《产品与技术设计 v0.3》§4.4 评分对齐矩阵仲裁**——矩阵分三档：**必须得分载体**（主干闭环、协同 trace 回放含验收复核消息族、SF1-L1 投影头、双生态各一个主链模型、成品视频、十日谈）砍掉 = 主动放弃对应权重；**有条件增强**（TTS 镜头、9B 文案、SF1-L2/L3、界面打磨）超时按预案降级并如实记录；**明确可舍弃**（NVFP4 量化、TAO 微调、NvDINOv2）默认不做。“全部不可裁剪”式的假优先级不允许存在。
+7. **裁剪争议一律以《产品与技术设计 v0.3》§4.4 评分对齐矩阵仲裁**——矩阵分三档：**必须得分载体**（主干闭环、协同 trace 回放含验收复核消息族、SF1-L1 投影头、双生态各一个主链模型〔NVIDIA 主路已落为 Nemotron NVFP4-QAD/vLLM〕、成品视频、十日谈）砍掉 = 主动放弃对应权重；**有条件增强**（TTS 镜头、复用同一 12B 服务的纯文本润色、SF1-L2/L3、界面打磨）超时按预案降级并如实记录；**明确可舍弃**（TAO 微调、NvDINOv2）默认不做。“全部不可裁剪”式的假优先级不允许存在。
 8. 十日谈按 AGENTS.md 纪律**每日强制更新**：任何实质成果在当次交付前写入当天 `docs/journal/DAY-XX.md`，D9 汇编——不是赛末补写材料。
 
 ---
@@ -56,7 +56,7 @@ flowchart LR
 | 天 | 主线 | 并行工作 | 当天必须可见的结果 | 日终门槛 |
 |---|---|---|---|---|
 | Day 1（07-15/D3） | G0、SP0-core、S0 | 非技术队员完成任务 A/B 拍摄和真值；技术队员完成主链探针与仓库骨架；SP0-score 下载启动 | 一套冻结开发任务、一套冻结验收任务；主链模型（检测/嵌入）与 CP-SAT 能在 Spark 跑通；空流程 UI 能创建任务 | **G1：数据、SP0-core、schema 三者全部 PASS 才开 S1；SP0-score 允许顺延至 Day 2 日终** |
-| Day 2（07-16/D4） | S1、S2 | 前端制作旧家扫描和证据页；**SP0-score 收口**（Step-Audio 与 Nemotron VL 各完成一次加载探针） | 三段视频生成关键帧、框、轨迹和多视角证据 | 15 件至少看到 12 件；单视频轨迹可复现；SP0-score 未 PASS 则当晚触发降级预案评估 |
+| Day 2（07-16/D4） | S1、S2 | 前端制作旧家扫描和证据页；**SP0-score 收口**（Nemotron NVFP4/vLLM 已 PASS，继续 Step-Audio 探针） | 三段视频生成关键帧、框、轨迹和多视角证据 | 15 件至少看到 12 件；单视频轨迹可复现；SP0-score 未 PASS 则当晚触发降级预案评估 |
 | Day 3（07-17/D5） | S3 第一轮 | 二选一界面；相似物品困难负样本补标 | 跨视频实体库、匹配分数、疑似重复队列 | **G2：13/15 正确合并、0 高置信误合并、确认率 ≤20%** |
 | Day 4（07-18/D6） | S3 加固、S4、S5 开始 | 轻量投影头训练；组合真值与区域标注 | 三个生活组合、箱单；新家至少五个区域及证据 | 阈值冻结；3 组中至少 2 组自动接受 |
 | Day 5（07-19/D7） | S5、S6 | 前端制作区域计划页；布局约束测试；**A1 语音能力切片（时间盒 0.5 天）** | 自动区域布局、替代方案和不适配状态；A1 至少一级路径产出 | **G3：0 硬约束违反、≥80% 区域建议接受** |
@@ -221,9 +221,9 @@ docs/数据授权与脱敏说明_v0.1.md
 确认所有主能力能在 aarch64 DGX Spark 上启动、训练或推理。**SP0 拆成两段，各自阻塞不同的下游**——不允许让 Step-Audio/TTS/VLM 的探针进度把 S1 主链卡住：
 
 - **SP0-core（0～8h，阻塞 S1）**：torch CUDA、开放词汇检测、实例嵌入、投影头训练、CP-SAT——主链起链的最小集合；
-- **SP0-score（0～32h，不阻塞 S1，阻塞最终演示与 A1）**：Step-Audio 2 mini、TTS-3B、Nemotron VL、TensorRT 导出——评分载体探针，Day 2 日终收口，逐模型 30 分钟加载时间盒，超时记 `TIMEBOX_EXPIRED` 进入下一个，不无限陪跑。
+- **SP0-score（0～32h，不阻塞 S1，阻塞最终演示与 A1）**：Step-Audio 2 mini、TTS-3B、Nemotron VL、TensorRT 导出——评分载体探针，Day 2 日终收口，逐模型 30 分钟加载时间盒，超时记 `TIMEBOX_EXPIRED` 进入下一个，不无限陪跑。Nemotron NVFP4-QAD/vLLM 已在 Spark 完成图文探针并通过，当前剩余收口项不再重复阻塞这条已验证主路。
 
-**环境纪律（评审 P0-3）**：Step-Audio 官方钉死 `transformers==4.49.0`，Nemotron VL 要求 `>4.53,<4.54`——两条官方依赖线不可能共存于一个 venv。三套隔离环境：`~/venv`（下载器 + 视觉主链）、`~/envs/stepaudio`、`~/envs/nemotron_vl`，由 `scripts/spark_bootstrap.sh env <name>` + `configs/env_*.txt` 锁定；任何探针必须在其所属环境里跑（`models.yaml` 的 `env` 字段为准），把音频/VLM 依赖装进主 venv 视为 P1 事故。
+**环境纪律（评审 P0-3）**：Nemotron NVFP4-QAD 主路运行在独立 `vllm_container`；Step-Audio 官方钉死 `transformers==4.49.0`，Nemotron VL BF16 fallback 要求 `>4.53,<4.54`——两条 fallback/音频依赖线不可能共存于一个 venv。保留三套隔离 venv：`~/venv`（下载器 + 视觉主链）、`~/envs/stepaudio`、`~/envs/nemotron_vl`（BF16 fallback），由 `scripts/spark_bootstrap.sh env <name>` + `configs/env_*.txt` 锁定；模型必须在 `models.yaml` 指定的 `env` 运行，把音频/VLM 依赖装进主 venv 视为 P1 事故。
 
 ### 前置纪律
 
@@ -253,7 +253,7 @@ ssh spark 'free -h'
 ### SP0-score 任务（不阻塞 S1，Day 2 日终收口）
 
 1. 在 `~/envs/stepaudio` 运行 Step-Audio 2 mini 一次真实语音理解推理（A1 能力路径探针）；对 Step-Audio-TTS-3B 执行 30 分钟时间盒探针，留下 `PASS` / `TIMEBOX_EXPIRED` / `FAIL` 记录（不作为门槛）。
-2. 在 `~/envs/nemotron_vl` 运行 Nemotron VL 一次结构化物品/区域属性抽取（NVIDIA 主链载体探针；`mamba-ssm` aarch64 编译失败 → NGC 容器兜底并记录）。
+2. **已 PASS**：在 `vllm_container` 运行 Nemotron VL NVFP4-QAD 结构化物品/区域属性抽取；服务常驻 `127.0.0.1:8000`，真实图文工况 25.4 tok/s，单 tile 已生效。`~/envs/nemotron_vl` 的 BF16/transformers 路径保留为已验证 fallback，不再是主路。
 3. 验证检测模型的 TensorRT/ONNX 导出路径或明确记录不支持（口径为“TensorRT 部署”，不称 TAO）。
 4. 冻结每种能力的一主一备，不继续无限试模型。
 
@@ -268,7 +268,7 @@ ssh spark 'free -h'
 ### 验收
 
 - **SP0-core**：torch CUDA、检测、嵌入、CP-SAT 均有真实输出；轻量投影头完成一次前向、反向和保存——PASS 才开 S1。
-- **SP0-score**：NVIDIA 与 Stepfun 双生态各至少一个模型完成一次可复现推理（NVIDIA 以 Nemotron VL 属性抽取为准，Stepfun 以 Step-Audio 2 mini 为准；TTS 探针结果在案但不作为门槛）——Day 2 日终未 PASS 触发降级预案评估（同生态换型号 / NGC 容器 / P1 上报），不静默拖延。
+- **SP0-score**：NVIDIA 与 Stepfun 双生态各至少一个模型完成一次可复现推理（NVIDIA 的 Nemotron VL NVFP4-QAD/vLLM 属性抽取已 PASS，Stepfun 以 Step-Audio 2 mini 为准；TTS 探针结果在案但不作为门槛）——Day 2 日终未整体 PASS 触发剩余 Stepfun 路径的降级预案评估（同生态换型号 / NGC 容器 / P1 上报），不静默拖延。
 - 模型权重只在 Spark 上从 ModelScope 拉取。
 - 峰值内存有记录且未超过机器内存 80%。
 - 服务未裸露在非 loopback 的敏感端口。
@@ -814,7 +814,7 @@ scripts/
 - 非核心物品漏检；
 - 次优替代区域排序不理想；
 - 页面动画或视觉细节不完整；
-- 可选 VLM 属性缺失但硬约束和任务仍正确。
+- 非硬约束的可选 VLM 属性缺失，但硬约束和结构化任务卡仍正确。
 
 修复顺序始终是 `P0 → P1 → P2`。第七天不修与演示无关的 P2。
 

@@ -5,6 +5,7 @@ facebook/dinov2-base
 stepfun-ai/Step-Audio-2-mini
 stepfun-ai/Step-Audio-Tokenizer
 stepfun-ai/Step-Audio-TTS-3B
-# NVIDIA 生态载体(nv-community 镜像,API 核验 200,2026-07-15 晚入队)
+# NVIDIA 生态主载体(nv-community 镜像,API 核验 200,Spark 实测通过)
+nv-community/NVIDIA-Nemotron-Nano-12B-v2-VL-NVFP4-QAD
+# 已验证 fallback:仅 vLLM/NVFP4 主服务故障时启用
 nv-community/NVIDIA-Nemotron-Nano-12B-v2-VL-BF16
-nv-community/NVIDIA-Nemotron-Nano-9B-v2

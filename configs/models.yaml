@@ -1,16 +1,18 @@
-version: "0.2"
+version: "0.3"
 created_at: "2026-07-15"
+updated_at: "2026-07-16"
 owner: "集成与平台主责"
-reason: "SP0 桌面预审通过的候选(ModelScope API 核验 200);实测探针后冻结"
+reason: "SP0 候选经 ModelScope API 核验;Nemotron NVFP4-QAD 已在 Spark 以 vLLM 实测通过"
 applies_to_dataset: "dev_a"
 frozen: false
 
 # ecosystem 取值: nvidia / stepfun / community / deterministic
-# env 取值: main(~/venv) / stepaudio / nemotron_vl — 三套隔离环境,
-#   因 Step-Audio(transformers==4.49.0)与 Nemotron VL(>4.53,<4.54)钉版冲突,
-#   见 scripts/spark_bootstrap.sh 与 configs/env_*.txt。
-# NVIDIA 生态主链出场 = vlm_attributes(Nemotron VL 探针通过后为 S5 区域属性
-#   候选的必经产出方,规则兜底仅作降级路径且须 P1 上报+演示口径披露);
+# env 取值: main(~/venv) / stepaudio / nemotron_vl / vllm_container。
+#   前三者是隔离 venv;vllm_container 是 NVFP4 主路的容器运行时。
+#   Step-Audio(transformers==4.49.0)与 Nemotron VL BF16 fallback
+#   (>4.53,<4.54)钉版冲突,见 scripts/spark_bootstrap.sh 与 configs/env_*.txt。
+# NVIDIA 生态主链出场 = vlm_attributes(Nemotron VL NVFP4-QAD),已在 S5
+#   真实图文工况探针通过;规则兜底仅作降级路径且须 P1 上报+演示口径披露;
 #   TensorRT 部署为 SF1-L2 补充载体 — 口径写"TensorRT 部署",不称 TAO;
 #   "TAO 微调"只有在真的执行 TAO 训练流程后才允许出现在任何材料里。
 capabilities:
@@ -64,20 +66,18 @@ capabilities:
       note: "条件路径,30 分钟时间盒;依赖 stepfun-ai/Step-Audio-Tokenizer"
   vlm_attributes:
     primary:
+      id: nv-community/NVIDIA-Nemotron-Nano-12B-v2-VL-NVFP4-QAD
+      ecosystem: nvidia
+      runtime: vllm
+      env: vllm_container
+      status: probed_spark
+      note: "NVIDIA 生态主链载体:S5 区域/物品属性候选的必经产出方;
+        vllm-nvfp4 常驻 127.0.0.1:8000,单 tile 真实图文工况 25.4 tok/s。
+        同一 12B 服务可选纯文本润色,但任务卡主路始终是结构化渲染且事实字段不可改"
+    fallback:
       id: nv-community/NVIDIA-Nemotron-Nano-12B-v2-VL-BF16
       ecosystem: nvidia
       runtime: transformers
       env: nemotron_vl
-      status: pending_probe
-      note: "NVIDIA 生态主链载体:S5 区域/物品属性候选的必经产出方(探针通过后)。
-        探针未过前规则+检测类别兜底 = 降级路径,须 P1 上报,演示不得口称 VLM 在场;
-        NVFP4-QAD 变体(已核验存在)为量化升级路径"
-  task_copy:
-    primary:
-      id: nv-community/NVIDIA-Nemotron-Nano-9B-v2
-      ecosystem: nvidia
-      runtime: transformers
-      env: nemotron_vl
-      status: pending_probe
-      note: "有条件增强(非必须载体):任务卡文案润色;不得修改事实字段;
-        生成失败时结构化任务卡仍可渲染"
+      status: probed_spark
+      note: "已在 Spark 验证的 fallback;仅 vLLM/NVFP4 主服务故障时启用"

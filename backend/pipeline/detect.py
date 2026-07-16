@@ -34,6 +34,9 @@ class _ImageView:
     offset_x: int
     offset_y: int
     score_threshold: float
+    is_tile: bool = False
+    source_width: int = 0
+    source_height: int = 0
 
 
 def overlapping_tile_boxes(
@@ -156,6 +159,9 @@ class GroundingDinoDetector:
         tile_box_threshold: float = 0.22,
         tile_overlap: float = 0.20,
         clutter_tile_count: int = 2,
+        tile_max_area_ratio: float = 0.12,
+        tile_edge_margin_ratio: float = 0.03,
+        tile_max_per_canonical: int = 3,
     ):
         import torch
         from transformers import AutoModelForZeroShotObjectDetection, AutoProcessor
@@ -172,10 +178,19 @@ class GroundingDinoDetector:
             raise ValueError("tile_overlap must be in [0, 1)")
         if clutter_tile_count < 0:
             raise ValueError("clutter_tile_count cannot be negative")
+        if not 0.0 < tile_max_area_ratio <= 1.0:
+            raise ValueError("tile_max_area_ratio must be in (0, 1]")
+        if not 0.0 <= tile_edge_margin_ratio < 0.5:
+            raise ValueError("tile_edge_margin_ratio must be in [0, 0.5)")
+        if tile_max_per_canonical <= 0:
+            raise ValueError("tile_max_per_canonical must be positive")
         self.image_batch_size = image_batch_size
         self.tile_box_threshold = tile_box_threshold
         self.tile_overlap = tile_overlap
         self.clutter_tile_count = clutter_tile_count
+        self.tile_max_area_ratio = tile_max_area_ratio
+        self.tile_edge_margin_ratio = tile_edge_margin_ratio
+        self.tile_max_per_canonical = tile_max_per_canonical
         if not 0.0 <= nms_iou_threshold <= 1.0:
             raise ValueError("nms_iou_threshold must be in [0, 1]")
         self.nms_iou_threshold = nms_iou_threshold
@@ -217,12 +232,20 @@ class GroundingDinoDetector:
         for source_index, path in enumerate(image_paths):
             with Image.open(path) as opened:
                 image = opened.convert("RGB")
+            width, height = image.size
             views.append(
-                _ImageView(source_index, image, 0, 0, self.box_threshold)
+                _ImageView(
+                    source_index,
+                    image,
+                    0,
+                    0,
+                    self.box_threshold,
+                    source_width=width,
+                    source_height=height,
+                )
             )
             if str(path) not in tiled:
                 continue
-            width, height = image.size
             for x1, y1, x2, y2 in overlapping_tile_boxes(
                 width, height, grid=2, overlap=self.tile_overlap
             ):
@@ -233,6 +256,9 @@ class GroundingDinoDetector:
                         x1,
                         y1,
                         self.tile_box_threshold,
+                        is_tile=True,
+                        source_width=width,
+                        source_height=height,
                     )
                 )
             if self.clutter_tile_count:
@@ -251,6 +277,9 @@ class GroundingDinoDetector:
                             x1,
                             y1,
                             self.tile_box_threshold,
+                            is_tile=True,
+                            source_width=width,
+                            source_height=height,
                         )
                     )
 
@@ -266,7 +295,8 @@ class GroundingDinoDetector:
             prompt_to_canonical = {}
             prompt_to_category = {}
 
-        detections_by_source: list[list[RawDetection]] = [[] for _ in image_paths]
+        full_detections_by_source: list[list[RawDetection]] = [[] for _ in image_paths]
+        tile_detections_by_source: list[list[RawDetection]] = [[] for _ in image_paths]
         for batch in batches:
             for start in range(0, len(views), self.image_batch_size):
                 chunk = views[start : start + self.image_batch_size]
@@ -276,28 +306,80 @@ class GroundingDinoDetector:
                         if detection.score < view.score_threshold:
                             continue
                         x1, y1, x2, y2 = detection.box
-                        detections_by_source[view.source_index].append(
-                            RawDetection(
-                                label=detection.label,
-                                score=detection.score,
-                                box=(
-                                    x1 + view.offset_x,
-                                    y1 + view.offset_y,
-                                    x2 + view.offset_x,
-                                    y2 + view.offset_y,
-                                ),
-                                raw_label=detection.raw_label,
+                        if view.is_tile:
+                            tile_width, tile_height = view.image.size
+                            margin_x = tile_width * self.tile_edge_margin_ratio
+                            margin_y = tile_height * self.tile_edge_margin_ratio
+                            if (
+                                x1 <= margin_x
+                                or y1 <= margin_y
+                                or x2 >= tile_width - margin_x
+                                or y2 >= tile_height - margin_y
+                            ):
+                                continue
+                            full_area_ratio = ((x2 - x1) * (y2 - y1)) / max(
+                                1.0, float(view.source_width * view.source_height)
                             )
+                            if full_area_ratio > self.tile_max_area_ratio:
+                                continue
+                        mapped = RawDetection(
+                            label=detection.label,
+                            score=detection.score,
+                            box=(
+                                x1 + view.offset_x,
+                                y1 + view.offset_y,
+                                x2 + view.offset_x,
+                                y2 + view.offset_y,
+                            ),
+                            raw_label=detection.raw_label,
                         )
-        return [
-            canonical_aware_nms(
-                detections,
+                        target = (
+                            tile_detections_by_source
+                            if view.is_tile
+                            else full_detections_by_source
+                        )
+                        target[view.source_index].append(mapped)
+
+        merged: list[list[RawDetection]] = []
+        for full_detections, tile_detections in zip(
+            full_detections_by_source, tile_detections_by_source
+        ):
+            full = canonical_aware_nms(
+                full_detections,
                 prompt_to_canonical=prompt_to_canonical,
                 prompt_to_category=prompt_to_category,
                 iou_threshold=self.nms_iou_threshold,
             )
-            for detections in detections_by_source
-        ]
+            tile = canonical_aware_nms(
+                tile_detections,
+                prompt_to_canonical=prompt_to_canonical,
+                prompt_to_category=prompt_to_category,
+                iou_threshold=self.nms_iou_threshold,
+            )
+            tile.sort(
+                key=lambda item: (
+                    item.canonical_id or normalize_label(item.label),
+                    -item.score,
+                    item.box,
+                )
+            )
+            limited_tile: list[RawDetection] = []
+            counts: dict[str, int] = {}
+            for detection in tile:
+                key = detection.canonical_id or normalize_label(detection.label)
+                if counts.get(key, 0) >= self.tile_max_per_canonical:
+                    continue
+                counts[key] = counts.get(key, 0) + 1
+                limited_tile.append(detection)
+            merged.append(
+                canonical_aware_nms(
+                    full + limited_tile,
+                    prompt_to_canonical=prompt_to_canonical,
+                    prompt_to_category=prompt_to_category,
+                    iou_threshold=self.nms_iou_threshold,
+                )
+            )
+        return merged
 
     def _detect_view_batch(
         self, views: Sequence[_ImageView], prompts: list[str]

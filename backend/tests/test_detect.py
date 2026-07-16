@@ -120,6 +120,9 @@ def test_frame_batch_results_equal_single_frame_path(tmp_path):
     detector.tile_box_threshold = 0.22
     detector.tile_overlap = 0.2
     detector.clutter_tile_count = 0
+    detector.tile_max_area_ratio = 0.12
+    detector.tile_edge_margin_ratio = 0.03
+    detector.tile_max_per_canonical = 3
     detector.image_batch_size = 2
     detector.nms_iou_threshold = 0.8
 
@@ -134,3 +137,47 @@ def test_frame_batch_results_equal_single_frame_path(tmp_path):
     sequential = [detector.detect(path, ["desk"]) for path in paths]
     batched = detector.detect_many(paths, ["desk"])
     assert batched == sequential
+
+
+def test_tiled_path_rejects_edge_large_boxes_and_caps_each_canonical(tmp_path):
+    from PIL import Image
+
+    path = tmp_path / "frame.jpg"
+    Image.new("RGB", (100, 80), color=(0, 0, 0)).save(path)
+    detector = object.__new__(GroundingDinoDetector)
+    detector.box_threshold = 0.3
+    detector.tile_box_threshold = 0.22
+    detector.tile_overlap = 0.2
+    detector.clutter_tile_count = 0
+    detector.image_batch_size = 8
+    detector.nms_iou_threshold = 0.8
+    detector.tile_max_area_ratio = 0.12
+    detector.tile_edge_margin_ratio = 0.03
+    detector.tile_max_per_canonical = 2
+
+    def fake_detect_view_batch(views, prompts):
+        rows = []
+        for view in views:
+            if not view.is_tile:
+                rows.append([])
+                continue
+            width, height = view.image.size
+            rows.append(
+                [
+                    RawDetection(prompts[0], 0.90, (10.0, 10.0, 25.0, 25.0)),
+                    RawDetection(prompts[0], 0.89, (0.0, 0.0, 12.0, 12.0)),
+                    RawDetection(
+                        prompts[0],
+                        0.88,
+                        (5.0, 5.0, float(width - 5), float(height - 5)),
+                    ),
+                ]
+            )
+        return rows
+
+    detector._detect_view_batch = fake_detect_view_batch
+    detected = detector.detect_many([str(path)], ["water bottle"], tiled_image_paths={str(path)})[0]
+
+    assert 1 <= len(detected) <= 2
+    assert all(item.box[0] > 0 and item.box[1] > 0 for item in detected)
+    assert all((item.box[2] - item.box[0]) * (item.box[3] - item.box[1]) <= 0.12 * 100 * 80 for item in detected)

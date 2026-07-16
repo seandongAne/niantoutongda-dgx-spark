@@ -31,6 +31,32 @@ def _signature(detections):
     ]
 
 
+def _numeric_diff(sequential, batched):
+    structure_equal = len(sequential) == len(batched)
+    max_score_delta = 0.0
+    max_box_delta = 0.0
+    for left_frame, right_frame in zip(sequential, batched):
+        structure_equal = structure_equal and len(left_frame) == len(right_frame)
+        for left, right in zip(left_frame, right_frame):
+            structure_equal = structure_equal and (
+                left.label,
+                left.canonical_id,
+                left.category_id,
+                left.raw_label,
+            ) == (
+                right.label,
+                right.canonical_id,
+                right.category_id,
+                right.raw_label,
+            )
+            max_score_delta = max(max_score_delta, abs(left.score - right.score))
+            max_box_delta = max(
+                max_box_delta,
+                *(abs(a - b) for a, b in zip(left.box, right.box)),
+            )
+    return structure_equal, max_score_delta, max_box_delta
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--ingest-root", required=True)
@@ -74,6 +100,8 @@ def main() -> int:
 
     sequential_signature = [_signature(items) for items in sequential]
     batched_signature = [_signature(items) for items in batched]
+    structure_equal, max_score_delta, max_box_delta = _numeric_diff(sequential, batched)
+    decision_equivalent = structure_equal and max_score_delta <= 1e-3 and max_box_delta <= 0.5
     payload = {
         "frame_count": len(paths),
         "prompt_count": len(prompts),
@@ -84,6 +112,10 @@ def main() -> int:
         "speedup": round(sequential_s / max(batched_s, 1e-9), 3),
         "exact_dataclass_equal": batched == sequential,
         "rounded_signature_equal": batched_signature == sequential_signature,
+        "structure_equal": structure_equal,
+        "max_score_delta": max_score_delta,
+        "max_box_delta_px": max_box_delta,
+        "decision_equivalent_at_1e-3_and_half_px": decision_equivalent,
         "sequential_detection_counts": [len(items) for items in sequential],
         "batched_detection_counts": [len(items) for items in batched],
         "tiled_detection_count": len(tiled),
@@ -91,7 +123,7 @@ def main() -> int:
         "paths": paths,
     }
     print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True), flush=True)
-    return 0 if payload["rounded_signature_equal"] else 2
+    return 0 if decision_equivalent else 2
 
 
 if __name__ == "__main__":

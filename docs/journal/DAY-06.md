@@ -53,5 +53,16 @@
   路径穿越拒绝。
 - 旧 `pull_results.sh` 加体积预检门:rsync dry-run 测增量,>50MB 拒绝并指路
   R2 通道——1.1GB 级事故从机制上灭绝。
-- 状态:三镜头对抗审查(壳层/凭据/断连故障)+ 远端 reid-w2 逐字节对账 E2E
-  进行中,过审后为标准回程入口。
+- 三镜头对抗审查(壳层/凭据/断连故障,21 agent)实锤 **2 critical + 12 major**:
+  远端 tar|zstd 缺 pipefail(截断归档可静默通过全套 SHA 校验)、600s 击杀路径下
+  一次性 token 变长命 token、cleanup 网络操作吞错、set -e 在赋值管道里把回退
+  分支变死代码(两处)、上传成功判定与 ssh 退出码耦合、tmpfs 暂存钉死内存等。
+  全部修入;核实员并实测桶 r2.dev 公读已关(暴露面比预设小)。
+- **E2E 首跑即证伪 Worker 架构**:spark 侧 workers.dev 被 DNS 污染(解析到
+  face:b00c Facebook 段)+ SNI 阻断,钉真实 CF IP 亦超时;而 S3 端点
+  r2.cloudflarestorage.com 实测可达(HTTP 400 匿名拒绝)。**v2 转预签名架构**
+  (`97da905b`):Mac 持 R2 S3 密钥生成限时单对象预签名 URL,spark 只见 URL——
+  无凭据落节点、无常驻端点、URL 自动过期,token 生命周期问题连根消失;
+  Worker 云端与仓库双退役;桶生命周期规则 xfer-ttl(1 天过期)兜底孤儿对象。
+- 待办:R2 API 令牌(数据所有者面板创建,只入本地 .env)→ 预签名 E2E
+  (2MiB 强制多块 + 与本地 reid-w2 逐字节对账)。

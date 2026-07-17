@@ -1,0 +1,20 @@
+[
+  {
+    "entity_id": "entity_31fe1e1340f1",
+    "group_name_zh": "杯子",
+    "decision": "assign",
+    "note": "07-17 用户裁决:'杯子'=白色马克杯(绿色花鸟纹)。旁白缺独立介绍行,按 GROUP 证据优先级走轻确认入组,不伪造旁白。hero crop 目验:old_2_t550_f000810.jpg"
+  },
+  {
+    "entity_id": "entity_81bfd78cd410",
+    "group_name_zh": "杯子",
+    "decision": "assign",
+    "note": "n01 水壶(粉色保温杯,青绿翻盖带提绳,与 items.json water_bottle 外观一致)。旁白'和杯子打包在一起';碎轨致 5 候选歧义,取 hero 实体目验定点:old_3_t5087_f012180.jpg。注:reid 词表'水壶'名下 5 实体均为误检(含卷笔刀),真品被 VLM 命名为'水瓶(粉色)'"
+  },
+  {
+    "entity_id": "entity_63855de17cfe",
+    "group_name_zh": "杯子",
+    "decision": "assign",
+    "note": "n06 咖啡罐(透明玻璃罐装咖啡豆,与 items.json coffee_jar 一致,VLM 命名'咖啡豆')。旁白'和杯子打包在一起';hero crop 目验:old_1_t3131_f005460.jpg"
+  }
+]

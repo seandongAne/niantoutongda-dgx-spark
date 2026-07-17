@@ -63,8 +63,9 @@ stages:
   group:
     enabled: true
     config_version: group-v1
-    # 马克杯轻确认(2026-07-17 用户裁决):confirmations.json 在 reid-final 实体
-    # ID 落定后生成;首跑无该文件为预期,回填后 --from-stage group 续跑。
+    # 马克杯轻确认(2026-07-17 用户裁决):"杯子"组 = 马克杯+水壶+咖啡罐。
+    # 实体 ID 在 reid-final 首跑后目验定点(三 hero crop 均已人工核图)。
+    confirmations: fixtures/hero_s1/confirmations.json
 
   layout:
     enabled: true

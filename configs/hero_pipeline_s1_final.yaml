@@ -1,0 +1,88 @@
+# 英雄主链 · 最终工作点跑(AutoTune-v1 终选 m0.82-g0.00-o5 + SF1auto 投影)。
+#
+# 用法:
+#   .venv/bin/python scripts/hero_pipeline.py --config configs/hero_pipeline_s1_final.yaml
+#
+# 与 s1(W1)跑的差异:
+#   - reid 换 configs/reid_hero_s1_final.yaml,产物落 results/hero_s1/reid-final;
+#   - ingest / attributes 关闭:输入(视频/词表/ingest 产物)与 s1-w1 跑完全一致,
+#     spark 上 results/hero_s1/ingest 与 results/s5/attributes_hero_s1.jsonl 在盘且
+#     本地已拉回,重跑只烧时间(attributes 还要求 vLLM 服务在线);
+#   - 马克杯轻确认回填:reid-final 实体 ID 落定后写 fixtures/hero_s1/confirmations.json,
+#     再 --from-stage group 续跑(见 group 段注释)。
+run_dir: results/hero/s1-final
+trace_id: hero-s1-final
+python: .venv/bin/python
+
+stages:
+  healthcheck:
+    enabled: true
+
+  ingest:
+    enabled: false    # 产物在盘(results/hero_s1/ingest),输入未变,不重跑
+
+  attributes:
+    enabled: false    # 产物在盘(results/s5/attributes_hero_s1.jsonl),输入未变,不重跑
+
+  reid:
+    enabled: true
+    spark_cmd: >-
+      source ~/venv/bin/activate && cd ~/proj &&
+      python scripts/reid_task.py
+      --ingest-root results/hero_s1/ingest
+      --vocab fixtures/hero_s1/vocab.json
+      --config configs/reid_hero_s1_final.yaml
+      --attributes results/s5/attributes_hero_s1.jsonl
+      --out results/hero_s1/reid-final
+
+  pull:
+    enabled: true
+    cmd: [scripts/pull_results.sh]
+    local_outputs:
+      - results/hero_s1/reid-final/entities.jsonl
+      - results/hero_s1/reid-final/clarifications.jsonl
+      - results/hero_s1/reid-final/metrics.json
+      - results/s5/attributes_hero_s1.jsonl
+
+  naming:
+    enabled: true
+    entities: results/hero_s1/reid-final/entities.jsonl
+    attributes: results/s5/attributes_hero_s1.jsonl
+    clarifications: results/hero_s1/reid-final/clarifications.jsonl
+    tracklets_dir: results/hero_s1/ingest
+
+  narration:
+    enabled: true
+    transcript: fixtures/hero_s1/transcript.txt
+    audio_ref: local-data/hero_s1/narration.wav
+
+  regions:
+    enabled: true
+    manifest: fixtures/hero_s1/regions.json
+
+  group:
+    enabled: true
+    config_version: group-v1
+    # 马克杯轻确认(2026-07-17 用户裁决):confirmations.json 在 reid-final 实体
+    # ID 落定后生成;首跑无该文件为预期,回填后 --from-stage group 续跑。
+
+  layout:
+    enabled: true
+
+  taskcards:
+    enabled: true
+
+  verify:
+    enabled: false                                # 验收照片到手后翻 true
+    photos: fixtures/hero_s1/acceptance.json
+
+  trace:
+    enabled: true
+    # verify 开启后的最终判分跑再把 strict 翻 true。
+    strict: false
+
+  report:
+    enabled: true
+
+  bundle:
+    enabled: true

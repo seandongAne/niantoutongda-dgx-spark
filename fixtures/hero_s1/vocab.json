@@ -1,0 +1,167 @@
+{
+  "schema_version": "1.0",
+  "vocab_version": "hero-s1-vocab1",
+  "batch_size": 4,
+  "entries": [
+    {
+      "canonical_id": "water_bottle",
+      "category_id": "water_bottle",
+      "display_label_zh": "水壶",
+      "detection_prompts": ["pink insulated water bottle", "unicorn print water bottle"],
+      "confusable_group": "drink_container",
+      "notes": "扫描 28/28 帧,28/32 检≈单实例带;kids water bottle(66 检)过触发弃用。"
+    },
+    {
+      "canonical_id": "mug",
+      "category_id": "mug",
+      "display_label_zh": "马克杯",
+      "detection_prompts": ["white ceramic mug", "green flower bird mug"],
+      "confusable_group": "drink_container",
+      "notes": "旁白未单独介绍(仅作'杯子'打包对象),保留待队友确认锚点身份。"
+    },
+    {
+      "canonical_id": "coffee_jar",
+      "category_id": "coffee_jar",
+      "display_label_zh": "咖啡罐",
+      "detection_prompts": ["dark coffee bean jar", "clear glass coffee jar"],
+      "confusable_group": "drink_container",
+      "notes": "28/28 帧,28/29 检;玻璃罐与杯壶类分批防互混。"
+    },
+    {
+      "canonical_id": "sunscreen_tin",
+      "category_id": "sunscreen_tin",
+      "display_label_zh": "防晒霜",
+      "detection_prompts": ["cloud print tin container", "pink cloud pattern tin"],
+      "confusable_group": null,
+      "notes": "28/28 帧,30/37 检;pink round sunscreen tin(47)略过触发备选。"
+    },
+    {
+      "canonical_id": "marker_set",
+      "category_id": "marker_set",
+      "display_label_zh": "水彩笔",
+      "detection_prompts": ["blue cartoon marker set", "white marker organizer"],
+      "confusable_group": null,
+      "notes": "28/28 帧,29/28 检;art marker set(238 检)FP 风暴弃用。"
+    },
+    {
+      "canonical_id": "utility_knife",
+      "category_id": "utility_knife",
+      "display_label_zh": "壁纸刀",
+      "detection_prompts": ["red craft knife", "red sharp utility tool"],
+      "confusable_group": null,
+      "notes": "两词均 28/28 帧恰 28 检,教科书级单实例带。"
+    },
+    {
+      "canonical_id": "plush_toy",
+      "category_id": "plush_toy",
+      "display_label_zh": "玩具娃娃",
+      "detection_prompts": ["pink white bunny plush", "blue heart glasses plush"],
+      "confusable_group": null,
+      "notes": "28/28 与 27/28 帧;外观词(兔耳/爱心眼镜)按 D3 原则优先。"
+    },
+    {
+      "canonical_id": "rubiks_cube",
+      "category_id": "rubiks_cube",
+      "display_label_zh": "魔方",
+      "detection_prompts": ["green orange yellow cube", "bright color puzzle cube"],
+      "confusable_group": null,
+      "notes": "28/28 帧,28/43 检。"
+    },
+    {
+      "canonical_id": "pen",
+      "category_id": "pen",
+      "display_label_zh": "铅笔与圆珠笔",
+      "detection_prompts": ["black wooden pencil", "red ballpoint pen"],
+      "confusable_group": "stationery_stick",
+      "notes": "多实例类(铅笔×4+圆珠笔×2),76/64 检≈2-3 框/帧合理;身份靠 reid 区分。"
+    },
+    {
+      "canonical_id": "scissors",
+      "category_id": "scissors",
+      "display_label_zh": "剪刀",
+      "detection_prompts": ["blue plastic handle scissors", "kids safety scissors"],
+      "confusable_group": "stationery_stick",
+      "notes": "四词全 28/28 帧恰 28 检,取属性+物体两条。"
+    },
+    {
+      "canonical_id": "pencil_sharpener",
+      "category_id": "pencil_sharpener",
+      "display_label_zh": "转笔刀",
+      "detection_prompts": ["beige cylinder sharpener", "white hole top sharpener"],
+      "confusable_group": null,
+      "notes": "28/28 帧,28/34 检。"
+    },
+    {
+      "canonical_id": "set_square",
+      "category_id": "set_square",
+      "display_label_zh": "三角尺",
+      "detection_prompts": ["translucent right triangle ruler", "purple triangle ruler"],
+      "confusable_group": null,
+      "notes": "28/28 帧,均 28 检。"
+    },
+    {
+      "canonical_id": "hand_cream",
+      "category_id": "hand_cream",
+      "display_label_zh": "护手霜",
+      "detection_prompts": ["green tube hand cream", "green cosmetic tube"],
+      "confusable_group": null,
+      "notes": "28/28 帧,30/37 检;daisy print hand cream 仅 5/28 帧弃用。"
+    },
+    {
+      "canonical_id": "hair_clip",
+      "category_id": "hair_clip",
+      "display_label_zh": "发卡",
+      "detection_prompts": ["cream flower hair accessory", "dark comb teeth clip"],
+      "confusable_group": null,
+      "notes": "全类最弱:最优也仅 26-27/28 帧;前三候选 6-14/28,重点盯 G1a。"
+    },
+    {
+      "canonical_id": "comb",
+      "category_id": "comb",
+      "display_label_zh": "梳子",
+      "detection_prompts": ["beige plastic comb", "beige long comb"],
+      "confusable_group": null,
+      "notes": "28/28 帧,28/40 检。"
+    },
+    {
+      "canonical_id": "popping_candy",
+      "category_id": "popping_candy",
+      "display_label_zh": "跳跳糖",
+      "detection_prompts": ["cartoon print candy bag", "cartoon snack bag"],
+      "confusable_group": "snack_pouch",
+      "notes": "28/28 帧,38/36 检;colorful plastic popping candy(89)过触发弃用。"
+    },
+    {
+      "canonical_id": "hawthorn_sticks",
+      "category_id": "hawthorn_sticks",
+      "display_label_zh": "山楂棒",
+      "detection_prompts": ["white long hawthorn stick", "white small snack bag"],
+      "confusable_group": "snack_pouch",
+      "notes": "28/28 帧,30/35 检;independent packaged hawthorn 为全场唯一死词。"
+    },
+    {
+      "canonical_id": "biscuits",
+      "category_id": "biscuits",
+      "display_label_zh": "饼干",
+      "detection_prompts": ["transparent plastic cookie bag", "pink sealed biscuit bag"],
+      "confusable_group": "snack_pouch",
+      "notes": "28/28 与 25/28 帧,31/32 检。"
+    },
+    {
+      "canonical_id": "tea_bag",
+      "category_id": "tea_bag",
+      "display_label_zh": "茶叶",
+      "detection_prompts": ["golden print tea bag", "red small tea packet"],
+      "confusable_group": "snack_pouch",
+      "notes": "双实例类,35/46 检≈1.5 框/帧合理;两包同款为 G2b 硬负对。"
+    },
+    {
+      "canonical_id": "book",
+      "category_id": "book",
+      "display_label_zh": "书",
+      "detection_prompts": ["paperback story book", "children picture book"],
+      "confusable_group": null,
+      "notes": "三实例类,48/61 检≈2 框/帧;旁白仅一本待确认锚点数;colorful cover book(96)过触发弃用。"
+    }
+  ]
+}

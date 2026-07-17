@@ -1,0 +1,69 @@
+{
+  "video_id": "new_1",
+  "notes": "草稿:由 new_1.mp4(开灯补光版)逐帧目视起草,2026-07-17;时间戳=抽帧序号×2s,精度±2s。发射前需人工对照视频确认区域命名与 near_power;衣柜因内部未拍未登记。",
+  "entries": [
+    {
+      "region_id": "sofa_seat",
+      "anchor": "sofa",
+      "display_name_zh": "皮沙发座面",
+      "support_type": "surface",
+      "capacity_class": "large",
+      "near_power": false,
+      "evidence_refs": ["new_1.mp4@00:24"]
+    },
+    {
+      "region_id": "sofa_bench",
+      "anchor": "sofa",
+      "display_name_zh": "沙发前长凳托盘",
+      "support_type": "surface",
+      "capacity_class": "medium",
+      "near_power": false,
+      "evidence_refs": ["new_1.mp4@00:34"]
+    },
+    {
+      "region_id": "study_desk",
+      "anchor": "desk",
+      "display_name_zh": "书桌面",
+      "support_type": "surface",
+      "capacity_class": "medium",
+      "near_power": true,
+      "evidence_refs": ["new_1.mp4@00:54"]
+    },
+    {
+      "region_id": "vanity_top",
+      "anchor": "vanity",
+      "display_name_zh": "花布面桌台面",
+      "support_type": "surface",
+      "capacity_class": "medium",
+      "near_power": true,
+      "evidence_refs": ["new_1.mp4@01:10"]
+    },
+    {
+      "region_id": "wall_shelf",
+      "anchor": "vanity",
+      "display_name_zh": "墙上木搁板",
+      "support_type": "shelf",
+      "capacity_class": "small",
+      "near_power": true,
+      "evidence_refs": ["new_1.mp4@01:08"]
+    },
+    {
+      "region_id": "chest_top",
+      "anchor": "chest_of_drawers",
+      "display_name_zh": "红木斗柜台面",
+      "support_type": "surface",
+      "capacity_class": "medium",
+      "near_power": true,
+      "evidence_refs": ["new_1.mp4@01:24"]
+    },
+    {
+      "region_id": "display_cabinet",
+      "anchor": "display_cabinet",
+      "display_name_zh": "玻璃展示柜隔层",
+      "support_type": "shelf",
+      "capacity_class": "small",
+      "near_power": false,
+      "evidence_refs": ["new_1.mp4@01:34"]
+    }
+  ]
+}

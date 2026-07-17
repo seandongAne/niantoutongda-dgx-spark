@@ -61,11 +61,6 @@
   不能让整个统计批次失去报告。
 - formal 的生成阶段和验收阶段必须分别留 provenance。原 worker 失败事实、恢复 commit
   与 score-only 报告同时保留，避免用最终成功文件抹去真实故障。
-- scorer 小修部署时检测到另一并行会话正通过 SSH rsync 传输约 1.85GB hero 视频，
-  ControlMaster 被占用并使 KB 级代码部署排队。该路径违反“大文件不得经 SSH/rsync
-  传输”的项目纪律；本任务未中断并行进程，改用独立 SSH 连接完成小代码部署。后续复验
-  确认上传进程已退出，Spark 只落下 6,192,224-byte `narration.wav`，四段 MP4 均不存在；
-  因而不能把这次退出写成素材上传成功。
 
 ## 增量 D5-2：素材日——R2 HTTP 中转通道与三 TODO 落地（下午）
 
@@ -73,7 +68,7 @@
   （162s/170s/220s）、新家两光照（`new_1` 开灯 104s、`new_1_natural_lighting`
   111s）、`item_collections.MOV`（物品摆拍 14s）、`narration.m4a`（217s）。
   本地无损转封装为 mp4（流拷贝零重编码）、旁白转 16kHz 单声道 wav。
-- **SSH 大文件传输尝试中止**（即上一增量所见进程）：实测吞吐 ~17.5KB/s，
+- **SSH 大文件传输尝试中止**：实测吞吐 ~17.5KB/s，
   1.84GB 需约 29 小时；用户裁决保原画质、走第三方 HTTP 中转，压缩降质路线否决。
 - **通道实测**（spark 侧）：Google/Drive 全阻断；github.com 超时；
   `release-assets.githubusercontent.com` 可达但 1.3KB/s 不可用；

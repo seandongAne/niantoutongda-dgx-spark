@@ -39,11 +39,15 @@ COLOR_ZH: dict[str, str] = {
     "orange": "橙色", "purple": "紫色", "brown": "棕色", "beige": "米色",
 }
 
-_SPLIT = re.compile(r"[,,。;;.]+")
+_SPLIT = re.compile(r"[,，。;；.]+")
 _PARTNER = re.compile(r"[和跟与](?P<names>.+?)(?:一组|一起|打包)")
 _PARTNER_SEP = re.compile(r"[、和跟与]")
 _TARGET = re.compile(r"(?:搬(?:过去|到)?|挪到?|去)?放(?:在|到)?(?P<loc>.+)")
 _SOURCE = re.compile(r"^(?:现在|原来|之前)?(?:在|放在)(?P<loc>.+)")
+_MOVE_HINT = re.compile(r"搬|挪|^想?要?放|^去")
+_OWNER = re.compile(r"^是?(?P<owner>.{1,4})的$")
+# "这是一个水壶"→"水壶":剥指示语+数量词;量词必须紧跟数词(防"三角尺"误剥)
+_LABEL_PREFIX = re.compile(r"^(?:这是)?(?:[一二两三四五六七八九十]+[个盒袋包本罐支把台只条串瓶杯])?")
 
 
 def extract_colors(text: str) -> list[str]:
@@ -65,27 +69,30 @@ def parse_narration_line(item_id: str, raw_text: str) -> NarrationItem:
     segments = [s.strip() for s in _SPLIT.split(raw_text) if s.strip()]
     if not segments:
         raise ValueError(f"旁白为空: {item_id}")
-    label = segments[0]
+    label = _LABEL_PREFIX.sub("", segments[0], count=1).strip() or segments[0]
     owner = ""
     source_location = ""
     target_location = ""
     partners: list[str] = []
     for seg in segments[1:]:
-        if m := _PARTNER.search(seg):
+        rest = seg
+        if m := _PARTNER.search(rest):
             partners.extend(
                 p.strip() for p in _PARTNER_SEP.split(m.group("names")) if p.strip()
             )
+            # 同段可兼有目标:"想放在洗手间和梳子打包在一起"
+            rest = rest[: m.start()].strip()
+            if not rest:
+                continue
+        if m := _SOURCE.match(rest):
+            # 来源截到搬/挪为止:"现在在客厅搬到新家"→"客厅"
+            source_location = re.split(r"[搬挪]", m.group("loc"))[0].strip()
             continue
-        if m := _SOURCE.match(seg):
-            source_location = m.group("loc").strip()
-            continue
-        if ("搬" in seg or "挪" in seg or seg.startswith("放") or seg.startswith("去")) and (
-            m := _TARGET.search(seg)
-        ):
+        if _MOVE_HINT.search(rest) and (m := _TARGET.search(rest)):
             target_location = m.group("loc").strip()
             continue
-        if seg.endswith("的") and 1 < len(seg) <= 6:
-            owner = seg[:-1]
+        if m := _OWNER.match(rest):
+            owner = m.group("owner")
             continue
     return NarrationItem(
         item_id=item_id,

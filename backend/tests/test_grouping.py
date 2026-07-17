@@ -35,6 +35,48 @@ def test_parse_multiple_partners():
     assert item.target_location == "床头柜"
 
 
+def test_parse_real_a1_transcript_line():
+    # 真实 A1 誊写句式:全角逗号+"这是一个X"+"是谁的"(s1 首跑实锤回归)
+    item = parse_narration_line(
+        "n01", "这是一个水壶，是孩子的，现在在客厅，搬到新家想放在客厅，和杯子打包在一起。"
+    )
+    assert item.label_zh == "水壶"
+    assert item.owner == "孩子"
+    assert item.source_location == "客厅"
+    assert item.target_location == "客厅"
+    assert item.group_partners == ["杯子"]
+
+
+def test_parse_target_and_partner_in_same_segment():
+    item = parse_narration_line(
+        "n02", "这是一个防晒霜，是孩子的，现在在客厅搬到新家，想放在洗手间和梳子打包在一起。"
+    )
+    assert item.source_location == "客厅"
+    assert item.target_location == "洗手间"
+    assert item.group_partners == ["梳子"]
+
+
+def test_parse_classifier_color_and_set_square():
+    item = parse_narration_line(
+        "n11", "这是一个红色圆珠笔，是爸爸的。现在在客厅，搬到新家，想放在客厅学习区，和文具打包在一起。"
+    )
+    assert item.label_zh == "红色圆珠笔"
+    assert item.owner == "爸爸"
+    assert item.target_location == "客厅学习区"
+    assert item.group_partners == ["文具"]
+    assert item.color_words == ["red"]
+    item = parse_narration_line(
+        "n16", "这是一个三角尺，是孩子的。现在在客厅，搬到新家，想放在客厅学习区，和文具打包在一起。"
+    )
+    assert item.label_zh == "三角尺"  # 数词剥离不得误伤"三角尺"
+    item = parse_narration_line(
+        "n22", "这是一袋跳跳糖，是孩子的，现在在客厅，搬到新家，想放在客厅和零食打包在一起。"
+    )
+    assert item.label_zh == "跳跳糖"
+    assert item.target_location == "客厅"
+    assert item.group_partners == ["零食"]
+
+
 def test_color_disambiguates_lookalike_pair():
     candidates, method = match_name_to_entities("蓝色水壶", [], ENTITY_DISPLAY)
     assert (candidates, method) == (["e1"], "name_color")

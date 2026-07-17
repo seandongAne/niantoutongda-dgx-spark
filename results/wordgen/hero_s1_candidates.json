@@ -1,0 +1,142 @@
+{
+  "book": [
+    "pink white paperback books",
+    "stacked story books",
+    "colorful cover storybooks",
+    "picture cover storybooks",
+    "children story books"
+  ],
+  "comb": [
+    "beige translucent comb",
+    "plastic fine tooth comb",
+    "long handle hair comb",
+    "hair grooming tool",
+    "translucent plastic comb",
+    "dense tooth comb"
+  ],
+  "glass_jar": [
+    "transparent cylinder glass jar",
+    "sealed storage jar",
+    "dark granular food jar",
+    "clear glass storage jar",
+    "cylindrical food container",
+    "glass jar with lid"
+  ],
+  "hair_clip": [
+    "fabric flower hair accessory",
+    "women hair decoration",
+    "flower shape hair pin",
+    "colorful fabric hair clip"
+  ],
+  "hand_cream": [
+    "green tube hand cream",
+    "white daisy print cream",
+    "squeeze tube skincare",
+    "moisturizing hand cream",
+    "green printed skincare tube",
+    "daisy pattern hand lotion"
+  ],
+  "marker_set": [
+    "white plastic marker set",
+    "colorful marker pen set",
+    "blue cartoon label box",
+    "semi transparent marker case",
+    "art drawing marker set",
+    "stationery marker kit"
+  ],
+  "mug": [
+    "white ceramic mug",
+    "green floral ceramic mug",
+    "handled white mug",
+    "floral print drinking mug",
+    "white ceramic cup",
+    "green pattern mug"
+  ],
+  "pen": [
+    "black wooden pencils",
+    "red ballpoint pens",
+    "black fountain pens",
+    "writing pen set",
+    "slim writing tools",
+    "mixed stationery pens"
+  ],
+  "pencil_sharpener": [
+    "beige cylindrical sharpener",
+    "white pencil hole sharpener",
+    "cartoon sticker sharpener",
+    "manual pencil sharpener",
+    "cylinder stationery sharpener",
+    "desktop pencil sharpener"
+  ],
+  "plush_toy": [
+    "blue heart glasses plush",
+    "white tagged plush keychain",
+    "cute stuffed animal",
+    "rabbit ear plush accessory",
+    "plush doll with glasses"
+  ],
+  "rubiks_cube": [
+    "green orange yellow cube",
+    "solid color magic cube",
+    "three by three cube",
+    "puzzle cube",
+    "bright color puzzle cube",
+    "stickerless magic cube"
+  ],
+  "scissors": [
+    "blue plastic scissors",
+    "kids safety scissors",
+    "silver blade scissors",
+    "handled cutting tool",
+    "children craft scissors",
+    "blunt tip scissors"
+  ],
+  "set_square": [
+    "purple transparent triangle ruler",
+    "right angle set square",
+    "scaled plastic ruler",
+    "geometry drawing tool",
+    "translucent purple ruler",
+    "plastic triangle template"
+  ],
+  "snack": [
+    "colorful plastic snack bag",
+    "white long snack pouch",
+    "transparent sealed snack bag",
+    "pink packaged snack",
+    "individual snack packet",
+    "portable food snack"
+  ],
+  "sunscreen_tin": [
+    "pink round sunscreen tin",
+    "white cloud pattern tin",
+    "flat metal sunscreen case",
+    "round cosmetic tin",
+    "pink printed metal box",
+    "portable sunscreen container"
+  ],
+  "tea_bag": [
+    "red paper tea bag",
+    "gold print tea bag",
+    "small tea filter bag",
+    "dried tea packet",
+    "red printed tea bag",
+    "disposable tea bag"
+  ],
+  "utility_knife": [
+    "red plastic utility knife",
+    "silver metal craft knife",
+    "handled cutting tool",
+    "paper cutting knife",
+    "red handled craft tool",
+    "metal blade cutting knife"
+  ],
+  "water_bottle": [
+    "pink dotted water bottle",
+    "unicorn pattern thermos",
+    "teal flip lid bottle",
+    "handled insulated bottle",
+    "kids water bottle",
+    "portable water bottle"
+  ]
+}

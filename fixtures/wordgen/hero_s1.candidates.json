@@ -1,142 +1,157 @@
 {
+  "biscuits": [
+    "pink sealed biscuit bag",
+    "transparent plastic cookie bag",
+    "sweet snack biscuit",
+    "packaged butter biscuit",
+    "pink round biscuit",
+    "clear food pouch"
+  ],
   "book": [
-    "pink white paperback books",
-    "stacked story books",
-    "colorful cover storybooks",
-    "picture cover storybooks",
-    "children story books"
+    "pink white cover book",
+    "mushroom illustration book",
+    "paperback story book",
+    "children picture book",
+    "gold medal sticker book",
+    "colorful cover book"
+  ],
+  "coffee_jar": [
+    "clear glass coffee jar",
+    "cylinder coffee bean jar",
+    "transparent coffee storage jar",
+    "coffee bean container",
+    "clear cylinder jar",
+    "dark coffee bean jar"
   ],
   "comb": [
-    "beige translucent comb",
-    "plastic fine tooth comb",
-    "long handle hair comb",
-    "hair grooming tool",
-    "translucent plastic comb",
-    "dense tooth comb"
-  ],
-  "glass_jar": [
-    "transparent cylinder glass jar",
-    "sealed storage jar",
-    "dark granular food jar",
-    "clear glass storage jar",
-    "cylindrical food container",
-    "glass jar with lid"
+    "beige plastic comb",
+    "translucent hair comb",
+    "detangling hair comb",
+    "beige long comb",
+    "clear plastic comb"
   ],
   "hair_clip": [
-    "fabric flower hair accessory",
-    "women hair decoration",
-    "flower shape hair pin",
-    "colorful fabric hair clip"
+    "fabric flower hair clip",
+    "decorative hair barrette",
+    "girls hair clip",
+    "cream flower hair accessory",
+    "dark comb teeth clip"
   ],
   "hand_cream": [
     "green tube hand cream",
-    "white daisy print cream",
-    "squeeze tube skincare",
+    "daisy print hand cream",
     "moisturizing hand cream",
-    "green printed skincare tube",
-    "daisy pattern hand lotion"
+    "travel hand cream",
+    "green cosmetic tube",
+    "white daisy cream tube"
+  ],
+  "hawthorn_sticks": [
+    "white long hawthorn stick",
+    "independent packaged hawthorn",
+    "kids fruit snack",
+    "hawthorn candy stick",
+    "white small snack bag",
+    "long thin food stick"
   ],
   "marker_set": [
-    "white plastic marker set",
-    "colorful marker pen set",
-    "blue cartoon label box",
-    "semi transparent marker case",
-    "art drawing marker set",
-    "stationery marker kit"
+    "translucent plastic marker case",
+    "blue cartoon marker set",
+    "colored marker storage box",
+    "art marker set",
+    "white marker organizer",
+    "kids drawing marker set"
   ],
   "mug": [
     "white ceramic mug",
-    "green floral ceramic mug",
-    "handled white mug",
-    "floral print drinking mug",
-    "white ceramic cup",
+    "green flower bird mug",
+    "handled drinking mug",
+    "ceramic coffee cup",
+    "white handle mug",
     "green pattern mug"
   ],
   "pen": [
-    "black wooden pencils",
-    "red ballpoint pens",
-    "black fountain pens",
-    "writing pen set",
-    "slim writing tools",
-    "mixed stationery pens"
+    "black wooden pencil",
+    "red ballpoint pen",
+    "black writing pencil",
+    "ballpoint pen set",
+    "thin writing tool",
+    "red and black pen"
   ],
   "pencil_sharpener": [
-    "beige cylindrical sharpener",
-    "white pencil hole sharpener",
-    "cartoon sticker sharpener",
+    "beige cylinder sharpener",
+    "cartoon pencil sharpener",
     "manual pencil sharpener",
-    "cylinder stationery sharpener",
-    "desktop pencil sharpener"
+    "kids stationery sharpener",
+    "beige plastic sharpener",
+    "white hole top sharpener"
   ],
   "plush_toy": [
+    "pink white bunny plush",
     "blue heart glasses plush",
-    "white tagged plush keychain",
-    "cute stuffed animal",
-    "rabbit ear plush accessory",
-    "plush doll with glasses"
+    "stuffed bunny toy",
+    "plush keychain toy",
+    "pink floppy ear plush",
+    "cartoon glasses plush"
+  ],
+  "popping_candy": [
+    "colorful plastic popping candy",
+    "cartoon print candy bag",
+    "kids snack candy",
+    "popping candy packet",
+    "bright candy pouch",
+    "cartoon snack bag"
   ],
   "rubiks_cube": [
     "green orange yellow cube",
-    "solid color magic cube",
-    "three by three cube",
-    "puzzle cube",
     "bright color puzzle cube",
-    "stickerless magic cube"
+    "puzzle cube",
+    "solid block toy",
+    "bright color cube"
   ],
   "scissors": [
-    "blue plastic scissors",
+    "blue plastic handle scissors",
+    "silver short blade scissors",
+    "safety craft scissors",
     "kids safety scissors",
-    "silver blade scissors",
-    "handled cutting tool",
-    "children craft scissors",
-    "blunt tip scissors"
+    "blue cutting tool",
+    "small silver scissors"
   ],
   "set_square": [
-    "purple transparent triangle ruler",
-    "right angle set square",
-    "scaled plastic ruler",
-    "geometry drawing tool",
-    "translucent purple ruler",
-    "plastic triangle template"
-  ],
-  "snack": [
-    "colorful plastic snack bag",
-    "white long snack pouch",
-    "transparent sealed snack bag",
-    "pink packaged snack",
-    "individual snack packet",
-    "portable food snack"
+    "purple plastic set square",
+    "translucent right triangle ruler",
+    "geometry ruler",
+    "purple triangle ruler",
+    "translucent measuring ruler",
+    "purple angle ruler"
   ],
   "sunscreen_tin": [
     "pink round sunscreen tin",
-    "white cloud pattern tin",
-    "flat metal sunscreen case",
-    "round cosmetic tin",
-    "pink printed metal box",
-    "portable sunscreen container"
+    "cloud print tin container",
+    "pink metal tin box",
+    "sunscreen case",
+    "pink cloud pattern tin",
+    "round flat tin"
   ],
   "tea_bag": [
     "red paper tea bag",
-    "gold print tea bag",
-    "small tea filter bag",
-    "dried tea packet",
-    "red printed tea bag",
-    "disposable tea bag"
+    "golden print tea bag",
+    "packaged black tea",
+    "tea filter bag",
+    "red small tea packet",
+    "golden text tea bag"
   ],
   "utility_knife": [
-    "red plastic utility knife",
-    "silver metal craft knife",
-    "handled cutting tool",
-    "paper cutting knife",
-    "red handled craft tool",
-    "metal blade cutting knife"
+    "silver metal cutting knife",
+    "red craft knife",
+    "wallpaper cutter",
+    "red sharp utility tool",
+    "silver blade cutting tool"
   ],
   "water_bottle": [
-    "pink dotted water bottle",
-    "unicorn pattern thermos",
+    "pink insulated water bottle",
     "teal flip lid bottle",
-    "handled insulated bottle",
     "kids water bottle",
-    "portable water bottle"
+    "pink pattern tumbler",
+    "unicorn print water bottle"
   ]
 }

@@ -1,0 +1,22 @@
+{
+  "audio": "local-data/hero_s1/narration.wav",
+  "audio_sha256": "9383dddab945a9ece2ea63da74c5f434fac347e255a34e625e744480a4e98ab8",
+  "created_at": "2026-07-17T06:35:44.191624+00:00",
+  "decoding": {
+    "do_sample": false,
+    "shots": 0,
+    "temperature": null
+  },
+  "elapsed_s": 84.6,
+  "model_path": "/home/Developer/models/stepfun-ai__Step-Audio-2-mini",
+  "note": "誊写草稿,须人工校对后写入 fixtures/hero_s1/transcript.txt",
+  "schema_version": "a1-hero-transcribe-v1",
+  "segments": 30,
+  "split": {
+    "max_dur": 28.0,
+    "min_dur": 0.8,
+    "min_gap": 0.5,
+    "pad": 0.15,
+    "top_db": 25.0
+  }
+}

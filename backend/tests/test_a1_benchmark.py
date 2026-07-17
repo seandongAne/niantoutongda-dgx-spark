@@ -132,6 +132,44 @@ def test_case_scoring_normalizes_aliases_and_counts_missed_slots():
     assert scored["exact_case"] is False
 
 
+def test_case_scoring_counts_null_attributes_as_schema_mismatch():
+    case = {
+        "case_id": "case-0001",
+        "style": "direct",
+        "voice": "voice-a",
+        "completeness": "full",
+        "expected": [{
+            "canonical_id": "water_bottle",
+            "label_zh": "水杯",
+            "label_en": "water bottle",
+            "owner": "小明",
+            "source_location": "旧卧室书桌上",
+            "target_location": "新家卧室书桌上",
+            "pack_group": "学习用品",
+            "color": "蓝色",
+        }],
+    }
+    prediction = [{
+        "label_zh": "水杯",
+        "label_en": "water bottle",
+        "owner": "小明",
+        "source_location": "旧卧室书桌上",
+        "target_location": "新家卧室书桌上",
+        "pack_group": "学习用品",
+        "attributes": None,
+    }]
+
+    scored = score_case(case, json.dumps(prediction, ensure_ascii=False))
+
+    assert scored["schema_valid"] is False
+    assert scored["parse_error"] == "schema_mismatch"
+    assert scored["item_true_positives"] == 1
+    assert scored["slot_correct"] == 4
+    assert scored["slot_total"] == 5
+    assert scored["field_scores"]["color"] == {"correct": 0, "total": 1}
+    assert scored["exact_case"] is False
+
+
 def test_aggregate_requires_every_condition_to_reach_stop_gate():
     plan = build_plan(
         seed=1,

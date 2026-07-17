@@ -300,7 +300,11 @@ def score_case(case: Mapping[str, Any], raw_text: str) -> dict[str, Any]:
         actual = predicted_by_id[canonical_id]
         for field in SLOT_KEYS:
             expected_value = expected[field]
-            actual_value = actual.get("attributes", {}).get("color") if field == "color" else actual.get(field)
+            if field == "color":
+                attributes = actual.get("attributes")
+                actual_value = attributes.get("color") if isinstance(attributes, Mapping) else None
+            else:
+                actual_value = actual.get(field)
             is_correct = normalize_slot(field, actual_value) == normalize_slot(field, expected_value)
             slot_total += 1
             field_scores[field]["total"] += 1

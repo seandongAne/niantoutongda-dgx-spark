@@ -1,0 +1,653 @@
+{
+  "backends": {
+    "cloud": {
+      "cases": 735,
+      "conditions": {
+        "clean": {
+          "cases": 147,
+          "exact_case_rate": {
+            "half_width": 0.075349,
+            "high": 0.737771,
+            "low": 0.587073,
+            "rate": 0.666667,
+            "successes": 98,
+            "total": 147
+          },
+          "item_precision": {
+            "half_width": 0.009206,
+            "high": 0.999399,
+            "low": 0.980988,
+            "rate": 0.996599,
+            "successes": 293,
+            "total": 294
+          },
+          "item_recall": {
+            "half_width": 0.009206,
+            "high": 0.999399,
+            "low": 0.980988,
+            "rate": 0.996599,
+            "successes": 293,
+            "total": 294
+          },
+          "parse_failures": 0,
+          "schema_valid_rate": {
+            "half_width": 0.012734,
+            "high": 1.0,
+            "low": 0.974532,
+            "rate": 1.0,
+            "successes": 147,
+            "total": 147
+          },
+          "slot_accuracy": {
+            "half_width": 0.012419,
+            "high": 0.948693,
+            "low": 0.923856,
+            "rate": 0.937415,
+            "successes": 1378,
+            "total": 1470
+          }
+        },
+        "codec32": {
+          "cases": 147,
+          "exact_case_rate": {
+            "half_width": 0.079777,
+            "high": 0.589721,
+            "low": 0.430167,
+            "rate": 0.510204,
+            "successes": 75,
+            "total": 147
+          },
+          "item_precision": {
+            "half_width": 0.009206,
+            "high": 0.999399,
+            "low": 0.980988,
+            "rate": 0.996599,
+            "successes": 293,
+            "total": 294
+          },
+          "item_recall": {
+            "half_width": 0.009206,
+            "high": 0.999399,
+            "low": 0.980988,
+            "rate": 0.996599,
+            "successes": 293,
+            "total": 294
+          },
+          "parse_failures": 0,
+          "schema_valid_rate": {
+            "half_width": 0.012734,
+            "high": 1.0,
+            "low": 0.974532,
+            "rate": 1.0,
+            "successes": 147,
+            "total": 147
+          },
+          "slot_accuracy": {
+            "half_width": 0.016644,
+            "high": 0.895247,
+            "low": 0.861958,
+            "rate": 0.879592,
+            "successes": 1293,
+            "total": 1470
+          }
+        },
+        "noise10": {
+          "cases": 147,
+          "exact_case_rate": {
+            "half_width": 0.079271,
+            "high": 0.522921,
+            "low": 0.364378,
+            "rate": 0.442177,
+            "successes": 65,
+            "total": 147
+          },
+          "item_precision": {
+            "half_width": 0.014431,
+            "high": 0.994751,
+            "low": 0.965888,
+            "rate": 0.986532,
+            "successes": 293,
+            "total": 297
+          },
+          "item_recall": {
+            "half_width": 0.009206,
+            "high": 0.999399,
+            "low": 0.980988,
+            "rate": 0.996599,
+            "successes": 293,
+            "total": 294
+          },
+          "parse_failures": 0,
+          "schema_valid_rate": {
+            "half_width": 0.012734,
+            "high": 1.0,
+            "low": 0.974532,
+            "rate": 1.0,
+            "successes": 147,
+            "total": 147
+          },
+          "slot_accuracy": {
+            "half_width": 0.01619,
+            "high": 0.902256,
+            "low": 0.869876,
+            "rate": 0.887075,
+            "successes": 1304,
+            "total": 1470
+          }
+        },
+        "noise20": {
+          "cases": 147,
+          "exact_case_rate": {
+            "half_width": 0.078996,
+            "high": 0.648605,
+            "low": 0.490614,
+            "rate": 0.571429,
+            "successes": 84,
+            "total": 147
+          },
+          "item_precision": {
+            "half_width": 0.011259,
+            "high": 0.998139,
+            "low": 0.975621,
+            "rate": 0.99322,
+            "successes": 293,
+            "total": 295
+          },
+          "item_recall": {
+            "half_width": 0.009206,
+            "high": 0.999399,
+            "low": 0.980988,
+            "rate": 0.996599,
+            "successes": 293,
+            "total": 294
+          },
+          "parse_failures": 0,
+          "schema_valid_rate": {
+            "half_width": 0.012734,
+            "high": 1.0,
+            "low": 0.974532,
+            "rate": 1.0,
+            "successes": 147,
+            "total": 147
+          },
+          "slot_accuracy": {
+            "half_width": 0.015166,
+            "high": 0.916837,
+            "low": 0.886506,
+            "rate": 0.902721,
+            "successes": 1327,
+            "total": 1470
+          }
+        },
+        "speed090": {
+          "cases": 147,
+          "exact_case_rate": {
+            "half_width": 0.068933,
+            "high": 0.817538,
+            "low": 0.679672,
+            "rate": 0.755102,
+            "successes": 111,
+            "total": 147
+          },
+          "item_precision": {
+            "half_width": 0.011297,
+            "high": 0.998133,
+            "low": 0.975539,
+            "rate": 0.993197,
+            "successes": 292,
+            "total": 294
+          },
+          "item_recall": {
+            "half_width": 0.011297,
+            "high": 0.998133,
+            "low": 0.975539,
+            "rate": 0.993197,
+            "successes": 292,
+            "total": 294
+          },
+          "parse_failures": 0,
+          "schema_valid_rate": {
+            "half_width": 0.012734,
+            "high": 1.0,
+            "low": 0.974532,
+            "rate": 1.0,
+            "successes": 147,
+            "total": 147
+          },
+          "slot_accuracy": {
+            "half_width": 0.01164,
+            "high": 0.956056,
+            "low": 0.932777,
+            "rate": 0.945578,
+            "successes": 1390,
+            "total": 1470
+          }
+        }
+      },
+      "coverage": {
+        "completeness": {
+          "full": 370,
+          "partial": 365
+        },
+        "condition_id": {
+          "clean": 147,
+          "codec32": 147,
+          "noise10": 147,
+          "noise20": 147,
+          "speed090": 147
+        },
+        "style": {
+          "conversational": 245,
+          "direct": 245,
+          "reordered": 245
+        },
+        "voice": {
+          "cixingnansheng": 370,
+          "linjiajiejie": 365
+        }
+      },
+      "coverage_progress": {
+        "complete": true,
+        "expected": 735,
+        "observed": 735,
+        "rate": 1.0
+      },
+      "exact_case_rate": {
+        "half_width": 0.03548,
+        "high": 0.624132,
+        "low": 0.553173,
+        "rate": 0.589116,
+        "successes": 433,
+        "total": 735
+      },
+      "item_precision": {
+        "half_width": 0.004377,
+        "high": 0.996311,
+        "low": 0.987556,
+        "rate": 0.993216,
+        "successes": 1464,
+        "total": 1474
+      },
+      "item_recall": {
+        "half_width": 0.003502,
+        "high": 0.998128,
+        "low": 0.991123,
+        "rate": 0.995918,
+        "successes": 1464,
+        "total": 1470
+      },
+      "parse_failures": 0,
+      "schema_valid_rate": {
+        "half_width": 0.0026,
+        "high": 1.0,
+        "low": 0.994801,
+        "rate": 1.0,
+        "successes": 735,
+        "total": 735
+      },
+      "slot_accuracy": {
+        "half_width": 0.006529,
+        "high": 0.916791,
+        "low": 0.903733,
+        "rate": 0.910476,
+        "successes": 6692,
+        "total": 7350
+      },
+      "stopping": {
+        "additional_base_cases_needed": 0,
+        "condition_ready": {
+          "clean": true,
+          "codec32": true,
+          "noise10": true,
+          "noise20": true,
+          "speed090": true
+        },
+        "minimum_observed_per_condition": 147,
+        "missing_conditions": [],
+        "reached": true,
+        "required_per_condition": 147,
+        "target_half_width": 0.08
+      }
+    },
+    "local": {
+      "cases": 735,
+      "conditions": {
+        "clean": {
+          "cases": 147,
+          "exact_case_rate": {
+            "half_width": 0.079141,
+            "high": 0.516161,
+            "low": 0.357879,
+            "rate": 0.435374,
+            "successes": 64,
+            "total": 147
+          },
+          "item_precision": {
+            "half_width": 0.028453,
+            "high": 0.953429,
+            "low": 0.896523,
+            "rate": 0.930159,
+            "successes": 293,
+            "total": 315
+          },
+          "item_recall": {
+            "half_width": 0.009206,
+            "high": 0.999399,
+            "low": 0.980988,
+            "rate": 0.996599,
+            "successes": 293,
+            "total": 294
+          },
+          "parse_failures": 5,
+          "schema_valid_rate": {
+            "half_width": 0.031267,
+            "high": 0.985386,
+            "low": 0.922852,
+            "rate": 0.965986,
+            "successes": 142,
+            "total": 147
+          },
+          "slot_accuracy": {
+            "half_width": 0.016399,
+            "high": 0.899073,
+            "low": 0.866274,
+            "rate": 0.883673,
+            "successes": 1299,
+            "total": 1470
+          }
+        },
+        "codec32": {
+          "cases": 147,
+          "exact_case_rate": {
+            "half_width": 0.077291,
+            "high": 0.454645,
+            "low": 0.300064,
+            "rate": 0.37415,
+            "successes": 55,
+            "total": 147
+          },
+          "item_precision": {
+            "half_width": 0.037742,
+            "high": 0.883171,
+            "low": 0.807687,
+            "rate": 0.849275,
+            "successes": 293,
+            "total": 345
+          },
+          "item_recall": {
+            "half_width": 0.009206,
+            "high": 0.999399,
+            "low": 0.980988,
+            "rate": 0.996599,
+            "successes": 293,
+            "total": 294
+          },
+          "parse_failures": 10,
+          "schema_valid_rate": {
+            "half_width": 0.041661,
+            "high": 0.962633,
+            "low": 0.87931,
+            "rate": 0.931973,
+            "successes": 137,
+            "total": 147
+          },
+          "slot_accuracy": {
+            "half_width": 0.016765,
+            "high": 0.893332,
+            "low": 0.859802,
+            "rate": 0.877551,
+            "successes": 1290,
+            "total": 1470
+          }
+        },
+        "noise10": {
+          "cases": 147,
+          "exact_case_rate": {
+            "half_width": 0.079141,
+            "high": 0.516161,
+            "low": 0.357879,
+            "rate": 0.435374,
+            "successes": 64,
+            "total": 147
+          },
+          "item_precision": {
+            "half_width": 0.03481,
+            "high": 0.912601,
+            "low": 0.842981,
+            "rate": 0.882175,
+            "successes": 292,
+            "total": 331
+          },
+          "item_recall": {
+            "half_width": 0.011297,
+            "high": 0.998133,
+            "low": 0.975539,
+            "rate": 0.993197,
+            "successes": 292,
+            "total": 294
+          },
+          "parse_failures": 5,
+          "schema_valid_rate": {
+            "half_width": 0.031267,
+            "high": 0.985386,
+            "low": 0.922852,
+            "rate": 0.965986,
+            "successes": 142,
+            "total": 147
+          },
+          "slot_accuracy": {
+            "half_width": 0.01589,
+            "high": 0.906705,
+            "low": 0.874926,
+            "rate": 0.891837,
+            "successes": 1311,
+            "total": 1470
+          }
+        },
+        "noise20": {
+          "cases": 147,
+          "exact_case_rate": {
+            "half_width": 0.079748,
+            "high": 0.563174,
+            "low": 0.403678,
+            "rate": 0.482993,
+            "successes": 71,
+            "total": 147
+          },
+          "item_precision": {
+            "half_width": 0.03098,
+            "high": 0.939154,
+            "low": 0.877194,
+            "rate": 0.913043,
+            "successes": 294,
+            "total": 322
+          },
+          "item_recall": {
+            "half_width": 0.006449,
+            "high": 1.0,
+            "low": 0.987102,
+            "rate": 1.0,
+            "successes": 294,
+            "total": 294
+          },
+          "parse_failures": 4,
+          "schema_valid_rate": {
+            "half_width": 0.02862,
+            "high": 0.989369,
+            "low": 0.932128,
+            "rate": 0.972789,
+            "successes": 143,
+            "total": 147
+          },
+          "slot_accuracy": {
+            "half_width": 0.015166,
+            "high": 0.916837,
+            "low": 0.886506,
+            "rate": 0.902721,
+            "successes": 1327,
+            "total": 1470
+          }
+        },
+        "speed090": {
+          "cases": 147,
+          "exact_case_rate": {
+            "half_width": 0.079387,
+            "high": 0.529666,
+            "low": 0.370892,
+            "rate": 0.44898,
+            "successes": 66,
+            "total": 147
+          },
+          "item_precision": {
+            "half_width": 0.03053,
+            "high": 0.943235,
+            "low": 0.882174,
+            "rate": 0.917722,
+            "successes": 290,
+            "total": 316
+          },
+          "item_recall": {
+            "half_width": 0.014576,
+            "high": 0.994697,
+            "low": 0.965545,
+            "rate": 0.986395,
+            "successes": 290,
+            "total": 294
+          },
+          "parse_failures": 7,
+          "schema_valid_rate": {
+            "half_width": 0.035885,
+            "high": 0.976745,
+            "low": 0.904975,
+            "rate": 0.952381,
+            "successes": 140,
+            "total": 147
+          },
+          "slot_accuracy": {
+            "half_width": 0.016358,
+            "high": 0.89971,
+            "low": 0.866994,
+            "rate": 0.884354,
+            "successes": 1300,
+            "total": 1470
+          }
+        }
+      },
+      "coverage": {
+        "completeness": {
+          "full": 370,
+          "partial": 365
+        },
+        "condition_id": {
+          "clean": 147,
+          "codec32": 147,
+          "noise10": 147,
+          "noise20": 147,
+          "speed090": 147
+        },
+        "style": {
+          "conversational": 245,
+          "direct": 245,
+          "reordered": 245
+        },
+        "voice": {
+          "cixingnansheng": 370,
+          "linjiajiejie": 365
+        }
+      },
+      "coverage_progress": {
+        "complete": true,
+        "expected": 735,
+        "observed": 735,
+        "rate": 1.0
+      },
+      "exact_case_rate": {
+        "half_width": 0.035753,
+        "high": 0.471463,
+        "low": 0.399957,
+        "rate": 0.435374,
+        "successes": 320,
+        "total": 735
+      },
+      "item_precision": {
+        "half_width": 0.014742,
+        "high": 0.91129,
+        "low": 0.881805,
+        "rate": 0.897483,
+        "successes": 1462,
+        "total": 1629
+      },
+      "item_recall": {
+        "half_width": 0.003971,
+        "high": 0.99724,
+        "low": 0.989298,
+        "rate": 0.994558,
+        "successes": 1462,
+        "total": 1470
+      },
+      "parse_failures": 31,
+      "schema_valid_rate": {
+        "half_width": 0.014687,
+        "high": 0.97013,
+        "low": 0.940755,
+        "rate": 0.957823,
+        "successes": 704,
+        "total": 735
+      },
+      "slot_accuracy": {
+        "half_width": 0.00721,
+        "high": 0.895035,
+        "low": 0.880614,
+        "rate": 0.888027,
+        "successes": 6527,
+        "total": 7350
+      },
+      "stopping": {
+        "additional_base_cases_needed": 0,
+        "condition_ready": {
+          "clean": true,
+          "codec32": true,
+          "noise10": true,
+          "noise20": true,
+          "speed090": true
+        },
+        "minimum_observed_per_condition": 147,
+        "missing_conditions": [],
+        "reached": true,
+        "required_per_condition": 147,
+        "target_half_width": 0.08
+      }
+    }
+  },
+  "expected_predictions_per_backend": 735,
+  "generated_at": "2026-07-17T05:56:31.984416+00:00",
+  "observed_predictions": 1470,
+  "plan": {
+    "base_case_count": 147,
+    "condition_ids": [
+      "clean",
+      "noise20",
+      "noise10",
+      "speed090",
+      "codec32"
+    ],
+    "observation_count_per_backend": 735,
+    "seed": 20260716,
+    "stopping_rule": {
+      "confidence": 0.95,
+      "maximum_observations": 2000,
+      "metric": "slot_accuracy",
+      "minimum_per_condition": 100,
+      "target_half_width": 0.08,
+      "target_reachable_in_plan": true,
+      "worst_case_required_per_condition": 147
+    }
+  },
+  "schema_version": "a1-robustness-v1",
+  "usage": {
+    "calls": 735,
+    "completion_tokens": 114918,
+    "prompt_tokens": 306585,
+    "tts_calls": 147
+  }
+}

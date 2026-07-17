@@ -17,7 +17,11 @@ PROJ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJ))
 
 from backend.tools.reid.matcher import IdentityConstraints, run_reid  # noqa: E402
-from backend.tools.reid.model import ReIDConfig, Vocabulary  # noqa: E402
+from backend.tools.reid.model import (  # noqa: E402
+    ReIDConfig,
+    Vocabulary,
+    load_attribute_enrichment,
+)
 
 
 def main() -> int:
@@ -25,44 +29,55 @@ def main() -> int:
     parser.add_argument("--ingest-root", required=True)
     parser.add_argument("--vocab", required=True)
     parser.add_argument("--config", required=True, help="基准配置(其余字段不动)")
+    parser.add_argument("--attributes", default=None, help="S5 属性文件(W2 系配置必传)")
     parser.add_argument("--matches", default="0.80,0.82,0.84,0.86")
     parser.add_argument("--margins", default="0.00,0.02,0.04")
+    parser.add_argument("--min-obs", default=None, help="filter.min_observations 轴,如 3,4,5;缺省沿用基准配置")
     parser.add_argument("--out", required=True)
     args = parser.parse_args()
 
     base = ReIDConfig.from_yaml(args.config)
     vocab = Vocabulary.from_json(args.vocab)
+    attributes = load_attribute_enrichment(args.attributes) if args.attributes else None
     matches = [float(x) for x in args.matches.split(",")]
     margins = [float(x) for x in args.margins.split(",")]
+    min_obs_axis = (
+        [int(x) for x in args.min_obs.split(",")]
+        if args.min_obs
+        else [base.filter.min_observations]
+    )
     out = Path(args.out)
     summary = []
-    for match in matches:
-        for margin in margins:
-            version = f"{base.version}-sweep-m{match:.2f}-g{margin:.2f}"
-            config = replace(
-                base,
-                version=version,
-                thresholds=replace(base.thresholds, match=match, margin=margin),
-            )
-            config.validate()
-            run = run_reid(
-                ingest_root=args.ingest_root,
-                config=config,
-                vocab=vocab,
-                constraints=IdentityConstraints(),
-            )
-            combo_dir = out / f"m{match:.2f}-g{margin:.2f}"
-            run.write(combo_dir)
-            summary.append(
-                {
-                    "match": match,
-                    "margin": margin,
-                    "automatic_link_count": run.metrics["automatic_link_count"],
-                    "clarification_count": run.metrics["clarification_count"],
-                    "matched_entity_count": run.metrics["matched_entity_count"],
-                }
-            )
-            print(json.dumps(summary[-1]))
+    for min_obs in min_obs_axis:
+        for match in matches:
+            for margin in margins:
+                tag = f"m{match:.2f}-g{margin:.2f}-o{min_obs}"
+                config = replace(
+                    base,
+                    version=f"{base.version}-sweep-{tag}",
+                    thresholds=replace(base.thresholds, match=match, margin=margin),
+                    filter=replace(base.filter, min_observations=min_obs),
+                )
+                config.validate()
+                run = run_reid(
+                    ingest_root=args.ingest_root,
+                    config=config,
+                    vocab=vocab,
+                    constraints=IdentityConstraints(),
+                    attributes=attributes,
+                )
+                run.write(out / tag)
+                summary.append(
+                    {
+                        "match": match,
+                        "margin": margin,
+                        "min_observations": min_obs,
+                        "automatic_link_count": run.metrics["automatic_link_count"],
+                        "clarification_count": run.metrics["clarification_count"],
+                        "matched_entity_count": run.metrics["matched_entity_count"],
+                    }
+                )
+                print(json.dumps(summary[-1]), flush=True)
     (out / "sweep-summary.json").write_text(
         json.dumps({"base_config": base.version, "grid": summary},
                    ensure_ascii=False, indent=2, sort_keys=True) + "\n"

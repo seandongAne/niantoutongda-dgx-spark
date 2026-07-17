@@ -1,8 +1,0 @@
-name = "hero-s1-relay"
-main = "worker.js"
-compatibility_date = "2026-07-01"
-workers_dev = true
-
-[[r2_buckets]]
-binding = "BUCKET"
-bucket_name = "hero-s1-transfer"

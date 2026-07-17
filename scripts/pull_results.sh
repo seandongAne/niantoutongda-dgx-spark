@@ -7,8 +7,14 @@ cd "$(dirname "$0")/.."
 mkdir -p results logs/remote
 
 MAX_MB=50
-delta_bytes=$(rsync -azn --stats spark:~/proj/results/ ./results/ 2>/dev/null \
-  | grep -i "transferred file size" | grep -oE '[0-9][0-9,.]*' | head -1 | tr -d ',')
+# 预检失败(断连常态)按网络纪律重试一次;仍失败则带原因 fail-closed,
+# 不能让 set -e 在赋值管道里无声死掉、体积门成死代码。
+stats=$(rsync -azn --stats spark:~/proj/results/ ./results/ 2>&1) \
+  || stats=$(rsync -azn --stats spark:~/proj/results/ ./results/ 2>&1) \
+  || { echo "pull_results: 体积预检 rsync 失败(已重试一次,疑似断连):" >&2
+       printf '%s\n' "$stats" >&2; exit 2; }
+delta_bytes=$(printf '%s\n' "$stats" | grep -i "transferred file size" \
+  | grep -oE '[0-9][0-9,.]*' | head -1 | tr -d ',' || true)
 delta_bytes=${delta_bytes:-0}
 delta_mb=$((delta_bytes / 1024 / 1024))
 if [ "$delta_mb" -gt "$MAX_MB" ]; then

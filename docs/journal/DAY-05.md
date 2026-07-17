@@ -67,6 +67,47 @@
   确认上传进程已退出，Spark 只落下 6,192,224-byte `narration.wav`，四段 MP4 均不存在；
   因而不能把这次退出写成素材上传成功。
 
+## 增量 D5-2：素材日——R2 HTTP 中转通道与三 TODO 落地（下午）
+
+- **素材到手**：`~/Downloads/Dev B` 七文件全为 1080p60 H.264——旧房间三段
+  （162s/170s/220s）、新家两光照（`new_1` 开灯 104s、`new_1_natural_lighting`
+  111s）、`item_collections.MOV`（物品摆拍 14s）、`narration.m4a`（217s）。
+  本地无损转封装为 mp4（流拷贝零重编码）、旁白转 16kHz 单声道 wav。
+- **SSH 大文件传输尝试中止**（即上一增量所见进程）：实测吞吐 ~17.5KB/s，
+  1.84GB 需约 29 小时；用户裁决保原画质、走第三方 HTTP 中转，压缩降质路线否决。
+- **通道实测**（spark 侧）：Google/Drive 全阻断；github.com 超时；
+  `release-assets.githubusercontent.com` 可达但 1.3KB/s 不可用；
+  `speed.cloudflare.com` 1.95MB/s、ModelScope range 1.78MB/s 可用。
+  落地 **Cloudflare R2 私有桶 + r2.dev 直链**：Mac 上行 16MB/s（200MB/12s）；
+  r2.dev 单连接限速 ~100-600KB/s、并发可叠加（4 连接聚合 ~1.5MB/s），
+  故 200MiB 分块 ×12 + `xargs -P 6` 并发 + `curl -C -` 断点重试拉取，
+  节点侧 `cat` 重组后按 `SHA256SUMS` 校验；传毕删桶内对象。凭据全程只在
+  Mac（wrangler OAuth），节点只见限时公开直链，符合凭据纪律。
+  旁白 wav（6.9MB）循 A1 音频先例走 SSH 补传完成。
+- **旁白 TODO**：新增 `scripts/a1_hero_transcribe.py`（报文构造逐字复用
+  `a1_stepaudio_local.py`，PROTOCOL.md 本地誊写口径：零-shot 贪心）。
+  v1 静音切分失效（top_db=40 仅 3 段、亚秒碎段幻化系统提示词），重写为
+  停顿分组切分（间隙 ≥min_gap 断句 + 超长段最长间隙递归二分 + <0.8s 碎段
+  丢弃），参数空跑扫描后取 top_db=25/min_gap=0.5 → **30 段全部成句**，
+  五要素句式完整。碎行合并后 25 行落 `fixtures/hero_s1/transcript.txt`
+  草稿（待人工听校）；逐段时间戳留 `results/hero_s1/a1_transcribe/`。
+- **词表 TODO**：`item_collections.MOV` 逐帧目视起草 items.json，与誊写
+  对账后 v2 定稿 20 类（零食拆为跳跳糖/山楂棒/饼干三件；name_zh 取旁白
+  用词）；StepFun 候选 115 短语（云端只见纯文本清单）；28 帧物品照经 R2
+  通道上节点，`word_spark_factory` scan-only 免凭据发射（无 GT，出死词
+  摘要待人工裁决）。
+- **区域 TODO**：`new_1` 抽帧起草 `fixtures/hero_s1/regions.json` 七区域
+  （沙发座面/长凳/书桌/花布桌/墙搁板/斗柜/展示柜），evidence_refs 带
+  时间戳，待人工确认。
+- **对账疑点（需队友确认）**：①旁白两次"和杯子打包在一起"但"杯子"（马克杯）
+  未单独旁白，G1d 覆盖风险；②物品视频三本书、旁白仅一本；③防晒霜/发卡/
+  梳子/护手霜去向为"洗手间"，而 new_1 巡拍仅客厅、无洗手间区域可登记,
+  G5a 指派一致性有隐患；④三种零食袋与外观对应为推断。
+- 教训：`pkill -f <脚本名>` 与同一 ssh 命令行内的重启命令同发会自匹配杀掉
+  承载 shell（表现为 ssh 255 貌似断连）——kill 与 relaunch 必须分连接执行。
+- Commits：`c88c502`（夹具草稿+誊写工具）、`d10bdae`（停顿切分修复）、
+  `0519160`（items v2 对账+候选重产）。
+
 ## 明日计划
 
 - 以 formal 结果冻结 A1 产品路径和演示口径：Step-Audio 2 mini 负责本地真实出场与
@@ -74,4 +115,8 @@
 - 从 formal `case-results.jsonl` 提取少量可复核的 clean、noise10、codec32 代表成功与
   失败案例，服务演示与误差说明，不新建训练数据工厂。
 - 继续禁止大文件 SSH/rsync 传输；英雄素材如必须上 Spark，应改用赛方允许的国内可
-  下载来源或其他合规数据入口，SSH 只保留控制面和小体积证据。
+  下载来源或其他合规数据入口，SSH 只保留控制面和小体积证据。（D5-2 已落地：
+  R2 HTTP 分块中转为素材标准入口，SSH 仅控制面+小证据。）
+- 词表扫描死词摘要人工裁决 → `fixtures/hero_s1/vocab.json`；transcript 人工
+  听校；regions 与洗手间疑点队友确认；S5 vLLM 起服务后按
+  `configs/hero_pipeline_s1.yaml` 发射 s1 主链。

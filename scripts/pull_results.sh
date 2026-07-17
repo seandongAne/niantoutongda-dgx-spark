@@ -9,12 +9,14 @@ mkdir -p results logs/remote
 MAX_MB=50
 # 预检失败(断连常态)按网络纪律重试一次;仍失败则带原因 fail-closed,
 # 不能让 set -e 在赋值管道里无声死掉、体积门成死代码。
-stats=$(rsync -azn --stats spark:~/proj/results/ ./results/ 2>&1) \
-  || stats=$(rsync -azn --stats spark:~/proj/results/ ./results/ 2>&1) \
+# 注意:macOS openrsync 的 dry-run --stats 恒报 0 transferred(2026-07-18 实锤,
+# 门形同虚设),必须改用 --out-format 逐文件求和;目录行带尾 / 排除。
+stats=$(rsync -azn --out-format='%l %n' spark:~/proj/results/ ./results/ 2>&1) \
+  || stats=$(rsync -azn --out-format='%l %n' spark:~/proj/results/ ./results/ 2>&1) \
   || { echo "pull_results: 体积预检 rsync 失败(已重试一次,疑似断连):" >&2
        printf '%s\n' "$stats" >&2; exit 2; }
-delta_bytes=$(printf '%s\n' "$stats" | grep -i "transferred file size" \
-  | grep -oE '[0-9][0-9,.]*' | head -1 | tr -d ',' || true)
+delta_bytes=$(printf '%s\n' "$stats" \
+  | awk '$1 ~ /^[0-9]+$/ && $NF !~ /\/$/ {s+=$1} END {printf "%d", s}' || true)
 delta_bytes=${delta_bytes:-0}
 delta_mb=$((delta_bytes / 1024 / 1024))
 if [ "$delta_mb" -gt "$MAX_MB" ]; then

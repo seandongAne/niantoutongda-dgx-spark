@@ -1,0 +1,33 @@
+version: "reid-hero-s1-w2-s087"
+created_at: "2026-07-17"
+owner: "物品记忆 Agent"
+reason: "§4 校准白名单第 3 项探针:W2 + stitch min_cosine 0.85→0.87;探针非冻结工作点,终局配置另立并记档"
+applies_to_dataset: "hero_s1"
+frozen: false
+
+embedding_dim: 768
+top_k: 5
+
+weights:
+  instance: 0.65
+  semantic: 0.15
+  attribute: 0.15
+  context: 0.00
+  geometry: 0.05
+
+thresholds:
+  match: 0.84
+  new: 0.70
+  margin: 0.00
+  min_quality: 0.28
+
+stitch:
+  enabled: true
+  min_cosine: 0.87
+  max_gap_ms: 0
+
+filter:
+  min_observations: 3
+
+clarify:
+  max_partners_per_tracklet: 2

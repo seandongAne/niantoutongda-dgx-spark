@@ -30,7 +30,9 @@ def _rows(path: Path):
     return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
 
 
-def evaluate(run_dir: Path, review: dict) -> dict:
+def evaluate(
+    run_dir: Path, review: dict, complete_min: int = 15, recall_min: float = 0.85
+) -> dict:
     entities = _rows(run_dir / "entities.jsonl")
     candidates = _rows(run_dir / "candidates.jsonl")
     clarifications = _rows(run_dir / "clarifications.jsonl")
@@ -180,11 +182,14 @@ def evaluate(run_dir: Path, review: dict) -> dict:
         }
 
     gate = {
-        "complete_merge": {"value": len(complete), "min": 15, "pass": len(complete) >= 15},
+        "complete_merge": {
+            "value": len(complete), "min": complete_min,
+            "pass": len(complete) >= complete_min,
+        },
         "recall_at_1": {
             "value": round(hits / opportunities, 4) if opportunities else None,
-            "hits": hits, "opportunities": opportunities, "min": 0.85,
-            "pass": opportunities > 0 and hits / opportunities >= 0.85,
+            "hits": hits, "opportunities": opportunities, "min": recall_min,
+            "pass": opportunities > 0 and hits / opportunities >= recall_min,
         },
         "high_confidence_false_merge": {
             "value": len(false_merge_entities), "max": 0,
@@ -219,12 +224,17 @@ def main() -> int:
     parser.add_argument("--review", required=True, help="anchor_review.v6.confirmed.json")
     parser.add_argument("--runs", nargs="+", required=True, help="S3 输出目录(可多个对照)")
     parser.add_argument("--out", required=True)
+    parser.add_argument("--complete-min", type=int, default=15,
+                        help="G2c 完整合并门(dev_a=15;hero-s1 预注册=16)")
+    parser.add_argument("--recall-min", type=float, default=0.85,
+                        help="G2d R@1 门(dev_a=0.85;hero-s1 预注册=0.90)")
     args = parser.parse_args()
 
     review = json.loads(Path(args.review).read_text())
     if review.get("status") != "data_owner_confirmed":
         raise SystemExit("refusing to evaluate: review status is not data_owner_confirmed")
-    reports = [evaluate(Path(run), review) for run in args.runs]
+    reports = [evaluate(Path(run), review, args.complete_min, args.recall_min)
+               for run in args.runs]
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps({"schema_version": "1.0", "reports": reports},

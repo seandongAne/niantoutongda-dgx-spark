@@ -112,5 +112,5 @@ paste "$CHUNKS_FILE" "$WORK/get_urls.txt" | tr '\t' '\n' | xargs -P "$DOWN_PAR" 
 mkdir -p "$DEST"
 sort "$CHUNKS_FILE" | (cd "$WORK" && xargs cat) | zstd -d | tar -x -C "$DEST"
 
-echo "[6/6] 校验通过,已解包到 $DEST/$(basename "$REMOTE_PATH")(清理由 trap 完成)"
+echo "[6/6] 校验通过,已解包到 $DEST/$REMOTE_PATH(清理由 trap 完成)"
 echo "pull_results_r2: OK ($REMOTE_PATH, $n_chunks 块)"

@@ -393,29 +393,36 @@ def ssh(
     return proc
 
 
-def run_spark_stage(stage: Stage, poll_interval: int, timeout: int) -> None:
+def run_spark_stage(
+    stage: Stage, poll_interval: int, timeout: int, adopt: bool = False
+) -> None:
     if '"' in stage.spark_cmd:
         raise ValueError(f"{stage.name}: spark_cmd 不得包含双引号(setsid 包装限制)")
     done = f"~/proj/logs/hero_{stage.name}.done"
     log = f"~/proj/logs/hero_{stage.name}.log"
-    # setsid -f:长任务立即脱离 ssh 会话(过继 init),发射命令前台毫秒级返回。
-    # 旧 nohup+& 形状下远端 shell 会陪跑整个长任务,发射连接被拖死(s1 首跑实锤)。
-    launch = (
-        f"cd ~/proj && rm -f {done} {log} && "
-        f'setsid -f bash -c "{stage.spark_cmd} && touch {done}" '
-        f"> {log} 2>&1 < /dev/null && echo launched"
-    )
-    proc = ssh(launch, retry_255=False)
-    if proc.returncode != 0:
-        # 连接层失败时远端可能已经开跑:以新连接核实日志(本次发射前已 rm),
-        # 绝不盲目重发造成双重发射。
-        verify = ssh(f"test -f {log} && echo STARTED || echo ABSENT")
-        if "STARTED" not in verify.stdout:
-            raise RuntimeError(
-                f"{stage.name}: 远程发射失败且未见日志\n{proc.stderr}"
-            )
-        print(f"  发射回包丢失但远端日志已建,视为已发射")
-    print(f"  已发射(setsid),轮询 {done} …")
+    if adopt:
+        # 收养模式:远端任务已在跑(或已完成),不重新发射以免双重发射,
+        # 直接轮询既有 done 标记。用于本地编排器重启后接上长任务。
+        print(f"  收养模式:不重新发射,轮询 {done} …")
+    else:
+        # setsid -f:长任务立即脱离 ssh 会话(过继 init),发射命令前台毫秒级返回。
+        # 旧 nohup+& 形状下远端 shell 会陪跑整个长任务,发射连接被拖死(s1 首跑实锤)。
+        launch = (
+            f"cd ~/proj && rm -f {done} {log} && "
+            f'setsid -f bash -c "{stage.spark_cmd} && touch {done}" '
+            f"> {log} 2>&1 < /dev/null && echo launched"
+        )
+        proc = ssh(launch, retry_255=False)
+        if proc.returncode != 0:
+            # 连接层失败时远端可能已经开跑:以新连接核实日志(本次发射前已 rm),
+            # 绝不盲目重发造成双重发射。
+            verify = ssh(f"test -f {log} && echo STARTED || echo ABSENT")
+            if "STARTED" not in verify.stdout:
+                raise RuntimeError(
+                    f"{stage.name}: 远程发射失败且未见日志\n{proc.stderr}"
+                )
+            print(f"  发射回包丢失但远端日志已建,视为已发射")
+        print(f"  已发射(setsid),轮询 {done} …")
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         time.sleep(poll_interval)
@@ -454,6 +461,11 @@ def main() -> int:
     ap.add_argument("--from-stage", default=None)
     ap.add_argument("--until-stage", default=None)
     ap.add_argument("--only", default=None)
+    ap.add_argument(
+        "--adopt-stage",
+        default=None,
+        help="该 spark 阶段不重新发射,直接轮询既有 done 标记(收养已在跑/已完成的远端任务)",
+    )
     ap.add_argument("--list", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--poll-interval", type=int, default=30)
@@ -470,9 +482,11 @@ def main() -> int:
     stages = build_stages(cfg, py)
     order = [n for n in STAGE_ORDER if n in stages]
 
-    for flag in (args.from_stage, args.until_stage, args.only):
+    for flag in (args.from_stage, args.until_stage, args.only, args.adopt_stage):
         if flag and flag not in stages:
             ap.error(f"阶段 {flag} 未启用;已启用: {', '.join(order)}")
+    if args.adopt_stage and stages[args.adopt_stage].kind != "spark":
+        ap.error(f"--adopt-stage 只适用于 spark 阶段: {args.adopt_stage}")
 
     if args.only:
         selected, forced = [args.only], {args.only}
@@ -520,7 +534,12 @@ def main() -> int:
         if stage.kind == "internal":
             write_bundle(run, args.config, stages)
         elif stage.kind == "spark":
-            run_spark_stage(stage, args.poll_interval, args.timeout)
+            run_spark_stage(
+                stage,
+                args.poll_interval,
+                args.timeout,
+                adopt=(stage.name == args.adopt_stage),
+            )
         else:
             proc = subprocess.run(stage.argv, cwd=PROJ, capture_output=True, text=True)
             if proc.stdout.strip():

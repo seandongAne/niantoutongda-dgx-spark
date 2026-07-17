@@ -1,0 +1,102 @@
+{
+  "anchor_id": "anchor_06",
+  "display_label_zh": "咖啡罐",
+  "groups": {
+    "A": {
+      "entity_id": "entity_7e05d3a978f5",
+      "shown": [
+        "old_2_t448",
+        "old_2_t517"
+      ],
+      "total": 2
+    },
+    "B": {
+      "entity_id": "entity_724490a9a0d0",
+      "shown": [
+        "old_3_t1832",
+        "old_3_t1813"
+      ],
+      "total": 2
+    },
+    "C": {
+      "entity_id": "entity_06b5f3d3e87e",
+      "shown": [
+        "old_3_t1894",
+        "old_3_t1855"
+      ],
+      "total": 2
+    },
+    "D": {
+      "entity_id": "entity_55df2a296f22",
+      "shown": [
+        "old_3_t1917",
+        "old_3_t1965"
+      ],
+      "total": 2
+    },
+    "E": {
+      "entity_id": "entity_0be38dca4a5b",
+      "shown": [
+        "old_3_t2030",
+        "old_3_t2058"
+      ],
+      "total": 2
+    },
+    "F": {
+      "entity_id": "entity_fa2a599d432c",
+      "shown": [
+        "old_1_t4896"
+      ],
+      "total": 1
+    }
+  },
+  "tutor": {
+    "same_item_group_pairs": [
+      [
+        "B",
+        "C"
+      ],
+      [
+        "B",
+        "D"
+      ],
+      [
+        "C",
+        "D"
+      ]
+    ],
+    "invariant_features": [
+      "透明玻璃罐身，圆柱形",
+      "白色螺纹玻璃盖",
+      "罐内深色内容物（咖啡豆）",
+      "3x3魔方（绿色顶面）作为参照物"
+    ],
+    "confusables": "其他透明玻璃罐或密封罐；区分要点：罐内装有咖啡豆、独特的螺纹盖设计、旁边常伴有魔方作为参照物。",
+    "hard_crops": [
+      "A1",
+      "A2",
+      "E1",
+      "E2"
+    ],
+    "detection_phrases_en": [
+      "glass jar with coffee beans",
+      "transparent jar with screw lid",
+      "rubik's cube and glass jar"
+    ],
+    "notes": "组B、C、D中的魔方提供了强空间参照，确认玻璃罐身份；组F展示了罐内咖啡豆的清晰视图；组A和E因图像质量限制（模糊/昏暗）难以确认细节。"
+  },
+  "tutor_raw": null,
+  "usage": {
+    "cached_tokens": 192,
+    "prompt_tokens": 3652,
+    "completion_tokens": 14185,
+    "total_tokens": 17837,
+    "prompt_tokens_details": {
+      "cached_tokens": 192
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "cached": false
+}

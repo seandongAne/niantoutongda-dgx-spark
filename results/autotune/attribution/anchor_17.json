@@ -1,0 +1,100 @@
+{
+  "anchor_id": "anchor_17",
+  "display_label_zh": "饼干",
+  "groups": {
+    "A": {
+      "entity_id": "entity_f28925dd3c3d",
+      "shown": [
+        "old_2_t2058",
+        "old_1_t3940",
+        "old_2_t2587"
+      ],
+      "total": 3
+    },
+    "B": {
+      "entity_id": "entity_4f06e936a499",
+      "shown": [
+        "old_1_t3306",
+        "old_1_t3180"
+      ],
+      "total": 2
+    },
+    "C": {
+      "entity_id": "entity_56736e16c897",
+      "shown": [
+        "old_3_t2062",
+        "old_3_t2047"
+      ],
+      "total": 2
+    },
+    "D": {
+      "entity_id": "entity_4fe35a65f93f",
+      "shown": [
+        "old_2_t1799"
+      ],
+      "total": 1
+    },
+    "E": {
+      "entity_id": "entity_05f86ce36695",
+      "shown": [
+        "old_3_t4109"
+      ],
+      "total": 1
+    },
+    "F": {
+      "entity_id": "entity_568536be57ab",
+      "shown": [
+        "old_3_t4357"
+      ],
+      "total": 1
+    }
+  },
+  "tutor": {
+    "same_item_group_pairs": [
+      [
+        "A",
+        "D"
+      ],
+      [
+        "A",
+        "F"
+      ],
+      [
+        "D",
+        "F"
+      ]
+    ],
+    "invariant_features": [
+      "透明塑料包装带锯齿边",
+      "白色竖条封口",
+      "内部橙色糕点多糖霜质感",
+      "包装左下角粉色标签"
+    ],
+    "confusables": "其他类似包装的糕点（如牛轧糖、雪花酥），可通过包装锯齿边样式、封口条位置及糕点表面糖霜颗粒感区分",
+    "hard_crops": [
+      "C1",
+      "C2",
+      "E1"
+    ],
+    "detection_phrases_en": [
+      "orange sugar crusted pastry in plastic wrapper",
+      "pink nougat candy with white seal",
+      "granola bar in transparent packaging with serrated edges"
+    ],
+    "notes": "组A图片质量最佳，细节清晰；组C图片模糊难以辨认；组E显示多个包装叠放；组B包装颜色偏浅可能为不同批次或光照差异"
+  },
+  "tutor_raw": null,
+  "usage": {
+    "cached_tokens": 192,
+    "prompt_tokens": 3138,
+    "completion_tokens": 4571,
+    "total_tokens": 7709,
+    "prompt_tokens_details": {
+      "cached_tokens": 192
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "cached": false
+}

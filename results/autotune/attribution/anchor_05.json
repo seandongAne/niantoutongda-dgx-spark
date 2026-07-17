@@ -1,0 +1,145 @@
+{
+  "anchor_id": "anchor_05",
+  "display_label_zh": "玩具娃娃",
+  "groups": {
+    "A": {
+      "entity_id": "entity_d3d1677a6860",
+      "shown": [
+        "old_1_t3094",
+        "old_3_t2055"
+      ],
+      "total": 2
+    },
+    "B": {
+      "entity_id": "entity_1366d5e25549",
+      "shown": [
+        "old_3_t2250",
+        "old_2_t3315"
+      ],
+      "total": 2
+    },
+    "C": {
+      "entity_id": "entity_50fb2c2c7972",
+      "shown": [
+        "old_2_t1682"
+      ],
+      "total": 1
+    },
+    "D": {
+      "entity_id": "entity_eb62dc4d1bf8",
+      "shown": [
+        "old_2_t3558"
+      ],
+      "total": 1
+    },
+    "E": {
+      "entity_id": "entity_769a9165897a",
+      "shown": [
+        "old_2_t3561"
+      ],
+      "total": 1
+    },
+    "F": {
+      "entity_id": "entity_b271f3af0e55",
+      "shown": [
+        "old_3_t2024"
+      ],
+      "total": 1
+    }
+  },
+  "tutor": {
+    "same_item_group_pairs": [
+      [
+        "A",
+        "B"
+      ],
+      [
+        "A",
+        "C"
+      ],
+      [
+        "A",
+        "D"
+      ],
+      [
+        "A",
+        "E"
+      ],
+      [
+        "A",
+        "F"
+      ],
+      [
+        "B",
+        "C"
+      ],
+      [
+        "B",
+        "D"
+      ],
+      [
+        "B",
+        "E"
+      ],
+      [
+        "B",
+        "F"
+      ],
+      [
+        "C",
+        "D"
+      ],
+      [
+        "C",
+        "E"
+      ],
+      [
+        "C",
+        "F"
+      ],
+      [
+        "D",
+        "E"
+      ],
+      [
+        "D",
+        "F"
+      ],
+      [
+        "E",
+        "F"
+      ]
+    ],
+    "invariant_features": [
+      "浅蓝色心形眼镜（带紫色镜片）",
+      "胸前粉色心形刺绣图案（带黄色字母）",
+      "粉色兔子耳朵造型",
+      "白色毛绒身体"
+    ],
+    "confusables": "与Hello Kitty猫形玩偶或美乐蒂无眼镜款式混淆，区分要点为长兔耳造型和可拆卸心形眼镜配件",
+    "hard_crops": [
+      "C1",
+      "E1"
+    ],
+    "detection_phrases_en": [
+      "pink My Melody plush with heart-shaped glasses",
+      "Sanrio bunny doll with blue heart glasses",
+      "cute pink rabbit plush with embroidered heart logo"
+    ],
+    "notes": "该物品为三丽鸥美乐蒂角色玩偶，佩戴可拆卸心形眼镜，胸前有黄色字母刺绣的心形图案，底部挂有标签，在不同视频中呈现不同拍摄角度、距离和光照条件"
+  },
+  "tutor_raw": null,
+  "usage": {
+    "cached_tokens": 192,
+    "prompt_tokens": 2619,
+    "completion_tokens": 4487,
+    "total_tokens": 7106,
+    "prompt_tokens_details": {
+      "cached_tokens": 192
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "cached": false
+}

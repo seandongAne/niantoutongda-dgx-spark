@@ -1,0 +1,92 @@
+{
+  "anchor_id": "anchor_12",
+  "display_label_zh": "护手霜",
+  "groups": {
+    "A": {
+      "entity_id": "entity_8fc649a4ee2b",
+      "shown": [
+        "old_1_t3795",
+        "old_3_t4162"
+      ],
+      "total": 2
+    },
+    "B": {
+      "entity_id": "entity_209f251fd057",
+      "shown": [
+        "old_3_t825",
+        "old_3_t748"
+      ],
+      "total": 2
+    },
+    "C": {
+      "entity_id": "entity_c92dc467963f",
+      "shown": [
+        "old_3_t859",
+        "old_3_t805"
+      ],
+      "total": 2
+    },
+    "D": {
+      "entity_id": "entity_e48aeb6671e2",
+      "shown": [
+        "old_1_t3092"
+      ],
+      "total": 1
+    },
+    "E": {
+      "entity_id": "entity_d2c8b6c753c4",
+      "shown": [
+        "old_1_t834"
+      ],
+      "total": 1
+    },
+    "F": {
+      "entity_id": "entity_b425a4f40607",
+      "shown": [
+        "old_1_t939"
+      ],
+      "total": 1
+    }
+  },
+  "tutor": {
+    "same_item_group_pairs": [
+      [
+        "A",
+        "D"
+      ]
+    ],
+    "invariant_features": [
+      "绿色铝管包装",
+      "白色雏菊图案（黄色花心）",
+      "Herbacin品牌文字标识",
+      "75ml容量标识"
+    ],
+    "confusables": "其他品牌洋甘菊护手霜，可通过管身绿色、雏菊图案样式及Herbacin品牌文字进行区分",
+    "hard_crops": [
+      "B1",
+      "B2",
+      "C1",
+      "C2"
+    ],
+    "detection_phrases_en": [
+      "green hand cream tube with daisy flower",
+      "Herbacin Kamille Handcreme 75ml",
+      "chamomile hand cream tube"
+    ],
+    "notes": "组A与组D为同一Herbacin洋甘菊护手霜实例，可通过绿色管身、雏菊图案及品牌标识确认；组B、C、E、F均显示窗户场景中的卷起垫子，但因图像分辨率过低、过曝且视角相似，无法提取有效特征以确认是否同一物理实例"
+  },
+  "tutor_raw": null,
+  "usage": {
+    "cached_tokens": 192,
+    "prompt_tokens": 4786,
+    "completion_tokens": 8003,
+    "total_tokens": 12789,
+    "prompt_tokens_details": {
+      "cached_tokens": 192
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "cached": false
+}

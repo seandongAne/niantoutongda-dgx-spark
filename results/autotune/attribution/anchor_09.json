@@ -1,0 +1,113 @@
+{
+  "anchor_id": "anchor_09",
+  "display_label_zh": "剪刀",
+  "groups": {
+    "A": {
+      "entity_id": "entity_5701d1692c37",
+      "shown": [
+        "old_3_t3377",
+        "old_1_t3449",
+        "old_1_t3461",
+        "old_3_t3440",
+        "old_1_t3129",
+        "old_1_t3347"
+      ],
+      "total": 8
+    },
+    "B": {
+      "entity_id": "entity_f320991426d3",
+      "shown": [
+        "old_1_t2740"
+      ],
+      "total": 1
+    },
+    "C": {
+      "entity_id": "entity_360649905c9e",
+      "shown": [
+        "old_1_t3417"
+      ],
+      "total": 1
+    },
+    "D": {
+      "entity_id": "entity_eb7f7e56c4e8",
+      "shown": [
+        "old_1_t3569"
+      ],
+      "total": 1
+    },
+    "E": {
+      "entity_id": "entity_8481c119b925",
+      "shown": [
+        "old_1_t4072"
+      ],
+      "total": 1
+    },
+    "F": {
+      "entity_id": "entity_a685fc52b7c5",
+      "shown": [
+        "old_2_t1580"
+      ],
+      "total": 1
+    }
+  },
+  "tutor": {
+    "same_item_group_pairs": [
+      [
+        "A",
+        "C"
+      ],
+      [
+        "A",
+        "D"
+      ],
+      [
+        "A",
+        "E"
+      ],
+      [
+        "C",
+        "D"
+      ],
+      [
+        "C",
+        "E"
+      ],
+      [
+        "D",
+        "E"
+      ]
+    ],
+    "invariant_features": [
+      "天蓝色塑料手柄材质",
+      "白色圆形 pivot 螺丝装饰",
+      "银色金属刀刃",
+      "圆形手柄环设计"
+    ],
+    "confusables": "组B的灰色剪刀与组F的浅灰色剪刀，区分要点为手柄颜色（天蓝色vs灰色/浅灰）及塑料材质的色调差异",
+    "hard_crops": [
+      "C1",
+      "D1",
+      "E1"
+    ],
+    "detection_phrases_en": [
+      "blue plastic scissors",
+      "light blue scissors with white dot screw",
+      "children's safety scissors with round handles"
+    ],
+    "notes": "组A包含多角度完整视图，组C、D、E分别为手柄上部、手柄环、刀刃连接处的局部特写，均属于同一把天蓝色剪刀；组B为灰色剪刀，组F为另一把浅色剪刀，为不同实例。组C、D、E因仅显示局部，在跨组匹配时需依赖组A的完整视图进行确认。"
+  },
+  "tutor_raw": null,
+  "usage": {
+    "cached_tokens": 3072,
+    "prompt_tokens": 3151,
+    "completion_tokens": 3882,
+    "total_tokens": 7033,
+    "prompt_tokens_details": {
+      "cached_tokens": 3072
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "cached": false
+}

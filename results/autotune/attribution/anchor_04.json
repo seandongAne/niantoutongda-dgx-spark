@@ -1,0 +1,91 @@
+{
+  "anchor_id": "anchor_04",
+  "display_label_zh": "壁纸刀",
+  "groups": {
+    "A": {
+      "entity_id": "entity_e1e705771b07",
+      "shown": [
+        "old_2_t3193",
+        "old_3_t2025"
+      ],
+      "total": 2
+    },
+    "B": {
+      "entity_id": "entity_b1fae9af4359",
+      "shown": [
+        "old_1_t3059"
+      ],
+      "total": 1
+    },
+    "C": {
+      "entity_id": "entity_06a5c81820a8",
+      "shown": [
+        "old_1_t4773"
+      ],
+      "total": 1
+    },
+    "D": {
+      "entity_id": "entity_e331126301ff",
+      "shown": [
+        "old_2_t3419"
+      ],
+      "total": 1
+    },
+    "E": {
+      "entity_id": "entity_e041c5462abc",
+      "shown": [
+        "old_2_t3457"
+      ],
+      "total": 1
+    },
+    "F": {
+      "entity_id": "entity_ec1a75195d83",
+      "shown": [
+        "old_2_t3528"
+      ],
+      "total": 1
+    }
+  },
+  "tutor": {
+    "same_item_group_pairs": [
+      [
+        "A",
+        "C"
+      ],
+      [
+        "A",
+        "F"
+      ]
+    ],
+    "invariant_features": [
+      "红色塑料手柄带波浪形防滑纹理",
+      "黑色刀头带网格防滑纹理",
+      "锯齿状金属刀片",
+      "美工刀整体外形与刀片导轨结构"
+    ],
+    "confusables": "其他红色手柄的美工刀或裁纸刀，需通过刀头黑色网格防滑纹理、手柄波浪形纹理及刀片锯齿细节区分",
+    "hard_crops": [
+      "D1",
+      "E1"
+    ],
+    "detection_phrases_en": [
+      "red utility knife",
+      "red box cutter",
+      "plastic handled craft knife with black blade"
+    ],
+    "notes": "组A包含两张清晰图，提供完整外观与木质背景参考；组C为手柄与刀片连接处特写（木质背景）；组F为刀片导轨特写；组B、D、E图像模糊，主要依赖颜色与轮廓识别，难以确认细节特征"
+  },
+  "tutor_raw": null,
+  "usage": {
+    "prompt_tokens": 2773,
+    "completion_tokens": 5203,
+    "total_tokens": 7976,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "cached": false
+}

@@ -1,0 +1,58 @@
+[
+  {
+    "anchor_id": "anchor_04",
+    "label": "壁纸刀",
+    "n_fragments": 6,
+    "n_loose": 0,
+    "parsed": true
+  },
+  {
+    "anchor_id": "anchor_05",
+    "label": "玩具娃娃",
+    "n_fragments": 6,
+    "n_loose": 0,
+    "parsed": true
+  },
+  {
+    "anchor_id": "anchor_06",
+    "label": "咖啡罐",
+    "n_fragments": 6,
+    "n_loose": 0,
+    "parsed": true
+  },
+  {
+    "anchor_id": "anchor_09",
+    "label": "剪刀",
+    "n_fragments": 6,
+    "n_loose": 0,
+    "parsed": true
+  },
+  {
+    "anchor_id": "anchor_12",
+    "label": "护手霜",
+    "n_fragments": 6,
+    "n_loose": 0,
+    "parsed": true
+  },
+  {
+    "anchor_id": "anchor_14",
+    "label": "梳子",
+    "n_fragments": 6,
+    "n_loose": 0,
+    "parsed": true
+  },
+  {
+    "anchor_id": "anchor_15",
+    "label": "跳跳糖",
+    "n_fragments": 6,
+    "n_loose": 0,
+    "parsed": false
+  },
+  {
+    "anchor_id": "anchor_17",
+    "label": "饼干",
+    "n_fragments": 6,
+    "n_loose": 0,
+    "parsed": true
+  }
+]

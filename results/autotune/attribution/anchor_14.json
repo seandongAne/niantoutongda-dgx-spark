@@ -1,0 +1,91 @@
+{
+  "anchor_id": "anchor_14",
+  "display_label_zh": "梳子",
+  "groups": {
+    "A": {
+      "entity_id": "entity_56ea99408a14",
+      "shown": [
+        "old_2_t2351",
+        "old_1_t3780",
+        "old_3_t4227",
+        "old_3_t4294"
+      ],
+      "total": 4
+    },
+    "B": {
+      "entity_id": "entity_b71db2cf8ede",
+      "shown": [
+        "old_1_t3917",
+        "old_3_t4201"
+      ],
+      "total": 2
+    },
+    "C": {
+      "entity_id": "entity_78c0ef0e330e",
+      "shown": [
+        "old_1_t2854"
+      ],
+      "total": 1
+    },
+    "D": {
+      "entity_id": "entity_ebea94aa3626",
+      "shown": [
+        "old_1_t3098"
+      ],
+      "total": 1
+    },
+    "E": {
+      "entity_id": "entity_93e68abe0019",
+      "shown": [
+        "old_2_t2195"
+      ],
+      "total": 1
+    },
+    "F": {
+      "entity_id": "entity_3e0047a8a895",
+      "shown": [
+        "old_3_t1946"
+      ],
+      "total": 1
+    }
+  },
+  "tutor": {
+    "same_item_group_pairs": [
+      [
+        "A",
+        "B"
+      ]
+    ],
+    "invariant_features": [
+      "半透明浅黄色塑料材质",
+      "宽大圆润的手柄末端",
+      "梳齿底部凹陷缺口设计",
+      "梳齿均匀密集排列"
+    ],
+    "confusables": "其他塑料梳子，可通过手柄末端的圆润造型及梳齿底部的凹陷缺口设计进行区分",
+    "hard_crops": [
+      "C1",
+      "E1"
+    ],
+    "detection_phrases_en": [
+      "translucent beige plastic comb",
+      "wide handle curved hair comb",
+      "comb with notched teeth base"
+    ],
+    "notes": "组A与组B为同一梳子的不同视角与光照条件拍摄；组C、E图像分辨率过低且模糊，无法确认物品细节；组D、F虽外观相似但缺乏足够特征验证是否为同一实例"
+  },
+  "tutor_raw": null,
+  "usage": {
+    "cached_tokens": 192,
+    "prompt_tokens": 4214,
+    "completion_tokens": 3239,
+    "total_tokens": 7453,
+    "prompt_tokens_details": {
+      "cached_tokens": 192
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "cached": false
+}

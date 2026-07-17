@@ -1,0 +1,131 @@
+{
+  "anchor_id": "anchor_15",
+  "display_label_zh": "跳跳糖",
+  "groups": {
+    "A": {
+      "entity_id": "entity_704d21ae577a",
+      "shown": [
+        "old_3_t4024",
+        "old_1_t3893",
+        "old_3_t4247",
+        "old_3_t4028",
+        "old_2_t2086"
+      ],
+      "total": 5
+    },
+    "B": {
+      "entity_id": "entity_076c5a1fbe47",
+      "shown": [
+        "old_1_t3138"
+      ],
+      "total": 1
+    },
+    "C": {
+      "entity_id": "entity_4f2ab936bab4",
+      "shown": [
+        "old_1_t3281"
+      ],
+      "total": 1
+    },
+    "D": {
+      "entity_id": "entity_27e83505d966",
+      "shown": [
+        "old_1_t3722"
+      ],
+      "total": 1
+    },
+    "E": {
+      "entity_id": "entity_f902d43f9e61",
+      "shown": [
+        "old_2_t2035"
+      ],
+      "total": 1
+    },
+    "F": {
+      "entity_id": "entity_501e5d247d40",
+      "shown": [
+        "old_3_t2016"
+      ],
+      "total": 1
+    }
+  },
+  "tutor": {
+    "same_item_group_pairs": [
+      [
+        "A",
+        "B"
+      ],
+      [
+        "A",
+        "C"
+      ],
+      [
+        "A",
+        "D"
+      ],
+      [
+        "A",
+        "E"
+      ],
+      [
+        "A",
+        "F"
+      ],
+      [
+        "B",
+        "C"
+      ],
+      [
+        "B",
+        "D"
+      ],
+      [
+        "B",
+        "E"
+      ],
+      [
+        "B",
+        "F"
+      ],
+      [
+        "C",
+        "D"
+      ],
+      [
+        "C",
+        "E"
+      ],
+      [
+        "C",
+        "F"
+      ],
+      [
+        "D",
+        "E"
+      ],
+      [
+        "D",
+        "F"
+      ],
+      [
+        "E",
+        "F"
+      ]
+    ],
+    "_recovered": "regex from malformed JSON(未转义内嵌引号),其余字段见 tutor_raw"
+  },
+  "tutor_raw": "```json\n{\n  \"same_item_group_pairs\": [[\"A\",\"B\"], [\"A\",\"C\"], [\"A\",\"D\"], [\"A\",\"E\"], [\"A\",\"F\"], [\"B\",\"C\"], [\"B\",\"D\"], [\"B\",\"E\"], [\"B\",\"F\"], [\"C\",\"D\"], [\"C\",\"E\"], [\"C\",\"F\"], [\"D\",\"E\"], [\"D\",\"F\"], [\"E\",\"F\"]],\n  \"invariant_features\": [\"豹子警官卡通形象（斑点皮毛、蓝色警服、大笑表情）\", \"\"疯狂跳跳糖\"黄色艺术字（黑色描边、爆炸形背景）\", \"红色糖果图案（心形、表面白点）\", \"红色锯齿状包装侧边\"],\n  \"confusables\": \"其他疯狂动物城主题糖果包装（如尼克或朱迪主题），区分要点：豹子警官的斑点形象和\\\"疯狂跳跳糖\\\"产品名称\",\n  \"hard_crops\": [\"D1\", \"E1\", \"F1\"],\n  \"detection_phrases_en\": [\"Zootopia cheetah police officer candy packaging\", \"Crazy jumping candy red package 14g\", \"Disney lollipop bag with cartoon cheetah character\"],\n  \"notes\": \"包装袋为软塑料材质，有金属化反光层；包装袋存在自然褶皱；背景为木质桌面；包装袋顶部有密封边，底部有锯齿边；组D、E仅显示局部（顶部、底部），组F为折叠状态，识别难度较高。\"\n}\n```",
+  "usage": {
+    "cached_tokens": 192,
+    "prompt_tokens": 3806,
+    "completion_tokens": 8678,
+    "total_tokens": 12484,
+    "prompt_tokens_details": {
+      "cached_tokens": 192
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "cached": false
+}

@@ -1,0 +1,36 @@
+{
+  "clusters": {
+    "dropped": {
+      "conflict": 3,
+      "single_video": 232,
+      "thin_train": 37,
+      "too_small": 194
+    },
+    "kept": 117
+  },
+  "created_at": "2026-07-17T21:15:11+00:00",
+  "edges": {
+    "link_edges": 259,
+    "stitch_edges": 451,
+    "tutor_diff_constraints": 74,
+    "tutor_same_edges": 364
+  },
+  "gt_overlap": {
+    "labeled_in_gt": 64,
+    "labeled_total": 511,
+    "note": "修订条款要求的审计数字;GT 未参与标签构造",
+    "rate": 0.1252
+  },
+  "params": {
+    "min_link_score": 0.93,
+    "min_tutor_conf": 0.7
+  },
+  "samples": 511,
+  "sources": {
+    "reid_dir": "results/hero_s1/reid-w2",
+    "tutor_pairs": {
+      "path": "results/autotune/tutor_pairs.jsonl",
+      "sha256": "3525291ef76fadf4691098ef9b554146c41741ad8e41244eddfd0f758c4cefc0"
+    }
+  }
+}

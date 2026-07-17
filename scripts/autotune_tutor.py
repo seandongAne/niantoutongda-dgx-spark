@@ -106,7 +106,11 @@ def _cached_chat(channel: str, cache_key: str, messages: list[dict], n_images: i
 
 
 def _parse_json_block(text: str) -> dict | None:
-    """从可能带说明文字的回复中抽取最后一个合法 JSON 对象。"""
+    """从可能带说明文字的回复中抽取最后一个合法 JSON 对象。
+
+    兜底:tutor 偶发在 JSON 字符串里嵌未转义引号(如 reason 里引用商品名),
+    整体解析失败时用正则直接提取 same/confidence 结构字段(位于病灶之前)。
+    """
     for candidate in re.findall(r"\{.*\}", text, flags=re.DOTALL) or []:
         # 从最长匹配逐步收缩右边界尝试解析
         for end in range(len(candidate), 1, -1):
@@ -119,6 +123,14 @@ def _parse_json_block(text: str) -> dict | None:
                     return obj
             except json.JSONDecodeError:
                 continue
+    same = re.search(r'"same"\s*:\s*(true|false)', text)
+    conf = re.search(r'"confidence"\s*:\s*([01](?:\.\d+)?)', text)
+    if same and conf:
+        return {
+            "same": same.group(1) == "true",
+            "confidence": float(conf.group(1)),
+            "_recovered": "regex fallback(JSON 内嵌未转义引号)",
+        }
     return None
 
 

@@ -123,6 +123,20 @@ def cmd_models(_: argparse.Namespace) -> None:
         print(m.get("id"))
 
 
+def image_part(path: str | Path) -> dict:
+    """图片 → OpenAI image_url data-URI content part(视觉调用统一走这里)。"""
+    p = Path(path)
+    suffix = p.suffix.lstrip(".").lower() or "jpeg"
+    mime = {"jpg": "jpeg"}.get(suffix, suffix)
+    return {
+        "type": "image_url",
+        "image_url": {
+            "url": f"data:image/{mime};base64,"
+            + base64.b64encode(p.read_bytes()).decode()
+        },
+    }
+
+
 def cmd_chat(args: argparse.Namespace) -> None:
     prompt = args.prompt if args.prompt is not None else sys.stdin.read()
     content: list[dict] | str
@@ -137,6 +151,10 @@ def cmd_chat(args: argparse.Namespace) -> None:
                     "format": audio.suffix.lstrip(".").lower() or "wav",
                 },
             },
+        ]
+    elif args.image:
+        content = [{"type": "text", "text": prompt}] + [
+            image_part(img) for img in args.image
         ]
     else:
         content = prompt
@@ -185,6 +203,9 @@ def main() -> None:
     chat.add_argument("--prompt", default=None, help="缺省从 stdin 读")
     chat.add_argument("--system", default=None)
     chat.add_argument("--audio", default=None, help="音频文件路径(wav/mp3)")
+    chat.add_argument(
+        "--image", action="append", default=None, help="图片路径,可重复(jpg/png)"
+    )
     chat.add_argument("--temperature", type=float, default=0.2)
     chat.set_defaults(func=cmd_chat)
     args = ap.parse_args()

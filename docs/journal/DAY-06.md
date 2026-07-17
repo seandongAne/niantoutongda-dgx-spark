@@ -35,3 +35,23 @@
   tutor 同物对,不受影响。
 - 归因产物:`results/autotune/attribution/`(8 记录 + merge_pairs.jsonl 46 对
   + 英文检测短语建议存档)。配对通道 400 不确定带对并发标注中。
+
+## 增量 D6-2:R2 回程通道——大文件传输彻底告别 SSH(清晨)
+
+- 动因:D5 拉回 1.1GB crops 走 SSH 耗近一小时;赛方明令大文件不走 SSH。素材日
+  已验证下行(Mac→R2→spark r2.dev 并发拉),本日补上行(spark→Mac),自此
+  SSH 只留控制面与小体积证据。
+- 机制(`scripts/pull_results_r2.sh` + `infra/r2-relay/`):
+  1. Mac 用 wrangler OAuth 部署绑桶 Worker,注入**本次传输专用一次性随机 token**;
+  2. spark `tar+zstd -T0` 打包 → 64MiB 分块 + sha256 清单 → `curl -T` 4 路并发
+     PUT 到 Worker(**节点全程零凭据**,只见限时 token;曾被入侵机器的凭据纪律
+     不破);
+  3. Mac wrangler API 6 路并发拉回 → 逐块 SHA256 校验 → cat 重组 → 解包;
+  4. trap 兜所有退出路径:桶内对象即删、token 即作废(disabled 重部署)、远端
+     /tmp 会话目录清理。
+- Worker 侧防御:token 比对 + 只许写 `xfer-` 会话前缀(防覆盖桶内素材对象)+
+  路径穿越拒绝。
+- 旧 `pull_results.sh` 加体积预检门:rsync dry-run 测增量,>50MB 拒绝并指路
+  R2 通道——1.1GB 级事故从机制上灭绝。
+- 状态:三镜头对抗审查(壳层/凭据/断连故障)+ 远端 reid-w2 逐字节对账 E2E
+  进行中,过审后为标准回程入口。

@@ -180,19 +180,40 @@ class LocalStepAudio2:
 
 
 def split_segments(
-    audio: np.ndarray, rate: int, top_db: float, min_dur: float, pad: float
+    audio: np.ndarray,
+    rate: int,
+    top_db: float,
+    min_dur: float,
+    pad: float,
+    min_gap: float,
+    max_dur: float,
 ) -> list[tuple[int, int]]:
-    """静音切分;短段并入前段,段边界各留 pad 秒。"""
-    raw = librosa.effects.split(audio, top_db=top_db)
-    merged: list[list[int]] = []
-    for start, end in raw:
-        if merged and (end - start) / rate < min_dur:
-            merged[-1][1] = end
+    """停顿切分:语音区间按间隙 ≥min_gap 分组;<min_dur 的碎段丢弃;
+    >max_dur 的组在其内部最长间隙处递归二分;段边界各留 pad 秒。"""
+    raw = [tuple(x) for x in librosa.effects.split(audio, top_db=top_db)]
+    groups: list[list[tuple[int, int]]] = []
+    for span in raw:
+        if groups and (span[0] - groups[-1][-1][1]) / rate < min_gap:
+            groups[-1].append(span)
         else:
-            merged.append([start, end])
+            groups.append([span])
+
+    def flatten(group: list[tuple[int, int]]) -> list[tuple[int, int]]:
+        start, end = group[0][0], group[-1][1]
+        if (end - start) / rate <= max_dur or len(group) == 1:
+            return [(start, end)]
+        gaps = [
+            (group[i + 1][0] - group[i][1], i) for i in range(len(group) - 1)
+        ]
+        _, cut = max(gaps)
+        return flatten(group[: cut + 1]) + flatten(group[cut + 1:])
+
+    spans = [s for g in groups for s in flatten(g)]
     pad_n = int(pad * rate)
     return [
-        (max(0, s - pad_n), min(len(audio), e + pad_n)) for s, e in merged
+        (max(0, s - pad_n), min(len(audio), e + pad_n))
+        for s, e in spans
+        if (e - s) / rate >= min_dur
     ]
 
 
@@ -205,9 +226,11 @@ def main() -> int:
         type=Path,
         default=Path.home() / "models" / "stepfun-ai__Step-Audio-2-mini",
     )
-    ap.add_argument("--top-db", type=float, default=40.0)
-    ap.add_argument("--min-dur", type=float, default=0.5)
+    ap.add_argument("--top-db", type=float, default=35.0)
+    ap.add_argument("--min-dur", type=float, default=0.8)
     ap.add_argument("--pad", type=float, default=0.15)
+    ap.add_argument("--min-gap", type=float, default=0.6)
+    ap.add_argument("--max-dur", type=float, default=28.0)
     ap.add_argument("--max-new", type=int, default=256)
     args = ap.parse_args()
 
@@ -217,8 +240,14 @@ def main() -> int:
 
     audio, rate = sf.read(args.audio, dtype="float32", always_2d=True)
     mono = audio.mean(axis=1)
-    spans = split_segments(mono, rate, args.top_db, args.min_dur, args.pad)
-    print(f"[split] {len(spans)} segments (top_db={args.top_db})", flush=True)
+    spans = split_segments(
+        mono, rate, args.top_db, args.min_dur, args.pad, args.min_gap, args.max_dur
+    )
+    print(
+        f"[split] {len(spans)} segments "
+        f"(top_db={args.top_db} min_gap={args.min_gap} max_dur={args.max_dur})",
+        flush=True,
+    )
 
     model = LocalStepAudio2(args.model_path)
     started = time.time()
@@ -252,7 +281,13 @@ def main() -> int:
         "audio_sha256": file_sha256(args.audio),
         "model_path": str(args.model_path),
         "decoding": {"do_sample": False, "temperature": None, "shots": 0},
-        "split": {"top_db": args.top_db, "min_dur": args.min_dur, "pad": args.pad},
+        "split": {
+            "top_db": args.top_db,
+            "min_dur": args.min_dur,
+            "pad": args.pad,
+            "min_gap": args.min_gap,
+            "max_dur": args.max_dur,
+        },
         "segments": len(spans),
         "elapsed_s": round(time.time() - started, 1),
         "created_at": utc_now(),

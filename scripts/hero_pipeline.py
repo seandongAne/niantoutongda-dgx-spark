@@ -364,12 +364,25 @@ def write_state(run: Path, stage: Stage, started: str) -> None:
     )
 
 
-def ssh(remote_cmd: str) -> subprocess.CompletedProcess:
-    """跨境网络纪律:255(连接层失败)重试一次。"""
+SSH_HUNG = 254  # 本地合成码:连接假死被超时斩断
+
+
+def ssh(remote_cmd: str, timeout: int = 120) -> subprocess.CompletedProcess:
+    """跨境网络纪律:255(连接层失败)重试一次;假死连接超时斩断,合成 254。
+
+    254 不自动重试:假死时远端命令可能已经执行(回包丢失),盲目重发
+    会造成双重发射;交调用方处置。管线所有 ssh 都是控制面短命令,
+    真正的长任务在远端 nohup,120s 上限只斩连接不斩任务。
+    """
+    argv = ["ssh", "spark", remote_cmd]
     for attempt in (1, 2):
-        proc = subprocess.run(
-            ["ssh", "spark", remote_cmd], capture_output=True, text=True
-        )
+        try:
+            proc = subprocess.run(argv, capture_output=True, text=True, timeout=timeout)
+        except subprocess.TimeoutExpired:
+            return subprocess.CompletedProcess(
+                argv, SSH_HUNG, "",
+                f"ssh 假死,{timeout}s 超时斩断;远端可能已执行,不自动重试",
+            )
         if proc.returncode != 255 or attempt == 2:
             return proc
         print(f"  ssh 255,重试一次…", file=sys.stderr)
@@ -396,7 +409,8 @@ def run_spark_stage(stage: Stage, poll_interval: int, timeout: int) -> None:
         check = ssh(f"test -f {done} && echo DONE || tail -c 300 {log}")
         if "DONE" in check.stdout:
             return
-        print(f"  [{stage.name}] 进行中: {check.stdout.strip()[-120:]}")
+        note = check.stdout.strip() or check.stderr.strip()
+        print(f"  [{stage.name}] 进行中: {note[-120:]}")
     raise TimeoutError(f"{stage.name}: 超时({timeout}s),日志见 spark:{log}")
 
 

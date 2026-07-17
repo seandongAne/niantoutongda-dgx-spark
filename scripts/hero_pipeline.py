@@ -367,12 +367,15 @@ def write_state(run: Path, stage: Stage, started: str) -> None:
 SSH_HUNG = 254  # 本地合成码:连接假死被超时斩断
 
 
-def ssh(remote_cmd: str, timeout: int = 120) -> subprocess.CompletedProcess:
+def ssh(
+    remote_cmd: str, timeout: int = 120, retry_255: bool = True
+) -> subprocess.CompletedProcess:
     """跨境网络纪律:255(连接层失败)重试一次;假死连接超时斩断,合成 254。
 
     254 不自动重试:假死时远端命令可能已经执行(回包丢失),盲目重发
-    会造成双重发射;交调用方处置。管线所有 ssh 都是控制面短命令,
-    真正的长任务在远端 nohup,120s 上限只斩连接不斩任务。
+    会造成双重发射;交调用方处置。非幂等命令(发射类)须 retry_255=False,
+    由调用方核实远端状态。管线所有 ssh 都是控制面短命令,真正的长任务
+    在远端 setsid 脱离,120s 上限只斩连接不斩任务。
     """
     argv = ["ssh", "spark", remote_cmd]
     for attempt in (1, 2):
@@ -383,7 +386,7 @@ def ssh(remote_cmd: str, timeout: int = 120) -> subprocess.CompletedProcess:
                 argv, SSH_HUNG, "",
                 f"ssh 假死,{timeout}s 超时斩断;远端可能已执行,不自动重试",
             )
-        if proc.returncode != 255 or attempt == 2:
+        if proc.returncode != 255 or attempt == 2 or not retry_255:
             return proc
         print(f"  ssh 255,重试一次…", file=sys.stderr)
         time.sleep(5)
@@ -392,17 +395,27 @@ def ssh(remote_cmd: str, timeout: int = 120) -> subprocess.CompletedProcess:
 
 def run_spark_stage(stage: Stage, poll_interval: int, timeout: int) -> None:
     if '"' in stage.spark_cmd:
-        raise ValueError(f"{stage.name}: spark_cmd 不得包含双引号(nohup 包装限制)")
+        raise ValueError(f"{stage.name}: spark_cmd 不得包含双引号(setsid 包装限制)")
     done = f"~/proj/logs/hero_{stage.name}.done"
     log = f"~/proj/logs/hero_{stage.name}.log"
+    # setsid -f:长任务立即脱离 ssh 会话(过继 init),发射命令前台毫秒级返回。
+    # 旧 nohup+& 形状下远端 shell 会陪跑整个长任务,发射连接被拖死(s1 首跑实锤)。
     launch = (
-        f"cd ~/proj && rm -f {done} && "
-        f'nohup bash -c "{stage.spark_cmd} && touch {done}" > {log} 2>&1 & echo launched'
+        f"cd ~/proj && rm -f {done} {log} && "
+        f'setsid -f bash -c "{stage.spark_cmd} && touch {done}" '
+        f"> {log} 2>&1 < /dev/null && echo launched"
     )
-    proc = ssh(launch)
+    proc = ssh(launch, retry_255=False)
     if proc.returncode != 0:
-        raise RuntimeError(f"{stage.name}: 远程发射失败\n{proc.stderr}")
-    print(f"  已发射(nohup),轮询 {done} …")
+        # 连接层失败时远端可能已经开跑:以新连接核实日志(本次发射前已 rm),
+        # 绝不盲目重发造成双重发射。
+        verify = ssh(f"test -f {log} && echo STARTED || echo ABSENT")
+        if "STARTED" not in verify.stdout:
+            raise RuntimeError(
+                f"{stage.name}: 远程发射失败且未见日志\n{proc.stderr}"
+            )
+        print(f"  发射回包丢失但远端日志已建,视为已发射")
+    print(f"  已发射(setsid),轮询 {done} …")
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         time.sleep(poll_interval)

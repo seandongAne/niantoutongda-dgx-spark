@@ -1,0 +1,46 @@
+{
+  "code_commit": "8c2455003b9b1e15b79537473c977aef90cc439f",
+  "config": {
+    "path": "configs/sf1_hero_s1.yaml",
+    "sha256": "af7d092651caf2f4a0e909f5d3aa9cf90bfe5d54a12ba2773c7f760a33f57265"
+  },
+  "created_at": "2026-07-17T21:15:53+00:00",
+  "dataset_fingerprint": "cfcf6f6d63d803ac553ed2b788abb1824b2f15eeb85a3035303dca332c5c053d",
+  "elapsed_seconds": 3.548,
+  "gate": {
+    "finite": true,
+    "learned_checkpoint_found": true,
+    "pass": true,
+    "recall_at_1_non_degrading": true,
+    "recall_at_5_non_degrading": true,
+    "top1_margin_improved": true
+  },
+  "labels": {
+    "path": "fixtures/autotune/pseudo_labels.tutor-v1.json",
+    "sha256": "71d2a9dffa911de856b2b344299903459139f7d9a9c3a9fbca841b8875e28925"
+  },
+  "primary_seed": 20260716,
+  "projection": {
+    "format": "sf1-projection-v1",
+    "hidden_dim": 256,
+    "input_dim": 768,
+    "mode": "concat",
+    "output_dim": 896,
+    "parameters": 229760,
+    "path": "results/sf1/hero_s1_autotune_v1/projection.npz",
+    "residual_scale": 0.4,
+    "sha256": "79a74f135acad1f43ac25d391a01becdbac1dc8b219430a4a14c6ddaf6da02e4"
+  },
+  "runtime": {
+    "cuda_device": "NVIDIA GB10",
+    "device": "cuda",
+    "torch_version": "2.13.0+cu130"
+  },
+  "schema_version": "1.0",
+  "scope": "HERO_S1_OFFICIAL",
+  "selected_epoch": 30,
+  "selection_policy": "first_preregistered_seed; checkpoint=max_margin_subject_to_R1_R5_non_degrading",
+  "slice_id": "SF1-L1",
+  "split_policy": "leave_last_video_out_v1",
+  "version": "sf1-l1-hero-s1-v1"
+}

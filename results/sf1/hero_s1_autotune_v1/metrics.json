@@ -1,0 +1,150 @@
+{
+  "baseline": {
+    "finite": true,
+    "gallery": 324,
+    "hardest_negative_cosine_mean": 0.848445,
+    "hardest_negative_cosine_p95": 0.989184,
+    "identities": 117,
+    "mean_reciprocal_rank": 0.600149,
+    "positive_cosine_mean": 0.869109,
+    "queries": 187,
+    "recall_at_1": 0.438503,
+    "recall_at_5": 0.834225,
+    "top1_margin_mean": 0.062392,
+    "top1_margin_min": -0.19476
+  },
+  "deltas": {
+    "hardest_negative_cosine_mean": -0.002158,
+    "mean_reciprocal_rank": 0.004189,
+    "positive_cosine_mean": 0.005444,
+    "recall_at_1": 0.010695,
+    "recall_at_5": 0.005347,
+    "top1_margin_mean": 0.003075
+  },
+  "gate": {
+    "finite": true,
+    "learned_checkpoint_found": true,
+    "pass": true,
+    "recall_at_1_non_degrading": true,
+    "recall_at_5_non_degrading": true,
+    "top1_margin_improved": true
+  },
+  "per_seed": [
+    {
+      "eligible_checkpoint_found": true,
+      "metrics": {
+        "finite": true,
+        "gallery": 324,
+        "hardest_negative_cosine_mean": 0.846287,
+        "hardest_negative_cosine_p95": 0.990543,
+        "identities": 117,
+        "mean_reciprocal_rank": 0.604338,
+        "positive_cosine_mean": 0.874553,
+        "queries": 187,
+        "recall_at_1": 0.449198,
+        "recall_at_5": 0.839572,
+        "top1_margin_mean": 0.065467,
+        "top1_margin_min": -0.203192
+      },
+      "seed": 20260716,
+      "selected_epoch": 30
+    },
+    {
+      "eligible_checkpoint_found": true,
+      "metrics": {
+        "finite": true,
+        "gallery": 324,
+        "hardest_negative_cosine_mean": 0.845273,
+        "hardest_negative_cosine_p95": 0.990074,
+        "identities": 117,
+        "mean_reciprocal_rank": 0.603485,
+        "positive_cosine_mean": 0.873609,
+        "queries": 187,
+        "recall_at_1": 0.449198,
+        "recall_at_5": 0.834225,
+        "top1_margin_mean": 0.06565,
+        "top1_margin_min": -0.208856
+      },
+      "seed": 20260717,
+      "selected_epoch": 35
+    },
+    {
+      "eligible_checkpoint_found": true,
+      "metrics": {
+        "finite": true,
+        "gallery": 324,
+        "hardest_negative_cosine_mean": 0.848049,
+        "hardest_negative_cosine_p95": 0.990509,
+        "identities": 117,
+        "mean_reciprocal_rank": 0.605325,
+        "positive_cosine_mean": 0.875369,
+        "queries": 187,
+        "recall_at_1": 0.44385,
+        "recall_at_5": 0.84492,
+        "top1_margin_mean": 0.064703,
+        "top1_margin_min": -0.209511
+      },
+      "seed": 20260718,
+      "selected_epoch": 30
+    }
+  ],
+  "primary_seed": {
+    "eligible_checkpoint_found": true,
+    "metrics": {
+      "finite": true,
+      "gallery": 324,
+      "hardest_negative_cosine_mean": 0.846287,
+      "hardest_negative_cosine_p95": 0.990543,
+      "identities": 117,
+      "mean_reciprocal_rank": 0.604338,
+      "positive_cosine_mean": 0.874553,
+      "queries": 187,
+      "recall_at_1": 0.449198,
+      "recall_at_5": 0.839572,
+      "top1_margin_mean": 0.065467,
+      "top1_margin_min": -0.203192
+    },
+    "seed": 20260716,
+    "selected_epoch": 30
+  },
+  "scope": "HERO_S1_OFFICIAL",
+  "selection_policy": "first_preregistered_seed; checkpoint=max_margin_subject_to_R1_R5_non_degrading",
+  "stability": {
+    "hardest_negative_cosine_mean": {
+      "max": 0.848049,
+      "mean": 0.846536,
+      "min": 0.845273,
+      "std": 0.001147
+    },
+    "mean_reciprocal_rank": {
+      "max": 0.605325,
+      "mean": 0.604383,
+      "min": 0.603485,
+      "std": 0.000752
+    },
+    "positive_cosine_mean": {
+      "max": 0.875369,
+      "mean": 0.87451,
+      "min": 0.873609,
+      "std": 0.000719
+    },
+    "recall_at_1": {
+      "max": 0.449198,
+      "mean": 0.447415,
+      "min": 0.44385,
+      "std": 0.002521
+    },
+    "recall_at_5": {
+      "max": 0.84492,
+      "mean": 0.839572,
+      "min": 0.834225,
+      "std": 0.004366
+    },
+    "top1_margin_mean": {
+      "max": 0.06565,
+      "mean": 0.065273,
+      "min": 0.064703,
+      "std": 0.00041
+    }
+  }
+}

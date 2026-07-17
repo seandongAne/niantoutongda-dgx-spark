@@ -1,5 +1,5 @@
 {
-  "_comment": "英雄房间物品清单 v2 — item_collections.MOV 目视 + A1 旁白誊写对账(2026-07-17)。name_zh 取旁白用词。待确认:①mug 只作'杯子'打包对象出现,未单独旁白;②视频有三本书,旁白只一本;③三种零食袋与外观的对应是推断。外观描述面向 GDINO 短语工程。",
+  "_comment": "英雄房间物品清单 v2.1 — item_collections.MOV 目视 + A1 旁白誊写对账(2026-07-17)。name_zh 取旁白用词。用户裁决(07-17):①'杯子'=白色马克杯,是锚点;旁白缺行,s1 首跑出澄清后走轻确认入'杯子'组(与水壶/咖啡罐同组,confirmations.json 按需回填);②书=三本统称,同去向一起打包,GT 对账按一组处理;③三种零食袋与外观的对应仍是推断,待队友过目。外观描述面向 GDINO 短语工程。",
   "items": [
     {"canonical_id": "water_bottle", "name_zh": "水壶", "description_zh": "粉色保温水杯,杯身带浅色波点和独角兽图案,青绿色翻盖带提绳"},
     {"canonical_id": "sunscreen_tin", "name_zh": "防晒霜", "description_zh": "粉色圆形扁铁盒,盖面有白色云朵图案"},

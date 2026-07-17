@@ -17,7 +17,7 @@
       "display_label_zh": "马克杯",
       "detection_prompts": ["white ceramic mug", "green flower bird mug"],
       "confusable_group": "drink_container",
-      "notes": "旁白未单独介绍(仅作'杯子'打包对象),保留待队友确认锚点身份。"
+      "notes": "用户裁决(07-17):'杯子'=此白色马克杯,确认为锚点;旁白缺行由轻确认补组。"
     },
     {
       "canonical_id": "coffee_jar",

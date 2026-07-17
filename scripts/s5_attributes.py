@@ -247,6 +247,10 @@ def main() -> int:
     parser.add_argument("--cache", default=None, help="缓存 JSONL(默认 <out>.cache)")
     parser.add_argument("--concurrency", type=int, default=8)
     parser.add_argument("--limit", type=int, default=0, help="冒烟用:只处理前 N 轨")
+    parser.add_argument(
+        "--max-failed-rate", type=float, default=0.01,
+        help="失败轨占比容忍上限:失败样本已如实落盘(EXTRACTION_FAILED),仅超限才阶段致命",
+    )
     parser.add_argument("--no-guided", action="store_true", help="禁用 guided_json")
     args = parser.parse_args()
 
@@ -323,7 +327,18 @@ def main() -> int:
         json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
     )
     print(json.dumps(manifest, ensure_ascii=False, sort_keys=True))
-    return 0 if len(ok) == len(rows) else 1
+    failed_ids = [r["tracklet_id"] for r in rows if r["status"] != "OK"]
+    if not failed_ids:
+        return 0
+    # 个别坏输出=失败样本(下游按 missing 语义剔除),不让整个批次阶段致命;
+    # 超过容忍率才判失败(A1 formal 同款契约:严格记错,继续完成)。
+    rate = len(failed_ids) / max(1, len(rows))
+    print(
+        f"failed {len(failed_ids)}/{len(rows)} ({rate:.4%}), "
+        f"门限 {args.max_failed_rate:.2%}: {failed_ids[:10]}",
+        file=sys.stderr,
+    )
+    return 0 if rate <= args.max_failed_rate else 1
 
 
 if __name__ == "__main__":

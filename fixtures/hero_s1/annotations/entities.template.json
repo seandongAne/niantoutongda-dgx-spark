@@ -2,15 +2,15 @@
   "schema_version": "1.0",
   "dataset_version": "hero-s1-vocab1",
   "status": "pending_data_owner_tracklet_mapping",
-  "_granularity_note": "锚点粒度(2026-07-17 起草,待用户确认):单实例 17 类各 1 锚点;书×3 按用户裁决(07-17)统称组锚点;铅笔×4 全同款人眼跨视频不可分,比照书裁决作组锚点;圆珠笔/红色圆珠笔颜色可分,独立锚点(G2b 天然同款不同色对);茶叶×2 同款同色不可分,组锚点。组锚点(instance_count>1)的 G2c 口径:确认轨落入 ≤instance_count 个实体且零跨锚点混入,不要求单实体。",
+  "_granularity_note": "锚点粒度(2026-07-17 用户裁决):单实例 17 类各 1 锚点;书×3 统称组锚点(07-17 裁决);笔全部统称一组(铅笔×4+圆珠笔×2 不再拆分,用户裁决);茶叶×2 同款同色不可分,组锚点。组锚点(instance_count>1)的 G2c 口径:确认轨落入 ≤instance_count 个实体且零跨锚点混入,不要求单实体;组内互并不判负。",
   "video_ids": ["old_1", "old_2", "old_3"],
-  "evaluation_anchor_ids": ["anchor_01", "anchor_02", "anchor_03", "anchor_04", "anchor_05", "anchor_06", "anchor_07", "anchor_08", "anchor_09", "anchor_10", "anchor_11", "anchor_12", "anchor_13", "anchor_14", "anchor_15", "anchor_16", "anchor_17", "anchor_18", "anchor_19", "anchor_20", "anchor_21", "anchor_22"],
+  "evaluation_anchor_ids": ["anchor_01", "anchor_02", "anchor_03", "anchor_04", "anchor_05", "anchor_06", "anchor_07", "anchor_08", "anchor_09", "anchor_10", "anchor_11", "anchor_12", "anchor_13", "anchor_14", "anchor_15", "anchor_16", "anchor_17", "anchor_18", "anchor_19", "anchor_20"],
   "gate": {
-    "complete_merge_min": 18,
+    "complete_merge_min": 16,
     "high_confidence_false_merge_max": 0,
     "recall_at_1_min": 0.90,
-    "clarification_max": 44,
-    "note": "22-anchor hero-s1 gate(预注册 G2:完整合并 ≥80%=18/22,误合并 0,R@1≥0.90,澄清 ≤2×锚点数=44);final mapping must be confirmed from contact sheets, never inferred from similarity"
+    "clarification_max": 40,
+    "note": "20-anchor hero-s1 gate(预注册 G2:完整合并 ≥80%=16/20,误合并 0,R@1≥0.90,澄清 ≤2×锚点数=40);final mapping must be confirmed from contact sheets, never inferred from similarity"
   },
   "entities": [
     {"anchor_id": "anchor_01", "display_label_zh": "水壶", "category_id": "water_bottle", "visible_in": [], "tracklet_ids_by_video": {}},
@@ -20,25 +20,20 @@
     {"anchor_id": "anchor_05", "display_label_zh": "玩具娃娃", "category_id": "plush_toy", "visible_in": [], "tracklet_ids_by_video": {}},
     {"anchor_id": "anchor_06", "display_label_zh": "咖啡罐", "category_id": "coffee_jar", "visible_in": [], "tracklet_ids_by_video": {}},
     {"anchor_id": "anchor_07", "display_label_zh": "魔方", "category_id": "rubiks_cube", "visible_in": [], "tracklet_ids_by_video": {}},
-    {"anchor_id": "anchor_08", "display_label_zh": "铅笔(黑色×4,统称组)", "category_id": "pen", "instance_count": 4, "visible_in": [], "tracklet_ids_by_video": {}},
-    {"anchor_id": "anchor_09", "display_label_zh": "圆珠笔", "category_id": "pen", "visible_in": [], "tracklet_ids_by_video": {}},
-    {"anchor_id": "anchor_10", "display_label_zh": "红色圆珠笔", "category_id": "pen", "visible_in": [], "tracklet_ids_by_video": {}},
-    {"anchor_id": "anchor_11", "display_label_zh": "剪刀", "category_id": "scissors", "visible_in": [], "tracklet_ids_by_video": {}},
-    {"anchor_id": "anchor_12", "display_label_zh": "转笔刀", "category_id": "pencil_sharpener", "visible_in": [], "tracklet_ids_by_video": {}},
-    {"anchor_id": "anchor_13", "display_label_zh": "三角尺", "category_id": "set_square", "visible_in": [], "tracklet_ids_by_video": {}},
-    {"anchor_id": "anchor_14", "display_label_zh": "护手霜", "category_id": "hand_cream", "visible_in": [], "tracklet_ids_by_video": {}},
-    {"anchor_id": "anchor_15", "display_label_zh": "发卡", "category_id": "hair_clip", "visible_in": [], "tracklet_ids_by_video": {}},
-    {"anchor_id": "anchor_16", "display_label_zh": "梳子", "category_id": "comb", "visible_in": [], "tracklet_ids_by_video": {}},
-    {"anchor_id": "anchor_17", "display_label_zh": "跳跳糖", "category_id": "popping_candy", "visible_in": [], "tracklet_ids_by_video": {}},
-    {"anchor_id": "anchor_18", "display_label_zh": "山楂棒", "category_id": "hawthorn_sticks", "visible_in": [], "tracklet_ids_by_video": {}},
-    {"anchor_id": "anchor_19", "display_label_zh": "饼干", "category_id": "biscuits", "visible_in": [], "tracklet_ids_by_video": {}},
-    {"anchor_id": "anchor_20", "display_label_zh": "茶叶(红色×2,统称组)", "category_id": "tea_bag", "instance_count": 2, "visible_in": [], "tracklet_ids_by_video": {}},
-    {"anchor_id": "anchor_21", "display_label_zh": "书(×3,统称组)", "category_id": "book", "instance_count": 3, "visible_in": [], "tracklet_ids_by_video": {}},
-    {"anchor_id": "anchor_22", "display_label_zh": "马克杯", "category_id": "mug", "visible_in": [], "tracklet_ids_by_video": {}}
+    {"anchor_id": "anchor_08", "display_label_zh": "笔(铅笔×4+圆珠笔×2,统称组)", "category_id": "pen", "instance_count": 6, "visible_in": [], "tracklet_ids_by_video": {}},
+    {"anchor_id": "anchor_09", "display_label_zh": "剪刀", "category_id": "scissors", "visible_in": [], "tracklet_ids_by_video": {}},
+    {"anchor_id": "anchor_10", "display_label_zh": "转笔刀", "category_id": "pencil_sharpener", "visible_in": [], "tracklet_ids_by_video": {}},
+    {"anchor_id": "anchor_11", "display_label_zh": "三角尺", "category_id": "set_square", "visible_in": [], "tracklet_ids_by_video": {}},
+    {"anchor_id": "anchor_12", "display_label_zh": "护手霜", "category_id": "hand_cream", "visible_in": [], "tracklet_ids_by_video": {}},
+    {"anchor_id": "anchor_13", "display_label_zh": "发卡", "category_id": "hair_clip", "visible_in": [], "tracklet_ids_by_video": {}},
+    {"anchor_id": "anchor_14", "display_label_zh": "梳子", "category_id": "comb", "visible_in": [], "tracklet_ids_by_video": {}},
+    {"anchor_id": "anchor_15", "display_label_zh": "跳跳糖", "category_id": "popping_candy", "visible_in": [], "tracklet_ids_by_video": {}},
+    {"anchor_id": "anchor_16", "display_label_zh": "山楂棒", "category_id": "hawthorn_sticks", "visible_in": [], "tracklet_ids_by_video": {}},
+    {"anchor_id": "anchor_17", "display_label_zh": "饼干", "category_id": "biscuits", "visible_in": [], "tracklet_ids_by_video": {}},
+    {"anchor_id": "anchor_18", "display_label_zh": "茶叶(红色×2,统称组)", "category_id": "tea_bag", "instance_count": 2, "visible_in": [], "tracklet_ids_by_video": {}},
+    {"anchor_id": "anchor_19", "display_label_zh": "书(×3,统称组)", "category_id": "book", "instance_count": 3, "visible_in": [], "tracklet_ids_by_video": {}},
+    {"anchor_id": "anchor_20", "display_label_zh": "马克杯", "category_id": "mug", "visible_in": [], "tracklet_ids_by_video": {}}
   ],
-  "hard_negative_pairs": [
-    {"group_id": "A", "anchor_ids": ["anchor_09", "anchor_10"], "category_id": "pen", "note": "同款不同色:圆珠笔 vs 红色圆珠笔(G2b 主对)"},
-    {"group_id": "B", "anchor_ids": ["anchor_08", "anchor_09"], "category_id": "pen", "note": "近似易混:铅笔组 vs 圆珠笔"},
-    {"group_id": "C", "anchor_ids": ["anchor_08", "anchor_10"], "category_id": "pen", "note": "近似易混:铅笔组 vs 红色圆珠笔"}
-  ]
+  "hard_negative_pairs": [],
+  "_hard_negative_note": "用户裁决(07-17)笔不拆分后,场景内无分立的同款不同色锚点对,G2b 按空集如实记录(不虚构对子);笔组内互并按组锚点口径不判负。"
 }

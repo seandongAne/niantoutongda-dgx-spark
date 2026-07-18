@@ -2,7 +2,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from scripts.results_page import build_page
+from scripts.results_page import build_page, select_demo_space_frames
 
 
 def _write_json(path: Path, value) -> None:
@@ -273,7 +273,7 @@ def test_results_page_renders_completion_summaries_and_escapes_all_text(tmp_path
     assert "3306 → 20" in page
     assert "上限 4" in page
     assert "placement 单元" in page and "物品覆盖" in page and "20/20" in page
-    assert "候选区域" in page and "已投影" in page and "PASS" in page
+    assert "候选实例" in page and "已投影" in page and "PASS" in page
     assert "精确语义分" in page and "5/5" in page and "零额外预测" in page
     assert "视觉接受" in page and "来源不会计入 AUTO_ACCEPTED" in page
     assert "NEAR 2" in page and "UNKNOWN 3" in page
@@ -309,6 +309,131 @@ def test_results_page_renders_completion_summaries_and_escapes_all_text(tmp_path
         "DO_NOT_RENDER_RISK_EVIDENCE",
     ):
         assert marker not in page
+
+
+def test_results_page_promotes_judge_story_only_after_every_hard_gate_passes(tmp_path):
+    run_dir = tmp_path / "demo-ready"
+    run_dir.mkdir()
+    _write_completion_summaries(run_dir)
+    _write_json(
+        run_dir / "layout/layout.json",
+        {
+            "status": "PLAN_READY",
+            "assignments": {"trusted-placement": "region-desk"},
+            "alternatives": {},
+            "conflicts": [],
+        },
+    )
+    _write_json(
+        run_dir / "regions/regions.json",
+        {
+            "entries": [
+                {
+                    "region_id": "region-desk",
+                    "display_name_zh": "书桌",
+                }
+            ]
+        },
+    )
+    _write_jsonl(
+        run_dir / "taskcards/taskcards.jsonl",
+        [
+            {
+                "card_id": "card-demo",
+                "box_label_zh": "学习文具箱",
+                "target_region_name_zh": "书桌",
+                "alternative_region_id": None,
+                "items": [
+                    {
+                        "display_name_zh": "可信展示名",
+                        "hero_crop_ref": "results/item.jpg",
+                    }
+                ],
+                "verification_checklist": ["可信展示名出现在书桌"],
+            }
+        ],
+    )
+    _write_json(
+        run_dir / "audit/replay-report.json",
+        {
+            "message_count": 4,
+            "main_chain": {
+                "complete": 1,
+                "actions": [
+                    "ENTITIES_READY",
+                    "GROUPS_READY",
+                    "PLACEMENT_READY",
+                    "TASKS_READY",
+                ],
+            },
+        },
+    )
+
+    page = build_page(run_dir)
+
+    assert "把旧家的生活组合，" in page and "带到新家" in page
+    assert "比赛技术闭环已通过" in page
+    assert 'id="demo-story"' in page
+    assert "3306→20" in page
+    assert "候选实例" in page and "独立语义评分 5/5" in page
+    assert "代表任务卡" in page and "学习文具箱" in page
+    assert 'alt="可信展示名物品图"' in page
+    assert "Agent 消息" not in page
+
+    _write_json(
+        run_dir / "spatial_score/metrics.json",
+        {
+            "acceptance_passed": False,
+            "score": "4/5",
+            "matched_anchor_count": 4,
+            "exact_semantic_match_count": 4,
+            "extra_prediction_count": 0,
+            "support_type_mismatch_count": 0,
+            "capacity_class_mismatch_count": 0,
+            "gate_reasons": ["missing_anchor"],
+        },
+    )
+    failed_page = build_page(run_dir)
+    assert "比赛技术闭环已通过" not in failed_page
+    assert 'id="demo-story"' not in failed_page
+    assert "房间成果总览" in failed_page
+
+
+def test_select_demo_space_frames_uses_only_final_assignment_evidence(tmp_path):
+    asset_root = tmp_path / "frames"
+    asset_root.mkdir()
+    for name in ("frame-a.jpg", "frame-b.jpg", "unused.jpg"):
+        (asset_root / name).write_bytes(b"jpeg")
+    assignments = [
+        {
+            "anchor": "desk",
+            "evidence_refs": ["frame:input/frame-a.jpg#observation=1"],
+        },
+        {
+            "anchor": "shelf",
+            "evidence_refs": [
+                "frame:input/frame-a.jpg#observation=2",
+                "frame:input/unused-missing.jpg#observation=3",
+            ],
+        },
+        {
+            "anchor": "cabinet",
+            "evidence_refs": ["frame:input/frame-b.jpg#observation=4"],
+        },
+    ]
+
+    selected = select_demo_space_frames(
+        tmp_path / "run",
+        assignments,
+        asset_roots=[asset_root],
+    )
+
+    assert [item["basename"] for item in selected] == [
+        "frame-a.jpg",
+        "frame-b.jpg",
+    ]
+    assert selected[0]["anchors"] == ["desk", "shelf"]
+    assert selected[1]["anchors"] == ["cabinet"]
 
 
 def test_results_page_marks_deferred_risk_diagnostics_non_blocking(tmp_path):

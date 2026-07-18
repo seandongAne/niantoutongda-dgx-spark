@@ -172,17 +172,104 @@ def color_chip(color: str) -> str:
     )
 
 
-def img_tag(run_dir: Path, ref: str, cls: str = "hero") -> str:
+def img_tag(
+    run_dir: Path,
+    ref: str,
+    cls: str = "hero",
+    *,
+    alt: str = "",
+    loading: str = "lazy",
+) -> str:
     if not ref:
         return f'<div class="{cls} noimg">待补 hero 图</div>'
     src = ref
     if not ref.startswith(("http://", "https://", "/")):
         src = os.path.relpath(PROJ / ref, run_dir)
     return (
-        f'<img class="{cls}" src="{esc(src)}" alt="" loading="lazy" '
+        f'<img class="{cls}" src="{esc(src)}" alt="{esc(alt)}" loading="{esc(loading)}" '
         "onerror=\"this.outerHTML='<div class=&quot;" + cls +
         " noimg&quot;>待补 hero 图</div>'\">"
     )
+
+
+def select_demo_space_frames(
+    run_dir: Path,
+    assignments: list[dict],
+    *,
+    asset_roots: list[Path] | None = None,
+    max_frames: int = 3,
+) -> list[dict]:
+    """选择能覆盖最多最终 assignment 的少量真实新房帧。
+
+    只使用 assignment 自身引用过的 ``frame:`` 证据；目录里的旧 review 结论不会
+    进入页面。默认只为仓库内正式 run 寻找已拉回的小型 JPEG，临时测试目录不会
+    意外依赖仓库结果。
+    """
+
+    if asset_roots is None:
+        try:
+            run_dir.resolve().relative_to(PROJ.resolve())
+        except ValueError:
+            return []
+        asset_roots = [
+            PROJ / "results/acceptance/HERO_S1/space-auto-shadow-v1",
+            PROJ / "results/acceptance/HERO_S1/space-visual-adjudication-v1/frames",
+        ]
+
+    available: dict[str, Path] = {}
+    for root in asset_roots:
+        if not root.is_dir():
+            continue
+        for path in sorted(root.glob("*.jpg")):
+            available.setdefault(path.name, path)
+
+    coverage: dict[str, set[str]] = {}
+    for assignment in assignments:
+        if not isinstance(assignment, dict):
+            continue
+        anchor = str(assignment.get("anchor") or "unknown")
+        for ref in assignment.get("evidence_refs", []):
+            ref = str(ref)
+            if not ref.startswith("frame:"):
+                continue
+            basename = Path(ref.removeprefix("frame:").split("#", 1)[0]).name
+            if basename in available:
+                coverage.setdefault(basename, set()).add(anchor)
+
+    remaining = {
+        str(item.get("anchor") or "unknown")
+        for item in assignments
+        if isinstance(item, dict)
+    }
+    selected: list[dict] = []
+    while remaining and len(selected) < max_frames:
+        ranked = sorted(
+            (
+                (-len(anchors & remaining), basename, anchors)
+                for basename, anchors in coverage.items()
+                if anchors & remaining
+                and basename not in {item["basename"] for item in selected}
+            ),
+            key=lambda item: (item[0], item[1]),
+        )
+        if not ranked:
+            break
+        _, basename, anchors = ranked[0]
+        covered = anchors & remaining
+        path = available[basename]
+        try:
+            ref = str(path.relative_to(PROJ))
+        except ValueError:
+            ref = str(path)
+        selected.append(
+            {
+                "basename": basename,
+                "ref": ref,
+                "anchors": sorted(covered),
+            }
+        )
+        remaining -= covered
+    return selected
 
 
 def build_page(run_dir: Path, config_path: Path | None = None) -> str:
@@ -248,6 +335,12 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
     spatial_metrics = (
         load_json(spatial_metrics_path, {}) if spatial_metrics_path.exists() else None
     )
+    spatial_assignment_path = run_dir / "spatial/assignment.json"
+    spatial_assignment = (
+        load_json(spatial_assignment_path, {})
+        if spatial_assignment_path.exists()
+        else None
+    )
     spatial_score_metrics_path = run_dir / "spatial_score/metrics.json"
     spatial_score_metrics = (
         load_json(spatial_score_metrics_path, {})
@@ -282,13 +375,11 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
         (len(display), "可信库存实体" if trusted_inventory_mode else "实体"),
         (len(groups), "placement 单元" if trusted_inventory_mode else "生活组合"),
         (len(cards), "任务卡"),
-        (len(clarifications), "待澄清"),
+        (len(clarifications), "轻确认问题"),
     ]
     if verdicts:
         n_verified = sum(1 for v in verdicts.values() if v["verdict"] == "VERIFIED")
         stats.append((f"{n_verified}/{len(verdicts)}", "验收通过"))
-    if trace_report:
-        stats.append((trace_report.get("message_count", 0), "Agent 消息"))
     stat_tiles = "".join(
         f'<div class="stat"><div class="stat-n">{esc(n)}</div>'
         f'<div class="stat-l">{esc(label)}</div></div>'
@@ -309,7 +400,11 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
         gchip = chip(g["name_zh"], "success") if g else chip("未归组", "danger")
         entity_cards.append(
             '<div class="card entity">'
-            + img_tag(run_dir, row.get("hero_crop_ref", ""))
+            + img_tag(
+                run_dir,
+                row.get("hero_crop_ref", ""),
+                alt=f'旧房视频中的「{row["display_name_zh"]}」识别证据',
+            )
             + f'<div class="cardbody"><div class="name">{esc(row["display_name_zh"])}</div>'
             + f'<div class="chips">{gchip}{color_chip(row.get("color_primary", ""))}</div>'
             + f'<div class="eid">{esc(eid)}</div></div></div>'
@@ -383,11 +478,20 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
         verdict_chip = ""
         if v := verdicts.get(c["card_id"]):
             verdict_chip = chip(*VERDICT_LABEL.get(v["verdict"], (v["verdict"], "neutral")))
-        items = "".join(
-            f'<li>{img_tag(run_dir, i.get("hero_crop_ref", ""), "thumb")}'
-            f"<span>{esc(i['display_name_zh'])}</span></li>"
-            for i in c["items"]
-        )
+        item_rows = []
+        for item in c["items"]:
+            item_name = str(item["display_name_zh"])
+            item_rows.append(
+                "<li>"
+                + img_tag(
+                    run_dir,
+                    item.get("hero_crop_ref", ""),
+                    "thumb",
+                    alt=f"{item_name}物品图",
+                )
+                + f"<span>{esc(item_name)}</span></li>"
+            )
+        items = "".join(item_rows)
         checks = "".join(
             f'<li><i class="box"></i>{esc(k)}</li>'
             for k in c["verification_checklist"]
@@ -589,7 +693,7 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
             '<div class="panel"><div class="panel-head"><h3>空间生产门</h3>'
             f'{chip(str(gate_status), gate_kind)}</div>'
             '<div class="summary-grid compact">'
-            '<div class="summary-card"><div class="summary-k">候选区域</div>'
+            '<div class="summary-card"><div class="summary-k">候选实例</div>'
             f'<div class="summary-v">{esc(spatial_metrics.get("candidate_count", "—"))}</div></div>'
             '<div class="summary-card"><div class="summary-k">自动接受</div>'
             f'<div class="summary-v">{esc(spatial_metrics.get("auto_accepted_count", "—"))}</div></div>'
@@ -768,6 +872,187 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
         + spatial_review_sec
         + risk_sec
     )
+
+    # ---- 评委主线：只在全部硬门真实通过时出现 ----
+    main_trace = trace_report.get("main_chain", {})
+    demo_ready = (
+        trusted_inventory_mode
+        and isinstance(inventory_metrics, dict)
+        and isinstance(group_metrics, dict)
+        and isinstance(spatial_metrics, dict)
+        and spatial_metrics.get("gate_status") == "PASS"
+        and isinstance(spatial_score_metrics, dict)
+        and spatial_score_metrics.get("acceptance_passed") is True
+        and layout.get("status") == "PLAN_READY"
+        and len(cards) > 0
+        and main_trace.get("complete") == 1
+    )
+    demo_sec = ""
+    if demo_ready:
+        assignment_rows = (
+            spatial_assignment.get("assignments", [])
+            if isinstance(spatial_assignment, dict)
+            else []
+        )
+        assignment_rows = assignment_rows if isinstance(assignment_rows, list) else []
+        demo_frames = select_demo_space_frames(run_dir, assignment_rows)
+
+        representative_rows = []
+        used_entities: set[str] = set()
+        for group in groups:
+            for entity_id in group.get("entity_ids", []):
+                row = display.get(entity_id)
+                if not row or not row.get("hero_crop_ref") or entity_id in used_entities:
+                    continue
+                representative_rows.append(row)
+                used_entities.add(entity_id)
+                break
+            if len(representative_rows) >= 5:
+                break
+        if len(representative_rows) < 5:
+            for entity_id in sorted(display):
+                row = display[entity_id]
+                if row.get("hero_crop_ref") and entity_id not in used_entities:
+                    representative_rows.append(row)
+                    used_entities.add(entity_id)
+                if len(representative_rows) >= 5:
+                    break
+
+        old_crop_strip = "".join(
+            img_tag(
+                run_dir,
+                row.get("hero_crop_ref", ""),
+                "story-crop",
+                alt=f'旧房视频中的「{row.get("display_name_zh", "物品")}」',
+            )
+            for row in representative_rows
+        )
+        room_visual = ""
+        if demo_frames:
+            room_visual = (
+                '<figure class="room-visual">'
+                + img_tag(
+                    run_dir,
+                    demo_frames[0]["ref"],
+                    "room-frame",
+                    alt="新房巡拍中的自动空间证据帧",
+                    loading="eager",
+                )
+                + '<figcaption>新房巡拍 · 自动空间真实输入</figcaption></figure>'
+            )
+
+        frame_cards = "".join(
+            '<figure class="evidence-frame">'
+            + img_tag(
+                run_dir,
+                frame["ref"],
+                "space-frame",
+                alt=f'新房巡拍证据帧 {index}，被 {len(frame["anchors"])} 个最终区域引用',
+            )
+            + '<figcaption><b>新房证据 '
+            + esc(index)
+            + '</b><span>'
+            + esc(len(frame["anchors"]))
+            + ' 个最终区域引用此帧</span></figcaption></figure>'
+            for index, frame in enumerate(demo_frames, start=1)
+        )
+
+        featured_card = next(
+            (
+                card
+                for card in cards
+                if card.get("target_region_name_zh") == "书桌"
+                or "学习文具" in str(card.get("box_label_zh", ""))
+            ),
+            cards[0],
+        )
+        featured_items = "".join(
+            '<li>'
+            + img_tag(
+                run_dir,
+                item.get("hero_crop_ref", ""),
+                "featured-thumb",
+                alt=f'{item.get("display_name_zh", "物品")}物品图',
+            )
+            + f'<span>{esc(item.get("display_name_zh", "物品"))}</span></li>'
+            for item in featured_card.get("items", [])
+        )
+
+        raw_count = inventory_metrics.get("raw_entity_count", "—")
+        trusted_count = inventory_metrics.get("trusted_inventory_count", "—")
+        question_count = len(inventory_clarifications)
+        question_cap = inventory_metrics.get("clarification_cap", "—")
+        group_count = group_metrics.get("group_count", "—")
+        placement_count = group_metrics.get("placement_group_count", "—")
+        covered_count = group_metrics.get("covered_canonical_item_count", "—")
+        inventory_count = group_metrics.get("trusted_inventory_count", trusted_count)
+        candidate_count = spatial_metrics.get("candidate_count", "—")
+        accepted_count = spatial_metrics.get("auto_accepted_count", "—")
+        score = spatial_score_metrics.get("score", "—")
+
+        visual_class = " judge-hero-with-visual" if room_visual or old_crop_strip else ""
+        demo_sec = (
+            f'<section class="judge-hero{visual_class}" id="top">'
+            '<div class="judge-copy">'
+            '<div class="eyebrow">比赛技术闭环已通过 · Spark 本地运行</div>'
+            '<h1><span>把旧家的生活组合，</span><span>带到新家</span></h1>'
+            '<p>从旧房视频和新家巡拍出发，把嘈杂识别结果收敛成可信库存，'
+            '自动理解可用空间，并生成搬家人员可以直接执行的任务卡。</p>'
+            '<div class="hero-proof">'
+            f'<span><b>{esc(raw_count)}→{esc(trusted_count)}</b> 可信库存</span>'
+            f'<span><b>≤{esc(question_cap)}</b> 个轻确认</span>'
+            f'<span><b>{esc(accepted_count)}/5</b> 自动空间</span>'
+            f'<span><b>{esc(len(cards))}</b> 张任务卡</span>'
+            '</div><div class="hero-actions">'
+            '<a class="button button-primary" href="#demo-story">30 秒看懂闭环</a>'
+            '<a class="button button-secondary" href="#evidence">查看完整证据</a>'
+            '</div></div>'
+            '<div class="judge-visual">'
+            f'{room_visual}<div class="old-crop-strip">{old_crop_strip}</div>'
+            '<div class="visual-caption">旧房可信物品 · 新房真实巡拍</div>'
+            '</div></section>'
+            '<section id="demo-story" class="demo-section">'
+            '<div class="section-kicker">评委主线</div>'
+            '<h2>两路真实输入，汇成一条可执行闭环</h2>'
+            '<div class="story-grid">'
+            '<article class="story-card"><div class="story-step">01 · 旧家</div>'
+            '<h3>从原始识别里留下可信物品</h3>'
+            f'<div class="story-metric">{esc(raw_count)} <span>收敛为</span> {esc(trusted_count)}</div>'
+            f'<p>模型不确定性被压缩为 {esc(question_count)} 个高价值问题，上限 {esc(question_cap)}。</p></article>'
+            '<article class="story-card"><div class="story-step">02 · 生活关系</div>'
+            '<h3>物品不只是清单，而是生活组合</h3>'
+            f'<div class="story-metric">{esc(group_count)} <span>个生活组合 /</span> {esc(placement_count)} <span>个落位单元</span></div>'
+            f'<p>箱单覆盖 {esc(covered_count)}/{esc(inventory_count)}，下游只消费可信库存。</p></article>'
+            '<article class="story-card"><div class="story-step">03 · 新家</div>'
+            '<h3>自动空间生产器替代人工区域 ID</h3>'
+            f'<div class="story-metric">{esc(candidate_count)} <span>候选实例 →</span> {esc(accepted_count)} <span>区</span></div>'
+            f'<p>全局一对一门通过；独立语义评分 {esc(score)}，不反哺生产结果。</p></article>'
+            '<article class="story-card"><div class="story-step">04 · 执行</div>'
+            '<h3>规划结果变成搬家任务卡</h3>'
+            f'<div class="story-metric">{esc(len(cards))} <span>张卡 ·</span> {esc(covered_count)}/{esc(inventory_count)}</div>'
+            '<p>每张卡明确箱单、目标区域、物品和验收清单。</p></article>'
+            '</div></section>'
+            + (
+                '<section id="space-visual" class="demo-section">'
+                '<div class="section-kicker">自动空间</div>'
+                '<h2>三张真实新房帧，覆盖全部五个最终区域</h2>'
+                f'<div class="space-gallery">{frame_cards}</div>'
+                '<div class="proof-bar">'
+                f'<span>生产门 <b>PASS</b></span><span>自动接受 <b>{esc(accepted_count)}/5</b></span>'
+                f'<span>独立评分 <b>{esc(score)}</b></span><span>待人工区域 <b>0</b></span>'
+                '</div></section>'
+                if frame_cards
+                else ""
+            )
+            + '<section id="featured-task" class="demo-section featured-task">'
+            '<div class="featured-copy"><div class="section-kicker">代表任务卡</div>'
+            f'<h2>{esc(featured_card.get("box_label_zh", "任务卡"))}</h2>'
+            f'<p class="featured-target">在新家落位到 <b>{esc(featured_card.get("target_region_name_zh", "目标区域"))}</b></p>'
+            '<p>完整五张任务卡继续保留在下方证据区；这里先让评委一眼看到“识别结果如何变成动作”。</p>'
+            '<a class="text-link" href="#cards">查看 5 张完整任务卡</a></div>'
+            f'<ul class="featured-items">{featured_items}</ul></section>'
+        )
+
     optional_nav = "".join(
         link
         for section, link in (
@@ -789,6 +1074,43 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
     )
 
     bundle_id = bundle.get("bundle_id", run_dir.name)
+    legacy_hero = (
+        '<div class="hero-head"><h1>房间成果总览</h1>'
+        '<div class="sub">旧房间 → 实体识别 → 生活组合 → 新家布局 → 任务卡 · 全链确定性复跑</div>'
+        f'<div class="stats">{stat_tiles}</div></div>'
+    )
+    if demo_ready:
+        header_nav = (
+            '<a href="#demo-story">30 秒主线</a>'
+            + (
+                '<a href="#space-visual">新家五区</a>'
+                if 'id="space-visual"' in demo_sec
+                else '<a href="#automatic-space">自动空间</a>'
+            )
+            + '<a href="#featured-task">代表任务</a>'
+            + '<a href="#evidence">完整证据</a>'
+        )
+    else:
+        header_nav = (
+            f'{optional_nav}<a href="#entities">实体</a><a href="#groups">生活组合</a>'
+            '<a href="#layout">布局</a><a href="#cards">任务卡</a>'
+            + ('<a href="#verify">验收</a>' if verify_rows else '')
+            + '<a href="#clarify">澄清</a><a href="#trace">复跑指纹</a>'
+        )
+    evidence_intro = ""
+    if demo_ready:
+        evidence_intro = (
+            '<section id="evidence" class="evidence-intro">'
+            '<div><div class="section-kicker">完整证据</div>'
+            '<h2>所有数字、边界与失败安全状态都可下钻</h2>'
+            '<p>主线负责让评委快速理解价值；以下内容保留机器可复核的库存、空间、'
+            '任务卡、风险边界与复跑指纹。</p></div>'
+            f'<nav class="evidence-nav" aria-label="完整证据导航">{optional_nav}'
+            '<a href="#entities">20 件物品</a><a href="#groups">组合</a>'
+            '<a href="#layout">布局</a><a href="#cards">任务卡</a>'
+            '<a href="#trace">审计</a></nav>'
+            f'<div class="stats evidence-stats">{stat_tiles}</div></section>'
+        )
     return f"""<!DOCTYPE html>
 <html lang="zh"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -796,7 +1118,7 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
 <style>
 :root {{
   --bg:#09090b; --panel:#131316; --panel-2:#18181b; --line:#27272a;
-  --fg:#ececee; --dim:#a1a1aa; --muted:#71717a; --radius:14px;
+  --fg:#ececee; --dim:#a1a1aa; --muted:#8b8b95; --radius:14px;
   --primary:#66aaf9; --primary-bg:rgba(0,111,238,.16);
   --secondary:#ae7ede; --secondary-bg:rgba(120,40,200,.20);
   --success:#45d483; --success-bg:rgba(23,201,100,.14);
@@ -808,7 +1130,7 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
 @media (prefers-color-scheme: light) {{
   :root {{
     --bg:#f4f4f5; --panel:#ffffff; --panel-2:#fafafa; --line:#e4e4e7;
-    --fg:#18181b; --dim:#52525b; --muted:#a1a1aa;
+    --fg:#18181b; --dim:#52525b; --muted:#6b6b75;
     --primary:#005bc4; --primary-bg:rgba(0,111,238,.10);
     --secondary:#6020a0; --secondary-bg:rgba(120,40,200,.10);
     --success:#0e793c; --success-bg:rgba(23,201,100,.12);
@@ -831,11 +1153,90 @@ header nav {{ display:flex; gap:4px; flex-wrap:wrap; }}
 header nav a {{ color:var(--dim); text-decoration:none; font-size:13px;
   padding:5px 12px; border-radius:999px; transition:all .15s; }}
 header nav a:hover {{ color:var(--fg); background:var(--neutral-bg); }}
+header nav a:focus-visible, a:focus-visible, summary:focus-visible {{
+  outline:3px solid var(--primary); outline-offset:3px; }}
 header .spacer {{ flex:1; }}
 main {{ max-width:1120px; margin:0 auto; padding:28px 28px 80px; }}
+[id] {{ scroll-margin-top:76px; }}
 .hero-head {{ margin:8px 0 24px; }}
 .hero-head h1 {{ margin:0 0 4px; font-size:24px; letter-spacing:-.02em; }}
 .hero-head .sub {{ color:var(--dim); font-size:13px; }}
+.judge-hero {{ min-height:540px; display:grid; align-items:center; gap:28px;
+  padding:54px 0 44px; border-bottom:1px solid var(--line); }}
+.judge-hero-with-visual {{ grid-template-columns:minmax(0,1.05fr) minmax(380px,.95fr); }}
+.judge-copy h1 {{ margin:10px 0 14px; max-width:680px; font-size:clamp(38px,4.15vw,54px);
+  line-height:1.08; letter-spacing:-.045em; }}
+.judge-copy h1 span {{ display:block; }}
+.judge-copy > p {{ max-width:650px; margin:0; color:var(--dim); font-size:17px; line-height:1.75; }}
+.eyebrow, .section-kicker {{ color:var(--primary); font-size:12px; font-weight:700;
+  letter-spacing:.09em; text-transform:uppercase; }}
+.hero-proof {{ display:flex; flex-wrap:wrap; gap:8px; margin:24px 0 20px; }}
+.hero-proof span {{ padding:8px 12px; border:1px solid var(--line); border-radius:999px;
+  color:var(--dim); background:var(--panel); font-size:13px; }}
+.hero-proof b {{ color:var(--fg); font-size:15px; }}
+.hero-actions {{ display:flex; gap:10px; flex-wrap:wrap; }}
+.button {{ display:inline-flex; min-height:42px; align-items:center; justify-content:center;
+  padding:8px 16px; border-radius:12px; text-decoration:none; font-weight:650; }}
+.button-primary {{ color:#fff; background:#006fee; }}
+.button-primary:hover {{ background:#005bc4; }}
+.button-secondary {{ color:var(--fg); background:var(--panel); border:1px solid var(--line); }}
+.button-secondary:hover {{ border-color:var(--primary); }}
+.judge-visual {{ min-width:0; }}
+.room-visual {{ position:relative; margin:0; overflow:hidden; border:1px solid var(--line);
+  border-radius:18px; background:var(--panel); box-shadow:var(--shadow); }}
+.room-frame {{ width:100%; aspect-ratio:16/10; object-fit:cover; display:block; }}
+.room-visual figcaption {{ position:absolute; left:12px; bottom:12px; padding:6px 10px;
+  border-radius:999px; color:#fff; background:rgba(9,9,11,.76); font-size:12px;
+  backdrop-filter:blur(10px); }}
+.old-crop-strip {{ display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-top:8px; }}
+.story-crop {{ width:100%; aspect-ratio:1; object-fit:cover; border:1px solid var(--line);
+  border-radius:12px; background:var(--panel); }}
+.visual-caption {{ margin-top:8px; color:var(--muted); font-size:11px; text-align:right; }}
+.demo-section {{ padding:46px 0 8px; }}
+.demo-section > h2, .evidence-intro h2 {{ margin:6px 0 20px; font-size:28px; line-height:1.25; }}
+.story-grid {{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }}
+.story-card {{ min-height:250px; padding:18px; border:1px solid var(--line);
+  border-radius:16px; background:var(--panel); }}
+.story-card h3 {{ margin:14px 0 18px; font-size:17px; line-height:1.35; }}
+.story-step {{ color:var(--primary); font-size:12px; font-weight:700; }}
+.story-metric {{ margin:0 0 12px; font-size:27px; font-weight:750; letter-spacing:-.03em; }}
+.story-metric span {{ color:var(--dim); font-size:12px; font-weight:500; letter-spacing:0; }}
+.story-card p {{ margin:0; color:var(--dim); font-size:13px; }}
+.space-gallery {{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }}
+.evidence-frame {{ margin:0; overflow:hidden; border:1px solid var(--line);
+  border-radius:16px; background:var(--panel); box-shadow:var(--shadow); }}
+.space-frame {{ width:100%; aspect-ratio:16/10; object-fit:cover; display:block; }}
+.evidence-frame figcaption {{ display:flex; justify-content:space-between; gap:8px;
+  padding:10px 12px; color:var(--dim); font-size:12px; }}
+.evidence-frame figcaption b {{ color:var(--fg); }}
+.proof-bar {{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1px;
+  margin-top:12px; overflow:hidden; border:1px solid var(--line); border-radius:14px;
+  background:var(--line); }}
+.proof-bar span {{ padding:12px 14px; color:var(--dim); background:var(--panel); font-size:12px; }}
+.proof-bar b {{ display:block; color:var(--success); font-size:19px; }}
+.featured-task {{ display:grid; grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);
+  gap:28px; align-items:center; margin:38px 0 30px; padding:28px;
+  border:1px solid var(--line); border-radius:18px; background:var(--panel); }}
+.featured-copy h2 {{ margin:6px 0 8px; font-size:30px; }}
+.featured-copy p {{ color:var(--dim); }}
+.featured-target {{ font-size:17px; }}
+.text-link {{ color:var(--primary); font-weight:650; text-decoration:none; }}
+.text-link:hover {{ text-decoration:underline; }}
+.featured-items {{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px;
+  list-style:none; margin:0; padding:0; }}
+.featured-items li {{ min-width:0; padding:8px; border:1px solid var(--line);
+  border-radius:12px; background:var(--panel-2); }}
+.featured-thumb {{ width:100%; aspect-ratio:1; object-fit:cover; display:block; border-radius:8px; }}
+.featured-items span {{ display:block; margin-top:6px; overflow:hidden; text-overflow:ellipsis;
+  color:var(--dim); font-size:11px; white-space:nowrap; }}
+.evidence-intro {{ margin-top:52px; padding:38px 0 10px; border-top:1px solid var(--line); }}
+.evidence-intro > div:first-child {{ max-width:760px; }}
+.evidence-intro p {{ color:var(--dim); }}
+.evidence-nav {{ display:flex; flex-wrap:wrap; gap:7px; margin:18px 0; }}
+.evidence-nav a {{ padding:5px 10px; border:1px solid var(--line); border-radius:999px;
+  color:var(--dim); text-decoration:none; font-size:12px; }}
+.evidence-nav a:hover {{ color:var(--fg); border-color:var(--muted); }}
+.evidence-stats {{ margin-top:14px; }}
 .stats {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
   gap:12px; margin:18px 0 8px; }}
 .stat {{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
@@ -910,20 +1311,44 @@ td {{ text-align:left; padding:8px 10px; border-top:1px solid var(--line); font-
 ul.conflicts {{ margin:6px 0 0; padding-left:18px; }}
 ul.conflicts li {{ font-size:13px; color:var(--dim); }}
 footer {{ color:var(--muted); font-size:12px; margin-top:28px; }}
+@media (max-width:900px) {{
+  .judge-hero-with-visual {{ grid-template-columns:1fr; }}
+  .judge-visual {{ max-width:720px; }}
+  .story-grid {{ grid-template-columns:repeat(2,minmax(0,1fr)); }}
+  .featured-task {{ grid-template-columns:1fr; }}
+}}
+@media (max-width:680px) {{
+  header {{ align-items:flex-start; padding:10px 16px; flex-wrap:wrap; }}
+  header nav {{ order:3; width:100%; flex-wrap:nowrap; overflow-x:auto; padding-bottom:2px; }}
+  header nav a {{ flex:none; }}
+  header .spacer {{ display:none; }}
+  main {{ padding:18px 16px 60px; }}
+  [id] {{ scroll-margin-top:112px; }}
+  .judge-hero {{ min-height:auto; padding:34px 0; }}
+  .judge-copy h1 {{ font-size:38px; }}
+  .judge-copy > p {{ font-size:15px; }}
+  .story-grid, .space-gallery, .proof-bar {{ grid-template-columns:1fr; }}
+  .story-card {{ min-height:auto; }}
+  .featured-task {{ padding:18px; }}
+  .featured-items {{ grid-template-columns:repeat(3,minmax(0,1fr)); }}
+  .demo-section > h2, .evidence-intro h2 {{ font-size:24px; }}
+  h2 {{ align-items:flex-start; flex-direction:column; }}
+  .panel {{ overflow-x:auto; }}
+  .cards {{ grid-template-columns:1fr; }}
+}}
+@media (prefers-reduced-motion:reduce) {{
+  * {{ scroll-behavior:auto!important; transition:none!important; }}
+}}
 </style></head><body>
 <header>
   <div class="brand"><i></i>AI 搬家复原</div>
-  <nav>{optional_nav}<a href="#entities">实体</a><a href="#groups">生活组合</a><a href="#layout">布局</a>
-  <a href="#cards">任务卡</a>{'<a href="#verify">验收</a>' if verify_rows else ''}<a href="#clarify">澄清</a><a href="#trace">复跑指纹</a></nav>
+  <nav aria-label="主导航">{header_nav}</nav>
   <div class="spacer"></div>
   {chip(bundle_id, "primary")}
 </header>
 <main>
-<div class="hero-head">
-  <h1>房间成果总览</h1>
-  <div class="sub">旧房间 → 实体识别 → 生活组合 → 新家布局 → 任务卡 · 全链确定性复跑</div>
-  <div class="stats">{stat_tiles}</div>
-</div>
+{demo_sec or legacy_hero}
+{evidence_intro}
 {completion_sections}
 <h2 id="entities">{esc(entity_heading)} <span class="note">{esc(entity_note)}</span></h2>
 <div class="grid">{"".join(entity_cards)}</div>

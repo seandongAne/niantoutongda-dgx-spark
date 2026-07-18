@@ -613,20 +613,36 @@ def build_stages(
         inputs = [display, groups, run / "layout/layout.json",
                   run / "regions/regions.json", run / "taskcards/taskcards.jsonl"]
         if inventory_enabled:
-            inputs.append(run / "inventory/metrics.json")
+            inputs.extend([
+                run / "inventory/metrics.json",
+                run / "inventory/clarifications.jsonl",
+            ])
         if trusted_inventory_mode:
-            inputs.append(run / "group/boxlist.json")
+            inputs.extend([
+                run / "group/boxlist.json",
+                run / "group/metrics.json",
+            ])
             closure_ref = sc("group").get("closure")
             if closure_ref:
                 inputs.append(_p(closure_ref))
+        else:
+            inputs.extend([
+                run / "group/clarifications.jsonl",
+                run / "group/conflicts.json",
+            ])
         if space_enabled:
             inputs.append(run / "spatial/metrics.json")
+            if sc("space").get("anchor_candidates"):
+                inputs.append(run / "spatial/assignment.json")
         if space_score_enabled:
             inputs.append(run / "spatial_score/metrics.json")
         if space_review_enabled:
             inputs.append(run / "spatial_review/metrics.json")
         if sc("risk").get("enabled"):
-            inputs.append(run / "risk/metrics.json")
+            inputs.extend([
+                run / "risk/metrics.json",
+                run / "risk/assessments.json",
+            ])
         if sc("verify").get("enabled"):
             inputs.append(run / "verify/verdicts.json")
         if sc("trace").get("enabled"):

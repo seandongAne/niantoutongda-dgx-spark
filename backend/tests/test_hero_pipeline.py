@@ -346,10 +346,13 @@ def test_build_stages_wires_trusted_inventory_auto_space_and_risk(tmp_path):
         inventory_dir / "display.jsonl",
         run / "group/placement_groups.jsonl",
         inventory_dir / "metrics.json",
+        inventory_dir / "clarifications.jsonl",
         run / "group/boxlist.json",
+        run / "group/metrics.json",
         closure,
         run / "spatial/metrics.json",
         run / "risk/metrics.json",
+        run / "risk/assessments.json",
     ):
         assert expected in report_inputs
 
@@ -516,6 +519,10 @@ def test_final_config_is_strict_auto_with_fresh_pull_and_semantic_score():
     assert regions.inputs == [expected_spatial]
     assert score.inputs[0] == expected_spatial
     assert all(path.name != "regions.json" for path in score.outputs)
+    assert (
+        PROJ / run_path / "spatial/assignment.json"
+        in stages["report"].inputs
+    )
     assert stages["pull"].always_run is True
     assert "space_review" not in stages
     forbidden = (

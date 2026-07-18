@@ -186,7 +186,7 @@ def build_page(run_dir: Path) -> str:
     # ---- 顶部统计 ----
     stats = [
         (len(display), "可信库存实体" if trusted_inventory_mode else "实体"),
-        (len(groups), "生活组合"),
+        (len(groups), "placement 单元" if trusted_inventory_mode else "生活组合"),
         (len(cards), "任务卡"),
         (len(clarifications), "待澄清"),
     ]

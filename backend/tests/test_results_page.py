@@ -212,6 +212,11 @@ def test_results_page_renders_completion_summaries_and_escapes_all_text(tmp_path
     assert "不构成安全认证" in page
     assert "可信展示名" in page and "可信 placement 组合" in page
     assert '<h2 id="entities">可信库存实体' in page
+    assert (
+        '<div class="stat-n">1</div><div class="stat-l">placement 单元</div>'
+        in page
+    )
+    assert '<div class="stat-n">1</div><div class="stat-l">生活组合</div>' not in page
     assert "raw ReID 仅保留为审计证据" in page
     assert "展示名 = 本地 VLM" not in page
     assert "不应出现的旧展示名" not in page

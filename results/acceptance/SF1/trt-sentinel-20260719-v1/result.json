@@ -1,0 +1,1069 @@
+{
+  "acceptance_boundary": "Sentinel localization on the frozen two-image workload; grid-sample captures are sentinels only and do not by themselves prove a causal operator.  No performance or acceptance claim follows from this run.",
+  "classification_thresholds": {
+    "consistent_max_abs": {
+      "encoder_class_logits_before_topk_reduce": 0.005,
+      "topk_gather_0_data_before_selection": 0.005,
+      "topk_input_scores": 0.001
+    },
+    "divergent_max_abs": {
+      "encoder_class_logits_before_topk_reduce": 0.05,
+      "topk_gather_0_data_before_selection": 0.05,
+      "topk_input_scores": 0.01
+    },
+    "scale_reference": "ORT CPU vs host no-TF32: proposal scores 7.44e-5, coord logits 2.11e-4"
+  },
+  "code_commit": "4734724ead74128587a6a4522df7f5aca952b690",
+  "created_at_unix": 1784409338,
+  "decisions": {
+    "ort_detection_counts": [
+      5,
+      5
+    ],
+    "torch_baseline_detection_counts": [
+      5,
+      5
+    ],
+    "trt_detection_counts": [
+      2,
+      3
+    ],
+    "trt_detections": [
+      [
+        {
+          "box": [
+            2.842165231704712,
+            -4.056816101074219,
+            637.4788818359375,
+            1914.6163330078125
+          ],
+          "label": "water.",
+          "score": 0.34804150462150574
+        },
+        {
+          "box": [
+            0.0007081031799316406,
+            -3.3600425720214844,
+            1079.59521484375,
+            1916.4935302734375
+          ],
+          "label": "",
+          "score": 0.23201116919517517
+        }
+      ],
+      [
+        {
+          "box": [
+            285.9287109375,
+            611.3086547851562,
+            796.275146484375,
+            1390.6629638671875
+          ],
+          "label": "mini",
+          "score": 0.35454368591308594
+        },
+        {
+          "box": [
+            285.5667419433594,
+            619.3510131835938,
+            802.2122192382812,
+            1392.8919677734375
+          ],
+          "label": "bottle desk",
+          "score": 0.3679237961769104
+        },
+        {
+          "box": [
+            292.22808837890625,
+            828.1665649414062,
+            794.17236328125,
+            1393.1302490234375
+          ],
+          "label": "bottle desk",
+          "score": 0.3402135968208313
+        }
+      ]
+    ],
+    "trt_vs_ort_positional": {
+      "max_box_delta_px": 1510.795711517334,
+      "max_score_delta": 0.02710852026939392,
+      "strict_decision_equivalent_at_1e-3_and_half_px": false,
+      "structure_equal": false,
+      "tensorrt_detection_counts": [
+        2,
+        3
+      ],
+      "torch_detection_counts": [
+        5,
+        5
+      ]
+    },
+    "trt_vs_ort_set_gates": {
+      "diagnostic_pass": false,
+      "per_batch": [
+        {
+          "batch_index": 0,
+          "counts": {
+            "candidate_by_label": {
+              "": 1,
+              "water.": 1
+            },
+            "candidate_total": 2,
+            "matched": 1,
+            "reference_by_label": {
+              "": 3,
+              "desk": 1,
+              "mini fridge": 1
+            },
+            "reference_total": 5
+          },
+          "delta_summary": {
+            "max_box_abs_delta_px": 0.0001220703125,
+            "max_score_abs_delta": 0.002180352807044983,
+            "mean_iou": 0.9999997974889496,
+            "min_iou": 0.9999997974889496
+          },
+          "gates": {
+            "diagnostic": {
+              "complete_one_to_one_label_match": false,
+              "criteria": {
+                "iou_min_inclusive": 0.99,
+                "score_abs_delta_max_inclusive": 0.01
+              },
+              "pass": false
+            },
+            "strict": {
+              "complete_one_to_one_label_match": false,
+              "criteria": {
+                "box_abs_delta_px_max_inclusive": 0.5,
+                "iou_min_inclusive": 0.999,
+                "score_abs_delta_max_inclusive": 0.001
+              },
+              "pass": false
+            }
+          },
+          "unmatched_candidate_indices": [
+            0
+          ],
+          "unmatched_reference_indices": [
+            0,
+            1,
+            3,
+            4
+          ]
+        },
+        {
+          "batch_index": 1,
+          "counts": {
+            "candidate_by_label": {
+              "bottle desk": 2,
+              "mini": 1
+            },
+            "candidate_total": 3,
+            "matched": 0,
+            "reference_by_label": {
+              "": 1,
+              "desk": 1,
+              "luggage": 1,
+              "mini fridge": 2
+            },
+            "reference_total": 5
+          },
+          "delta_summary": {
+            "max_box_abs_delta_px": null,
+            "max_score_abs_delta": null,
+            "mean_iou": null,
+            "min_iou": null
+          },
+          "gates": {
+            "diagnostic": {
+              "complete_one_to_one_label_match": false,
+              "criteria": {
+                "iou_min_inclusive": 0.99,
+                "score_abs_delta_max_inclusive": 0.01
+              },
+              "pass": false
+            },
+            "strict": {
+              "complete_one_to_one_label_match": false,
+              "criteria": {
+                "box_abs_delta_px_max_inclusive": 0.5,
+                "iou_min_inclusive": 0.999,
+                "score_abs_delta_max_inclusive": 0.001
+              },
+              "pass": false
+            }
+          },
+          "unmatched_candidate_indices": [
+            0,
+            1,
+            2
+          ],
+          "unmatched_reference_indices": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ]
+        }
+      ],
+      "strict_pass": false
+    },
+    "trt_vs_torch_baseline_positional": {
+      "max_box_delta_px": 1510.795711517334,
+      "max_score_delta": 0.02718415856361389,
+      "strict_decision_equivalent_at_1e-3_and_half_px": false,
+      "structure_equal": false,
+      "tensorrt_detection_counts": [
+        2,
+        3
+      ],
+      "torch_detection_counts": [
+        5,
+        5
+      ]
+    },
+    "trt_vs_torch_baseline_set_gates": {
+      "diagnostic_pass": false,
+      "per_batch": [
+        {
+          "batch_index": 0,
+          "counts": {
+            "candidate_by_label": {
+              "": 1,
+              "water.": 1
+            },
+            "candidate_total": 2,
+            "matched": 1,
+            "reference_by_label": {
+              "": 3,
+              "desk": 1,
+              "mini fridge": 1
+            },
+            "reference_total": 5
+          },
+          "delta_summary": {
+            "max_box_abs_delta_px": 0.00048828125,
+            "max_score_abs_delta": 0.002050250768661499,
+            "mean_iou": 0.9999995072308068,
+            "min_iou": 0.9999995072308068
+          },
+          "gates": {
+            "diagnostic": {
+              "complete_one_to_one_label_match": false,
+              "criteria": {
+                "iou_min_inclusive": 0.99,
+                "score_abs_delta_max_inclusive": 0.01
+              },
+              "pass": false
+            },
+            "strict": {
+              "complete_one_to_one_label_match": false,
+              "criteria": {
+                "box_abs_delta_px_max_inclusive": 0.5,
+                "iou_min_inclusive": 0.999,
+                "score_abs_delta_max_inclusive": 0.001
+              },
+              "pass": false
+            }
+          },
+          "unmatched_candidate_indices": [
+            0
+          ],
+          "unmatched_reference_indices": [
+            0,
+            1,
+            3,
+            4
+          ]
+        },
+        {
+          "batch_index": 1,
+          "counts": {
+            "candidate_by_label": {
+              "bottle desk": 2,
+              "mini": 1
+            },
+            "candidate_total": 3,
+            "matched": 0,
+            "reference_by_label": {
+              "": 1,
+              "desk": 1,
+              "luggage": 1,
+              "mini fridge": 2
+            },
+            "reference_total": 5
+          },
+          "delta_summary": {
+            "max_box_abs_delta_px": null,
+            "max_score_abs_delta": null,
+            "mean_iou": null,
+            "min_iou": null
+          },
+          "gates": {
+            "diagnostic": {
+              "complete_one_to_one_label_match": false,
+              "criteria": {
+                "iou_min_inclusive": 0.99,
+                "score_abs_delta_max_inclusive": 0.01
+              },
+              "pass": false
+            },
+            "strict": {
+              "complete_one_to_one_label_match": false,
+              "criteria": {
+                "box_abs_delta_px_max_inclusive": 0.5,
+                "iou_min_inclusive": 0.999,
+                "score_abs_delta_max_inclusive": 0.001
+              },
+              "pass": false
+            }
+          },
+          "unmatched_candidate_indices": [
+            0,
+            1,
+            2
+          ],
+          "unmatched_reference_indices": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ]
+        }
+      ],
+      "strict_pass": false
+    }
+  },
+  "diagnostic_run": {
+    "not_a_performance_claim": true,
+    "runs": 5,
+    "wall_ms_samples": [
+      664.2296679783612,
+      647.6062589790672,
+      645.0065650278702,
+      643.4360550483689,
+      649.6160160750151
+    ]
+  },
+  "engine": {
+    "device_memory_size_bytes": 1359868416,
+    "path": "results/acceptance/SF1/trt-sentinel-20260719-v1/instrumented_fp32_notf32.engine",
+    "sha256": "2edfe99e30a090b20bab0215dde28d5973b8ce2123e4cf0161be0c09cd21c903",
+    "size_bytes": 998745572
+  },
+  "engine_build": {
+    "command": [
+      "/home/Developer/local/tensorrt-10.14.1.48/usr/src/tensorrt/bin/trtexec",
+      "--onnx=results/acceptance/SF1/onnx-intermediate-20260718-v1/instrumented.onnx",
+      "--saveEngine=results/acceptance/SF1/trt-sentinel-20260719-v1/instrumented_fp32_notf32.engine",
+      "--noTF32",
+      "--skipInference",
+      "--memPoolSize=workspace:16384M"
+    ],
+    "duration_seconds": 63.11051678657532,
+    "log_path": "results/acceptance/SF1/trt-sentinel-20260719-v1/instrumented_fp32_notf32.trtexec.log",
+    "log_tail": [
+      "[07/18/2026-21:16:38] [I] [TRT] Engine generation completed in 58.2648 seconds.",
+      "[07/18/2026-21:16:38] [I] [TRT] [MemUsageStats] Peak memory usage of TRT CPU/GPU memory allocators: CPU 1 MiB, GPU 1329 MiB",
+      "[07/18/2026-21:16:38] [I] Created engine with size: 952.478 MiB",
+      "[07/18/2026-21:16:38] [I] Engine built in 59.6346 sec.",
+      "[07/18/2026-21:16:39] [I] [TRT] Loaded engine size: 952 MiB",
+      "[07/18/2026-21:16:40] [I] Engine deserialized in 0.410676 sec.",
+      "[07/18/2026-21:16:40] [I] Skipped inference phase since --skipInference is added.",
+      "&&&& PASSED TensorRT.trtexec [TensorRT v101401] [b48] # /home/Developer/local/tensorrt-10.14.1.48/usr/src/tensorrt/bin/trtexec --onnx=results/acceptance/SF1/onnx-intermediate-20260718-v1/instrumented.onnx --saveEngine=results/acceptance/SF1/trt-sentinel-20260719-v1/instrumented_fp32_notf32.engine --noTF32 --skipInference --memPoolSize=workspace:16384M"
+    ],
+    "returncode": 0,
+    "reused_existing_engine": false,
+    "trtexec_invoked": true
+  },
+  "exit_code_semantics": "0 = diagnostic completed; 2 = failed to complete",
+  "io": {
+    "expected_sentinel_outputs": [
+      "__gdino_probe_grid_decoder_0_0_3655",
+      "__gdino_probe_grid_decoder_5_3_4678",
+      "__gdino_probe_grid_encoder_0_0_2566",
+      "__gdino_probe_grid_encoder_5_3_3347",
+      "add_198",
+      "gather",
+      "getitem_42",
+      "getitem_45",
+      "logits",
+      "pred_boxes",
+      "slice_scatter",
+      "topk__0"
+    ],
+    "inputs": [
+      "pixel_values",
+      "input_ids",
+      "token_type_ids",
+      "attention_mask",
+      "pixel_mask"
+    ],
+    "output_names_match_manifest": true,
+    "outputs": [
+      "__gdino_probe_grid_decoder_0_0_3655",
+      "__gdino_probe_grid_decoder_5_3_4678",
+      "__gdino_probe_grid_encoder_0_0_2566",
+      "__gdino_probe_grid_encoder_5_3_3347",
+      "add_198",
+      "gather",
+      "getitem_42",
+      "getitem_45",
+      "logits",
+      "pred_boxes",
+      "slice_scatter",
+      "topk__0"
+    ]
+  },
+  "onnx": {
+    "path": "results/acceptance/SF1/onnx-intermediate-20260718-v1/instrumented.onnx",
+    "sha256": "bd9b8ca2446c4b744a4279dd2353acb4490ceaa4506809a5e8b6fb2449cc2b88"
+  },
+  "ort_vs_trt": {
+    "encoder_class_logits_before_topk_reduce": {
+      "bit_exact": false,
+      "candidate_dtype": "float32",
+      "candidate_finite_count": 501744,
+      "candidate_shape": [
+        2,
+        20906,
+        256
+      ],
+      "comparison_valid": true,
+      "dtype_equal": true,
+      "jointly_finite_count": 501744,
+      "kind": "finite_array_diff",
+      "max_abs_on_jointly_finite": 4.818033695220947,
+      "mean_abs_on_jointly_finite": 0.6095134752435089,
+      "nonfinite_pattern_equal": true,
+      "reference_dtype": "float32",
+      "reference_finite_count": 501744,
+      "reference_shape": [
+        2,
+        20906,
+        256
+      ],
+      "sentinel_only": false,
+      "shape_equal": true
+    },
+    "final_logits": {
+      "bit_exact": false,
+      "candidate_dtype": "float32",
+      "candidate_finite_count": 21600,
+      "candidate_shape": [
+        2,
+        900,
+        256
+      ],
+      "comparison_valid": true,
+      "dtype_equal": true,
+      "jointly_finite_count": 21600,
+      "kind": "finite_array_diff",
+      "max_abs_on_jointly_finite": 5.905163288116455,
+      "mean_abs_on_jointly_finite": 1.1760900514903996,
+      "nonfinite_pattern_equal": true,
+      "reference_dtype": "float32",
+      "reference_finite_count": 21600,
+      "reference_shape": [
+        2,
+        900,
+        256
+      ],
+      "sentinel_only": false,
+      "shape_equal": true
+    },
+    "final_pred_boxes": {
+      "bit_exact": false,
+      "candidate_dtype": "float32",
+      "candidate_finite_count": 7200,
+      "candidate_shape": [
+        2,
+        900,
+        4
+      ],
+      "comparison_valid": true,
+      "dtype_equal": true,
+      "jointly_finite_count": 7200,
+      "kind": "finite_array_diff",
+      "max_abs_on_jointly_finite": 0.9913885593414307,
+      "mean_abs_on_jointly_finite": 0.2631061328578491,
+      "nonfinite_pattern_equal": true,
+      "reference_dtype": "float32",
+      "reference_finite_count": 7200,
+      "reference_shape": [
+        2,
+        900,
+        4
+      ],
+      "sentinel_only": false,
+      "shape_equal": true
+    },
+    "grid_sample_decoder_layer_0_call_0_output": {
+      "bit_exact": false,
+      "candidate_dtype": "float32",
+      "candidate_finite_count": 524288,
+      "candidate_shape": [
+        16,
+        32,
+        256,
+        4
+      ],
+      "comparison_valid": true,
+      "dtype_equal": true,
+      "jointly_finite_count": 524288,
+      "kind": "finite_array_diff",
+      "max_abs_on_jointly_finite": 1.8472572267055511,
+      "mean_abs_on_jointly_finite": 0.19254326846158676,
+      "nonfinite_pattern_equal": true,
+      "reference_dtype": "float32",
+      "reference_finite_count": 524288,
+      "reference_shape": [
+        16,
+        32,
+        256,
+        4
+      ],
+      "sentinel_only": true,
+      "shape_equal": true
+    },
+    "grid_sample_decoder_layer_5_call_3_output": {
+      "bit_exact": false,
+      "candidate_dtype": "float32",
+      "candidate_finite_count": 524288,
+      "candidate_shape": [
+        16,
+        32,
+        256,
+        4
+      ],
+      "comparison_valid": true,
+      "dtype_equal": true,
+      "jointly_finite_count": 524288,
+      "kind": "finite_array_diff",
+      "max_abs_on_jointly_finite": 0.5614702850580215,
+      "mean_abs_on_jointly_finite": 0.044902720472424947,
+      "nonfinite_pattern_equal": true,
+      "reference_dtype": "float32",
+      "reference_finite_count": 524288,
+      "reference_shape": [
+        16,
+        32,
+        256,
+        4
+      ],
+      "sentinel_only": true,
+      "shape_equal": true
+    },
+    "grid_sample_encoder_layer_0_call_0_output": {
+      "bit_exact": false,
+      "candidate_dtype": "float32",
+      "candidate_finite_count": 524288,
+      "candidate_shape": [
+        16,
+        32,
+        256,
+        4
+      ],
+      "comparison_valid": true,
+      "dtype_equal": true,
+      "jointly_finite_count": 524288,
+      "kind": "finite_array_diff",
+      "max_abs_on_jointly_finite": 0.00014744699001312256,
+      "mean_abs_on_jointly_finite": 3.120982623852197e-06,
+      "nonfinite_pattern_equal": true,
+      "reference_dtype": "float32",
+      "reference_finite_count": 524288,
+      "reference_shape": [
+        16,
+        32,
+        256,
+        4
+      ],
+      "sentinel_only": true,
+      "shape_equal": true
+    },
+    "grid_sample_encoder_layer_5_call_3_output": {
+      "bit_exact": false,
+      "candidate_dtype": "float32",
+      "candidate_finite_count": 524288,
+      "candidate_shape": [
+        16,
+        32,
+        256,
+        4
+      ],
+      "comparison_valid": true,
+      "dtype_equal": true,
+      "jointly_finite_count": 524288,
+      "kind": "finite_array_diff",
+      "max_abs_on_jointly_finite": 4.595518112182617e-05,
+      "mean_abs_on_jointly_finite": 5.284847247305339e-07,
+      "nonfinite_pattern_equal": true,
+      "reference_dtype": "float32",
+      "reference_finite_count": 524288,
+      "reference_shape": [
+        16,
+        32,
+        256,
+        4
+      ],
+      "sentinel_only": true,
+      "shape_equal": true
+    },
+    "topk_gather_0_data_before_selection": {
+      "bit_exact": false,
+      "candidate_dtype": "float32",
+      "candidate_finite_count": 160880,
+      "candidate_shape": [
+        2,
+        20906,
+        4
+      ],
+      "comparison_valid": true,
+      "dtype_equal": true,
+      "jointly_finite_count": 160880,
+      "kind": "finite_array_diff",
+      "max_abs_on_jointly_finite": 0.00020694732666015625,
+      "mean_abs_on_jointly_finite": 3.4466076278498684e-06,
+      "nonfinite_pattern_equal": true,
+      "reference_dtype": "float32",
+      "reference_finite_count": 160880,
+      "reference_shape": [
+        2,
+        20906,
+        4
+      ],
+      "sentinel_only": false,
+      "shape_equal": true
+    },
+    "topk_gather_0_output_after_selection": {
+      "bit_exact": false,
+      "candidate_dtype": "float32",
+      "candidate_finite_count": 7200,
+      "candidate_shape": [
+        2,
+        900,
+        4
+      ],
+      "comparison_valid": true,
+      "dtype_equal": true,
+      "jointly_finite_count": 7200,
+      "kind": "finite_array_diff",
+      "max_abs_on_jointly_finite": 18.27696180343628,
+      "mean_abs_on_jointly_finite": 1.792734675802963,
+      "nonfinite_pattern_equal": true,
+      "reference_dtype": "float32",
+      "reference_finite_count": 7200,
+      "reference_shape": [
+        2,
+        900,
+        4
+      ],
+      "sentinel_only": false,
+      "shape_equal": true
+    },
+    "topk_indices": {
+      "kind": "topk_index_overlap",
+      "ordered_indices_equal_all_batches": false,
+      "per_batch": [
+        {
+          "batch_index": 0,
+          "candidate_only_count": 287,
+          "candidate_only_first_32": [
+            193,
+            194,
+            202,
+            211,
+            215,
+            219,
+            220,
+            221,
+            222,
+            230,
+            279,
+            284,
+            292,
+            306,
+            310,
+            314,
+            315,
+            4799,
+            4892,
+            4893,
+            4986,
+            5080,
+            5362,
+            5457,
+            14769,
+            14861,
+            14863,
+            14954,
+            14955,
+            15503,
+            16269,
+            16270
+          ],
+          "common_proposal_rank_displacement_max": 790,
+          "common_proposal_rank_displacement_mean": 182.18433931484503,
+          "ordered_indices_equal": false,
+          "reference_only_count": 287,
+          "reference_only_first_32": [
+            231,
+            4448,
+            4449,
+            4450,
+            4542,
+            4543,
+            4544,
+            4637,
+            4638,
+            4731,
+            10812,
+            11188,
+            11283,
+            11375,
+            11377,
+            11378,
+            11469,
+            11471,
+            11563,
+            11565,
+            11657,
+            11659,
+            11661,
+            11751,
+            11752,
+            11753,
+            12128,
+            12221,
+            12227,
+            12228,
+            12315,
+            12316
+          ],
+          "same_rank_count": 3,
+          "same_rank_fraction": 0.0033333333333333335,
+          "set_equal": false,
+          "set_jaccard": 0.5164279696714406,
+          "set_overlap_count": 613,
+          "set_overlap_fraction_of_k": 0.6811111111111111
+        },
+        {
+          "batch_index": 1,
+          "candidate_only_count": 416,
+          "candidate_only_first_32": [
+            193,
+            194,
+            197,
+            198,
+            202,
+            203,
+            204,
+            205,
+            209,
+            210,
+            214,
+            216,
+            218,
+            241,
+            261,
+            264,
+            283,
+            284,
+            285,
+            286,
+            287,
+            296,
+            297,
+            298,
+            299,
+            308,
+            311,
+            312,
+            317,
+            6719,
+            6720,
+            7380
+          ],
+          "common_proposal_rank_displacement_max": 805,
+          "common_proposal_rank_displacement_mean": 209.28719008264463,
+          "ordered_indices_equal": false,
+          "reference_only_count": 416,
+          "reference_only_first_32": [
+            238,
+            269,
+            275,
+            280,
+            373,
+            4557,
+            4558,
+            4651,
+            4652,
+            4745,
+            4838,
+            4839,
+            4840,
+            4841,
+            4931,
+            4932,
+            4934,
+            4935,
+            4936,
+            4937,
+            4938,
+            4939,
+            5021,
+            5022,
+            5026,
+            5027,
+            5028,
+            5029,
+            5031,
+            5032,
+            5033,
+            5113
+          ],
+          "same_rank_count": 2,
+          "same_rank_fraction": 0.0022222222222222222,
+          "set_equal": false,
+          "set_jaccard": 0.3677811550151976,
+          "set_overlap_count": 484,
+          "set_overlap_fraction_of_k": 0.5377777777777778
+        }
+      ],
+      "sets_equal_all_batches": false
+    },
+    "topk_input_scores": {
+      "bit_exact": false,
+      "candidate_dtype": "float32",
+      "candidate_finite_count": 41812,
+      "candidate_shape": [
+        2,
+        20906
+      ],
+      "comparison_valid": true,
+      "dtype_equal": true,
+      "jointly_finite_count": 41812,
+      "kind": "finite_array_diff",
+      "max_abs_on_jointly_finite": 2.8420512676239014,
+      "mean_abs_on_jointly_finite": 0.3316435479828698,
+      "nonfinite_pattern_equal": true,
+      "reference_dtype": "float32",
+      "reference_finite_count": 41812,
+      "reference_shape": [
+        2,
+        20906
+      ],
+      "sentinel_only": false,
+      "shape_equal": true
+    },
+    "topk_values": {
+      "bit_exact": false,
+      "candidate_dtype": "float32",
+      "candidate_finite_count": 1800,
+      "candidate_shape": [
+        2,
+        900
+      ],
+      "comparison_valid": true,
+      "dtype_equal": true,
+      "jointly_finite_count": 1800,
+      "kind": "finite_array_diff",
+      "max_abs_on_jointly_finite": 1.034328579902649,
+      "mean_abs_on_jointly_finite": 0.4325573557284143,
+      "nonfinite_pattern_equal": true,
+      "reference_dtype": "float32",
+      "reference_finite_count": 1800,
+      "reference_shape": [
+        2,
+        900
+      ],
+      "sentinel_only": false,
+      "shape_equal": true
+    }
+  },
+  "platform": {
+    "cuda": "13.0",
+    "gpu": "NVIDIA GB10",
+    "machine": "aarch64",
+    "python": "3.12.3",
+    "tensorrt": "10.14.1.48",
+    "torch": "2.13.0+cu130"
+  },
+  "proposal_id_aligned_finals_vs_ort": {
+    "final_logits": {
+      "per_batch": [
+        {
+          "batch_index": 0,
+          "common_count": 613,
+          "max_abs_on_jointly_finite": 5.264223098754883,
+          "mean_abs_on_jointly_finite": 1.083476592456925
+        },
+        {
+          "batch_index": 1,
+          "common_count": 484,
+          "max_abs_on_jointly_finite": 6.195958852767944,
+          "mean_abs_on_jointly_finite": 1.0862487880692666
+        }
+      ]
+    },
+    "final_pred_boxes": {
+      "per_batch": [
+        {
+          "batch_index": 0,
+          "common_count": 613,
+          "max_abs_on_jointly_finite": 8.64267349243164e-06,
+          "mean_abs_on_jointly_finite": 2.600638527076746e-07
+        },
+        {
+          "batch_index": 1,
+          "common_count": 484,
+          "max_abs_on_jointly_finite": 1.3679265975952148e-05,
+          "mean_abs_on_jointly_finite": 2.590707534046705e-07
+        }
+      ]
+    }
+  },
+  "schema_version": "1.0",
+  "scope": "SF1_DIAGNOSTIC_TRT_SENTINEL_LOCALIZATION_NOT_ACCEPTANCE",
+  "timing_boundary": "Instrumented engines block TensorRT fusions; latency here is not comparable to the clean engine and confers no speedup claim.",
+  "trt_sentinels": {
+    "encoder_class_logits_before_topk_reduce": {
+      "dtype": "float32",
+      "engine_dtype": "DataType.FLOAT",
+      "file": "results/acceptance/SF1/trt-sentinel-20260719-v1/tensors/03-encoder_class_logits_before_topk_reduce-trt.npy",
+      "sha256": "a696c2551346362e4f18ab53f949b5093e6402684b5100e767e705221b59c10c",
+      "shape": [
+        2,
+        20906,
+        256
+      ]
+    },
+    "final_logits": {
+      "dtype": "float32",
+      "engine_dtype": "DataType.FLOAT",
+      "file": "results/acceptance/SF1/trt-sentinel-20260719-v1/tensors/10-final_logits-trt.npy",
+      "sha256": "165104ab3826b40fb42bc406f7c61c21cce0abbcfd83f58749dd54ff87dfb3e9",
+      "shape": [
+        2,
+        900,
+        256
+      ]
+    },
+    "final_pred_boxes": {
+      "dtype": "float32",
+      "engine_dtype": "DataType.FLOAT",
+      "file": "results/acceptance/SF1/trt-sentinel-20260719-v1/tensors/11-final_pred_boxes-trt.npy",
+      "sha256": "3ca5cf21bf8a8bc02fc23a608b9110d5fda29c227c67595327b0f61766da31e8",
+      "shape": [
+        2,
+        900,
+        4
+      ]
+    },
+    "grid_sample_decoder_layer_0_call_0_output": {
+      "dtype": "float32",
+      "engine_dtype": "DataType.FLOAT",
+      "file": "results/acceptance/SF1/trt-sentinel-20260719-v1/tensors/08-grid_sample_decoder_layer_0_call_0_output-trt.npy",
+      "sha256": "6aefe268fa8084e3360ee3cc559b5a4c91add1b6c98fe3ea779c751ffd008412",
+      "shape": [
+        16,
+        32,
+        256,
+        4
+      ]
+    },
+    "grid_sample_decoder_layer_5_call_3_output": {
+      "dtype": "float32",
+      "engine_dtype": "DataType.FLOAT",
+      "file": "results/acceptance/SF1/trt-sentinel-20260719-v1/tensors/09-grid_sample_decoder_layer_5_call_3_output-trt.npy",
+      "sha256": "494fa918ff0cf3f27621b74091a69be05a31517cc742f2584a248b15bc141f5e",
+      "shape": [
+        16,
+        32,
+        256,
+        4
+      ]
+    },
+    "grid_sample_encoder_layer_0_call_0_output": {
+      "dtype": "float32",
+      "engine_dtype": "DataType.FLOAT",
+      "file": "results/acceptance/SF1/trt-sentinel-20260719-v1/tensors/06-grid_sample_encoder_layer_0_call_0_output-trt.npy",
+      "sha256": "7f39feb1b205e16b91d092e0e1aa048a12b8a695c234db5fcc63ad3b66531972",
+      "shape": [
+        16,
+        32,
+        256,
+        4
+      ]
+    },
+    "grid_sample_encoder_layer_5_call_3_output": {
+      "dtype": "float32",
+      "engine_dtype": "DataType.FLOAT",
+      "file": "results/acceptance/SF1/trt-sentinel-20260719-v1/tensors/07-grid_sample_encoder_layer_5_call_3_output-trt.npy",
+      "sha256": "55557c9f09499c81e5a48c75a9aa110a7dd797d76018b35e78c02a5afb77fec6",
+      "shape": [
+        16,
+        32,
+        256,
+        4
+      ]
+    },
+    "topk_gather_0_data_before_selection": {
+      "dtype": "float32",
+      "engine_dtype": "DataType.FLOAT",
+      "file": "results/acceptance/SF1/trt-sentinel-20260719-v1/tensors/04-topk_gather_0_data_before_selection-trt.npy",
+      "sha256": "24434f4ac6c34a67e98daf1aa653f176182b1e7a4c2f06fb1466028688fe7f3d",
+      "shape": [
+        2,
+        20906,
+        4
+      ]
+    },
+    "topk_gather_0_output_after_selection": {
+      "dtype": "float32",
+      "engine_dtype": "DataType.FLOAT",
+      "file": "results/acceptance/SF1/trt-sentinel-20260719-v1/tensors/05-topk_gather_0_output_after_selection-trt.npy",
+      "sha256": "d661e46d01abcc8e895c004770c020bb46105fe75329387c092b3be79ab2bd72",
+      "shape": [
+        2,
+        900,
+        4
+      ]
+    },
+    "topk_indices": {
+      "dtype": "int64",
+      "engine_dtype": "DataType.INT64",
+      "file": "results/acceptance/SF1/trt-sentinel-20260719-v1/tensors/02-topk_indices-trt.npy",
+      "sha256": "c1d0a0f554facdd3eb38ff2d6f9b4935e4920bd31823e410c02dcea0a4ff8eb6",
+      "shape": [
+        2,
+        900
+      ]
+    },
+    "topk_input_scores": {
+      "dtype": "float32",
+      "engine_dtype": "DataType.FLOAT",
+      "file": "results/acceptance/SF1/trt-sentinel-20260719-v1/tensors/00-topk_input_scores-trt.npy",
+      "sha256": "adc212b04592ef7bc629ce77f552a3ef08997f6a4c871ac42a3e9b2b62f7658b",
+      "shape": [
+        2,
+        20906
+      ]
+    },
+    "topk_values": {
+      "dtype": "float32",
+      "engine_dtype": "DataType.FLOAT",
+      "file": "results/acceptance/SF1/trt-sentinel-20260719-v1/tensors/01-topk_values-trt.npy",
+      "sha256": "93c47b7b449048cc32d4e352bbcde69b9c1a62b5ea2a9e5cb842e9f5c91e7a08",
+      "shape": [
+        2,
+        900
+      ]
+    }
+  },
+  "verdict": "DIVERGES_BEFORE_TOPK:topk_input_scores,encoder_class_logits_before_topk_reduce"
+}

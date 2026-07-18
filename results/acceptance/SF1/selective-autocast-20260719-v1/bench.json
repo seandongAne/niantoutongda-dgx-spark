@@ -1,0 +1,1450 @@
+{
+  "acceptance_boundary": "Two frozen images and one prompt; diagnostic evidence only. A candidate passing here still requires a larger untouched frozen detection set and downstream hero metrics before mainline adoption.",
+  "candidate_summary": {
+    "selective_bf16_backbone": {
+      "detection_counts": [
+        5,
+        5
+      ],
+      "positional_strict_pass": false,
+      "raw_safety_pass": true,
+      "set_diagnostic_pass": false,
+      "set_strict_pass": false,
+      "speedup_vs_fp32_p50": 1.135355778597268
+    },
+    "selective_bf16_backbone_encoder": {
+      "detection_counts": [
+        5,
+        5
+      ],
+      "positional_strict_pass": false,
+      "raw_safety_pass": true,
+      "set_diagnostic_pass": false,
+      "set_strict_pass": false,
+      "speedup_vs_fp32_p50": 1.3353374103707651
+    }
+  },
+  "code_commit": "4734724ead74128587a6a4522df7f5aca952b690",
+  "created_at_unix": 1784409336,
+  "exit_code_semantics": "0 = at least one selective candidate passes the strict set gate; 2 otherwise",
+  "fp32_repeat_bit_exact": true,
+  "frozen_workload": {
+    "batch_size": 2,
+    "box_threshold": 0.22,
+    "prompt": "luggage. mini fridge. water bottle. desk.",
+    "target_sizes": [
+      [
+        1920,
+        1080
+      ],
+      [
+        1920,
+        1080
+      ]
+    ],
+    "text_threshold": 0.25
+  },
+  "inputs": {
+    "baseline_manifest": {
+      "path": "results/acceptance/SF1/trt-gdino-20260718-v10-dynamo-static/baseline_manifest.json",
+      "sha256": "b29fa5fd05d667104f476d00f8623e3002d7af31526c3bb9f13faed92269cae8"
+    },
+    "baseline_outputs": {
+      "path": "results/acceptance/SF1/trt-gdino-20260718-v10-dynamo-static/torch_outputs.npz",
+      "sha256": "bb0495e9b321847e50d57116a2d569107e0be7fd0af97a0f8ddbb57027dcad13"
+    },
+    "frozen_inputs": {
+      "path": "results/acceptance/SF1/trt-gdino-20260718-v10-dynamo-static/sample_inputs.npz",
+      "sha256": "5410738ad8134275a762a178d27012c16ad281544d0d1c32f3524baf2c85bcf1"
+    },
+    "model_dir": "/home/Developer/models/IDEA-Research__grounding-dino-base"
+  },
+  "modes": {
+    "fp32": {
+      "autocast_bf16_regions": [],
+      "detections": [
+        [
+          {
+            "box": [
+              2.8422296047210693,
+              -4.05670166015625,
+              637.47900390625,
+              1914.616455078125
+            ],
+            "label": "mini fridge",
+            "score": 0.34729477763175964
+          },
+          {
+            "box": [
+              141.1651611328125,
+              1507.4359130859375,
+              1066.460693359375,
+              1922.6636962890625
+            ],
+            "label": "desk",
+            "score": 0.2557087242603302
+          },
+          {
+            "box": [
+              0.0006437301635742188,
+              -3.360271453857422,
+              1079.5950927734375,
+              1916.4932861328125
+            ],
+            "label": "",
+            "score": 0.22985973954200745
+          },
+          {
+            "box": [
+              -0.007330477237701416,
+              1336.557373046875,
+              184.3963165283203,
+              1775.7598876953125
+            ],
+            "label": "",
+            "score": 0.22614695131778717
+          },
+          {
+            "box": [
+              0.9931066632270813,
+              1544.228515625,
+              110.56394958496094,
+              1768.52197265625
+            ],
+            "label": "",
+            "score": 0.22187921404838562
+          }
+        ],
+        [
+          {
+            "box": [
+              9.999833106994629,
+              1251.324462890625,
+              965.5317993164062,
+              1914.0440673828125
+            ],
+            "label": "desk",
+            "score": 0.33517611026763916
+          },
+          {
+            "box": [
+              285.92864990234375,
+              611.3087158203125,
+              796.2750854492188,
+              1390.662841796875
+            ],
+            "label": "luggage",
+            "score": 0.35352712869644165
+          },
+          {
+            "box": [
+              285.5668029785156,
+              619.3509521484375,
+              802.212158203125,
+              1392.89208984375
+            ],
+            "label": "mini fridge",
+            "score": 0.36704781651496887
+          },
+          {
+            "box": [
+              292.2281188964844,
+              828.166259765625,
+              794.1724853515625,
+              1393.130126953125
+            ],
+            "label": "mini fridge",
+            "score": 0.3339041471481323
+          },
+          {
+            "box": [
+              701.4782104492188,
+              1362.451171875,
+              775.0663452148438,
+              1444.5703125
+            ],
+            "label": "",
+            "score": 0.24843451380729675
+          }
+        ]
+      ],
+      "latency": {
+        "mean_ms": 681.5461126708984,
+        "p50_ms": 681.3238220214844,
+        "p95_ms": 685.8405364990234,
+        "runs": 100,
+        "warmup": 10
+      },
+      "vs_frozen_old_default_oracle": {
+        "expected_nonbitexact_due_to_sealed_policy_change": true,
+        "positional_decision_diff": {
+          "candidate_detection_counts": [
+            5,
+            5
+          ],
+          "max_box_delta_px": 0.0028076171875,
+          "max_score_delta": 0.00034993886947631836,
+          "reference_detection_counts": [
+            5,
+            5
+          ],
+          "strict_decision_equivalent_at_1e-3_and_half_px": true,
+          "structure_equal": true
+        },
+        "raw_diff": {
+          "logits": {
+            "candidate_all_finite": false,
+            "candidate_nan_count": 0,
+            "candidate_neginf_count": 439200,
+            "candidate_posinf_count": 0,
+            "jointly_finite_count": 21600,
+            "max_abs_on_jointly_finite": 4.167068004608154,
+            "mean_abs_on_jointly_finite": 0.06921253353357315,
+            "nonfinite_pattern_equal": true,
+            "reference_all_finite": false,
+            "reference_nan_count": 0,
+            "reference_neginf_count": 439200,
+            "reference_posinf_count": 0,
+            "shape_equal": true
+          },
+          "pred_boxes": {
+            "candidate_all_finite": true,
+            "candidate_nan_count": 0,
+            "candidate_neginf_count": 0,
+            "candidate_posinf_count": 0,
+            "jointly_finite_count": 7200,
+            "max_abs_on_jointly_finite": 0.9841400384902954,
+            "mean_abs_on_jointly_finite": 0.017536697909235954,
+            "nonfinite_pattern_equal": true,
+            "reference_all_finite": true,
+            "reference_nan_count": 0,
+            "reference_neginf_count": 0,
+            "reference_posinf_count": 0,
+            "shape_equal": true
+          }
+        },
+        "set_gates": {
+          "diagnostic_pass": true,
+          "method": "exact_label_partitioned_maximum_total_iou_bitmask_dp",
+          "per_batch": [
+            {
+              "batch_index": 0,
+              "counts": {
+                "candidate_by_label": {
+                  "": 3,
+                  "desk": 1,
+                  "mini fridge": 1
+                },
+                "candidate_total": 5,
+                "matched": 5,
+                "reference_by_label": {
+                  "": 3,
+                  "desk": 1,
+                  "mini fridge": 1
+                },
+                "reference_total": 5
+              },
+              "delta_summary": {
+                "max_box_abs_delta_px": 0.0023193359375,
+                "max_score_abs_delta": 0.00017400085926055908,
+                "mean_iou": 0.9999923589297556,
+                "min_iou": 0.9999790306180072
+              },
+              "gates": {
+                "diagnostic": {
+                  "complete_one_to_one_label_match": true,
+                  "criteria": {
+                    "iou_min_inclusive": 0.99,
+                    "score_abs_delta_max_inclusive": 0.01
+                  },
+                  "pass": true
+                },
+                "strict": {
+                  "complete_one_to_one_label_match": true,
+                  "criteria": {
+                    "box_abs_delta_px_max_inclusive": 0.5,
+                    "iou_min_inclusive": 0.999,
+                    "score_abs_delta_max_inclusive": 0.001
+                  },
+                  "pass": true
+                }
+              },
+              "unmatched_candidate_indices": [],
+              "unmatched_reference_indices": []
+            },
+            {
+              "batch_index": 1,
+              "counts": {
+                "candidate_by_label": {
+                  "": 1,
+                  "desk": 1,
+                  "luggage": 1,
+                  "mini fridge": 2
+                },
+                "candidate_total": 5,
+                "matched": 5,
+                "reference_by_label": {
+                  "": 1,
+                  "desk": 1,
+                  "luggage": 1,
+                  "mini fridge": 2
+                },
+                "reference_total": 5
+              },
+              "delta_summary": {
+                "max_box_abs_delta_px": 0.0028076171875,
+                "max_score_abs_delta": 0.00034993886947631836,
+                "mean_iou": 0.99999410569732,
+                "min_iou": 0.9999899069357995
+              },
+              "gates": {
+                "diagnostic": {
+                  "complete_one_to_one_label_match": true,
+                  "criteria": {
+                    "iou_min_inclusive": 0.99,
+                    "score_abs_delta_max_inclusive": 0.01
+                  },
+                  "pass": true
+                },
+                "strict": {
+                  "complete_one_to_one_label_match": true,
+                  "criteria": {
+                    "box_abs_delta_px_max_inclusive": 0.5,
+                    "iou_min_inclusive": 0.999,
+                    "score_abs_delta_max_inclusive": 0.001
+                  },
+                  "pass": true
+                }
+              },
+              "unmatched_candidate_indices": [],
+              "unmatched_reference_indices": []
+            }
+          ],
+          "strict_pass": true
+        }
+      }
+    },
+    "fp32_repeat": {
+      "autocast_bf16_regions": [],
+      "bit_exact_vs_fp32": true,
+      "detections": [
+        [
+          {
+            "box": [
+              2.8422296047210693,
+              -4.05670166015625,
+              637.47900390625,
+              1914.616455078125
+            ],
+            "label": "mini fridge",
+            "score": 0.34729477763175964
+          },
+          {
+            "box": [
+              141.1651611328125,
+              1507.4359130859375,
+              1066.460693359375,
+              1922.6636962890625
+            ],
+            "label": "desk",
+            "score": 0.2557087242603302
+          },
+          {
+            "box": [
+              0.0006437301635742188,
+              -3.360271453857422,
+              1079.5950927734375,
+              1916.4932861328125
+            ],
+            "label": "",
+            "score": 0.22985973954200745
+          },
+          {
+            "box": [
+              -0.007330477237701416,
+              1336.557373046875,
+              184.3963165283203,
+              1775.7598876953125
+            ],
+            "label": "",
+            "score": 0.22614695131778717
+          },
+          {
+            "box": [
+              0.9931066632270813,
+              1544.228515625,
+              110.56394958496094,
+              1768.52197265625
+            ],
+            "label": "",
+            "score": 0.22187921404838562
+          }
+        ],
+        [
+          {
+            "box": [
+              9.999833106994629,
+              1251.324462890625,
+              965.5317993164062,
+              1914.0440673828125
+            ],
+            "label": "desk",
+            "score": 0.33517611026763916
+          },
+          {
+            "box": [
+              285.92864990234375,
+              611.3087158203125,
+              796.2750854492188,
+              1390.662841796875
+            ],
+            "label": "luggage",
+            "score": 0.35352712869644165
+          },
+          {
+            "box": [
+              285.5668029785156,
+              619.3509521484375,
+              802.212158203125,
+              1392.89208984375
+            ],
+            "label": "mini fridge",
+            "score": 0.36704781651496887
+          },
+          {
+            "box": [
+              292.2281188964844,
+              828.166259765625,
+              794.1724853515625,
+              1393.130126953125
+            ],
+            "label": "mini fridge",
+            "score": 0.3339041471481323
+          },
+          {
+            "box": [
+              701.4782104492188,
+              1362.451171875,
+              775.0663452148438,
+              1444.5703125
+            ],
+            "label": "",
+            "score": 0.24843451380729675
+          }
+        ]
+      ],
+      "latency": {
+        "mean_ms": 683.8466748046875,
+        "p50_ms": 684.0179443359375,
+        "p95_ms": 687.5107849121093,
+        "runs": 100,
+        "warmup": 10
+      },
+      "margin_report": {
+        "interpretation_boundary": "Per-query rows compare identical query slots; encoder TopK slot permutation can move a proposal between slots, so slot rows are diagnostics while the set gates carry the decision comparison.",
+        "per_batch": [
+          {
+            "batch_index": 0,
+            "flips_reference_to_below": [],
+            "rows": [
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.34729477763175964,
+                "query": 0,
+                "reference_above_threshold": true,
+                "reference_score": 0.34729477763175964
+              },
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.2557087242603302,
+                "query": 1,
+                "reference_above_threshold": true,
+                "reference_score": 0.2557087242603302
+              },
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.22985973954200745,
+                "query": 2,
+                "reference_above_threshold": true,
+                "reference_score": 0.22985973954200745
+              },
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.22614695131778717,
+                "query": 3,
+                "reference_above_threshold": true,
+                "reference_score": 0.22614695131778717
+              },
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.22187921404838562,
+                "query": 4,
+                "reference_above_threshold": true,
+                "reference_score": 0.22187921404838562
+              }
+            ],
+            "threshold": 0.22,
+            "window": 0.07
+          },
+          {
+            "batch_index": 1,
+            "flips_reference_to_below": [],
+            "rows": [
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.36704781651496887,
+                "query": 2,
+                "reference_above_threshold": true,
+                "reference_score": 0.36704781651496887
+              },
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.35352712869644165,
+                "query": 1,
+                "reference_above_threshold": true,
+                "reference_score": 0.35352712869644165
+              },
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.33517611026763916,
+                "query": 0,
+                "reference_above_threshold": true,
+                "reference_score": 0.33517611026763916
+              },
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.3339041471481323,
+                "query": 3,
+                "reference_above_threshold": true,
+                "reference_score": 0.3339041471481323
+              },
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.24843451380729675,
+                "query": 5,
+                "reference_above_threshold": true,
+                "reference_score": 0.24843451380729675
+              }
+            ],
+            "threshold": 0.22,
+            "window": 0.07
+          }
+        ]
+      },
+      "positional_decision_diff": {
+        "candidate_detection_counts": [
+          5,
+          5
+        ],
+        "max_box_delta_px": 0.0,
+        "max_score_delta": 0.0,
+        "reference_detection_counts": [
+          5,
+          5
+        ],
+        "strict_decision_equivalent_at_1e-3_and_half_px": true,
+        "structure_equal": true
+      },
+      "raw_diff_vs_fp32": {
+        "logits": {
+          "candidate_all_finite": false,
+          "candidate_nan_count": 0,
+          "candidate_neginf_count": 439200,
+          "candidate_posinf_count": 0,
+          "jointly_finite_count": 21600,
+          "max_abs_on_jointly_finite": 0.0,
+          "mean_abs_on_jointly_finite": 0.0,
+          "nonfinite_pattern_equal": true,
+          "reference_all_finite": false,
+          "reference_nan_count": 0,
+          "reference_neginf_count": 439200,
+          "reference_posinf_count": 0,
+          "shape_equal": true
+        },
+        "pred_boxes": {
+          "candidate_all_finite": true,
+          "candidate_nan_count": 0,
+          "candidate_neginf_count": 0,
+          "candidate_posinf_count": 0,
+          "jointly_finite_count": 7200,
+          "max_abs_on_jointly_finite": 0.0,
+          "mean_abs_on_jointly_finite": 0.0,
+          "nonfinite_pattern_equal": true,
+          "reference_all_finite": true,
+          "reference_nan_count": 0,
+          "reference_neginf_count": 0,
+          "reference_posinf_count": 0,
+          "shape_equal": true
+        }
+      },
+      "raw_safety_pass": true,
+      "set_gates": {
+        "diagnostic_pass": true,
+        "method": "exact_label_partitioned_maximum_total_iou_bitmask_dp",
+        "per_batch": [
+          {
+            "batch_index": 0,
+            "counts": {
+              "candidate_by_label": {
+                "": 3,
+                "desk": 1,
+                "mini fridge": 1
+              },
+              "candidate_total": 5,
+              "matched": 5,
+              "reference_by_label": {
+                "": 3,
+                "desk": 1,
+                "mini fridge": 1
+              },
+              "reference_total": 5
+            },
+            "delta_summary": {
+              "max_box_abs_delta_px": 0.0,
+              "max_score_abs_delta": 0.0,
+              "mean_iou": 1.0,
+              "min_iou": 1.0
+            },
+            "gates": {
+              "diagnostic": {
+                "complete_one_to_one_label_match": true,
+                "criteria": {
+                  "iou_min_inclusive": 0.99,
+                  "score_abs_delta_max_inclusive": 0.01
+                },
+                "pass": true
+              },
+              "strict": {
+                "complete_one_to_one_label_match": true,
+                "criteria": {
+                  "box_abs_delta_px_max_inclusive": 0.5,
+                  "iou_min_inclusive": 0.999,
+                  "score_abs_delta_max_inclusive": 0.001
+                },
+                "pass": true
+              }
+            },
+            "unmatched_candidate_indices": [],
+            "unmatched_reference_indices": []
+          },
+          {
+            "batch_index": 1,
+            "counts": {
+              "candidate_by_label": {
+                "": 1,
+                "desk": 1,
+                "luggage": 1,
+                "mini fridge": 2
+              },
+              "candidate_total": 5,
+              "matched": 5,
+              "reference_by_label": {
+                "": 1,
+                "desk": 1,
+                "luggage": 1,
+                "mini fridge": 2
+              },
+              "reference_total": 5
+            },
+            "delta_summary": {
+              "max_box_abs_delta_px": 0.0,
+              "max_score_abs_delta": 0.0,
+              "mean_iou": 1.0,
+              "min_iou": 1.0
+            },
+            "gates": {
+              "diagnostic": {
+                "complete_one_to_one_label_match": true,
+                "criteria": {
+                  "iou_min_inclusive": 0.99,
+                  "score_abs_delta_max_inclusive": 0.01
+                },
+                "pass": true
+              },
+              "strict": {
+                "complete_one_to_one_label_match": true,
+                "criteria": {
+                  "box_abs_delta_px_max_inclusive": 0.5,
+                  "iou_min_inclusive": 0.999,
+                  "score_abs_delta_max_inclusive": 0.001
+                },
+                "pass": true
+              }
+            },
+            "unmatched_candidate_indices": [],
+            "unmatched_reference_indices": []
+          }
+        ],
+        "strict_pass": true
+      },
+      "speedup_vs_fp32_p50": 0.9960613280152049
+    },
+    "selective_bf16_backbone": {
+      "autocast_bf16_regions": [
+        "visual_backbone"
+      ],
+      "detections": [
+        [
+          {
+            "box": [
+              3.324190378189087,
+              -4.008293151855469,
+              637.375,
+              1914.718505859375
+            ],
+            "label": "mini fridge",
+            "score": 0.3514557182788849
+          },
+          {
+            "box": [
+              141.5786590576172,
+              1507.4886474609375,
+              1065.5584716796875,
+              1922.5682373046875
+            ],
+            "label": "desk",
+            "score": 0.25587740540504456
+          },
+          {
+            "box": [
+              -0.03292679786682129,
+              -2.977294921875,
+              1079.5726318359375,
+              1916.8824462890625
+            ],
+            "label": "",
+            "score": 0.2218417376279831
+          },
+          {
+            "box": [
+              -0.01452416181564331,
+              1336.723876953125,
+              184.44912719726562,
+              1775.5972900390625
+            ],
+            "label": "",
+            "score": 0.2243717759847641
+          },
+          {
+            "box": [
+              0.951666533946991,
+              1544.369140625,
+              110.35965728759766,
+              1768.58251953125
+            ],
+            "label": "",
+            "score": 0.22317586839199066
+          }
+        ],
+        [
+          {
+            "box": [
+              285.6679992675781,
+              619.6507568359375,
+              801.9121704101562,
+              1391.2645263671875
+            ],
+            "label": "luggage",
+            "score": 0.34250059723854065
+          },
+          {
+            "box": [
+              9.969095230102539,
+              1252.1123046875,
+              965.7442016601562,
+              1913.799072265625
+            ],
+            "label": "desk",
+            "score": 0.3290286958217621
+          },
+          {
+            "box": [
+              292.4324951171875,
+              828.3605346679688,
+              793.6555786132812,
+              1393.1240234375
+            ],
+            "label": "mini fridge",
+            "score": 0.33642759919166565
+          },
+          {
+            "box": [
+              701.5145874023438,
+              1362.453857421875,
+              775.0614013671875,
+              1444.716796875
+            ],
+            "label": "",
+            "score": 0.24290670454502106
+          },
+          {
+            "box": [
+              286.16619873046875,
+              616.4436645507812,
+              795.7652587890625,
+              1389.7122802734375
+            ],
+            "label": "mini fridge",
+            "score": 0.3685934841632843
+          }
+        ]
+      ],
+      "latency": {
+        "mean_ms": 599.9395166015624,
+        "p50_ms": 600.0971984863281,
+        "p95_ms": 602.9365142822265,
+        "runs": 100,
+        "warmup": 10
+      },
+      "margin_report": {
+        "interpretation_boundary": "Per-query rows compare identical query slots; encoder TopK slot permutation can move a proposal between slots, so slot rows are diagnostics while the set gates carry the decision comparison.",
+        "per_batch": [
+          {
+            "batch_index": 0,
+            "flips_reference_to_below": [],
+            "rows": [
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.3514557182788849,
+                "query": 0,
+                "reference_above_threshold": true,
+                "reference_score": 0.34729477763175964
+              },
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.25587740540504456,
+                "query": 1,
+                "reference_above_threshold": true,
+                "reference_score": 0.2557087242603302
+              },
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.2218417376279831,
+                "query": 2,
+                "reference_above_threshold": true,
+                "reference_score": 0.22985973954200745
+              },
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.2243717759847641,
+                "query": 3,
+                "reference_above_threshold": true,
+                "reference_score": 0.22614695131778717
+              },
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.22317586839199066,
+                "query": 4,
+                "reference_above_threshold": true,
+                "reference_score": 0.22187921404838562
+              }
+            ],
+            "threshold": 0.22,
+            "window": 0.07
+          },
+          {
+            "batch_index": 1,
+            "flips_reference_to_below": [
+              {
+                "candidate_above_threshold": false,
+                "candidate_score": 0.081011563539505,
+                "query": 5,
+                "reference_above_threshold": true,
+                "reference_score": 0.24843451380729675
+              }
+            ],
+            "rows": [
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.33642759919166565,
+                "query": 2,
+                "reference_above_threshold": true,
+                "reference_score": 0.36704781651496887
+              },
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.3290286958217621,
+                "query": 1,
+                "reference_above_threshold": true,
+                "reference_score": 0.35352712869644165
+              },
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.34250059723854065,
+                "query": 0,
+                "reference_above_threshold": true,
+                "reference_score": 0.33517611026763916
+              },
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.24290670454502106,
+                "query": 3,
+                "reference_above_threshold": true,
+                "reference_score": 0.3339041471481323
+              },
+              {
+                "candidate_above_threshold": false,
+                "candidate_score": 0.081011563539505,
+                "query": 5,
+                "reference_above_threshold": true,
+                "reference_score": 0.24843451380729675
+              },
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.3685934841632843,
+                "query": 4,
+                "reference_above_threshold": false,
+                "reference_score": 0.08305753022432327
+              }
+            ],
+            "threshold": 0.22,
+            "window": 0.07
+          }
+        ]
+      },
+      "positional_decision_diff": {
+        "candidate_detection_counts": [
+          5,
+          5
+        ],
+        "max_box_delta_px": 746.0075073242188,
+        "max_score_delta": 0.12015897035598755,
+        "reference_detection_counts": [
+          5,
+          5
+        ],
+        "strict_decision_equivalent_at_1e-3_and_half_px": false,
+        "structure_equal": false
+      },
+      "raw_diff_vs_fp32": {
+        "logits": {
+          "candidate_all_finite": false,
+          "candidate_nan_count": 0,
+          "candidate_neginf_count": 439200,
+          "candidate_posinf_count": 0,
+          "jointly_finite_count": 21600,
+          "max_abs_on_jointly_finite": 5.708917617797852,
+          "mean_abs_on_jointly_finite": 0.6654738783836365,
+          "nonfinite_pattern_equal": true,
+          "reference_all_finite": false,
+          "reference_nan_count": 0,
+          "reference_neginf_count": 439200,
+          "reference_posinf_count": 0,
+          "shape_equal": true
+        },
+        "pred_boxes": {
+          "candidate_all_finite": true,
+          "candidate_nan_count": 0,
+          "candidate_neginf_count": 0,
+          "candidate_posinf_count": 0,
+          "jointly_finite_count": 7200,
+          "max_abs_on_jointly_finite": 0.9940201640129089,
+          "mean_abs_on_jointly_finite": 0.2293352633714676,
+          "nonfinite_pattern_equal": true,
+          "reference_all_finite": true,
+          "reference_nan_count": 0,
+          "reference_neginf_count": 0,
+          "reference_posinf_count": 0,
+          "shape_equal": true
+        }
+      },
+      "raw_safety_pass": true,
+      "set_gates": {
+        "diagnostic_pass": false,
+        "method": "exact_label_partitioned_maximum_total_iou_bitmask_dp",
+        "per_batch": [
+          {
+            "batch_index": 0,
+            "counts": {
+              "candidate_by_label": {
+                "": 3,
+                "desk": 1,
+                "mini fridge": 1
+              },
+              "candidate_total": 5,
+              "matched": 5,
+              "reference_by_label": {
+                "": 3,
+                "desk": 1,
+                "mini fridge": 1
+              },
+              "reference_total": 5
+            },
+            "delta_summary": {
+              "max_box_abs_delta_px": 0.9022216796875,
+              "max_score_abs_delta": 0.008018001914024353,
+              "mean_iou": 0.9985112435558319,
+              "min_iou": 0.9968642432267638
+            },
+            "gates": {
+              "diagnostic": {
+                "complete_one_to_one_label_match": true,
+                "criteria": {
+                  "iou_min_inclusive": 0.99,
+                  "score_abs_delta_max_inclusive": 0.01
+                },
+                "pass": true
+              },
+              "strict": {
+                "complete_one_to_one_label_match": true,
+                "criteria": {
+                  "box_abs_delta_px_max_inclusive": 0.5,
+                  "iou_min_inclusive": 0.999,
+                  "score_abs_delta_max_inclusive": 0.001
+                },
+                "pass": false
+              }
+            },
+            "unmatched_candidate_indices": [],
+            "unmatched_reference_indices": []
+          },
+          {
+            "batch_index": 1,
+            "counts": {
+              "candidate_by_label": {
+                "": 1,
+                "desk": 1,
+                "luggage": 1,
+                "mini fridge": 2
+              },
+              "candidate_total": 5,
+              "matched": 5,
+              "reference_by_label": {
+                "": 1,
+                "desk": 1,
+                "luggage": 1,
+                "mini fridge": 2
+              },
+              "reference_total": 5
+            },
+            "delta_summary": {
+              "max_box_abs_delta_px": 8.342041015625,
+              "max_score_abs_delta": 0.011026531457901001,
+              "mean_iou": 0.9900123663728394,
+              "min_iou": 0.9773591461819039
+            },
+            "gates": {
+              "diagnostic": {
+                "complete_one_to_one_label_match": true,
+                "criteria": {
+                  "iou_min_inclusive": 0.99,
+                  "score_abs_delta_max_inclusive": 0.01
+                },
+                "pass": false
+              },
+              "strict": {
+                "complete_one_to_one_label_match": true,
+                "criteria": {
+                  "box_abs_delta_px_max_inclusive": 0.5,
+                  "iou_min_inclusive": 0.999,
+                  "score_abs_delta_max_inclusive": 0.001
+                },
+                "pass": false
+              }
+            },
+            "unmatched_candidate_indices": [],
+            "unmatched_reference_indices": []
+          }
+        ],
+        "strict_pass": false
+      },
+      "speedup_vs_fp32_p50": 1.135355778597268
+    },
+    "selective_bf16_backbone_encoder": {
+      "autocast_bf16_regions": [
+        "visual_backbone",
+        "encoder"
+      ],
+      "detections": [
+        [
+          {
+            "box": [
+              3.6310243606567383,
+              -3.8299942016601562,
+              636.991943359375,
+              1914.63134765625
+            ],
+            "label": "mini fridge",
+            "score": 0.34964337944984436
+          },
+          {
+            "box": [
+              142.41168212890625,
+              1507.024658203125,
+              1065.4503173828125,
+              1923.591552734375
+            ],
+            "label": "desk",
+            "score": 0.25534817576408386
+          },
+          {
+            "box": [
+              -0.26888608932495117,
+              -3.119831085205078,
+              1079.3521728515625,
+              1916.714111328125
+            ],
+            "label": "",
+            "score": 0.22043286263942719
+          },
+          {
+            "box": [
+              -0.22906333208084106,
+              1336.242919921875,
+              184.92185974121094,
+              1775.7431640625
+            ],
+            "label": "",
+            "score": 0.22476182878017426
+          },
+          {
+            "box": [
+              1.000807285308838,
+              1544.56640625,
+              110.32303619384766,
+              1768.7503662109375
+            ],
+            "label": "",
+            "score": 0.22419202327728271
+          }
+        ],
+        [
+          {
+            "box": [
+              285.7029724121094,
+              619.0017700195312,
+              801.9234619140625,
+              1391.94921875
+            ],
+            "label": "luggage",
+            "score": 0.3426073491573334
+          },
+          {
+            "box": [
+              10.29092788696289,
+              1251.1845703125,
+              966.1481323242188,
+              1914.650390625
+            ],
+            "label": "desk",
+            "score": 0.3272875249385834
+          },
+          {
+            "box": [
+              292.7574462890625,
+              828.5193481445312,
+              794.3809204101562,
+              1393.1453857421875
+            ],
+            "label": "mini fridge",
+            "score": 0.3372149169445038
+          },
+          {
+            "box": [
+              701.5777587890625,
+              1362.5845947265625,
+              774.9818115234375,
+              1444.541015625
+            ],
+            "label": "",
+            "score": 0.24379727244377136
+          },
+          {
+            "box": [
+              285.8644714355469,
+              616.73388671875,
+              795.8460693359375,
+              1389.7669677734375
+            ],
+            "label": "mini fridge",
+            "score": 0.3661748170852661
+          }
+        ]
+      ],
+      "latency": {
+        "mean_ms": 510.1200582885742,
+        "p50_ms": 510.22596740722656,
+        "p95_ms": 513.5617797851562,
+        "runs": 100,
+        "warmup": 10
+      },
+      "margin_report": {
+        "interpretation_boundary": "Per-query rows compare identical query slots; encoder TopK slot permutation can move a proposal between slots, so slot rows are diagnostics while the set gates carry the decision comparison.",
+        "per_batch": [
+          {
+            "batch_index": 0,
+            "flips_reference_to_below": [],
+            "rows": [
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.34964337944984436,
+                "query": 0,
+                "reference_above_threshold": true,
+                "reference_score": 0.34729477763175964
+              },
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.25534817576408386,
+                "query": 1,
+                "reference_above_threshold": true,
+                "reference_score": 0.2557087242603302
+              },
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.22043286263942719,
+                "query": 2,
+                "reference_above_threshold": true,
+                "reference_score": 0.22985973954200745
+              },
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.22476182878017426,
+                "query": 3,
+                "reference_above_threshold": true,
+                "reference_score": 0.22614695131778717
+              },
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.22419202327728271,
+                "query": 4,
+                "reference_above_threshold": true,
+                "reference_score": 0.22187921404838562
+              }
+            ],
+            "threshold": 0.22,
+            "window": 0.07
+          },
+          {
+            "batch_index": 1,
+            "flips_reference_to_below": [
+              {
+                "candidate_above_threshold": false,
+                "candidate_score": 0.07839253544807434,
+                "query": 3,
+                "reference_above_threshold": true,
+                "reference_score": 0.3339041471481323
+              }
+            ],
+            "rows": [
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.3372149169445038,
+                "query": 2,
+                "reference_above_threshold": true,
+                "reference_score": 0.36704781651496887
+              },
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.3272875249385834,
+                "query": 1,
+                "reference_above_threshold": true,
+                "reference_score": 0.35352712869644165
+              },
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.3426073491573334,
+                "query": 0,
+                "reference_above_threshold": true,
+                "reference_score": 0.33517611026763916
+              },
+              {
+                "candidate_above_threshold": false,
+                "candidate_score": 0.07839253544807434,
+                "query": 3,
+                "reference_above_threshold": true,
+                "reference_score": 0.3339041471481323
+              },
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.3661748170852661,
+                "query": 5,
+                "reference_above_threshold": true,
+                "reference_score": 0.24843451380729675
+              },
+              {
+                "candidate_above_threshold": true,
+                "candidate_score": 0.24379727244377136,
+                "query": 4,
+                "reference_above_threshold": false,
+                "reference_score": 0.08305753022432327
+              }
+            ],
+            "threshold": 0.22,
+            "window": 0.07
+          }
+        ]
+      },
+      "positional_decision_diff": {
+        "candidate_detection_counts": [
+          5,
+          5
+        ],
+        "max_box_delta_px": 745.71728515625,
+        "max_score_delta": 0.11774030327796936,
+        "reference_detection_counts": [
+          5,
+          5
+        ],
+        "strict_decision_equivalent_at_1e-3_and_half_px": false,
+        "structure_equal": false
+      },
+      "raw_diff_vs_fp32": {
+        "logits": {
+          "candidate_all_finite": false,
+          "candidate_nan_count": 0,
+          "candidate_neginf_count": 439200,
+          "candidate_posinf_count": 0,
+          "jointly_finite_count": 21600,
+          "max_abs_on_jointly_finite": 5.051834583282471,
+          "mean_abs_on_jointly_finite": 0.6585028767585754,
+          "nonfinite_pattern_equal": true,
+          "reference_all_finite": false,
+          "reference_nan_count": 0,
+          "reference_neginf_count": 439200,
+          "reference_posinf_count": 0,
+          "shape_equal": true
+        },
+        "pred_boxes": {
+          "candidate_all_finite": true,
+          "candidate_nan_count": 0,
+          "candidate_neginf_count": 0,
+          "candidate_posinf_count": 0,
+          "jointly_finite_count": 7200,
+          "max_abs_on_jointly_finite": 0.9983969330787659,
+          "mean_abs_on_jointly_finite": 0.2319227159023285,
+          "nonfinite_pattern_equal": true,
+          "reference_all_finite": true,
+          "reference_nan_count": 0,
+          "reference_neginf_count": 0,
+          "reference_posinf_count": 0,
+          "shape_equal": true
+        }
+      },
+      "raw_safety_pass": true,
+      "set_gates": {
+        "diagnostic_pass": false,
+        "method": "exact_label_partitioned_maximum_total_iou_bitmask_dp",
+        "per_batch": [
+          {
+            "batch_index": 0,
+            "counts": {
+              "candidate_by_label": {
+                "": 3,
+                "desk": 1,
+                "mini fridge": 1
+              },
+              "candidate_total": 5,
+              "matched": 5,
+              "reference_by_label": {
+                "": 3,
+                "desk": 1,
+                "mini fridge": 1
+              },
+              "reference_total": 5
+            },
+            "delta_summary": {
+              "max_box_abs_delta_px": 1.24652099609375,
+              "max_score_abs_delta": 0.009426876902580261,
+              "mean_iou": 0.9963883547692177,
+              "min_iou": 0.9943618912144737
+            },
+            "gates": {
+              "diagnostic": {
+                "complete_one_to_one_label_match": true,
+                "criteria": {
+                  "iou_min_inclusive": 0.99,
+                  "score_abs_delta_max_inclusive": 0.01
+                },
+                "pass": true
+              },
+              "strict": {
+                "complete_one_to_one_label_match": true,
+                "criteria": {
+                  "box_abs_delta_px_max_inclusive": 0.5,
+                  "iou_min_inclusive": 0.999,
+                  "score_abs_delta_max_inclusive": 0.001
+                },
+                "pass": false
+              }
+            },
+            "unmatched_candidate_indices": [],
+            "unmatched_reference_indices": []
+          },
+          {
+            "batch_index": 1,
+            "counts": {
+              "candidate_by_label": {
+                "": 1,
+                "desk": 1,
+                "luggage": 1,
+                "mini fridge": 2
+              },
+              "candidate_total": 5,
+              "matched": 5,
+              "reference_by_label": {
+                "": 1,
+                "desk": 1,
+                "luggage": 1,
+                "mini fridge": 2
+              },
+              "reference_total": 5
+            },
+            "delta_summary": {
+              "max_box_abs_delta_px": 7.69305419921875,
+              "max_score_abs_delta": 0.010919779539108276,
+              "mean_iou": 0.9897060441891181,
+              "min_iou": 0.9773588777066239
+            },
+            "gates": {
+              "diagnostic": {
+                "complete_one_to_one_label_match": true,
+                "criteria": {
+                  "iou_min_inclusive": 0.99,
+                  "score_abs_delta_max_inclusive": 0.01
+                },
+                "pass": false
+              },
+              "strict": {
+                "complete_one_to_one_label_match": true,
+                "criteria": {
+                  "box_abs_delta_px_max_inclusive": 0.5,
+                  "iou_min_inclusive": 0.999,
+                  "score_abs_delta_max_inclusive": 0.001
+                },
+                "pass": false
+              }
+            },
+            "unmatched_candidate_indices": [],
+            "unmatched_reference_indices": []
+          }
+        ],
+        "strict_pass": false
+      },
+      "speedup_vs_fp32_p50": 1.3353374103707651
+    }
+  },
+  "platform": {
+    "cuda": "13.0",
+    "gpu": "NVIDIA GB10",
+    "machine": "aarch64",
+    "python": "3.12.3",
+    "torch": "2.13.0+cu130",
+    "transformers": "5.13.1"
+  },
+  "precision_policy": {
+    "cuda_matmul_allow_tf32": false,
+    "cudnn_allow_tf32": false,
+    "float32_matmul_precision": "highest",
+    "note": "Sealed double-false policy differs from the legacy frozen oracle (cudnn TF32 true); frozen-oracle comparisons are diagnostics only.",
+    "sealed": true
+  },
+  "region_validation": {
+    "decoder_fp32": "GroundingDinoDecoder",
+    "encoder": "GroundingDinoEncoder",
+    "text_backbone_fp32": "BertModel",
+    "visual_backbone": "GroundingDinoConvModel"
+  },
+  "schema_version": "1.0",
+  "scope": "SF1_DIAGNOSTIC_SELECTIVE_AUTOCAST_NOT_HERO_ACCEPTANCE",
+  "verdict": "NO_GO_ALL_SELECTIVE_CANDIDATES_FAIL_SET_GATES"
+}

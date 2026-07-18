@@ -7,15 +7,15 @@
   "independent_item_count": 5,
   "input_sha256": {
     "closure": "b818fa771470e8186a977794442b8de1dc70b5d560b094307bf76c670b4f11df",
-    "display": "bf4af337fd92b3a8eac66d8f9b637d746a92ad2a8348027b1807128340e51fb3",
-    "inventory": "7d5f393d613cbaf13a05572498d7ccefc13dd95856f92d0258bed71ca0ce35dc"
+    "display": "51e885c8334541408f696810dd00d512d3768bb4ce51012961c9d0877d2d9aa9",
+    "inventory": "8f9862e018c2e133db784258d43eac5ff09bb4cb4ec47af1ccbe54111f88b299"
   },
   "output_sha256": {
-    "boxlist.json": "b4df63cf543d06e57a467c025402ae70b81f8a0abd6563aa4f4158e0dc26dde6",
-    "groups.jsonl": "aed98fb3bf9015efbf2d0711935539a71ac7b21f8b77f3d7762c844e3d41e97f",
+    "boxlist.json": "67addf2cbcd332dba8e3df8d64bb9d0d9ff1f121ee38740e045c69737032a1ae",
+    "groups.jsonl": "37a30e0af08f8142056f302179e316a64e85e079b97a4241746b7c4c9501f95e",
     "independent_pack_items.jsonl": "a0b9f4f13bb406b76deafb3ccef84f029d65f68048628200ecf158d529a24d95",
-    "life_groups.jsonl": "f45b54265a649545732879eb10164631be3f96b6826eee469d014ae01bed1ea4",
-    "placement_groups.jsonl": "9f3b5c04c1093442a7c970d8530492f3c1f8024ed73240bacffe41414abe69ff"
+    "life_groups.jsonl": "2999747ac84c479aa4fb7b32e014d7392bb1855c8b479b6f01767391fd3573cf",
+    "placement_groups.jsonl": "4dc3aa40483b8ac517318e54fcabc6dc044b9b4e6971c785074b04bba999a5b6"
   },
   "placement_group_count": 5,
   "placement_grouped_item_count": 20,

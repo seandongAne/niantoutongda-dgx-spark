@@ -158,9 +158,9 @@ stages:
     enabled: true
 
   risk:
-    enabled: true
+    enabled: false
     closure: fixtures/hero_s1/technical_closure.json
-    # 规则引擎照常产生诊断事实；scope=DEFERRED/non-blocking，不据空房视频宣称安全。
+    # 历史实现与产物保留，但本方向已退出正式比赛展示和当前 bundle。
     facts: fixtures/hero_s1/risk_facts.pending.json
 
   verify:

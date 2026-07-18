@@ -132,7 +132,7 @@
     },
     {
       "box_id": "box-technical-01",
-      "box_label_zh": "玩具技术装箱单元箱",
+      "box_label_zh": "玩具收纳箱",
       "box_type": "technical_pack_unit",
       "group_id": "technical_toys_pack",
       "items": [
@@ -154,7 +154,7 @@
     },
     {
       "box_id": "box-technical-02",
-      "box_label_zh": "零食技术装箱单元箱",
+      "box_label_zh": "零食收纳箱",
       "box_type": "technical_pack_unit",
       "group_id": "technical_snacks_pack",
       "items": [

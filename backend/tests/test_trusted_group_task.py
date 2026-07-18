@@ -139,6 +139,10 @@ def test_trusted_cli_builds_exact_closure_groups_independents_and_boxlist(tmp_pa
             projected_by_canonical[canonical_id]
             for canonical_id in frozen["canonical_item_ids"]
         ]
+        assert {
+            evidence.detail for evidence in group.member_evidence
+        } == {f"已确认与「{group.name_zh}」物品一起打包"}
+        assert all("closure" not in evidence.detail for evidence in group.member_evidence)
     assert sum(len(group.entity_ids) for group in groups) == 15
 
     life_groups = _read_jsonl(out / "life_groups.jsonl")
@@ -169,6 +173,15 @@ def test_trusted_cli_builds_exact_closure_groups_independents_and_boxlist(tmp_pa
         "technical_toys_pack",
         "technical_snacks_pack",
     ]
+    assert [group.name_zh for group in placement_groups[3:]] == [
+        "玩具收纳",
+        "零食收纳",
+    ]
+    assert all(
+        evidence.detail == f"按用途统一放入「{group.name_zh}箱」"
+        for group in placement_groups[3:]
+        for evidence in group.member_evidence
+    )
     assert [group.target_region_hint for group in placement_groups] == [
         "书桌",
         "展示柜",
@@ -193,6 +206,10 @@ def test_trusted_cli_builds_exact_closure_groups_independents_and_boxlist(tmp_pa
     assert [box["box_type"] for box in boxlist["boxes"]].count(
         "technical_pack_unit"
     ) == 2
+    assert [box["box_label_zh"] for box in boxlist["boxes"][3:]] == [
+        "玩具收纳箱",
+        "零食收纳箱",
+    ]
     # 名称只取自 display 或 inventory，且保留来源；数量也来自可信库存。
     all_box_items = [item for box in boxlist["boxes"] for item in box["items"]]
     assert {item["display_name_source"] for item in all_box_items} == {

@@ -3,23 +3,23 @@
   "code": {
     "/Users/seandong/Documents/DGX Spark Thing/scripts/inventory_task.py": "b04f3799bb17ec3d6176ae52c69b94dd38d493274abde9c813501c8200e629e8"
   },
-  "finished_at": "2026-07-18T06:28:56+00:00",
+  "finished_at": "2026-07-18T08:09:50+00:00",
   "inputs": {
-    "/Users/seandong/Documents/DGX Spark Thing/fixtures/hero_s1/annotations/anchor_review.confirmed.json": "9a2209e7927393ff426a8e34edac4766f6345afd54344c126326de1f4860550d",
+    "/Users/seandong/Documents/DGX Spark Thing/fixtures/hero_s1/annotations/anchor_review.confirmed.json": "05e9dc3c8a390ac0ba76d34ddec828484aec593bdf00589f2caf93656e41c7ea",
     "/Users/seandong/Documents/DGX Spark Thing/fixtures/hero_s1/items.json": "5a4d200cf22c01e781517c5992deeef3abef3ed2bb7921413dd13d69662f7702",
     "/Users/seandong/Documents/DGX Spark Thing/results/hero_s1/reid-final/entities.jsonl": "e82a498b446ca1be7e892b9c69db07b8546f474aa793be899e06686ce74be16f"
   },
   "outputs": {
     "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/inventory/clarifications.jsonl": "8c9dff463fee613a6a617727deb3174d1514b93002e5ee914aaa01c0a9f64419",
-    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/inventory/display.jsonl": "bf4af337fd92b3a8eac66d8f9b637d746a92ad2a8348027b1807128340e51fb3",
-    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/inventory/hashes.json": "a56b1c68f4ada6ff1a1af06ce8af5a17a349966203b75447c8ee988c358788f7",
-    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/inventory/inventory.jsonl": "7d5f393d613cbaf13a05572498d7ccefc13dd95856f92d0258bed71ca0ce35dc",
-    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/inventory/manifest.json": "95bac2479a41e4bf2251c85de94f6dc32a6d9f364f3e048d1643ebc974baa6b9",
-    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/inventory/metrics.json": "702ffa3215590a40e0f5903300138b5a7469f8a2017af187fc9a6e38ac98c0b9",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/inventory/display.jsonl": "51e885c8334541408f696810dd00d512d3768bb4ce51012961c9d0877d2d9aa9",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/inventory/hashes.json": "0c60ecf4062df67bb2dce9a3797c75bdf6613a05990c3f7a6aa22226c776506b",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/inventory/inventory.jsonl": "8f9862e018c2e133db784258d43eac5ff09bb4cb4ec47af1ccbe54111f88b299",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/inventory/manifest.json": "41fa686d16fb02bbfd309320a492b3ec02913c57837855777d7dc664ed396214",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/inventory/metrics.json": "0bbc6dba4ab6c0ef42fe5bc115932d7c8d5f734b5c986f83836c64fea46327e7",
     "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/inventory/trace.jsonl": "0a698977d7e627d9ea0e060aaa6129abd4cbe1d0072b6af12615bda63f356371",
-    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/inventory/trusted_entities.jsonl": "a6b539c9f40aacd4efd998bb6234d467ff5e40a80c3c65caa5dfdbca9de45fdd"
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/inventory/trusted_entities.jsonl": "bb00683ecfa25fe01d49b3be5f908edfd54536a1e21815dc29fa344b7a1a25cd"
   },
   "stage": "inventory",
-  "started_at": "2026-07-18T06:28:56+00:00",
+  "started_at": "2026-07-18T08:09:50+00:00",
   "status": "done"
 }

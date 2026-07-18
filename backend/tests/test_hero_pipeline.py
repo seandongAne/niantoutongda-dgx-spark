@@ -11,7 +11,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts.hero_pipeline import STAGE_ORDER, build_stages
+from scripts.hero_pipeline import STAGE_ORDER, Stage, build_stages, write_bundle
 
 PROJ = Path(__file__).resolve().parent.parent.parent
 CONFIG = PROJ / "configs/hero_pipeline_dev.yaml"
@@ -91,6 +91,32 @@ def test_dry_run_lists_plan_without_side_effects(tmp_path):
     assert proc.returncode == 0, proc.stderr
     assert "[run ] naming" in proc.stdout
     assert not run_dir.exists()
+
+
+def test_write_bundle_ignores_state_from_disabled_stages(tmp_path):
+    run_dir = tmp_path / "run"
+    state_dir = run_dir / "state"
+    state_dir.mkdir(parents=True)
+    config = tmp_path / "hero.yaml"
+    config.write_text("run_dir: demo\n", encoding="utf-8")
+    (state_dir / "regions.json").write_text(
+        json.dumps({"outputs": {"/current/regions.json": "3" * 64}}),
+        encoding="utf-8",
+    )
+    (state_dir / "risk.json").write_text(
+        json.dumps({"outputs": {"/history/risk.json": "5" * 64}}),
+        encoding="utf-8",
+    )
+    stages = {
+        "regions": Stage("regions", "local"),
+        "bundle": Stage("bundle", "internal"),
+    }
+
+    write_bundle(run_dir, config, stages)
+
+    bundle = json.loads((run_dir / "bundle.json").read_text(encoding="utf-8"))
+    assert {artifact["stage"] for artifact in bundle["artifacts"]} == {"regions"}
+    assert "risk.json" not in (run_dir / "bundle.json").read_text(encoding="utf-8")
 
 
 def test_stale_stage_reruns_but_unchanged_output_spares_downstream(tmp_path):
@@ -351,10 +377,10 @@ def test_build_stages_wires_trusted_inventory_auto_space_and_risk(tmp_path):
         run / "group/metrics.json",
         closure,
         run / "spatial/metrics.json",
-        run / "risk/metrics.json",
-        run / "risk/assessments.json",
     ):
         assert expected in report_inputs
+    assert run / "risk/metrics.json" not in report_inputs
+    assert run / "risk/assessments.json" not in report_inputs
 
 
 def test_build_stages_wires_visual_space_adjudication_as_explicit_source(tmp_path):

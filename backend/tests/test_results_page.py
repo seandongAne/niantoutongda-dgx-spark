@@ -61,7 +61,7 @@ def _write_completion_summaries(run_dir: Path) -> None:
         [
             {
                 "clarification_id": f"q{index}",
-                "projected_entity_id": f"trusted-{index}",
+                "projected_entity_id": "trusted-entity",
                 "question_zh": "<script>question</script>",
                 "status": "PARTIAL",
             }
@@ -102,10 +102,16 @@ def _write_completion_summaries(run_dir: Path) -> None:
         [
             {
                 "group_id": "trusted-placement",
-                "name_zh": "可信 placement 组合",
+                "name_zh": "洗漱护理",
                 "entity_ids": ["trusted-entity"],
-                "dominant_source": "template",
-                "member_evidence": [],
+                "dominant_source": "confirmation",
+                "member_evidence": [
+                    {
+                        "entity_id": "trusted-entity",
+                        "source": "confirmation",
+                        "detail": "技术 closure 冻结成员:hair_clip",
+                    }
+                ],
                 "target_region_hint": "",
             }
         ],
@@ -266,40 +272,43 @@ def test_results_page_renders_completion_summaries_and_escapes_all_text(tmp_path
     assert '<h2 id="trusted-inventory">可信库存' in page
     assert '<h2 id="boxlist">箱单' in page
     assert '<h2 id="automatic-space">自动空间' in page
-    assert '<h2 id="automatic-space-score">独立空间评分' in page
-    assert '<h2 id="visual-space-review">视觉代理裁定' in page
-    assert '<h2 id="risk-reminders">风险提醒' in page
+    assert '<h2 id="automatic-space-score">独立空间复核' in page
+    assert '<h2 id="visual-space-review">空间视觉复核' in page
+    assert '<h2 id="risk-reminders">风险提醒' not in page
     assert "3306" in page and "→" in page and "20" in page
     assert "3306 → 20" in page
     assert "上限 4" in page
-    assert "placement 单元" in page and "物品覆盖" in page and "20/20" in page
-    assert "候选实例" in page and "已投影" in page and "PASS" in page
-    assert "精确语义分" in page and "5/5" in page and "零额外预测" in page
-    assert "视觉接受" in page and "来源不会计入 AUTO_ACCEPTED" in page
-    assert "NEAR 2" in page and "UNKNOWN 3" in page
-    assert "儿童可触及锐器" in page
-    assert "通道绊倒风险" in page
-    assert "潮湿区域用电" in page
-    assert "已触发 1" in page and "待人工确认 1" in page
-    assert "当前条件不成立 1" in page
-    assert "不构成安全认证" in page
-    assert "可信展示名" in page and "可信 placement 组合" in page
-    assert '<h2 id="entities">可信库存实体' in page
+    assert "搬运箱" in page and "物品覆盖" in page and "20/20" in page
+    assert "候选区域" in page and "已用于布局" in page and "✓ 通过" in page
+    assert "区域名称匹配" in page and "5/5" in page and "没有多余区域" in page
+    assert "复核通过" in page and "每个目标区域都保留对应画面" in page
+    assert "NEAR 2" not in page and "UNKNOWN 3" not in page
+    assert "儿童可触及锐器" not in page
+    assert "通道绊倒风险" not in page
+    assert "潮湿区域用电" not in page
+    assert "不构成安全认证" not in page
+    assert "可信展示名" in page and "洗漱护理" in page
+    assert "已确认与「洗漱护理」物品一起打包" in page
+    assert "技术 closure" not in page and "hair_clip" not in page
+    assert '<h2 id="entities">确认后的物品' in page
     assert (
-        '<div class="stat-n">1</div><div class="stat-l">placement 单元</div>'
+        '<div class="stat-n">1</div><div class="stat-l">收纳组合</div>'
         in page
     )
     assert '<div class="stat-n">1</div><div class="stat-l">生活组合</div>' not in page
-    assert "raw ReID 仅保留为审计证据" in page
+    assert "原始识别结果只用于后台核对" in page
+    assert "raw ReID" not in page
     assert "展示名 = 本地 VLM" not in page
     assert "不应出现的旧展示名" not in page
     assert "不应出现的旧组合" not in page
     assert "不应出现的旧澄清" not in page
+    assert "trusted-entity" not in page
+    assert "box-1" not in page
 
     assert "<script>" not in page
     assert "<img src=x onerror=alert(1)>" not in page
     assert "&lt;img src=x onerror=alert(1)&gt;" in page
-    assert "&lt;script&gt;alert(&#x27;disclaimer&#x27;)&lt;/script&gt;" in page
+    assert "&lt;script&gt;alert(&#x27;disclaimer&#x27;)&lt;/script&gt;" not in page
     for marker in (
         "DO_NOT_RENDER_INVENTORY_AUDIT",
         "DO_NOT_RENDER_BOXLIST_AUDIT",
@@ -372,12 +381,17 @@ def test_results_page_promotes_judge_story_only_after_every_hard_gate_passes(tmp
     page = build_page(run_dir)
 
     assert "把旧家的生活组合，" in page and "带到新家" in page
-    assert "比赛技术闭环已通过" in page
+    assert "核心流程已跑通" in page
     assert 'id="demo-story"' in page
     assert "3306→20" in page
-    assert "候选实例" in page and "独立语义评分 5/5" in page
+    assert "个候选" in page and "另一套检查给出 5/5" in page
     assert "代表任务卡" in page and "学习文具箱" in page
     assert 'alt="可信展示名物品图"' in page
+    assert "trusted-placement" not in page
+    assert "region-desk" not in page
+    assert "card-demo" not in page
+    assert "物品已确认 → 组合已生成 → 位置已安排 → 任务卡已生成" in page
+    assert "ENTITIES_READY" not in page
     assert "Agent 消息" not in page
 
     _write_json(
@@ -394,7 +408,7 @@ def test_results_page_promotes_judge_story_only_after_every_hard_gate_passes(tmp
         },
     )
     failed_page = build_page(run_dir)
-    assert "比赛技术闭环已通过" not in failed_page
+    assert "核心流程已跑通" not in failed_page
     assert 'id="demo-story"' not in failed_page
     assert "房间成果总览" in failed_page
 
@@ -436,7 +450,7 @@ def test_select_demo_space_frames_uses_only_final_assignment_evidence(tmp_path):
     assert selected[1]["anchors"] == ["cabinet"]
 
 
-def test_results_page_marks_deferred_risk_diagnostics_non_blocking(tmp_path):
+def test_results_page_keeps_risk_history_out_of_the_display(tmp_path):
     run_dir = tmp_path / "deferred-risk"
     run_dir.mkdir()
     _write_completion_summaries(run_dir)
@@ -445,15 +459,13 @@ def test_results_page_marks_deferred_risk_diagnostics_non_blocking(tmp_path):
 
     page = build_page(run_dir)
 
-    assert "已延期" in page
-    assert "非阻塞" in page
-    assert "诊断缺证据（已延期） 3" in page
-    assert "待人工确认" not in page
-    assert "MISSING_EVIDENCE:child_present" in page
-    assert "MISSING_EVIDENCE:trip_hazard_present" in page
-    assert "MISSING_EVIDENCE:powered_item_present" in page
+    assert 'id="risk-reminders"' not in page
+    assert "诊断缺证据（已延期）" not in page
+    assert "MISSING_EVIDENCE:child_present" not in page
+    assert "MISSING_EVIDENCE:trip_hazard_present" not in page
+    assert "MISSING_EVIDENCE:powered_item_present" not in page
     assert defer_reason not in page
-    assert "现场关系难以从空房视频确认；&lt;script&gt;not-current&lt;/script&gt;" in page
+    assert "现场关系难以从空房视频确认" not in page
     assert [item["status"] for item in assessments["assessments"]] == [
         "NEEDS_USER",
         "NEEDS_USER",
@@ -503,7 +515,8 @@ def test_results_page_renders_machine_readable_competition_scope(tmp_path):
     page = build_page(run_dir, config)
 
     assert 'id="competition-scope"' in page
-    assert "相对容量" in page and "ASSUMED_PRIOR" in page
+    assert "相对容量" in page and "ASSUMED_PRIOR" not in page
+    assert "以常见书桌高" in page and "估算，不是实测" in page
     assert "精确面积、净高、承重、门洞净宽、通道净宽" in page
     assert "可选延期" in page and "只证明物理执行" in page
     assert "&lt;120&gt;" in page
@@ -539,12 +552,12 @@ def test_results_page_without_new_artifacts_keeps_legacy_sections(tmp_path):
     page = build_page(run_dir)
 
     assert "房间成果总览" in page
-    assert '<h2 id="entities">实体卡' in page
-    assert '<h2 id="groups">生活组合' in page
+    assert '<h2 id="entities">识别物品' in page
+    assert '<h2 id="groups">收纳组合' in page
     assert '<h2 id="layout">新家布局' in page
     assert '<h2 id="cards">任务卡' in page
     assert "旧链展示名" in page and "旧链生活组" in page
-    assert "展示名 = 本地 VLM" in page
+    assert "名称来自本地视觉识别" in page
     assert 'id="trusted-inventory"' not in page
     assert 'id="boxlist"' not in page
     assert 'id="automatic-space"' not in page
@@ -596,6 +609,14 @@ def test_results_page_prefers_current_stage_state_and_explicit_config_hash(tmp_p
             "outputs": {"/stale/index.html": "4" * 64},
         },
     )
+    _write_json(
+        run_dir / "state/risk.json",
+        {
+            "stage": "risk",
+            "status": "done",
+            "outputs": {"/history/risk-assessments.json": "5" * 64},
+        },
+    )
     config = tmp_path / "current.yaml"
     config.write_text("run_dir: current\n", encoding="utf-8")
 
@@ -607,3 +628,23 @@ def test_results_page_prefers_current_stage_state_and_explicit_config_hash(tmp_p
     assert "stale.yaml" not in page
     assert "old-regions.json" not in page
     assert "index.html" not in page
+    assert "risk-assessments.json" not in page
+
+
+def test_results_page_filters_risk_from_legacy_bundle_fallback(tmp_path):
+    run_dir = tmp_path / "bundle-only"
+    _write_json(
+        run_dir / "bundle.json",
+        {
+            "bundle_id": "bundle-only",
+            "artifacts": [
+                {"stage": "regions", "path": "/current/regions.json", "sha256": "3" * 64},
+                {"stage": "risk", "path": "/history/risk.json", "sha256": "5" * 64},
+            ],
+        },
+    )
+
+    page = build_page(run_dir)
+
+    assert "regions.json" in page
+    assert "risk.json" not in page

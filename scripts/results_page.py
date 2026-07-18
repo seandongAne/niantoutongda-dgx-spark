@@ -25,13 +25,12 @@ import yaml
 PROJ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJ))
 
-# 证据来源 → (中文标签, 语义色槽)。HeroUI 语义:narration=primary,
-# confirmation=secondary, template=warning, cooccurrence=default。
+# 证据来源 → (用户可读标签, 语义色槽)。内部枚举只用于审计，不直接外显。
 SOURCE_LABEL = {
-    "narration": ("旁白", "primary"),
-    "confirmation": ("轻确认", "secondary"),
-    "template": ("模板", "warning"),
-    "cooccurrence": ("共现佐证", "neutral"),
+    "narration": ("来自旁白", "primary"),
+    "confirmation": ("已确认", "secondary"),
+    "template": ("按用途归类", "warning"),
+    "cooccurrence": ("视频中常一起出现", "neutral"),
 }
 
 CSS_COLOR = {
@@ -43,29 +42,8 @@ CSS_COLOR = {
 
 BOX_TYPE_LABEL = {
     "life_group": "生活组",
-    "technical_pack_unit": "独立装箱单元",
+    "technical_pack_unit": "单独收纳",
 }
-
-RISK_RULE_LABEL = {
-    "CHILD_SHARP_TOOL_REACH": "儿童可触及锐器",
-    "TRIP_HAZARD_IN_PATH": "通道绊倒风险",
-    "POWER_IN_WET_ZONE": "潮湿区域用电",
-}
-
-RISK_STATUS_LABEL = {
-    "TRIGGERED": ("已触发", "danger"),
-    "NEEDS_USER": ("待人工确认", "warning"),
-    "NOT_APPLICABLE": ("当前条件不成立", "neutral"),
-}
-
-DEFERRED_RISK_STATUS_LABEL = {
-    **RISK_STATUS_LABEL,
-    "NEEDS_USER": ("诊断缺证据（已延期）", "neutral"),
-}
-
-DEFAULT_RISK_DISCLAIMER_ZH = (
-    "仅为辅助风险提醒，不构成安全认证，也不能替代现场人员或专业人员复核。"
-)
 
 GEOMETRY_METRIC_LABEL = {
     "exact_surface_area": "精确面积",
@@ -73,6 +51,13 @@ GEOMETRY_METRIC_LABEL = {
     "load_capacity": "承重",
     "doorway_clear_width": "门洞净宽",
     "walk_path_clear_width": "通道净宽",
+}
+
+TRACE_ACTION_LABEL = {
+    "ENTITIES_READY": "物品已确认",
+    "GROUPS_READY": "组合已生成",
+    "PLACEMENT_READY": "位置已安排",
+    "TASKS_READY": "任务卡已生成",
 }
 
 
@@ -142,7 +127,7 @@ def _current_state_artifacts(run_dir: Path) -> list[dict] | None:
     for state_path in sorted(state_dir.glob("*.json")):
         state = load_json(state_path, {})
         stage = str(state.get("stage") or state_path.stem)
-        if stage in {"report", "bundle"} or state.get("status") != "done":
+        if stage in {"risk", "report", "bundle"} or state.get("status") != "done":
             continue
         outputs = state.get("outputs", {})
         if not isinstance(outputs, dict):
@@ -156,6 +141,43 @@ def _current_state_artifacts(run_dir: Path) -> list[dict] | None:
 
 def esc(value: object) -> str:
     return html.escape(str(value))
+
+
+def friendly_group_detail(detail: object, source: str, group_name: str) -> str:
+    """Keep internal audit keys out of the teammate-facing grouping table."""
+
+    raw = str(detail or "").strip()
+    if raw.startswith("技术 closure 冻结成员:"):
+        return f"已确认与「{group_name}」物品一起打包"
+    if raw.startswith("技术装箱策略 v1:"):
+        return f"按用途统一放入「{group_name}箱」"
+    if source == "confirmation" and not raw:
+        return f"已确认与「{group_name}」物品一起打包"
+    if source == "template" and not raw:
+        return f"按用途统一放入「{group_name}箱」"
+    return raw
+
+
+def friendly_clarification(row: dict, display: dict[str, dict]) -> tuple[str, str, str]:
+    """Translate projection diagnostics into a short teammate-facing question."""
+
+    entity_id = str(
+        row.get("entity_id")
+        or row.get("projected_entity_id")
+        or row.get("canonical_id")
+        or ""
+    )
+    name = str(display.get(entity_id, {}).get("display_name_zh") or entity_id or "这件物品")
+    status = str(row.get("status") or "")
+    question = f"请确认不同视频片段里出现的「{name}」是否为同一件物品。"
+    reason_by_status = {
+        "AMBIGUOUS": "多个视频片段都可能是它，系统还不能自动选出唯一代表。",
+        "PARTIAL": "目前只在部分视频片段中匹配到它，需要补一次确认。",
+        "CONTAMINATED": "部分视频片段混入了其他物品，需要确认正确片段。",
+        "MISSING": "暂时没有找到足够清楚的视频片段，需要确认。",
+    }
+    reason = reason_by_status.get(status, "这次确认用于提高后续识别稳定性。")
+    return name, question, reason
 
 
 def chip(text: str, kind: str = "neutral") -> str:
@@ -354,17 +376,6 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
         else None
     )
 
-    risk_assessments_path = run_dir / "risk/assessments.json"
-    risk_metrics_path = run_dir / "risk/metrics.json"
-    risk_assessments = (
-        load_json(risk_assessments_path, {})
-        if risk_assessments_path.exists() and risk_metrics_path.exists()
-        else None
-    )
-    risk_metrics = (
-        load_json(risk_metrics_path, {}) if risk_assessments is not None else None
-    )
-
     group_of = {eid: g for g in groups for eid in g.get("entity_ids", [])}
     region_names = {
         e["region_id"]: e["display_name_zh"] for e in regions.get("entries", [])
@@ -372,10 +383,10 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
 
     # ---- 顶部统计 ----
     stats = [
-        (len(display), "可信库存实体" if trusted_inventory_mode else "实体"),
-        (len(groups), "placement 单元" if trusted_inventory_mode else "生活组合"),
+        (len(display), "确认后的物品" if trusted_inventory_mode else "识别物品"),
+        (len(groups), "收纳组合" if trusted_inventory_mode else "生活组合"),
         (len(cards), "任务卡"),
-        (len(clarifications), "轻确认问题"),
+        (len(clarifications), "关键确认"),
     ]
     if verdicts:
         n_verified = sum(1 for v in verdicts.values() if v["verdict"] == "VERIFIED")
@@ -385,11 +396,11 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
         f'<div class="stat-l">{esc(label)}</div></div>'
         for n, label in stats
     )
-    entity_heading = "可信库存实体" if trusted_inventory_mode else "实体卡"
+    entity_heading = "确认后的物品" if trusted_inventory_mode else "识别物品"
     entity_note = (
-        "数据所有者确认的 20 行投影，raw ReID 仅保留为审计证据"
+        "最终确认的 20 件物品；原始识别结果只用于后台核对"
         if trusted_inventory_mode
-        else "展示名 = 本地 VLM 读 hero 图,同款不同色自动消歧"
+        else "名称来自本地视觉识别，同款不同色会分别标注"
     )
 
     # ---- 实体卡 ----
@@ -407,7 +418,7 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
             )
             + f'<div class="cardbody"><div class="name">{esc(row["display_name_zh"])}</div>'
             + f'<div class="chips">{gchip}{color_chip(row.get("color_primary", ""))}</div>'
-            + f'<div class="eid">{esc(eid)}</div></div></div>'
+            + '</div></div>'
         )
 
     # ---- 组合 ----
@@ -424,7 +435,12 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
                 for ev in evidence_by_eid.get(eid, [])
             )
             detail = "; ".join(
-                ev["detail"] for ev in evidence_by_eid.get(eid, [])
+                friendly_group_detail(
+                    ev.get("detail", ""),
+                    str(ev.get("source", "")),
+                    str(g.get("name_zh", "这个组合")),
+                )
+                for ev in evidence_by_eid.get(eid, [])
                 if ev["source"] != "cooccurrence"
             )
             rows.append(
@@ -436,9 +452,8 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
         hint = esc(g.get("target_region_hint", "")) or "—"
         group_secs.append(
             f'<div class="panel"><div class="panel-head"><h3>{esc(g["name_zh"])}</h3>'
-            f'<span class="mono dim">{esc(g["group_id"])}</span>{dominant}'
-            f'<span class="dim">去向提示:{hint}</span></div>'
-            f'<table><thead><tr><th>成员</th><th>证据</th><th>依据原文</th></tr></thead>'
+            f'{dominant}<span class="dim">建议放到：{hint}</span></div>'
+            f'<table><thead><tr><th>物品</th><th>归组方式</th><th>为什么放在一起</th></tr></thead>'
             f"<tbody>{''.join(rows)}</tbody></table></div>"
         )
 
@@ -449,13 +464,12 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
         alt = layout.get("alternatives", {}).get(gid)
         layout_rows.append(
             f'<tr><td>{esc(g.get("name_zh", gid))}</td>'
-            f'<td><b>{esc(region_names.get(rid, rid))}</b> '
-            f'<span class="mono dim">{esc(rid)}</span></td>'
+            f'<td><b>{esc(region_names.get(rid, rid))}</b></td>'
             f'<td class="dim">{esc(region_names.get(alt, alt) if alt else "—")}</td></tr>'
         )
     status = layout.get("status", "未运行")
     status_chip = chip(
-        "✓ " + status if status == "PLAN_READY" else status,
+        "✓ 布局已生成" if status == "PLAN_READY" else status,
         "success" if status == "PLAN_READY" else "danger",
     )
     layout_sec = (
@@ -470,7 +484,7 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
     # ---- 任务卡 ----
     VERDICT_LABEL = {
         "VERIFIED": ("✓ 已验收", "success"),
-        "NEEDS_USER": ("待用户裁决", "warning"),
+        "NEEDS_USER": ("需要确认", "warning"),
         "FAILED": ("验收未通过", "danger"),
     }
     card_secs = []
@@ -499,7 +513,7 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
         card_secs.append(
             f'<div class="card taskcard"><div class="cardbody">'
             f'<div class="panel-head"><div class="name">{esc(c["box_label_zh"])}</div>'
-            f'<span class="mono dim">{esc(c["card_id"])}</span>{verdict_chip}</div>'
+            f'{verdict_chip}</div>'
             f'<div class="target">目标区域 <b>{esc(c["target_region_name_zh"])}</b>'
             + (f' <span class="dim">备选 {esc(region_names.get(c["alternative_region_id"], c["alternative_region_id"]))}</span>'
                if c.get("alternative_region_id") else "")
@@ -527,22 +541,20 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
         if not v:
             continue
         reasons = "<br>".join(esc(reason_zh(r)) for r in v["reason_codes"]) or \
-            '<span class="dim">presence 与 compliance 全部通过</span>'
+            '<span class="dim">物品和位置检查全部通过</span>'
         photos = "<br>".join(
             f'<span class="mono dim">{esc(p)}</span>' for p in v["photo_refs"]
         ) or "—"
         verify_rows.append(
-            f'<tr><td>{esc(c["box_label_zh"])} '
-            f'<span class="mono dim">{esc(c["card_id"])}</span></td>'
+            f'<tr><td>{esc(c["box_label_zh"])}</td>'
             f'<td>{chip(*VERDICT_LABEL.get(v["verdict"], (v["verdict"], "neutral")))}</td>'
             f'<td class="detail">{reasons}</td><td>{photos}</td></tr>'
         )
     verify_sec = ""
     if verify_rows:
         verify_sec = (
-            '<h2 id="verify">验收复核 '
-            '<span class="note">MEM 答"在不在" ∧ 确定性校验答"对不对" → EXEC 裁决;'
-            "消息链见 verify/messages.jsonl</span></h2>"
+            '<h2 id="verify">执行结果复核 '
+            '<span class="note">逐项核对物品是否出现、位置是否正确</span></h2>'
             '<div class="panel"><table><thead><tr><th>任务卡</th><th>结论</th>'
             "<th>原因</th><th>依据照片</th></tr></thead>"
             f"<tbody>{''.join(verify_rows)}</tbody></table></div>"
@@ -550,11 +562,12 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
 
     # ---- 澄清与冲突 ----
     clar_rows = "".join(
-        f'<tr><td class="mono">{esc(c.get("entity_id") or c.get("projected_entity_id") or c.get("canonical_id") or "—")}</td>'
-        f'<td>{esc(c.get("question_zh", "待确认"))}</td>'
-        f'<td>{chip(c.get("reason") or c.get("status") or "待确认", "warning")}</td></tr>'
-        for c in clarifications
-    ) or '<tr><td colspan="3" class="dim">无待澄清项 — 旁白证据覆盖全部实体</td></tr>'
+        f'<tr><td>{esc(name)}</td><td>{esc(question)}</td>'
+        f'<td>{esc(reason)}</td></tr>'
+        for name, question, reason in (
+            friendly_clarification(row, display) for row in clarifications
+        )
+    ) or '<tr><td colspan="3" class="dim">目前没有需要队友确认的问题</td></tr>'
     conflict_list = "".join(
         f"<li>{esc(c)}</li>" for c in conflicts
     ) or '<li class="dim">无</li>'
@@ -569,6 +582,7 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
             if state_artifacts is not None
             else bundle.get("artifacts", [])
         )
+        if a.get("stage") != "risk"
     )
     config_hashes = (
         {config_path.name: _sha256_file(config_path)}
@@ -581,21 +595,18 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
         for k, v in config_hashes.items()
     )
     main_trace = trace_report.get("main_chain", {})
-    verify_trace = trace_report.get("verification", {})
-    clarification_trace = trace_report.get("clarifications", {})
-    producer_counts = trace_report.get("producer_counts", {})
     trace_summary = ""
     if trace_report:
+        action_labels = [
+            TRACE_ACTION_LABEL.get(str(action), str(action))
+            for action in main_trace.get("actions", [])
+        ]
         trace_summary = (
-            '<div class="panel"><div class="panel-head"><h3>协议回放</h3>'
-            + chip("✓ hash / causation / correlation PASS", "success")
+            '<div class="panel"><div class="panel-head"><h3>流程复核</h3>'
+            + chip("✓ 运行记录完整", "success")
             + "</div><table><tbody>"
-            + f'<tr><td>四 Agent 主链</td><td>{esc(" → ".join(main_trace.get("actions", [])))}</td>'
-            + f'<td>{chip(str(main_trace.get("complete", 0)) + " 条闭合", "success")}</td></tr>'
-            + f'<tr><td>MEM→UI 二选一</td><td>{esc(clarification_trace.get("closed", 0))} closed / '
-            + f'{esc(clarification_trace.get("open", 0))} open</td><td>{chip("已闭合", "success") if not clarification_trace.get("open") else chip("有待确认", "warning")}</td></tr>'
-            + f'<tr><td>EXEC 验收复核</td><td>{esc(verify_trace.get("closed", 0))} 条四消息闭环 · '
-            + f'{esc(verify_trace.get("adjudication_closed", 0))} 条用户裁决</td><td class="mono dim">{esc(producer_counts)}</td></tr>'
+            + f'<tr><td>核心流程</td><td>{esc(" → ".join(action_labels))}</td>'
+            + f'<td>{chip("全流程已完成", "success") if main_trace.get("complete") else chip("流程未完成", "warning")}</td></tr>'
             + "</tbody></table></div>"
         )
 
@@ -610,16 +621,16 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
         eligible = inventory_metrics.get("downstream_eligible_count", "—")
         inventory_sec = (
             '<h2 id="trusted-inventory">可信库存 '
-            '<span class="note">raw ReID 留作模型审计，可信投影进入下游</span></h2>'
+            '<span class="note">后续箱单和任务卡只使用最终确认的物品</span></h2>'
             '<div class="summary-grid">'
             '<div class="summary-card"><div class="summary-k">原始实体 → 可信库存</div>'
             f'<div class="summary-v">{esc(raw_count)} → {esc(trusted_count)}</div></div>'
-            '<div class="summary-card"><div class="summary-k">轻确认问题</div>'
+            '<div class="summary-card"><div class="summary-k">需要确认的问题</div>'
             f'<div class="summary-v">{esc(question_count)} <span class="summary-unit">/ 上限 '
             f'{esc(question_cap)}</span></div></div>'
-            '<div class="summary-card"><div class="summary-k">下游可用</div>'
+            '<div class="summary-card"><div class="summary-k">最终可用物品</div>'
             f'<div class="summary-v">{esc(eligible)}</div>'
-            f'<div class="dim">raw 链接未决 {esc(unresolved)} 项，不阻断可信库存</div></div>'
+            f'<div class="dim">仍有 {esc(unresolved)} 条原始匹配可继续优化，不影响最终清单</div></div>'
             '</div>'
         )
 
@@ -636,13 +647,12 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
             box_type = box.get("box_type", "")
             box_rows.append(
                 f'<tr><td>{esc(box.get("box_label_zh", "未命名箱"))}</td>'
-                f'<td class="mono dim">{esc(box.get("box_id", "—"))}</td>'
                 f'<td>{chip(BOX_TYPE_LABEL.get(str(box_type), str(box_type) or "未分类"), "secondary")}</td>'
                 f'<td>{esc(item_count)}</td></tr>'
             )
         if len(boxes) > 8:
             box_rows.append(
-                f'<tr><td colspan="4" class="dim">另有 {esc(len(boxes) - 8)} 个箱单条目，'
+                f'<tr><td colspan="3" class="dim">另有 {esc(len(boxes) - 8)} 个箱单条目，'
                 '本页仅展示摘要</td></tr>'
             )
         group_count = group_metrics.get("group_count", "—")
@@ -658,18 +668,18 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
         box_count = group_metrics.get("box_count", boxlist.get("box_count", "—"))
         boxlist_sec = (
             '<h2 id="boxlist">箱单 '
-            '<span class="note">三组生活组合与独立装箱单元共同覆盖可信库存</span></h2>'
+            '<span class="note">三组生活组合与两组单独收纳共同覆盖最终清单</span></h2>'
             '<div class="summary-grid">'
             '<div class="summary-card"><div class="summary-k">生活组合</div>'
             f'<div class="summary-v">{esc(group_count)}</div></div>'
-            '<div class="summary-card"><div class="summary-k">placement 单元</div>'
+            '<div class="summary-card"><div class="summary-k">搬运箱</div>'
             f'<div class="summary-v">{esc(placement_count)}</div></div>'
             '<div class="summary-card"><div class="summary-k">物品覆盖</div>'
             f'<div class="summary-v">{esc(covered_count)}/{esc(inventory_count)}</div></div>'
             '<div class="summary-card"><div class="summary-k">箱数</div>'
             f'<div class="summary-v">{esc(box_count)}</div></div>'
             '</div>'
-            '<div class="panel"><table><thead><tr><th>箱单</th><th>箱号</th>'
+            '<div class="panel"><table><thead><tr><th>箱单</th>'
             '<th>类型</th><th>物品数</th></tr></thead>'
             f'<tbody>{"".join(box_rows)}</tbody></table></div>'
         )
@@ -683,23 +693,23 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
         gate_reasons = spatial_metrics.get("gate_reasons", [])
         gate_reasons = gate_reasons if isinstance(gate_reasons, list) else []
         reason_html = (
-            f'<div class="dim">门原因：{esc("; ".join(str(item) for item in gate_reasons[:4]))}</div>'
+            '<div class="dim">区域选择尚未通过，请查看下方运行记录。</div>'
             if gate_reasons
-            else '<div class="dim">覆盖与可信候选门已满足</div>'
+            else '<div class="dim">5 个目标区域均已自动找到</div>'
         )
         spatial_sec = (
             '<h2 id="automatic-space">自动空间 '
-            '<span class="note">Nemotron 视觉假设经全局一对一门后，才投影至布局区域</span></h2>'
-            '<div class="panel"><div class="panel-head"><h3>空间生产门</h3>'
-            f'{chip(str(gate_status), gate_kind)}</div>'
+            '<span class="note">视觉模型先找候选位置，再选出 5 个不重复、可用的最终区域</span></h2>'
+            '<div class="panel"><div class="panel-head"><h3>区域选择检查</h3>'
+            f'{chip("✓ 通过" if gate_status == "PASS" else "需要确认", gate_kind)}</div>'
             '<div class="summary-grid compact">'
-            '<div class="summary-card"><div class="summary-k">候选实例</div>'
+            '<div class="summary-card"><div class="summary-k">候选区域</div>'
             f'<div class="summary-v">{esc(spatial_metrics.get("candidate_count", "—"))}</div></div>'
-            '<div class="summary-card"><div class="summary-k">自动接受</div>'
+            '<div class="summary-card"><div class="summary-k">自动确认</div>'
             f'<div class="summary-v">{esc(spatial_metrics.get("auto_accepted_count", "—"))}</div></div>'
-            '<div class="summary-card"><div class="summary-k">已投影</div>'
+            '<div class="summary-card"><div class="summary-k">已用于布局</div>'
             f'<div class="summary-v">{esc(spatial_metrics.get("projected_region_count", "—"))}</div></div>'
-            '<div class="summary-card"><div class="summary-k">待确认 / 未观测</div>'
+            '<div class="summary-card"><div class="summary-k">需人工确认 / 未识别</div>'
             f'<div class="summary-v small">{esc(spatial_metrics.get("needs_user_count", "—"))} / '
             f'{esc(spatial_metrics.get("not_observed_count", "—"))}</div></div>'
             f'</div>{reason_html}</div>'
@@ -711,28 +721,26 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
         score_reasons = spatial_score_metrics.get("gate_reasons", [])
         score_reasons = score_reasons if isinstance(score_reasons, list) else []
         score_reason_html = (
-            '<div class="dim">评分门原因：'
-            f'{esc("; ".join(str(item) for item in score_reasons[:4]))}</div>'
+            '<div class="dim">独立复核尚未通过，请查看下方运行记录。</div>'
             if score_reasons
-            else '<div class="dim">五类 anchor、support 与相对容量均匹配；零额外预测。</div>'
+            else '<div class="dim">5 个目标区域、摆放关系和相对容量均匹配，没有多余区域。</div>'
         )
         spatial_score_sec = (
-            '<h2 id="automatic-space-score">独立空间评分 '
-            '<span class="note">语义真值不含 prediction/track/region ID，只评分且不产出 regions</span></h2>'
-            '<div class="panel"><div class="panel-head"><h3>冻结语义门</h3>'
-            f'{chip("PASS" if score_passed else "FAIL", "success" if score_passed else "danger")}</div>'
+            '<h2 id="automatic-space-score">独立空间复核 '
+            '<span class="note">用另一套标准检查结果，避免自己给自己打分</span></h2>'
+            '<div class="panel"><div class="panel-head"><h3>空间理解检查</h3>'
+            f'{chip("✓ 通过" if score_passed else "未通过", "success" if score_passed else "danger")}</div>'
             '<div class="summary-grid compact">'
-            '<div class="summary-card"><div class="summary-k">精确语义分</div>'
+            '<div class="summary-card"><div class="summary-k">区域名称匹配</div>'
             f'<div class="summary-v">{esc(spatial_score_metrics.get("score", "—"))}</div></div>'
-            '<div class="summary-card"><div class="summary-k">匹配 anchor</div>'
+            '<div class="summary-card"><div class="summary-k">匹配目标区域</div>'
             f'<div class="summary-v">{esc(spatial_score_metrics.get("matched_anchor_count", "—"))}</div></div>'
-            '<div class="summary-card"><div class="summary-k">额外预测</div>'
+            '<div class="summary-card"><div class="summary-k">多余区域</div>'
             f'<div class="summary-v">{esc(spatial_score_metrics.get("extra_prediction_count", "—"))}</div></div>'
-            '<div class="summary-card"><div class="summary-k">support / 容量不符</div>'
+            '<div class="summary-card"><div class="summary-k">摆放关系 / 容量不符</div>'
             f'<div class="summary-v small">{esc(spatial_score_metrics.get("support_type_mismatch_count", "—"))} / '
             f'{esc(spatial_score_metrics.get("capacity_class_mismatch_count", "—"))}</div></div>'
-            f'</div>{score_reason_html}'
-            '<div class="dim">电源差异仅作信息记录，不作为空房视频的安全结论。</div></div>'
+            f'</div>{score_reason_html}</div>'
         )
 
     spatial_review_sec = ""
@@ -741,37 +749,26 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
         review_kind = "success" if review_gate == "PASS" else "warning"
         review_reasons = spatial_review_metrics.get("gate_reasons", [])
         review_reasons = review_reasons if isinstance(review_reasons, list) else []
-        power_counts = spatial_review_metrics.get("power_state_counts", {})
-        power_counts = power_counts if isinstance(power_counts, dict) else {}
-        power_html = (
-            '<div class="dim">电源证据：'
-            f'NEAR {esc(power_counts.get("NEAR", 0))} / '
-            f'UNKNOWN {esc(power_counts.get("UNKNOWN", 0))} / '
-            f'NOT_NEAR {esc(power_counts.get("NOT_NEAR", 0))}</div>'
-            if power_counts
-            else ""
-        )
         review_reason_html = (
-            '<div class="dim">裁定门原因：'
-            f'{esc("; ".join(str(item) for item in review_reasons[:4]))}</div>'
+            '<div class="dim">逐帧复核尚未完成，请查看下方运行记录。</div>'
             if review_reasons
-            else '<div class="dim">五个冻结目标均有逐帧视觉证据；来源不会计入 AUTO_ACCEPTED。</div>'
+            else '<div class="dim">5 个目标区域都有逐帧依据；人工复核不会混入自动接受统计。</div>'
         )
         spatial_review_sec = (
-            '<h2 id="visual-space-review">视觉代理裁定 '
-            '<span class="note">独立覆盖层：保留候选、轨迹、帧 SHA 与裁定来源</span></h2>'
-            '<div class="panel"><div class="panel-head"><h3>视觉裁定门</h3>'
-            f'{chip(str(review_gate), review_kind)}</div>'
+            '<h2 id="visual-space-review">空间视觉复核 '
+            '<span class="note">每个目标区域都保留对应画面，方便重新核对</span></h2>'
+            '<div class="panel"><div class="panel-head"><h3>逐帧检查</h3>'
+            f'{chip("✓ 通过" if review_gate == "PASS" else "需要确认", review_kind)}</div>'
             '<div class="summary-grid compact">'
-            '<div class="summary-card"><div class="summary-k">裁定条目</div>'
+            '<div class="summary-card"><div class="summary-k">检查条目</div>'
             f'<div class="summary-v">{esc(spatial_review_metrics.get("decision_count", "—"))}</div></div>'
-            '<div class="summary-card"><div class="summary-k">视觉接受</div>'
+            '<div class="summary-card"><div class="summary-k">复核通过</div>'
             f'<div class="summary-v">{esc(spatial_review_metrics.get("visually_adjudicated_count", "—"))}</div></div>'
-            '<div class="summary-card"><div class="summary-k">已投影</div>'
+            '<div class="summary-card"><div class="summary-k">已用于布局</div>'
             f'<div class="summary-v">{esc(spatial_review_metrics.get("projected_region_count", "—"))}</div></div>'
             '<div class="summary-card"><div class="summary-k">待处理</div>'
             f'<div class="summary-v">{esc(spatial_review_metrics.get("needs_user_count", "—"))}</div></div>'
-            f'</div>{review_reason_html}{power_html}</div>'
+            f'</div>{review_reason_html}</div>'
         )
 
     scope_sec = ""
@@ -787,13 +784,12 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
             for metric in non_required
         )
         scope_sec = (
-            '<h2 id="competition-scope">比赛技术闭环口径 '
-            '<span class="note">假设、非必需项和可选验收均显式入合同</span></h2>'
+            '<h2 id="competition-scope">本次比赛范围 '
+            '<span class="note">已完成内容和暂不作为比赛目标的内容都明确说明</span></h2>'
             '<div class="panel"><div class="summary-grid compact">'
             '<div class="summary-card"><div class="summary-k">空间估计</div>'
             '<div class="summary-v">相对容量</div>'
-            f'<div class="dim">书桌高 {esc(assumption.get("value_cm", "—"))} cm · '
-            f'{esc(assumption.get("status", "—"))}，不是实测</div></div>'
+            f'<div class="dim">以常见书桌高 {esc(assumption.get("value_cm", "—"))} cm 估算，不是实测</div></div>'
             '<div class="summary-card"><div class="summary-k">精确测量</div>'
             '<div class="summary-v">非必需</div>'
             f'<div class="dim">{esc(metric_labels or "—")} · 非阻塞</div></div>'
@@ -803,66 +799,6 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
             '</div></div>'
         )
 
-    risk_sec = ""
-    if isinstance(risk_assessments, dict) and isinstance(risk_metrics, dict):
-        risk_scope_deferred = (
-            risk_metrics.get("scope_status") == "DEFERRED"
-            and risk_metrics.get("blocking") is False
-            and risk_assessments.get("scope_status") == "DEFERRED"
-            and risk_assessments.get("blocking") is False
-        )
-        risk_status_labels = (
-            DEFERRED_RISK_STATUS_LABEL if risk_scope_deferred else RISK_STATUS_LABEL
-        )
-        assessment_rows = risk_assessments.get("assessments", [])
-        assessment_rows = assessment_rows if isinstance(assessment_rows, list) else []
-        risk_rows = []
-        for assessment in assessment_rows[:3]:
-            if not isinstance(assessment, dict):
-                continue
-            rule_id = str(assessment.get("rule_id", "未知规则"))
-            status_value = str(assessment.get("status", "NEEDS_USER"))
-            status_label = risk_status_labels.get(
-                status_value, (status_value, "neutral")
-            )
-            reasons = assessment.get("reason_codes", [])
-            reasons = reasons if isinstance(reasons, list) else []
-            risk_rows.append(
-                f'<tr><td>{esc(RISK_RULE_LABEL.get(rule_id, rule_id))}</td>'
-                f'<td>{chip(*status_label)}</td>'
-                f'<td>{esc(assessment.get("confidence", "—"))}</td>'
-                f'<td class="detail">{esc("; ".join(str(item) for item in reasons[:3]) or "—")}</td></tr>'
-            )
-        status_counts = risk_metrics.get("status_counts", {})
-        status_counts = status_counts if isinstance(status_counts, dict) else {}
-        status_chips = "".join(
-            chip(
-                f"{risk_status_labels[status][0]} {status_counts.get(status, 0)}",
-                risk_status_labels[status][1],
-            )
-            for status in ("TRIGGERED", "NEEDS_USER", "NOT_APPLICABLE")
-        )
-        scope_html = ""
-        if risk_scope_deferred:
-            defer_reason = str(risk_metrics.get("defer_reason_zh", ""))
-            scope_html = (
-                '<div class="panel-head"><h3>执行范围</h3>'
-                f'{chip("已延期", "neutral")}{chip("非阻塞", "success")}</div>'
-                f'<div class="dim">{esc(defer_reason)}</div>'
-            )
-        disclaimer = risk_metrics.get(
-            "disclaimer_zh", DEFAULT_RISK_DISCLAIMER_ZH
-        )
-        risk_sec = (
-            '<h2 id="risk-reminders">风险提醒 '
-            '<span class="note">固定三条规则，只消费有引用的显式事实</span></h2>'
-            f'<div class="panel">{scope_html}<div class="panel-head"><h3>三条规则状态</h3>'
-            f'{status_chips}</div><table><thead><tr><th>规则</th><th>状态</th>'
-            '<th>置信度</th><th>原因码</th></tr></thead>'
-            f'<tbody>{"".join(risk_rows)}</tbody></table>'
-            f'<div class="disclaimer">⚠ {esc(disclaimer)}</div></div>'
-        )
-
     completion_sections = (
         scope_sec
         + inventory_sec
@@ -870,7 +806,6 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
         + spatial_sec
         + spatial_score_sec
         + spatial_review_sec
-        + risk_sec
     )
 
     # ---- 评委主线：只在全部硬门真实通过时出现 ----
@@ -994,14 +929,14 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
         demo_sec = (
             f'<section class="judge-hero{visual_class}" id="top">'
             '<div class="judge-copy">'
-            '<div class="eyebrow">比赛技术闭环已通过 · Spark 本地运行</div>'
+            '<div class="eyebrow">核心流程已跑通 · Spark 本地运行</div>'
             '<h1><span>把旧家的生活组合，</span><span>带到新家</span></h1>'
             '<p>从旧房视频和新家巡拍出发，把嘈杂识别结果收敛成可信库存，'
             '自动理解可用空间，并生成搬家人员可以直接执行的任务卡。</p>'
             '<div class="hero-proof">'
-            f'<span><b>{esc(raw_count)}→{esc(trusted_count)}</b> 可信库存</span>'
-            f'<span><b>≤{esc(question_cap)}</b> 个轻确认</span>'
-            f'<span><b>{esc(accepted_count)}/5</b> 自动空间</span>'
+            f'<span><b>{esc(raw_count)}→{esc(trusted_count)}</b> 件确认物品</span>'
+            f'<span><b>≤{esc(question_cap)}</b> 个关键问题</span>'
+            f'<span><b>{esc(accepted_count)}/5</b> 个区域自动找到</span>'
             f'<span><b>{esc(len(cards))}</b> 张任务卡</span>'
             '</div><div class="hero-actions">'
             '<a class="button button-primary" href="#demo-story">30 秒看懂闭环</a>'
@@ -1021,12 +956,12 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
             f'<p>模型不确定性被压缩为 {esc(question_count)} 个高价值问题，上限 {esc(question_cap)}。</p></article>'
             '<article class="story-card"><div class="story-step">02 · 生活关系</div>'
             '<h3>物品不只是清单，而是生活组合</h3>'
-            f'<div class="story-metric">{esc(group_count)} <span>个生活组合 /</span> {esc(placement_count)} <span>个落位单元</span></div>'
-            f'<p>箱单覆盖 {esc(covered_count)}/{esc(inventory_count)}，下游只消费可信库存。</p></article>'
+            f'<div class="story-metric">{esc(group_count)} <span>个生活组合 /</span> {esc(placement_count)} <span>个搬运箱</span></div>'
+            f'<p>箱单覆盖 {esc(covered_count)}/{esc(inventory_count)}，后续步骤只使用这份确认清单。</p></article>'
             '<article class="story-card"><div class="story-step">03 · 新家</div>'
-            '<h3>自动空间生产器替代人工区域 ID</h3>'
-            f'<div class="story-metric">{esc(candidate_count)} <span>候选实例 →</span> {esc(accepted_count)} <span>区</span></div>'
-            f'<p>全局一对一门通过；独立语义评分 {esc(score)}，不反哺生产结果。</p></article>'
+            '<h3>系统自动找出新家的可用摆放区域</h3>'
+            f'<div class="story-metric">{esc(candidate_count)} <span>个候选 →</span> {esc(accepted_count)} <span>个最终区域</span></div>'
+            f'<p>选出的区域互不重复；另一套检查给出 {esc(score)}，结果通过。</p></article>'
             '<article class="story-card"><div class="story-step">04 · 执行</div>'
             '<h3>规划结果变成搬家任务卡</h3>'
             f'<div class="story-metric">{esc(len(cards))} <span>张卡 ·</span> {esc(covered_count)}/{esc(inventory_count)}</div>'
@@ -1038,8 +973,8 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
                 '<h2>三张真实新房帧，覆盖全部五个最终区域</h2>'
                 f'<div class="space-gallery">{frame_cards}</div>'
                 '<div class="proof-bar">'
-                f'<span>生产门 <b>PASS</b></span><span>自动接受 <b>{esc(accepted_count)}/5</b></span>'
-                f'<span>独立评分 <b>{esc(score)}</b></span><span>待人工区域 <b>0</b></span>'
+                f'<span>区域检查 <b>通过</b></span><span>自动确认 <b>{esc(accepted_count)}/5</b></span>'
+                f'<span>独立复核 <b>{esc(score)}</b></span><span>需要人工标注 <b>0</b></span>'
                 '</div></section>'
                 if frame_cards
                 else ""
@@ -1062,13 +997,12 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
             (spatial_sec, '<a href="#automatic-space">自动空间</a>'),
             (
                 spatial_score_sec,
-                '<a href="#automatic-space-score">空间评分</a>',
+                '<a href="#automatic-space-score">空间复核</a>',
             ),
             (
                 spatial_review_sec,
-                '<a href="#visual-space-review">视觉裁定</a>',
+                '<a href="#visual-space-review">视觉复核</a>',
             ),
-            (risk_sec, '<a href="#risk-reminders">风险提醒</a>'),
         )
         if section
     )
@@ -1076,7 +1010,7 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
     bundle_id = bundle.get("bundle_id", run_dir.name)
     legacy_hero = (
         '<div class="hero-head"><h1>房间成果总览</h1>'
-        '<div class="sub">旧房间 → 实体识别 → 生活组合 → 新家布局 → 任务卡 · 全链确定性复跑</div>'
+        '<div class="sub">旧房间 → 物品确认 → 生活组合 → 新家布局 → 任务卡</div>'
         f'<div class="stats">{stat_tiles}</div></div>'
     )
     if demo_ready:
@@ -1092,19 +1026,19 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
         )
     else:
         header_nav = (
-            f'{optional_nav}<a href="#entities">实体</a><a href="#groups">生活组合</a>'
+            f'{optional_nav}<a href="#entities">物品</a><a href="#groups">收纳组合</a>'
             '<a href="#layout">布局</a><a href="#cards">任务卡</a>'
             + ('<a href="#verify">验收</a>' if verify_rows else '')
-            + '<a href="#clarify">澄清</a><a href="#trace">复跑指纹</a>'
+            + '<a href="#clarify">待确认</a><a href="#trace">运行记录</a>'
         )
     evidence_intro = ""
     if demo_ready:
         evidence_intro = (
             '<section id="evidence" class="evidence-intro">'
             '<div><div class="section-kicker">完整证据</div>'
-            '<h2>所有数字、边界与失败安全状态都可下钻</h2>'
-            '<p>主线负责让评委快速理解价值；以下内容保留机器可复核的库存、空间、'
-            '任务卡、风险边界与复跑指纹。</p></div>'
+            '<h2>每个结果都能找到依据，也能重新核对</h2>'
+            '<p>主线负责让评委快速理解价值；以下保留确认清单、空间结果、'
+            '任务卡和完整运行记录。</p></div>'
             f'<nav class="evidence-nav" aria-label="完整证据导航">{optional_nav}'
             '<a href="#entities">20 件物品</a><a href="#groups">组合</a>'
             '<a href="#layout">布局</a><a href="#cards">任务卡</a>'
@@ -1265,7 +1199,6 @@ h2 .note {{ font-size:12px; font-weight:400; color:var(--muted); }}
 .cardbody {{ padding:12px 14px; }}
 .name {{ font-weight:650; font-size:15px; }}
 .chips {{ margin:6px 0 4px; display:flex; flex-wrap:wrap; gap:4px; }}
-.eid {{ font-size:11px; color:var(--muted); font-family:ui-monospace,SFMono-Regular,monospace; }}
 .hero {{ width:100%; aspect-ratio:1; object-fit:cover; display:block; background:var(--panel-2); }}
 .noimg {{ display:flex; align-items:center; justify-content:center;
   color:var(--muted); font-size:12px; border-bottom:1px dashed var(--line);
@@ -1295,8 +1228,6 @@ td {{ text-align:left; padding:8px 10px; border-top:1px solid var(--line); font-
 .detail {{ color:var(--dim); font-size:12.5px; }}
 .mono {{ font-family:ui-monospace,SFMono-Regular,monospace; font-size:12px; }}
 .warn {{ color:var(--danger); margin-top:10px; font-size:13px; }}
-.disclaimer {{ margin-top:12px; padding:9px 12px; border-radius:10px;
-  color:var(--warning); background:var(--warning-bg); font-size:12.5px; }}
 .target {{ margin:2px 0 8px; font-size:14px; }}
 .items {{ list-style:none; margin:6px 0; padding:0; display:flex; flex-direction:column; gap:6px; }}
 .items li {{ display:flex; align-items:center; gap:9px; background:var(--panel-2);
@@ -1310,6 +1241,9 @@ td {{ text-align:left; padding:8px 10px; border-top:1px solid var(--line); font-
   border-radius:4px; flex:none; }}
 ul.conflicts {{ margin:6px 0 0; padding-left:18px; }}
 ul.conflicts li {{ font-size:13px; color:var(--dim); }}
+.tech-details {{ margin-top:14px; }}
+.tech-details summary {{ cursor:pointer; color:var(--dim); font-size:13px; }}
+.tech-details[open] summary {{ margin-bottom:10px; color:var(--fg); }}
 footer {{ color:var(--muted); font-size:12px; margin-top:28px; }}
 @media (max-width:900px) {{
   .judge-hero-with-visual {{ grid-template-columns:1fr; }}
@@ -1344,7 +1278,7 @@ footer {{ color:var(--muted); font-size:12px; margin-top:28px; }}
   <div class="brand"><i></i>AI 搬家复原</div>
   <nav aria-label="主导航">{header_nav}</nav>
   <div class="spacer"></div>
-  {chip(bundle_id, "primary")}
+  {chip("正式演示版", "primary")}
 </header>
 <main>
 {demo_sec or legacy_hero}
@@ -1352,22 +1286,23 @@ footer {{ color:var(--muted); font-size:12px; margin-top:28px; }}
 {completion_sections}
 <h2 id="entities">{esc(entity_heading)} <span class="note">{esc(entity_note)}</span></h2>
 <div class="grid">{"".join(entity_cards)}</div>
-<h2 id="groups">生活组合 <span class="note">证据优先级:旁白 &gt; 轻确认 &gt; 模板 &gt; 共现佐证</span></h2>
+<h2 id="groups">收纳组合 <span class="note">依据包括视频旁白、队友确认、用途归类和共同出现</span></h2>
 {"".join(group_secs)}
-<h2 id="layout">新家布局 <span class="note">CP-SAT 约束求解,固定 seed 可复现</span></h2>
+<h2 id="layout">新家布局 <span class="note">每个组合都有唯一目标位置，重新运行会得到同样结果</span></h2>
 {layout_sec}
 <h2 id="cards">任务卡</h2>
 <div class="cards">{"".join(card_secs)}</div>
 {verify_sec}
-<h2 id="clarify">澄清队列与冲突记录</h2>
-<div class="panel"><table><thead><tr><th>实体</th><th>问题</th><th>原因</th></tr></thead>
+<h2 id="clarify">需要确认的识别片段</h2>
+<div class="panel"><table><thead><tr><th>物品</th><th>要确认什么</th><th>为什么要问</th></tr></thead>
 <tbody>{clar_rows}</tbody></table>
 <div class="check-title">冲突记录</div><ul class="conflicts">{conflict_list}</ul></div>
-<h2 id="trace">Agent trace 与复跑指纹 <span class="note">严格回放 audit/events.jsonl，再核对阶段 sha256</span></h2>
+<h2 id="trace">完整运行记录 <span class="note">每一步都有记录，结果可重新生成并核对</span></h2>
 {trace_summary}
-<div class="panel"><table><thead><tr><th>阶段</th><th>产物</th><th>sha256</th></tr></thead>
-<tbody>{config_refs}{artifacts}</tbody></table></div>
-<footer>bundle {esc(bundle_id)} · {esc(bundle.get("created_at", ""))} · 本页由 hero_pipeline report 阶段确定性生成</footer>
+<details class="panel tech-details"><summary>展开技术复核文件与校验码（评委追问时使用）</summary>
+<table><thead><tr><th>阶段</th><th>文件</th><th>校验码</th></tr></thead>
+<tbody>{config_refs}{artifacts}</tbody></table></details>
+<footer>正式演示包 {esc(bundle_id)} · {esc(bundle.get("created_at", ""))} · 页面由固定流程自动生成</footer>
 </main></body></html>
 """
 

@@ -24,12 +24,12 @@ PLACEMENT_HINTS: dict[str, str] = {
 TECHNICAL_PACK_UNITS: tuple[dict[str, Any], ...] = (
     {
         "group_id": "technical_toys_pack",
-        "name_zh": "玩具技术装箱单元",
+        "name_zh": "玩具收纳",
         "canonical_item_ids": ("plush_toy", "rubiks_cube"),
     },
     {
         "group_id": "technical_snacks_pack",
-        "name_zh": "零食技术装箱单元",
+        "name_zh": "零食收纳",
         "canonical_item_ids": ("popping_candy", "hawthorn_sticks", "biscuits"),
     },
 )
@@ -282,7 +282,7 @@ def build_trusted_downstream(
                 GroupEvidence(
                     entity_id=item.entity_id,
                     source=EvidenceSource.CONFIRMATION,
-                    detail=f"技术 closure 冻结成员:{item.canonical_id}",
+                    detail=f"已确认与「{frozen['name_zh']}」物品一起打包",
                     refs=[
                         f"closure:{closure_id}:{frozen['group_id']}:{item.canonical_id}",
                         f"trusted-inventory:{item.canonical_id}:{item.entity_id}",
@@ -337,7 +337,7 @@ def build_trusted_downstream(
                 GroupEvidence(
                     entity_id=item.entity_id,
                     source=EvidenceSource.TEMPLATE,
-                    detail=f"技术装箱策略 v1:{item.canonical_id}",
+                    detail=f"按用途统一放入「{frozen['name_zh']}箱」",
                     refs=[
                         f"closure:{closure_id}:independent:{item.canonical_id}",
                         f"trusted-inventory:{item.canonical_id}:{item.entity_id}",

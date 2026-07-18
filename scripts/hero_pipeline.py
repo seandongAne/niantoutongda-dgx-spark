@@ -638,11 +638,6 @@ def build_stages(
             inputs.append(run / "spatial_score/metrics.json")
         if space_review_enabled:
             inputs.append(run / "spatial_review/metrics.json")
-        if sc("risk").get("enabled"):
-            inputs.extend([
-                run / "risk/metrics.json",
-                run / "risk/assessments.json",
-            ])
         if sc("verify").get("enabled"):
             inputs.append(run / "verify/verdicts.json")
         if sc("trace").get("enabled"):
@@ -804,7 +799,7 @@ def write_bundle(run: Path, config_path: Path, stages: dict[str, Stage]) -> None
     artifacts: list[StageArtifact] = []
     for name in STAGE_ORDER:
         sp = state_path(run, name)
-        if name == "bundle" or not sp.exists():
+        if name == "bundle" or name not in stages or not sp.exists():
             continue
         state = json.loads(sp.read_text(encoding="utf-8"))
         for path_s, sha in sorted(state.get("outputs", {}).items()):

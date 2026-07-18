@@ -42,7 +42,7 @@ from backend.tools.spatial import (  # noqa: E402
 )
 
 CLASSIFIER_SCHEMA_VERSION = "1.0"
-CLASSIFIER_VERSION = "space-anchor-nemotron-v6"
+CLASSIFIER_VERSION = "space-anchor-nemotron-v7"
 MAIN_MAX_TOKENS = 700
 ANCHOR_CANDIDATES_FILENAME = "anchor_candidates.json"
 METRICS_FILENAME = "metrics.json"
@@ -53,10 +53,18 @@ DEFAULT_MODEL = (
 
 ANCHOR_DISPLAY_ZH = {
     "study_desk": "学习桌面",
-    "vanity": "梳妆台面",
+    "vanity": "花布面桌台面",
     "wall_shelf": "墙面置物架",
     "chest_of_drawers": "斗柜台面",
     "display_cabinet": "展示柜层板",
+}
+
+DEFAULT_ANCHOR_DESCRIPTIONS = {
+    "study_desk": "a writing or study desk work surface",
+    "vanity": "a vanity or narrow console-table top used as the requested vanity surface",
+    "wall_shelf": "a wall-mounted floating shelf",
+    "chest_of_drawers": "the usable top or body of a chest of drawers or dresser",
+    "display_cabinet": "a glass-door display cabinet and its usable shelves",
 }
 
 _FRAME_RE = re.compile(r"(?:^|_)f(?P<index>\d+)(?:_|\.|$)")
@@ -369,8 +377,17 @@ def _json_schema(anchors: Sequence[str]) -> dict[str, Any]:
     }
 
 
-def _prompt(anchors: Sequence[str]) -> str:
-    categories = ", ".join(f'"{anchor}" ({anchor.replace("_", " ")})' for anchor in anchors)
+def _prompt(
+    anchors: Sequence[str], anchor_descriptions: Mapping[str, str] | None = None
+) -> str:
+    descriptions = {
+        **DEFAULT_ANCHOR_DESCRIPTIONS,
+        **(anchor_descriptions or {}),
+    }
+    categories = ", ".join(
+        f'"{anchor}" ({descriptions.get(_canonical_anchor(anchor), anchor.replace("_", " "))})'
+        for anchor in anchors
+    )
     return (
         "The image is an automatically generated evidence sheet from a new-home video. "
         "Top-left is the room scene; the RED rectangle is the target object/usable region. "
@@ -422,13 +439,21 @@ HARD_FIELD_PROMPT = (
 
 
 class Client:
-    def __init__(self, endpoint: str, model: str, anchors: Sequence[str], guided: bool) -> None:
+    def __init__(
+        self,
+        endpoint: str,
+        model: str,
+        anchors: Sequence[str],
+        guided: bool,
+        anchor_descriptions: Mapping[str, str] | None = None,
+    ) -> None:
         self.endpoint = endpoint.rstrip("/")
         self.model = model
         self.anchors = list(anchors)
         self.guided = guided
         self.schema = _json_schema(self.anchors)
-        self.prompt = _prompt(self.anchors)
+        self.anchor_descriptions = dict(anchor_descriptions or {})
+        self.prompt = _prompt(self.anchors, self.anchor_descriptions)
         self.usage = {"calls": 0, "errors": 0, "prompt_tokens": 0, "completion_tokens": 0}
         self.lock = threading.Lock()
 
@@ -914,6 +939,7 @@ def run_classifier(
     out_dir: Path,
     evidence_dir: Path | None = None,
     expected_anchors: Sequence[str],
+    anchor_descriptions: Mapping[str, str] | None = None,
     endpoint: str,
     model: str,
     concurrency: int = 8,
@@ -956,7 +982,13 @@ def run_classifier(
     cache_path = out_dir / "anchor_predictions.cache.jsonl"
     cache = _load_cache(cache_path)
     cache_lock = threading.Lock()
-    client = Client(endpoint, model, expected_anchors, guided)
+    client = Client(
+        endpoint,
+        model,
+        expected_anchors,
+        guided,
+        anchor_descriptions=anchor_descriptions,
+    )
     candidates: list[AutomaticAnchorCandidate] = []
     diagnostics: list[dict[str, Any]] = []
     with ThreadPoolExecutor(max_workers=concurrency) as executor:
@@ -1027,6 +1059,7 @@ def run_classifier(
         "schema_version": CLASSIFIER_SCHEMA_VERSION,
         "classifier_version": CLASSIFIER_VERSION,
         "expected_anchor_labels": list(expected_anchors),
+        "anchor_descriptions": dict(sorted((anchor_descriptions or {}).items())),
         "input_observation_count": len(observations),
         "input_track_count": len(grouped),
         "classified_track_count": len(candidates),
@@ -1053,6 +1086,9 @@ def run_classifier(
             "auto_observations.jsonl": _sha256_file(observations_path),
             "tracklets.jsonl": _sha256_file(ingest_dir / "tracklets.jsonl"),
             "expected_anchors": _sha256_bytes(_json_bytes(list(expected_anchors)).rstrip(b"\n")),
+            "anchor_descriptions": _sha256_bytes(
+                _json_bytes(dict(sorted((anchor_descriptions or {}).items()))).rstrip(b"\n")
+            ),
         },
         "outputs": {
             ANCHOR_CANDIDATES_FILENAME: _sha256_bytes(candidates_bytes),
@@ -1077,6 +1113,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="contact sheets; set to local-data so pull_results only transfers JSON",
     )
     parser.add_argument("--expected-anchor", action="append", default=[])
+    parser.add_argument(
+        "--anchor-description",
+        action="append",
+        default=[],
+        metavar="ANCHOR=TEXT",
+        help="production target-vocabulary definition; never a region/track ID",
+    )
     parser.add_argument("--endpoint", default="http://127.0.0.1:8000/v1")
     parser.add_argument("--model", default=DEFAULT_MODEL)
     parser.add_argument("--concurrency", type=int, default=8)
@@ -1089,12 +1132,26 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     anchors = _expected_anchors(args.expected_anchor)
+    anchor_keys = {_canonical_anchor(item) for item in anchors}
+    anchor_descriptions: dict[str, str] = {}
+    for raw in args.anchor_description:
+        key, separator, description = raw.partition("=")
+        canonical = _canonical_anchor(key)
+        description = description.strip()
+        if not separator or canonical not in anchor_keys or not description:
+            raise ValueError(
+                "--anchor-description must be ANCHOR=TEXT for an expected anchor"
+            )
+        if canonical in anchor_descriptions:
+            raise ValueError(f"duplicate --anchor-description: {canonical}")
+        anchor_descriptions[canonical] = description
     candidates, metrics, hashes = run_classifier(
         observations_path=args.observations,
         ingest_dir=args.ingest_dir,
         out_dir=args.out_dir,
         evidence_dir=args.evidence_dir,
         expected_anchors=anchors,
+        anchor_descriptions=anchor_descriptions,
         endpoint=args.endpoint,
         model=args.model,
         concurrency=args.concurrency,

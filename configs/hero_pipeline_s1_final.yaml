@@ -69,6 +69,11 @@ stages:
       --expected-anchor wall_shelf
       --expected-anchor chest_of_drawers
       --expected-anchor display_cabinet
+      --anchor-description 'study_desk=a writing or study desk work surface'
+      --anchor-description 'vanity=the requested floral-cloth-covered narrow table or console top; this stable ID does not require a mirror or makeup furniture'
+      --anchor-description 'wall_shelf=a wall-mounted wooden floating shelf'
+      --anchor-description 'chest_of_drawers=the usable top or body of a chest of drawers or dresser'
+      --anchor-description 'display_cabinet=a glass-door display cabinet and its usable shelves'
       --concurrency 8
 
   pull:

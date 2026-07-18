@@ -65,7 +65,13 @@ def test_parallel_category_tracks_share_automatic_visual_instance():
 
 
 def test_main_vlm_budget_covers_observed_nested_response(monkeypatch):
-    client = Client("http://local", "nemotron-test", ["study_desk"], True)
+    client = Client(
+        "http://local",
+        "nemotron-test",
+        ["study_desk"],
+        True,
+        anchor_descriptions={"study_desk": "requested covered console"},
+    )
     captured = {}
 
     def fake_chat(image_bytes, *, prompt, schema, max_tokens):
@@ -77,6 +83,7 @@ def test_main_vlm_budget_covers_observed_nested_response(monkeypatch):
 
     assert MAIN_MAX_TOKENS >= 500
     assert captured["max_tokens"] == MAIN_MAX_TOKENS
+    assert "requested covered console" in client.prompt
 
 
 def test_contact_sheet_uses_automatic_frame_and_crop(tmp_path, monkeypatch):

@@ -1,0 +1,1047 @@
+{
+  "schema_version": 1,
+  "probe": "gdino_module_profile",
+  "scope": "diagnostic_only_eager_fp32_component_profile",
+  "created_at_unix": 1784403612,
+  "precision": {
+    "mode": "eager_fp32",
+    "autocast": false,
+    "tf32_policy": "pytorch-default",
+    "matmul_allow_tf32": false,
+    "cudnn_allow_tf32": true,
+    "float32_matmul_precision": "highest"
+  },
+  "inputs": {
+    "path": "/home/Developer/proj/results/acceptance/SF1/trt-gdino-20260718-v10-dynamo-static/sample_inputs.npz",
+    "sha256": "5410738ad8134275a762a178d27012c16ad281544d0d1c32f3524baf2c85bcf1",
+    "arrays": {
+      "pixel_values": {
+        "shape": [
+          2,
+          3,
+          1333,
+          750
+        ],
+        "dtype": "float32"
+      },
+      "input_ids": {
+        "shape": [
+          2,
+          12
+        ],
+        "dtype": "int64"
+      },
+      "token_type_ids": {
+        "shape": [
+          2,
+          12
+        ],
+        "dtype": "int64"
+      },
+      "attention_mask": {
+        "shape": [
+          2,
+          12
+        ],
+        "dtype": "int64"
+      },
+      "pixel_mask": {
+        "shape": [
+          2,
+          1333,
+          750
+        ],
+        "dtype": "int64"
+      }
+    },
+    "unexpected_arrays_ignored": [],
+    "baseline_outputs": {
+      "path": "/home/Developer/proj/results/acceptance/SF1/trt-gdino-20260718-v10-dynamo-static/torch_outputs.npz",
+      "sha256": "bb0495e9b321847e50d57116a2d569107e0be7fd0af97a0f8ddbb57027dcad13"
+    }
+  },
+  "model": {
+    "directory": "/home/Developer/models/IDEA-Research__grounding-dino-base",
+    "outer_class": "transformers.models.grounding_dino.modeling_grounding_dino.GroundingDinoForObjectDetection",
+    "core_class": "transformers.models.grounding_dino.modeling_grounding_dino.GroundingDinoModel",
+    "config_sha256": "af06672f7baa8007191e79b1c0be59552b656aa17fa79b17f35aaa10343d1e77",
+    "config": {
+      "transformers_version": "5.13.1",
+      "architectures": [
+        "GroundingDinoForObjectDetection"
+      ],
+      "output_hidden_states": false,
+      "return_dict": true,
+      "dtype": "float32",
+      "chunk_size_feed_forward": 0,
+      "is_encoder_decoder": true,
+      "id2label": {
+        "0": "LABEL_0",
+        "1": "LABEL_1"
+      },
+      "label2id": {
+        "LABEL_0": 0,
+        "LABEL_1": 1
+      },
+      "problem_type": null,
+      "backbone_config": {
+        "architectures": null,
+        "output_hidden_states": false,
+        "return_dict": true,
+        "dtype": "float32",
+        "chunk_size_feed_forward": 0,
+        "is_encoder_decoder": false,
+        "id2label": {
+          "0": "LABEL_0",
+          "1": "LABEL_1"
+        },
+        "label2id": {
+          "LABEL_0": 0,
+          "LABEL_1": 1
+        },
+        "problem_type": null,
+        "image_size": 384,
+        "patch_size": 4,
+        "num_channels": 3,
+        "embed_dim": 128,
+        "depths": [
+          2,
+          2,
+          18,
+          2
+        ],
+        "num_heads": [
+          4,
+          8,
+          16,
+          32
+        ],
+        "window_size": 12,
+        "mlp_ratio": 4.0,
+        "qkv_bias": true,
+        "hidden_dropout_prob": 0.0,
+        "attention_probs_dropout_prob": 0.0,
+        "drop_path_rate": 0.1,
+        "hidden_act": "gelu",
+        "use_absolute_embeddings": false,
+        "initializer_range": 0.02,
+        "layer_norm_eps": 1e-05,
+        "encoder_stride": 32,
+        "num_layers": 4,
+        "hidden_size": 1024,
+        "stage_names": [
+          "stem",
+          "stage1",
+          "stage2",
+          "stage3",
+          "stage4"
+        ],
+        "_name_or_path": "",
+        "model_type": "swin",
+        "output_attentions": false,
+        "out_features": [
+          "stage2",
+          "stage3",
+          "stage4"
+        ],
+        "out_indices": [
+          2,
+          3,
+          4
+        ]
+      },
+      "text_config": {
+        "architectures": null,
+        "output_hidden_states": false,
+        "return_dict": true,
+        "dtype": "float32",
+        "chunk_size_feed_forward": 0,
+        "is_encoder_decoder": false,
+        "id2label": {
+          "0": "LABEL_0",
+          "1": "LABEL_1"
+        },
+        "label2id": {
+          "LABEL_0": 0,
+          "LABEL_1": 1
+        },
+        "problem_type": null,
+        "vocab_size": 30522,
+        "hidden_size": 768,
+        "num_hidden_layers": 12,
+        "num_attention_heads": 12,
+        "intermediate_size": 3072,
+        "hidden_act": "gelu",
+        "hidden_dropout_prob": 0.1,
+        "attention_probs_dropout_prob": 0.1,
+        "max_position_embeddings": 512,
+        "type_vocab_size": 2,
+        "initializer_range": 0.02,
+        "layer_norm_eps": 1e-12,
+        "pad_token_id": 0,
+        "use_cache": true,
+        "classifier_dropout": null,
+        "is_decoder": false,
+        "add_cross_attention": false,
+        "bos_token_id": null,
+        "eos_token_id": null,
+        "tie_word_embeddings": true,
+        "_name_or_path": "",
+        "model_type": "bert",
+        "output_attentions": false
+      },
+      "num_queries": 900,
+      "encoder_layers": 6,
+      "encoder_ffn_dim": 2048,
+      "encoder_attention_heads": 8,
+      "decoder_layers": 6,
+      "decoder_ffn_dim": 2048,
+      "decoder_attention_heads": 8,
+      "activation_function": "relu",
+      "d_model": 256,
+      "dropout": 0.1,
+      "attention_dropout": 0.0,
+      "activation_dropout": 0.0,
+      "auxiliary_loss": false,
+      "position_embedding_type": "sine",
+      "num_feature_levels": 4,
+      "encoder_n_points": 4,
+      "decoder_n_points": 4,
+      "two_stage": true,
+      "class_cost": 1.0,
+      "bbox_cost": 5.0,
+      "giou_cost": 2.0,
+      "bbox_loss_coefficient": 5.0,
+      "giou_loss_coefficient": 2.0,
+      "focal_alpha": 0.25,
+      "disable_custom_kernels": false,
+      "max_text_len": 256,
+      "text_enhancer_dropout": 0.0,
+      "fusion_droppath": 0.1,
+      "fusion_dropout": 0.0,
+      "embedding_init_target": true,
+      "query_dim": 4,
+      "decoder_bbox_embed_share": true,
+      "two_stage_bbox_embed_share": false,
+      "positional_embedding_temperature": 20,
+      "init_std": 0.02,
+      "layer_norm_eps": 1e-05,
+      "tie_word_embeddings": true,
+      "_name_or_path": "/home/Developer/models/IDEA-Research__grounding-dino-base",
+      "backbone": null,
+      "model_type": "grounding-dino",
+      "output_attentions": false
+    }
+  },
+  "environment": {
+    "python": "3.12.3 (main, Aug 14 2025, 17:47:21) [GCC 13.3.0]",
+    "platform": "Linux-6.11.0-1014-nvidia-aarch64-with-glibc2.39",
+    "torch": "2.13.0+cu130",
+    "transformers": "5.13.1",
+    "numpy": "2.5.1",
+    "cuda_runtime": "13.0",
+    "cudnn": 92000,
+    "gpu": "NVIDIA GB10",
+    "device_capability": [
+      12,
+      1
+    ]
+  },
+  "measurement": {
+    "timer": "torch.cuda.Event on current stream",
+    "warmup": 5,
+    "runs": 20,
+    "whole_forward_ms": {
+      "count": 20,
+      "mean": 683.380239868164,
+      "p50": 682.378173828125,
+      "p95": 689.2134674072266,
+      "min": 674.4173583984375,
+      "max": 700.298095703125,
+      "samples": [
+        679.1504516601562,
+        700.298095703125,
+        680.6846923828125,
+        682.4058837890625,
+        682.3504638671875,
+        685.7089233398438,
+        681.8397216796875,
+        674.4173583984375,
+        679.32421875,
+        684.6009521484375,
+        685.7454223632812,
+        679.9053955078125,
+        682.3326416015625,
+        685.44140625,
+        688.6300659179688,
+        686.6431274414062,
+        679.277099609375,
+        684.5530395507812,
+        677.9047241210938,
+        686.39111328125
+      ]
+    },
+    "instrumented_whole_forward_ms": {
+      "count": 20,
+      "mean": 683.4075653076172,
+      "p50": 683.6365356445312,
+      "p95": 686.6557067871095,
+      "min": 677.9801025390625,
+      "max": 687.195068359375,
+      "samples": [
+        682.168701171875,
+        679.3787231445312,
+        682.8285522460938,
+        677.9801025390625,
+        682.0291137695312,
+        681.7476196289062,
+        685.8270263671875,
+        685.8204956054688,
+        684.9905395507812,
+        682.8762817382812,
+        682.40380859375,
+        683.8236083984375,
+        683.449462890625,
+        679.3512573242188,
+        687.195068359375,
+        684.7390747070312,
+        686.6273193359375,
+        684.3226928710938,
+        685.2084350585938,
+        685.3834228515625
+      ]
+    },
+    "instrumentation_p50_ratio": 1.0018440827457111,
+    "components": {
+      "text_backbone": {
+        "module_path": "model.text_backbone",
+        "class": "transformers.models.bert.modeling_bert.BertModel",
+        "latency_ms": {
+          "count": 20,
+          "mean": 3.877444803714752,
+          "p50": 3.8267680406570435,
+          "p95": 3.9891200780868536,
+          "min": 3.7664639949798584,
+          "max": 4.760672092437744,
+          "samples": [
+            3.948512077331543,
+            3.83241605758667,
+            3.838848114013672,
+            3.8162240982055664,
+            3.8198399543762207,
+            3.8155839443206787,
+            3.8289918899536133,
+            3.818943977355957,
+            3.812608003616333,
+            3.7664639949798584,
+            3.819711923599243,
+            3.8474879264831543,
+            3.825119972229004,
+            3.828416109085083,
+            4.760672092437744,
+            3.8381760120391846,
+            3.839711904525757,
+            3.8203840255737305,
+            3.855072021484375,
+            3.8157119750976562
+          ]
+        },
+        "share_of_whole": {
+          "count": 20,
+          "mean": 0.005673388971905291,
+          "p50": 0.0055990678354715245,
+          "p95": 0.005845150937586353,
+          "min": 0.005515587663100871,
+          "max": 0.006927686637512519,
+          "samples": [
+            0.005788175374432343,
+            0.005641059878720047,
+            0.005621979487217075,
+            0.0056288143028293235,
+            0.005600699262329448,
+            0.005596769001404955,
+            0.005583028581179878,
+            0.005568430809266565,
+            0.005565927970504019,
+            0.005515587663100871,
+            0.005597436408613601,
+            0.005626433307112984,
+            0.0055967853951494765,
+            0.005635400049400337,
+            0.006927686637512519,
+            0.00560531179512629,
+            0.00559213389330224,
+            0.005582722983429367,
+            0.005626130421401947,
+            0.005567266216072528
+          ]
+        },
+        "p50_ms_over_whole_p50": 0.005597664608503075
+      },
+      "visual_backbone": {
+        "module_path": "model.backbone",
+        "class": "transformers.models.grounding_dino.modeling_grounding_dino.GroundingDinoConvModel",
+        "latency_ms": {
+          "count": 20,
+          "mean": 214.49370269775392,
+          "p50": 214.39283752441406,
+          "p95": 215.56007232666016,
+          "min": 213.00624084472656,
+          "max": 215.61251831054688,
+          "samples": [
+            215.55731201171875,
+            215.1342010498047,
+            215.11695861816406,
+            213.00624084472656,
+            214.17478942871094,
+            214.54336547851562,
+            215.61251831054688,
+            215.39552307128906,
+            214.0160675048828,
+            213.79673767089844,
+            214.2423095703125,
+            213.01983642578125,
+            213.66082763671875,
+            213.54098510742188,
+            214.07241821289062,
+            215.005126953125,
+            215.2191619873047,
+            215.2275848388672,
+            215.38088989257812,
+            214.1511993408203
+          ]
+        },
+        "share_of_whole": {
+          "count": 20,
+          "mean": 0.31386150047266786,
+          "p50": 0.31404785017347625,
+          "p95": 0.3160220195586389,
+          "min": 0.31151284309222455,
+          "max": 0.3166631419571804,
+          "samples": [
+            0.3159882762745051,
+            0.3166631419571804,
+            0.3150380251536921,
+            0.3141777170849258,
+            0.31402587529582215,
+            0.31469617098963604,
+            0.31438323370346344,
+            0.31406982505113035,
+            0.3124365303573903,
+            0.31308268186833593,
+            0.31395239427489136,
+            0.31151284309222455,
+            0.31262125327167267,
+            0.3143307424623047,
+            0.3115162318087817,
+            0.31399570273555066,
+            0.3134439250035245,
+            0.31451183349754813,
+            0.3143290112506575,
+            0.3124545943201201
+          ]
+        },
+        "p50_ms_over_whole_p50": 0.31360646534533865
+      },
+      "encoder": {
+        "module_path": "model.encoder",
+        "class": "transformers.models.grounding_dino.modeling_grounding_dino.GroundingDinoEncoder",
+        "latency_ms": {
+          "count": 20,
+          "mean": 401.0486785888672,
+          "p50": 400.9537048339844,
+          "p95": 403.66797485351566,
+          "min": 397.6734313964844,
+          "max": 404.5958251953125,
+          "samples": [
+            400.0909118652344,
+            398.3679504394531,
+            399.8370361328125,
+            399.0064697265625,
+            401.1651611328125,
+            401.10845947265625,
+            402.2140197753906,
+            402.90789794921875,
+            400.9407043457031,
+            401.9444580078125,
+            403.2773742675781,
+            400.9667053222656,
+            399.5876770019531,
+            397.6734313964844,
+            403.0967712402344,
+            399.7030029296875,
+            404.5958251953125,
+            403.619140625,
+            400.8765869140625,
+            399.9939880371094
+          ]
+        },
+        "share_of_whole": {
+          "count": 20,
+          "mean": 0.5868379183420972,
+          "p50": 0.5864820887110606,
+          "p95": 0.5898660913484136,
+          "min": 0.5836061607281365,
+          "max": 0.5909658902675586,
+          "samples": [
+            0.5864984880982248,
+            0.5863709546209974,
+            0.5855599254272394,
+            0.5885223891265648,
+            0.5881936020525551,
+            0.588353296621689,
+            0.5864656893238963,
+            0.5874830229352014,
+            0.5853229806774283,
+            0.5886050940071477,
+            0.5909658902675586,
+            0.5863598454305454,
+            0.5846630931743093,
+            0.585372334428014,
+            0.5865827474614984,
+            0.5837303838702388,
+            0.5892509863816837,
+            0.5898082071947743,
+            0.5850432750142409,
+            0.5836061607281365
+          ]
+        },
+        "p50_ms_over_whole_p50": 0.5865012823750942
+      },
+      "decoder": {
+        "module_path": "model.decoder",
+        "class": "transformers.models.grounding_dino.modeling_grounding_dino.GroundingDinoDecoder",
+        "latency_ms": {
+          "count": 20,
+          "mean": 49.18860015869141,
+          "p50": 49.0787353515625,
+          "p95": 51.35681457519531,
+          "min": 46.32771301269531,
+          "max": 51.730430603027344,
+          "samples": [
+            47.69792175292969,
+            48.56911849975586,
+            48.00316619873047,
+            49.47868728637695,
+            47.870849609375,
+            47.51456069946289,
+            48.67878341674805,
+            48.278526306152344,
+            50.87529754638672,
+            49.70703887939453,
+            47.19414520263672,
+            51.730430603027344,
+            50.127872467041016,
+            49.8851203918457,
+            50.85075378417969,
+            50.642913818359375,
+            47.97123336791992,
+            46.32771301269531,
+            51.03071975708008,
+            51.33715057373047
+          ]
+        },
+        "share_of_whole": {
+          "count": 20,
+          "mean": 0.07197464756611441,
+          "p50": 0.0721405928095457,
+          "p95": 0.0749401178475157,
+          "min": 0.06769863617751179,
+          "max": 0.07564879300406667,
+          "samples": [
+            0.06992100586114697,
+            0.07149049101059829,
+            0.07030046713897511,
+            0.07297955662869353,
+            0.070188865318074,
+            0.06969523520350003,
+            0.07097822270813477,
+            0.07039528071194519,
+            0.07427153312183098,
+            0.0727906946084931,
+            0.06915867790933217,
+            0.07564879300406667,
+            0.07334539741245384,
+            0.07343052633527128,
+            0.07399755342479672,
+            0.07395943314616181,
+            0.06986502286905022,
+            0.06769863617751179,
+            0.07447473957718621,
+            0.07490281915506564
+          ]
+        },
+        "p50_ms_over_whole_p50": 0.07179068524371823
+      }
+    },
+    "remainder": {
+      "definition": "whole - text_backbone - visual_backbone - encoder - decoder",
+      "includes": [
+        "input projections",
+        "encoder proposal generation",
+        "topk",
+        "prediction heads",
+        "other work outside the four measured modules"
+      ],
+      "latency_ms": {
+        "count": 20,
+        "mean": 14.799139058589935,
+        "p50": 14.936258554458618,
+        "p95": 16.09350256919861,
+        "min": 12.672480583190918,
+        "max": 16.247965812683105,
+        "samples": [
+          14.874043464660645,
+          13.475037097930908,
+          16.032543182373047,
+          12.672480583190918,
+          14.998473644256592,
+          14.765650033950806,
+          15.49271297454834,
+          15.419604301452637,
+          15.34586215019226,
+          13.661583185195923,
+          13.870267629623413,
+          14.259148120880127,
+          16.247965812683105,
+          14.423304319381714,
+          14.414453029632568,
+          15.54985499382019,
+          15.001386880874634,
+          15.32787036895752,
+          14.065166473388672,
+          16.085372924804688
+        ]
+      },
+      "share_of_whole": {
+        "count": 20,
+        "mean": 0.021652544647215208,
+        "p50": 0.021825993122065054,
+        "p95": 0.0234942961905532,
+        "min": 0.01869152285698647,
+        "max": 0.02377347074641469,
+        "samples": [
+          0.021804054391690822,
+          0.019834352532503766,
+          0.023479602792876277,
+          0.01869152285698647,
+          0.02199095807121926,
+          0.021658528183770044,
+          0.022589825683325637,
+          0.02248344049245658,
+          0.02240302787284642,
+          0.02000594185292242,
+          0.02032560113960426,
+          0.020852085166050416,
+          0.02377347074641469,
+          0.021230996725009707,
+          0.020975780667410723,
+          0.022709168452922403,
+          0.02184793185243929,
+          0.022398600146736388,
+          0.02052684373651344,
+          0.023469159580605133
+        ]
+      },
+      "p50_ms_over_whole_p50": 0.021848245047899235
+    }
+  },
+  "validation": {
+    "frozen_oracle_gate": {
+      "comparisons": {
+        "logits": {
+          "shape_equal": true,
+          "nonfinite_pattern_equal": true,
+          "finite_values_bit_exact": true,
+          "max_abs_on_jointly_finite": 0.0,
+          "mean_abs_on_jointly_finite": 0.0,
+          "equivalent": true
+        },
+        "pred_boxes": {
+          "shape_equal": true,
+          "nonfinite_pattern_equal": true,
+          "finite_values_bit_exact": true,
+          "max_abs_on_jointly_finite": 0.0,
+          "mean_abs_on_jointly_finite": 0.0,
+          "equivalent": true
+        }
+      },
+      "equivalent": true
+    },
+    "instrumentation_output_gate": {
+      "comparisons": {
+        "logits": {
+          "shape_equal": true,
+          "nonfinite_pattern_equal": true,
+          "finite_values_bit_exact": true,
+          "max_abs_on_jointly_finite": 0.0,
+          "mean_abs_on_jointly_finite": 0.0,
+          "equivalent": true
+        },
+        "pred_boxes": {
+          "shape_equal": true,
+          "nonfinite_pattern_equal": true,
+          "finite_values_bit_exact": true,
+          "max_abs_on_jointly_finite": 0.0,
+          "mean_abs_on_jointly_finite": 0.0,
+          "equivalent": true
+        }
+      },
+      "equivalent": true
+    },
+    "transformers_version_exact": true,
+    "module_types_exact": true,
+    "module_identities_unique": true,
+    "module_paths_non_nested": true,
+    "dynamic_regions_non_overlapping": true,
+    "execution_order_stable_across_iterations": true,
+    "observed_component_order": [
+      "text_backbone",
+      "visual_backbone",
+      "encoder",
+      "decoder"
+    ],
+    "expected_call_count_per_iteration": 1,
+    "call_counts": [
+      {
+        "text_backbone": 1,
+        "visual_backbone": 1,
+        "encoder": 1,
+        "decoder": 1
+      },
+      {
+        "text_backbone": 1,
+        "visual_backbone": 1,
+        "encoder": 1,
+        "decoder": 1
+      },
+      {
+        "text_backbone": 1,
+        "visual_backbone": 1,
+        "encoder": 1,
+        "decoder": 1
+      },
+      {
+        "text_backbone": 1,
+        "visual_backbone": 1,
+        "encoder": 1,
+        "decoder": 1
+      },
+      {
+        "text_backbone": 1,
+        "visual_backbone": 1,
+        "encoder": 1,
+        "decoder": 1
+      },
+      {
+        "text_backbone": 1,
+        "visual_backbone": 1,
+        "encoder": 1,
+        "decoder": 1
+      },
+      {
+        "text_backbone": 1,
+        "visual_backbone": 1,
+        "encoder": 1,
+        "decoder": 1
+      },
+      {
+        "text_backbone": 1,
+        "visual_backbone": 1,
+        "encoder": 1,
+        "decoder": 1
+      },
+      {
+        "text_backbone": 1,
+        "visual_backbone": 1,
+        "encoder": 1,
+        "decoder": 1
+      },
+      {
+        "text_backbone": 1,
+        "visual_backbone": 1,
+        "encoder": 1,
+        "decoder": 1
+      },
+      {
+        "text_backbone": 1,
+        "visual_backbone": 1,
+        "encoder": 1,
+        "decoder": 1
+      },
+      {
+        "text_backbone": 1,
+        "visual_backbone": 1,
+        "encoder": 1,
+        "decoder": 1
+      },
+      {
+        "text_backbone": 1,
+        "visual_backbone": 1,
+        "encoder": 1,
+        "decoder": 1
+      },
+      {
+        "text_backbone": 1,
+        "visual_backbone": 1,
+        "encoder": 1,
+        "decoder": 1
+      },
+      {
+        "text_backbone": 1,
+        "visual_backbone": 1,
+        "encoder": 1,
+        "decoder": 1
+      },
+      {
+        "text_backbone": 1,
+        "visual_backbone": 1,
+        "encoder": 1,
+        "decoder": 1
+      },
+      {
+        "text_backbone": 1,
+        "visual_backbone": 1,
+        "encoder": 1,
+        "decoder": 1
+      },
+      {
+        "text_backbone": 1,
+        "visual_backbone": 1,
+        "encoder": 1,
+        "decoder": 1
+      },
+      {
+        "text_backbone": 1,
+        "visual_backbone": 1,
+        "encoder": 1,
+        "decoder": 1
+      },
+      {
+        "text_backbone": 1,
+        "visual_backbone": 1,
+        "encoder": 1,
+        "decoder": 1
+      }
+    ],
+    "event_sequences": [
+      [
+        "begin:text_backbone",
+        "end:text_backbone",
+        "begin:visual_backbone",
+        "end:visual_backbone",
+        "begin:encoder",
+        "end:encoder",
+        "begin:decoder",
+        "end:decoder"
+      ],
+      [
+        "begin:text_backbone",
+        "end:text_backbone",
+        "begin:visual_backbone",
+        "end:visual_backbone",
+        "begin:encoder",
+        "end:encoder",
+        "begin:decoder",
+        "end:decoder"
+      ],
+      [
+        "begin:text_backbone",
+        "end:text_backbone",
+        "begin:visual_backbone",
+        "end:visual_backbone",
+        "begin:encoder",
+        "end:encoder",
+        "begin:decoder",
+        "end:decoder"
+      ],
+      [
+        "begin:text_backbone",
+        "end:text_backbone",
+        "begin:visual_backbone",
+        "end:visual_backbone",
+        "begin:encoder",
+        "end:encoder",
+        "begin:decoder",
+        "end:decoder"
+      ],
+      [
+        "begin:text_backbone",
+        "end:text_backbone",
+        "begin:visual_backbone",
+        "end:visual_backbone",
+        "begin:encoder",
+        "end:encoder",
+        "begin:decoder",
+        "end:decoder"
+      ],
+      [
+        "begin:text_backbone",
+        "end:text_backbone",
+        "begin:visual_backbone",
+        "end:visual_backbone",
+        "begin:encoder",
+        "end:encoder",
+        "begin:decoder",
+        "end:decoder"
+      ],
+      [
+        "begin:text_backbone",
+        "end:text_backbone",
+        "begin:visual_backbone",
+        "end:visual_backbone",
+        "begin:encoder",
+        "end:encoder",
+        "begin:decoder",
+        "end:decoder"
+      ],
+      [
+        "begin:text_backbone",
+        "end:text_backbone",
+        "begin:visual_backbone",
+        "end:visual_backbone",
+        "begin:encoder",
+        "end:encoder",
+        "begin:decoder",
+        "end:decoder"
+      ],
+      [
+        "begin:text_backbone",
+        "end:text_backbone",
+        "begin:visual_backbone",
+        "end:visual_backbone",
+        "begin:encoder",
+        "end:encoder",
+        "begin:decoder",
+        "end:decoder"
+      ],
+      [
+        "begin:text_backbone",
+        "end:text_backbone",
+        "begin:visual_backbone",
+        "end:visual_backbone",
+        "begin:encoder",
+        "end:encoder",
+        "begin:decoder",
+        "end:decoder"
+      ],
+      [
+        "begin:text_backbone",
+        "end:text_backbone",
+        "begin:visual_backbone",
+        "end:visual_backbone",
+        "begin:encoder",
+        "end:encoder",
+        "begin:decoder",
+        "end:decoder"
+      ],
+      [
+        "begin:text_backbone",
+        "end:text_backbone",
+        "begin:visual_backbone",
+        "end:visual_backbone",
+        "begin:encoder",
+        "end:encoder",
+        "begin:decoder",
+        "end:decoder"
+      ],
+      [
+        "begin:text_backbone",
+        "end:text_backbone",
+        "begin:visual_backbone",
+        "end:visual_backbone",
+        "begin:encoder",
+        "end:encoder",
+        "begin:decoder",
+        "end:decoder"
+      ],
+      [
+        "begin:text_backbone",
+        "end:text_backbone",
+        "begin:visual_backbone",
+        "end:visual_backbone",
+        "begin:encoder",
+        "end:encoder",
+        "begin:decoder",
+        "end:decoder"
+      ],
+      [
+        "begin:text_backbone",
+        "end:text_backbone",
+        "begin:visual_backbone",
+        "end:visual_backbone",
+        "begin:encoder",
+        "end:encoder",
+        "begin:decoder",
+        "end:decoder"
+      ],
+      [
+        "begin:text_backbone",
+        "end:text_backbone",
+        "begin:visual_backbone",
+        "end:visual_backbone",
+        "begin:encoder",
+        "end:encoder",
+        "begin:decoder",
+        "end:decoder"
+      ],
+      [
+        "begin:text_backbone",
+        "end:text_backbone",
+        "begin:visual_backbone",
+        "end:visual_backbone",
+        "begin:encoder",
+        "end:encoder",
+        "begin:decoder",
+        "end:decoder"
+      ],
+      [
+        "begin:text_backbone",
+        "end:text_backbone",
+        "begin:visual_backbone",
+        "end:visual_backbone",
+        "begin:encoder",
+        "end:encoder",
+        "begin:decoder",
+        "end:decoder"
+      ],
+      [
+        "begin:text_backbone",
+        "end:text_backbone",
+        "begin:visual_backbone",
+        "end:visual_backbone",
+        "begin:encoder",
+        "end:encoder",
+        "begin:decoder",
+        "end:decoder"
+      ],
+      [
+        "begin:text_backbone",
+        "end:text_backbone",
+        "begin:visual_backbone",
+        "end:visual_backbone",
+        "begin:encoder",
+        "end:encoder",
+        "begin:decoder",
+        "end:decoder"
+      ]
+    ]
+  },
+  "memory": {
+    "allocated_after_warmup_bytes": 1122545664,
+    "reserved_after_warmup_bytes": 4970250240,
+    "peak_allocated_bytes": 3934408704,
+    "peak_reserved_bytes": 4970250240,
+    "peak_incremental_allocated_bytes": 2811863040,
+    "peak_incremental_reserved_bytes": 0
+  },
+  "code": {
+    "script": "/home/Developer/proj/scripts/gdino_module_profile.py",
+    "script_sha256": "6aba79214e41d8f658f50fc19fcf0d7f0788c6d6639083610dfb5424b6c51a6b"
+  },
+  "limitations": [
+    "CUDA event regions measure work ordered on the hook's current stream; independently launched streams may not be fully attributed.",
+    "Remainder is subtraction, not a separately instrumented module, and includes dispatch gaps between CUDA events.",
+    "This diagnostic profile does not establish correctness or backend equivalence."
+  ]
+}

@@ -1,0 +1,40 @@
+
+++++++++++++++++++++++++++++++++++++++++++++++++++ Dry-Run Results for Graph ++++++++++++++++++++++++++++++++++++++++++++++++++
+
+The graph consists of 4521 Total Operators, of which 4520 operators are supported, 99.98% coverage
+
+The following ops are currently unsupported or excluded from conversion, and are listed with their op-count in the graph:
+ torch.ops.aten.all.dim: 1
+
+The following nodes are currently set to run in Torch:
+Node: torch.ops.aten.all.dim, with layer location: wrapped.model/all_1
+Note: Some of the above nodes may be supported, but were not included in a TRT graph by the partitioner
+
+Compiled with: CompilationSettings(workspace_size=0, min_block_size=5, torch_executed_ops=set(), pass_through_build_failures=False, max_aux_streams=None, version_compatible=False, optimization_level=None, use_python_runtime=False, truncate_double=False, use_fast_partitioner=True, enable_experimental_decompositions=False, device=Device(type=DeviceType.GPU, gpu_id=0), require_full_compilation=False, disable_tf32=True, assume_dynamic_shape_support=False, sparse_weights=False, engine_capability=<EngineCapability.STANDARD: 1>, num_avg_timing_iters=1, dla_sram_size=1048576, dla_local_dram_size=1073741824, dla_global_dram_size=536870912, dryrun='results/acceptance/SF1/torch-tensorrt-hybrid-20260718-v4-decision/probe.fp32.partition.txt', hardware_compatible=False, timing_cache_path='/tmp/torch_tensorrt_engine_cache/timing_cache.bin', runtime_cache_path='/tmp/torch_tensorrt_engine_cache/runtime_cache.bin', dynamic_shapes_kernel_specialization_strategy='lazy', lazy_engine_init=False, cache_built_engines=False, reuse_cached_engines=False, use_fp32_acc=False, refit_identical_engine_weights=False, strip_engine_weights=False, immutable_weights=True, enable_weight_streaming=False, enable_cross_compile_for_windows=False, tiling_optimization_level='none', l2_limit_for_tiling=-1, use_distributed_mode_trace=False, offload_module_to_cpu=False, enable_autocast=False, autocast_low_precision_type=None, autocast_excluded_nodes=set(), autocast_excluded_ops=set(), autocast_max_output_threshold=512, autocast_max_depth_of_reduction=None, autocast_calibration_dataloader=None, enable_resource_partitioning=False, cpu_memory_budget=None, dynamically_allocate_resources=False, decompose_attention=False, attn_bias_is_causal=True)
+
+  Graph Structure:
+
+   Inputs: List[Tensor: (2, 3, 1333, 750)@float32, Tensor: (2, 12)@int64, Tensor: (2, 12)@int64, Tensor: (2, 12)@int64, Tensor: (2, 1333, 750)@int64]
+    ...
+    TRT Engine #1 - Submodule name: _run_on_acc_0
+     Engine Inputs: List[Tensor: (2, 12)@int64, Tensor: (2, 12)@int64, Tensor: (2, 12)@int64, Tensor: (2, 3, 1333, 750)@float32, Tensor: (2, 1333, 750)@int64]
+     Number of Operators in Engine: 3280
+     Engine Outputs: List[Tensor: (2, 20906, 4)@bool, Tensor: (2, 20906, 4)@float32, Tensor: (2, 20906, 256)@float32, Tensor: (2, 256, 12)@float32, Tensor: (2, 1, 12)@bool, Tensor: (2, 1, 4, 4)@float32, Tensor: (2, 8, 32, 12)@float32, Tensor: (2, 8, 900, 12)@float32, Tensor: (2, 8, 12, 32)@float32, Tensor: (16, 32, 167, 94)@float32, Tensor: (16, 32, 84, 47)@float32, Tensor: (16, 32, 42, 24)@float32, Tensor: (16, 32, 21, 12)@float32, Tensor: (2, 1, 4, 4)@float32, Tensor: (2, 8, 32, 12)@float32, Tensor: (2, 8, 12, 32)@float32, Tensor: (16, 32, 167, 94)@float32, Tensor: (16, 32, 84, 47)@float32, Tensor: (16, 32, 42, 24)@float32, Tensor: (16, 32, 21, 12)@float32, Tensor: (2, 1, 4, 4)@float32, Tensor: (2, 8, 32, 12)@float32, Tensor: (2, 8, 12, 32)@float32, Tensor: (16, 32, 167, 94)@float32, Tensor: (16, 32, 84, 47)@float32, Tensor: (16, 32, 42, 24)@float32, Tensor: (16, 32, 21, 12)@float32, Tensor: (2, 1, 4, 4)@float32, Tensor: (2, 8, 32, 12)@float32, Tensor: (2, 8, 12, 32)@float32, Tensor: (16, 32, 167, 94)@float32, Tensor: (16, 32, 84, 47)@float32, Tensor: (16, 32, 42, 24)@float32, Tensor: (16, 32, 21, 12)@float32, Tensor: (2, 1, 4, 4)@float32, Tensor: (2, 8, 32, 12)@float32, Tensor: (2, 8, 12, 32)@float32, Tensor: (16, 32, 167, 94)@float32, Tensor: (16, 32, 84, 47)@float32, Tensor: (16, 32, 42, 24)@float32, Tensor: (16, 32, 21, 12)@float32, Tensor: (2, 1, 4, 4)@float32, Tensor: (2, 8, 32, 12)@float32, Tensor: (2, 8, 12, 32)@float32, Tensor: (16, 32, 167, 94)@float32, Tensor: (16, 32, 84, 47)@float32, Tensor: (16, 32, 42, 24)@float32, Tensor: (16, 32, 21, 12)@float32, Tensor: (2, 256, 12)@float32, Tensor: (2, 1, 12)@bool, Tensor: (2, 256, 12)@float32, Tensor: (2, 1, 12)@bool, Tensor: (2, 256, 12)@float32, Tensor: (2, 1, 12)@bool, Tensor: (2, 256, 12)@float32, Tensor: (2, 1, 12)@bool, Tensor: (2, 256, 12)@float32, Tensor: (2, 1, 12)@bool, Tensor: (2, 256, 12)@float32, Tensor: (2, 1, 12)@bool]
+    ...
+    TRT Engine #2 - Submodule name: _run_on_acc_2
+     Engine Inputs: List[Tensor: (2, 20906, 1)@bool, Tensor: (2, 20906, 4)@float32, Tensor: (2, 20906, 256)@float32, Tensor: (2, 256, 12)@float32, Tensor: (2, 1, 12)@bool, Tensor: (2, 1, 4, 4)@float32, Tensor: (2, 8, 32, 12)@float32, Tensor: (2, 8, 900, 12)@float32, Tensor: (2, 8, 12, 32)@float32, Tensor: (16, 32, 167, 94)@float32, Tensor: (16, 32, 84, 47)@float32, Tensor: (16, 32, 42, 24)@float32, Tensor: (16, 32, 21, 12)@float32, Tensor: (2, 1, 4, 4)@float32, Tensor: (2, 8, 32, 12)@float32, Tensor: (2, 8, 12, 32)@float32, Tensor: (16, 32, 167, 94)@float32, Tensor: (16, 32, 84, 47)@float32, Tensor: (16, 32, 42, 24)@float32, Tensor: (16, 32, 21, 12)@float32, Tensor: (2, 1, 4, 4)@float32, Tensor: (2, 8, 32, 12)@float32, Tensor: (2, 8, 12, 32)@float32, Tensor: (16, 32, 167, 94)@float32, Tensor: (16, 32, 84, 47)@float32, Tensor: (16, 32, 42, 24)@float32, Tensor: (16, 32, 21, 12)@float32, Tensor: (2, 1, 4, 4)@float32, Tensor: (2, 8, 32, 12)@float32, Tensor: (2, 8, 12, 32)@float32, Tensor: (16, 32, 167, 94)@float32, Tensor: (16, 32, 84, 47)@float32, Tensor: (16, 32, 42, 24)@float32, Tensor: (16, 32, 21, 12)@float32, Tensor: (2, 1, 4, 4)@float32, Tensor: (2, 8, 32, 12)@float32, Tensor: (2, 8, 12, 32)@float32, Tensor: (16, 32, 167, 94)@float32, Tensor: (16, 32, 84, 47)@float32, Tensor: (16, 32, 42, 24)@float32, Tensor: (16, 32, 21, 12)@float32, Tensor: (2, 1, 4, 4)@float32, Tensor: (2, 8, 32, 12)@float32, Tensor: (2, 8, 12, 32)@float32, Tensor: (16, 32, 167, 94)@float32, Tensor: (16, 32, 84, 47)@float32, Tensor: (16, 32, 42, 24)@float32, Tensor: (16, 32, 21, 12)@float32, Tensor: (2, 256, 12)@float32, Tensor: (2, 1, 12)@bool, Tensor: (2, 256, 12)@float32, Tensor: (2, 1, 12)@bool, Tensor: (2, 256, 12)@float32, Tensor: (2, 1, 12)@bool, Tensor: (2, 256, 12)@float32, Tensor: (2, 1, 12)@bool, Tensor: (2, 256, 12)@float32, Tensor: (2, 1, 12)@bool, Tensor: (2, 256, 12)@float32, Tensor: (2, 1, 12)@bool]
+     Number of Operators in Engine: 1240
+     Engine Outputs: List[Tensor: (2, 900, 256)@float32, Tensor: (2, 900, 4)@float32]
+    ...
+   Outputs: List[Tensor: (2, 900, 256)@float32, Tensor: (2, 900, 4)@float32]
+
+  ------------------------- Aggregate Stats -------------------------
+
+   Average Number of Operators per TRT Engine: 2260.0
+   Most Operators in a TRT Engine: 3280
+
+  ********** Recommendations **********
+
+   - For minimal graph segmentation, select min_block_size=3280 which would generate 1 TRT engine(s)
+   - For moderate graph segmentation, select min_block_size=2260 which would generate 1 TRT engine(s)
+   - The current level of graph segmentation is equivalent to selecting min_block_size=1240 which generates 2 TRT engine(s)

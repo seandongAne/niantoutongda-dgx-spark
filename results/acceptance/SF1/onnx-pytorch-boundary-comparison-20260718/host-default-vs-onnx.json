@@ -1,0 +1,1445 @@
+{
+  "artifact_verification": {
+    "decision_matcher": {
+      "source": "/home/Developer/proj/scripts/gdino_capture_decision_compare.py",
+      "source_sha256": "591802c574b5cb0c7d35d1251743df040b6a2d5b1a17e1c8bf1abe6c3fc75c9e"
+    },
+    "export_chain": {
+      "baseline_manifest": "/home/Developer/proj/results/acceptance/SF1/trt-gdino-20260718-v10-dynamo-static/manifest.json",
+      "baseline_manifest_hash_matches_pytorch_capture": true,
+      "baseline_manifest_sha256": "99cd568f2afb3e24173029b1b238c00cac00b203e80284119eb8c0332f367c44",
+      "onnx_hash_matches_manifest_inspection_and_result": true
+    },
+    "frozen_input": {
+      "all_array_descriptors_verified": true,
+      "arrays": {
+        "attention_mask": {
+          "dtype": "int64",
+          "numel": 24,
+          "sha256": "d335b3bc1461ed30f75513e7c17ed90d15c756ef02e8911aee0c66b1bddaf425",
+          "shape": [
+            2,
+            12
+          ]
+        },
+        "input_ids": {
+          "dtype": "int64",
+          "numel": 24,
+          "sha256": "a79658a53285543995bdf8edb0cc938a42f2caaedb3eb9f6bae97c000f4c1377",
+          "shape": [
+            2,
+            12
+          ]
+        },
+        "pixel_mask": {
+          "dtype": "int64",
+          "numel": 1999500,
+          "sha256": "6c020a452b245d8df3e73d28083f4192f3f4429ba113c690aa1375c06ff1a227",
+          "shape": [
+            2,
+            1333,
+            750
+          ]
+        },
+        "pixel_values": {
+          "dtype": "float32",
+          "numel": 5998500,
+          "sha256": "218a7030686534396089c7adc7242d4bdb63531f26644a56dfc26bab700da913",
+          "shape": [
+            2,
+            3,
+            1333,
+            750
+          ]
+        },
+        "token_type_ids": {
+          "dtype": "int64",
+          "numel": 24,
+          "sha256": "5d89f056865052bcb89c910d2d62872e029fb273c3db03f8968a52a41593c1b5",
+          "shape": [
+            2,
+            12
+          ]
+        }
+      },
+      "explicit_file": "/home/Developer/proj/results/acceptance/SF1/trt-gdino-20260718-v10-dynamo-static/sample_inputs.npz",
+      "same_sha256": true,
+      "sha256": "5410738ad8134275a762a178d27012c16ad281544d0d1c32f3524baf2c85bcf1"
+    },
+    "model_identity": {
+      "directory_equal": true,
+      "explicit_model_artifact_hash_matches_pytorch_capture": true,
+      "explicit_model_directory": "/home/Developer/models/IDEA-Research__grounding-dino-base",
+      "export_model_directory": "/home/Developer/models/IDEA-Research__grounding-dino-base",
+      "limitation": "The export manifest records the model directory but no source-weight digest; path equality is not a cryptographic weight-identity proof.",
+      "onnx_export_manifest_records_source_weight_sha256": false,
+      "pytorch_model_artifact_combined_sha256": "c95312ef25ca26379c55d5368651c30ce0a153bbf4ac46cf99ce7d5faa6ab3a0",
+      "pytorch_model_directory": "/home/Developer/models/IDEA-Research__grounding-dino-base",
+      "source_weight_identity_cryptographically_proven_across_captures": false
+    },
+    "onnx_capture": {
+      "inspection": "/home/Developer/proj/results/acceptance/SF1/onnx-intermediate-20260718-v1/inspection.json",
+      "inspection_sha256": "d382256e79aea78a75395e337c65db91cfac572b23f2baded594b13823525837",
+      "instrumentation_equivalence_passed": true,
+      "original_onnx_sha256": "aae91bfda8571d1bc24c3ed5f3dc4f8d68e3b111e3fbc0b7ec2d148f243864ee",
+      "required_tensor_count": 8,
+      "required_tensor_descriptors_verified": true,
+      "result": "/home/Developer/proj/results/acceptance/SF1/onnx-intermediate-20260718-v1/result.json",
+      "result_sha256": "11f1d1dc986b53e6319f2b857f0e6dfac0e41400ed2c996a0b33af79b7cd4a41"
+    },
+    "pytorch_capture": {
+      "all_array_descriptors_verified": true,
+      "array_count": 44,
+      "npz": "/home/Developer/proj/results/acceptance/SF1/topk-stage-host-default-20260718-v1/stage-boundaries.npz",
+      "npz_bytes": 1888789,
+      "npz_sha256": "5db72d32cfd027af65b0e87038cf52836293d93f31bdefede4dfadfb00d98da2",
+      "summary": "/home/Developer/proj/results/acceptance/SF1/topk-stage-host-default-20260718-v1/summary.json",
+      "summary_sha256": "08c5d669a6d0bfbbc2d1e18a3a9951b5e773f7fc18fe8557eb378cc53ea283b3"
+    }
+  },
+  "boundary_comparisons": {
+    "encoder_class_logits_sampled_at_pytorch_flat_indices": {
+      "diff": {
+        "bit_exact": false,
+        "candidate_dtype": "float32",
+        "candidate_finite_count": 186,
+        "candidate_shape": [
+          4096
+        ],
+        "comparison_valid": true,
+        "dtype_equal": true,
+        "jointly_finite_count": 186,
+        "max_abs_on_jointly_finite": 0.0003628730773925781,
+        "mean_abs_on_jointly_finite": 4.248208897088164e-05,
+        "nonfinite_pattern_equal": true,
+        "reference_dtype": "float32",
+        "reference_finite_count": 186,
+        "reference_shape": [
+          4096
+        ],
+        "shape_equal": true
+      },
+      "onnx_full_tensor_shape": [
+        2,
+        20906,
+        256
+      ],
+      "pytorch_flat_indices_sha256": "57187561f40166bddca774d44345f7aa750ac3d9032cfe71909a9160ba6f9e87",
+      "sample_count": 4096
+    },
+    "final_logits": {
+      "proposal_id_aligned": {
+        "aggregate": {
+          "bit_exact": false,
+          "candidate_dtype": "float32",
+          "candidate_finite_count": 21588,
+          "candidate_shape": [
+            1799,
+            256
+          ],
+          "comparison_valid": true,
+          "dtype_equal": true,
+          "jointly_finite_count": 21588,
+          "max_abs_on_jointly_finite": 1.9882779121398926,
+          "mean_abs_on_jointly_finite": 0.039301484845314996,
+          "nonfinite_pattern_equal": true,
+          "reference_dtype": "float32",
+          "reference_finite_count": 21588,
+          "reference_shape": [
+            1799,
+            256
+          ],
+          "shape_equal": true
+        },
+        "alignment_key": "encoder_proposal_id_from_topk_indices",
+        "causal_interpretation": "NONE; alignment changes comparison order only",
+        "per_batch": [
+          {
+            "batch_index": 0,
+            "candidate_query_count": 900,
+            "common_proposal_count": 900,
+            "common_proposal_fraction_of_reference": 1.0,
+            "diff": {
+              "bit_exact": false,
+              "candidate_dtype": "float32",
+              "candidate_finite_count": 10800,
+              "candidate_shape": [
+                900,
+                256
+              ],
+              "comparison_valid": true,
+              "dtype_equal": true,
+              "jointly_finite_count": 10800,
+              "max_abs_on_jointly_finite": 1.9882779121398926,
+              "mean_abs_on_jointly_finite": 0.03548365863936919,
+              "nonfinite_pattern_equal": true,
+              "reference_dtype": "float32",
+              "reference_finite_count": 10800,
+              "reference_shape": [
+                900,
+                256
+              ],
+              "shape_equal": true
+            },
+            "reference_query_count": 900
+          },
+          {
+            "batch_index": 1,
+            "candidate_query_count": 900,
+            "common_proposal_count": 899,
+            "common_proposal_fraction_of_reference": 0.9988888888888889,
+            "diff": {
+              "bit_exact": false,
+              "candidate_dtype": "float32",
+              "candidate_finite_count": 10788,
+              "candidate_shape": [
+                899,
+                256
+              ],
+              "comparison_valid": true,
+              "dtype_equal": true,
+              "jointly_finite_count": 10788,
+              "max_abs_on_jointly_finite": 1.929593563079834,
+              "mean_abs_on_jointly_finite": 0.043123557798987106,
+              "nonfinite_pattern_equal": true,
+              "reference_dtype": "float32",
+              "reference_finite_count": 10788,
+              "reference_shape": [
+                899,
+                256
+              ],
+              "shape_equal": true
+            },
+            "reference_query_count": 900
+          }
+        ]
+      },
+      "raw_rank_order": {
+        "bit_exact": false,
+        "candidate_dtype": "float32",
+        "candidate_finite_count": 21600,
+        "candidate_shape": [
+          2,
+          900,
+          256
+        ],
+        "comparison_valid": true,
+        "dtype_equal": true,
+        "jointly_finite_count": 21600,
+        "max_abs_on_jointly_finite": 4.16653299331665,
+        "mean_abs_on_jointly_finite": 0.07176247256221595,
+        "nonfinite_pattern_equal": true,
+        "reference_dtype": "float32",
+        "reference_finite_count": 21600,
+        "reference_shape": [
+          2,
+          900,
+          256
+        ],
+        "shape_equal": true
+      }
+    },
+    "final_pred_boxes": {
+      "proposal_id_aligned": {
+        "aggregate": {
+          "bit_exact": false,
+          "candidate_dtype": "float32",
+          "candidate_finite_count": 7196,
+          "candidate_shape": [
+            1799,
+            4
+          ],
+          "comparison_valid": true,
+          "dtype_equal": true,
+          "jointly_finite_count": 7196,
+          "max_abs_on_jointly_finite": 0.00020259618759155273,
+          "mean_abs_on_jointly_finite": 5.237818895076858e-06,
+          "nonfinite_pattern_equal": true,
+          "reference_dtype": "float32",
+          "reference_finite_count": 7196,
+          "reference_shape": [
+            1799,
+            4
+          ],
+          "shape_equal": true
+        },
+        "alignment_key": "encoder_proposal_id_from_topk_indices",
+        "causal_interpretation": "NONE; alignment changes comparison order only",
+        "per_batch": [
+          {
+            "batch_index": 0,
+            "candidate_query_count": 900,
+            "common_proposal_count": 900,
+            "common_proposal_fraction_of_reference": 1.0,
+            "diff": {
+              "bit_exact": false,
+              "candidate_dtype": "float32",
+              "candidate_finite_count": 3600,
+              "candidate_shape": [
+                900,
+                4
+              ],
+              "comparison_valid": true,
+              "dtype_equal": true,
+              "jointly_finite_count": 3600,
+              "max_abs_on_jointly_finite": 0.0001666545867919922,
+              "mean_abs_on_jointly_finite": 4.652580836490314e-06,
+              "nonfinite_pattern_equal": true,
+              "reference_dtype": "float32",
+              "reference_finite_count": 3600,
+              "reference_shape": [
+                900,
+                4
+              ],
+              "shape_equal": true
+            },
+            "reference_query_count": 900
+          },
+          {
+            "batch_index": 1,
+            "candidate_query_count": 900,
+            "common_proposal_count": 899,
+            "common_proposal_fraction_of_reference": 0.9988888888888889,
+            "diff": {
+              "bit_exact": false,
+              "candidate_dtype": "float32",
+              "candidate_finite_count": 3596,
+              "candidate_shape": [
+                899,
+                4
+              ],
+              "comparison_valid": true,
+              "dtype_equal": true,
+              "jointly_finite_count": 3596,
+              "max_abs_on_jointly_finite": 0.00020259618759155273,
+              "mean_abs_on_jointly_finite": 5.823707941492752e-06,
+              "nonfinite_pattern_equal": true,
+              "reference_dtype": "float32",
+              "reference_finite_count": 3596,
+              "reference_shape": [
+                899,
+                4
+              ],
+              "shape_equal": true
+            },
+            "reference_query_count": 900
+          }
+        ]
+      },
+      "raw_rank_order": {
+        "bit_exact": false,
+        "candidate_dtype": "float32",
+        "candidate_finite_count": 7200,
+        "candidate_shape": [
+          2,
+          900,
+          4
+        ],
+        "comparison_valid": true,
+        "dtype_equal": true,
+        "jointly_finite_count": 7200,
+        "max_abs_on_jointly_finite": 0.9841399919241667,
+        "mean_abs_on_jointly_finite": 0.018140374699210548,
+        "nonfinite_pattern_equal": true,
+        "reference_dtype": "float32",
+        "reference_finite_count": 7200,
+        "reference_shape": [
+          2,
+          900,
+          4
+        ],
+        "shape_equal": true
+      }
+    },
+    "proposal_coord_logits_full": {
+      "bit_exact": false,
+      "candidate_dtype": "float32",
+      "candidate_finite_count": 160880,
+      "candidate_shape": [
+        2,
+        20906,
+        4
+      ],
+      "comparison_valid": true,
+      "dtype_equal": true,
+      "jointly_finite_count": 160880,
+      "max_abs_on_jointly_finite": 0.0052318572998046875,
+      "mean_abs_on_jointly_finite": 5.585810141269745e-05,
+      "nonfinite_pattern_equal": true,
+      "reference_dtype": "float32",
+      "reference_finite_count": 160880,
+      "reference_shape": [
+        2,
+        20906,
+        4
+      ],
+      "shape_equal": true
+    },
+    "proposal_scores_full": {
+      "bit_exact": false,
+      "candidate_dtype": "float32",
+      "candidate_finite_count": 41812,
+      "candidate_shape": [
+        2,
+        20906
+      ],
+      "comparison_valid": true,
+      "dtype_equal": true,
+      "jointly_finite_count": 41812,
+      "max_abs_on_jointly_finite": 0.0015263557434082031,
+      "mean_abs_on_jointly_finite": 4.669390836195844e-05,
+      "nonfinite_pattern_equal": true,
+      "reference_dtype": "float32",
+      "reference_finite_count": 41812,
+      "reference_shape": [
+        2,
+        20906
+      ],
+      "shape_equal": true
+    },
+    "topk": {
+      "indices": {
+        "ordered_indices_equal_all_batches": false,
+        "per_batch": [
+          {
+            "batch_index": 0,
+            "candidate_only_count": 0,
+            "candidate_only_first_32": [],
+            "common_proposal_rank_displacement_max": 2,
+            "common_proposal_rank_displacement_mean": 0.07555555555555556,
+            "ordered_indices_equal": false,
+            "reference_only_count": 0,
+            "reference_only_first_32": [],
+            "same_rank_count": 834,
+            "same_rank_fraction": 0.9266666666666666,
+            "set_equal": true,
+            "set_jaccard": 1.0,
+            "set_overlap_count": 900,
+            "set_overlap_fraction_of_k": 1.0
+          },
+          {
+            "batch_index": 1,
+            "candidate_only_count": 1,
+            "candidate_only_first_32": [
+              19825
+            ],
+            "common_proposal_rank_displacement_max": 3,
+            "common_proposal_rank_displacement_mean": 0.07119021134593993,
+            "ordered_indices_equal": false,
+            "reference_only_count": 1,
+            "reference_only_first_32": [
+              8112
+            ],
+            "same_rank_count": 837,
+            "same_rank_fraction": 0.93,
+            "set_equal": false,
+            "set_jaccard": 0.9977802441731409,
+            "set_overlap_count": 899,
+            "set_overlap_fraction_of_k": 0.9988888888888889
+          }
+        ],
+        "sets_equal_all_batches": false
+      },
+      "values_raw_rank_order": {
+        "bit_exact": false,
+        "candidate_dtype": "float32",
+        "candidate_finite_count": 1800,
+        "candidate_shape": [
+          2,
+          900
+        ],
+        "comparison_valid": true,
+        "dtype_equal": true,
+        "jointly_finite_count": 1800,
+        "max_abs_on_jointly_finite": 0.001333475112915039,
+        "mean_abs_on_jointly_finite": 8.188635110855103e-05,
+        "nonfinite_pattern_equal": true,
+        "reference_dtype": "float32",
+        "reference_finite_count": 1800,
+        "reference_shape": [
+          2,
+          900
+        ],
+        "shape_equal": true
+      }
+    },
+    "topk_gather_coord_logits": {
+      "proposal_id_aligned": {
+        "aggregate": {
+          "bit_exact": false,
+          "candidate_dtype": "float32",
+          "candidate_finite_count": 7196,
+          "candidate_shape": [
+            1799,
+            4
+          ],
+          "comparison_valid": true,
+          "dtype_equal": true,
+          "jointly_finite_count": 7196,
+          "max_abs_on_jointly_finite": 0.0019960403442382812,
+          "mean_abs_on_jointly_finite": 4.463812572909534e-05,
+          "nonfinite_pattern_equal": true,
+          "reference_dtype": "float32",
+          "reference_finite_count": 7196,
+          "reference_shape": [
+            1799,
+            4
+          ],
+          "shape_equal": true
+        },
+        "alignment_key": "encoder_proposal_id_from_topk_indices",
+        "causal_interpretation": "NONE; alignment changes comparison order only",
+        "per_batch": [
+          {
+            "batch_index": 0,
+            "candidate_query_count": 900,
+            "common_proposal_count": 900,
+            "common_proposal_fraction_of_reference": 1.0,
+            "diff": {
+              "bit_exact": false,
+              "candidate_dtype": "float32",
+              "candidate_finite_count": 3600,
+              "candidate_shape": [
+                900,
+                4
+              ],
+              "comparison_valid": true,
+              "dtype_equal": true,
+              "jointly_finite_count": 3600,
+              "max_abs_on_jointly_finite": 0.0019960403442382812,
+              "mean_abs_on_jointly_finite": 4.909233397079839e-05,
+              "nonfinite_pattern_equal": true,
+              "reference_dtype": "float32",
+              "reference_finite_count": 3600,
+              "reference_shape": [
+                900,
+                4
+              ],
+              "shape_equal": true
+            },
+            "reference_query_count": 900
+          },
+          {
+            "batch_index": 1,
+            "candidate_query_count": 900,
+            "common_proposal_count": 899,
+            "common_proposal_fraction_of_reference": 0.9988888888888889,
+            "diff": {
+              "bit_exact": false,
+              "candidate_dtype": "float32",
+              "candidate_finite_count": 3596,
+              "candidate_shape": [
+                899,
+                4
+              ],
+              "comparison_valid": true,
+              "dtype_equal": true,
+              "jointly_finite_count": 3596,
+              "max_abs_on_jointly_finite": 0.0014138221740722656,
+              "mean_abs_on_jointly_finite": 4.0178962861984406e-05,
+              "nonfinite_pattern_equal": true,
+              "reference_dtype": "float32",
+              "reference_finite_count": 3596,
+              "reference_shape": [
+                899,
+                4
+              ],
+              "shape_equal": true
+            },
+            "reference_query_count": 900
+          }
+        ]
+      },
+      "raw_rank_order": {
+        "bit_exact": false,
+        "candidate_dtype": "float32",
+        "candidate_finite_count": 7200,
+        "candidate_shape": [
+          2,
+          900,
+          4
+        ],
+        "comparison_valid": true,
+        "dtype_equal": true,
+        "jointly_finite_count": 7200,
+        "max_abs_on_jointly_finite": 12.702325820922852,
+        "mean_abs_on_jointly_finite": 0.1262373985141878,
+        "nonfinite_pattern_equal": true,
+        "reference_dtype": "float32",
+        "reference_finite_count": 7200,
+        "reference_shape": [
+          2,
+          900,
+          4
+        ],
+        "shape_equal": true
+      }
+    }
+  },
+  "created_at_unix": 1784404806,
+  "grid_sample": {
+    "causal_attribution": "NONE",
+    "compared_across_runtimes": false,
+    "not_compared_reason": "The PyTorch capture does not contain tensors corresponding to the ONNX GridSample sentinels. If sentinel files are not local they are likewise not compared.",
+    "onnx_sentinel_descriptors": [
+      {
+        "available_locally": true,
+        "dtype": "float32",
+        "element_count": 524288,
+        "file_sha256": "4323c85bbdc390b79cd35ddf8c245ef6071144af80fa8cd000f3c046ea965506",
+        "file_size_bytes": 2097280,
+        "nbytes": 2097152,
+        "resolved_file": "/home/Developer/proj/results/acceptance/SF1/onnx-intermediate-20260718-v1/tensors/08-grid_sample_decoder_layer_0_call_0_output-a99d249889c3.npy",
+        "role": "grid_sample_decoder_layer_0_call_0_output",
+        "shape": [
+          16,
+          32,
+          256,
+          4
+        ]
+      },
+      {
+        "available_locally": true,
+        "dtype": "float32",
+        "element_count": 524288,
+        "file_sha256": "a93e52cabeca3d5cc10b09e107b2da62e95f8e6c7b1e8bd32cc4bb429076047e",
+        "file_size_bytes": 2097280,
+        "nbytes": 2097152,
+        "resolved_file": "/home/Developer/proj/results/acceptance/SF1/onnx-intermediate-20260718-v1/tensors/09-grid_sample_decoder_layer_5_call_3_output-8509b454c554.npy",
+        "role": "grid_sample_decoder_layer_5_call_3_output",
+        "shape": [
+          16,
+          32,
+          256,
+          4
+        ]
+      },
+      {
+        "available_locally": true,
+        "dtype": "float32",
+        "element_count": 524288,
+        "file_sha256": "2069acf7d562378e0988b6e15d47e52612fd05bdc1460de628cc2ec59fc1b018",
+        "file_size_bytes": 2097280,
+        "nbytes": 2097152,
+        "resolved_file": "/home/Developer/proj/results/acceptance/SF1/onnx-intermediate-20260718-v1/tensors/06-grid_sample_encoder_layer_0_call_0_output-a4e9646d0af2.npy",
+        "role": "grid_sample_encoder_layer_0_call_0_output",
+        "shape": [
+          16,
+          32,
+          256,
+          4
+        ]
+      },
+      {
+        "available_locally": true,
+        "dtype": "float32",
+        "element_count": 524288,
+        "file_sha256": "4c33c1cc7286fa48ba88da4bb401555f93045edf6fe005cccbcfb50657f9739f",
+        "file_size_bytes": 2097280,
+        "nbytes": 2097152,
+        "resolved_file": "/home/Developer/proj/results/acceptance/SF1/onnx-intermediate-20260718-v1/tensors/07-grid_sample_encoder_layer_5_call_3_output-55e08acd3029.npy",
+        "role": "grid_sample_encoder_layer_5_call_3_output",
+        "shape": [
+          16,
+          32,
+          256,
+          4
+        ]
+      }
+    ],
+    "onnx_sentinel_role_count": 4,
+    "onnx_sentinels_all_available_locally": true,
+    "pytorch_counterpart_available": false
+  },
+  "internal_consistency": {
+    "onnx_reduce_max_exact": true,
+    "onnx_topk_and_gather": {
+      "per_batch": [
+        {
+          "batch_index": 0,
+          "coordinate_gather_exact": true,
+          "highest_finite_rejected_score": -5.096806049346924,
+          "indices_unique": true,
+          "lowest_finite_selected_score": -5.096200466156006,
+          "proposal_count": 20906,
+          "selected_count": 900,
+          "selected_rejected_gap": 0.0006055831909179688,
+          "values_gather_exact": true
+        },
+        {
+          "batch_index": 1,
+          "coordinate_gather_exact": true,
+          "highest_finite_rejected_score": -5.106234550476074,
+          "indices_unique": true,
+          "lowest_finite_selected_score": -5.106230735778809,
+          "proposal_count": 20906,
+          "selected_count": 900,
+          "selected_rejected_gap": 3.814697265625e-06,
+          "values_gather_exact": true
+        }
+      ],
+      "valid": true
+    },
+    "pytorch_topk_and_gather": {
+      "per_batch": [
+        {
+          "batch_index": 0,
+          "coordinate_gather_exact": true,
+          "highest_finite_rejected_score": -5.096728801727295,
+          "indices_unique": true,
+          "lowest_finite_selected_score": -5.096132755279541,
+          "proposal_count": 20906,
+          "selected_count": 900,
+          "selected_rejected_gap": 0.0005960464477539062,
+          "values_gather_exact": true
+        },
+        {
+          "batch_index": 1,
+          "coordinate_gather_exact": true,
+          "highest_finite_rejected_score": -5.106332302093506,
+          "indices_unique": true,
+          "lowest_finite_selected_score": -5.10625696182251,
+          "proposal_count": 20906,
+          "selected_count": 900,
+          "selected_rejected_gap": 7.534027099609375e-05,
+          "values_gather_exact": true
+        }
+      ],
+      "valid": true
+    }
+  },
+  "interpretation_boundary": "This report locates observed boundary differences but does not identify the operator that caused them.",
+  "postprocessed_detection_comparison": {
+    "acceptance_claim": false,
+    "aggregate": {
+      "complete_one_to_one_label_match_all_batches": true,
+      "matched_detection_count": 10,
+      "max_box_abs_delta_px": 0.00299072265625,
+      "max_score_abs_delta": 0.00036269426345825195,
+      "min_iou": 0.9999796974903961,
+      "onnx_detection_count": 10,
+      "pytorch_detection_count": 10
+    },
+    "matching": {
+      "configured_transition_budget": 5000000,
+      "constraint": "exact_text_label_equality",
+      "implementation": "gdino_capture_decision_compare._match_image_decisions",
+      "objective": "exact_maximum_total_iou_within_each_label",
+      "remaining_transition_budget": 4999860
+    },
+    "per_batch": [
+      {
+        "batch_index": 0,
+        "counts": {
+          "candidate_by_label": {
+            "": 3,
+            "desk": 1,
+            "mini fridge": 1
+          },
+          "candidate_total": 5,
+          "matched": 5,
+          "reference_by_label": {
+            "": 3,
+            "desk": 1,
+            "mini fridge": 1
+          },
+          "reference_total": 5
+        },
+        "delta_summary": {
+          "max_box_abs_delta_px": 0.0023193359375,
+          "max_score_abs_delta": 0.00022977590560913086,
+          "mean_iou": 0.9999925300686522,
+          "min_iou": 0.9999796974903961
+        },
+        "gates": {
+          "diagnostic": {
+            "complete_one_to_one_label_match": true,
+            "criteria": {
+              "iou_min_inclusive": 0.99,
+              "score_abs_delta_max_inclusive": 0.01
+            },
+            "pass": true
+          },
+          "strict": {
+            "complete_one_to_one_label_match": true,
+            "criteria": {
+              "box_abs_delta_px_max_inclusive": 0.5,
+              "iou_min_inclusive": 0.999,
+              "score_abs_delta_max_inclusive": 0.001
+            },
+            "pass": true
+          }
+        },
+        "matched_pairs": [
+          {
+            "box_delta_candidate_minus_reference_px": [
+              0.0004506111145019531,
+              0.000514984130859375,
+              -0.0010986328125,
+              0.00048828125
+            ],
+            "box_max_abs_delta_px": 0.0010986328125,
+            "candidate_box_xyxy_px": [
+              2.842261791229248,
+              -4.056873321533203,
+              637.4789428710938,
+              1914.616455078125
+            ],
+            "candidate_index": 0,
+            "candidate_score": 0.34723636507987976,
+            "iou": 0.9999970359617029,
+            "label": "mini fridge",
+            "reference_box_xyxy_px": [
+              2.841811180114746,
+              -4.0573883056640625,
+              637.4800415039062,
+              1914.615966796875
+            ],
+            "reference_index": 0,
+            "reference_score": 0.3474661409854889,
+            "score_abs_delta": 0.00022977590560913086,
+            "score_delta_candidate_minus_reference": -0.00022977590560913086
+          },
+          {
+            "box_delta_candidate_minus_reference_px": [
+              0.0001983642578125,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "box_max_abs_delta_px": 0.0001983642578125,
+            "candidate_box_xyxy_px": [
+              141.16506958007812,
+              1507.4356689453125,
+              1066.4605712890625,
+              1922.6636962890625
+            ],
+            "candidate_index": 1,
+            "candidate_score": 0.25570088624954224,
+            "iou": 0.9999997856206856,
+            "label": "desk",
+            "reference_box_xyxy_px": [
+              141.1648712158203,
+              1507.4356689453125,
+              1066.4605712890625,
+              1922.6636962890625
+            ],
+            "reference_index": 1,
+            "reference_score": 0.2557655870914459,
+            "score_abs_delta": 6.470084190368652e-05,
+            "score_delta_candidate_minus_reference": -6.470084190368652e-05
+          },
+          {
+            "box_delta_candidate_minus_reference_px": [
+              -9.655952453613281e-05,
+              0.000457763671875,
+              -0.0001220703125,
+              0.00048828125
+            ],
+            "box_max_abs_delta_px": 0.00048828125,
+            "candidate_box_xyxy_px": [
+              0.0006115436553955078,
+              -3.3600425720214844,
+              1079.5950927734375,
+              1916.4935302734375
+            ],
+            "candidate_index": 2,
+            "candidate_score": 0.2298308163881302,
+            "iou": 0.9999993047199064,
+            "label": "",
+            "reference_box_xyxy_px": [
+              0.0007081031799316406,
+              -3.3605003356933594,
+              1079.59521484375,
+              1916.4930419921875
+            ],
+            "reference_index": 2,
+            "reference_score": 0.22996091842651367,
+            "score_abs_delta": 0.0001301020383834839,
+            "score_delta_candidate_minus_reference": -0.0001301020383834839
+          },
+          {
+            "box_delta_candidate_minus_reference_px": [
+              0.00012874603271484375,
+              0.0023193359375,
+              0.000762939453125,
+              -0.0013427734375
+            ],
+            "box_max_abs_delta_px": 0.0023193359375,
+            "candidate_box_xyxy_px": [
+              -0.007306337356567383,
+              1336.557373046875,
+              184.39634704589844,
+              1775.7598876953125
+            ],
+            "candidate_index": 3,
+            "candidate_score": 0.22607900202274323,
+            "iou": 0.99998682655057,
+            "label": "",
+            "reference_box_xyxy_px": [
+              -0.0074350833892822266,
+              1336.5550537109375,
+              184.3955841064453,
+              1775.76123046875
+            ],
+            "reference_index": 3,
+            "reference_score": 0.2262629121541977,
+            "score_abs_delta": 0.00018391013145446777,
+            "score_delta_candidate_minus_reference": -0.00018391013145446777
+          },
+          {
+            "box_delta_candidate_minus_reference_px": [
+              -0.00010859966278076172,
+              0.00048828125,
+              0.00157928466796875,
+              -0.0006103515625
+            ],
+            "box_max_abs_delta_px": 0.00157928466796875,
+            "candidate_box_xyxy_px": [
+              0.9930986166000366,
+              1544.2283935546875,
+              110.5639877319336,
+              1768.5220947265625
+            ],
+            "candidate_index": 4,
+            "candidate_score": 0.2217818647623062,
+            "iou": 0.9999796974903961,
+            "label": "",
+            "reference_box_xyxy_px": [
+              0.9932072162628174,
+              1544.2279052734375,
+              110.56240844726562,
+              1768.522705078125
+            ],
+            "reference_index": 4,
+            "reference_score": 0.22170521318912506,
+            "score_abs_delta": 7.665157318115234e-05,
+            "score_delta_candidate_minus_reference": 7.665157318115234e-05
+          }
+        ],
+        "matching": {
+          "actual_transitions": 40,
+          "estimated_transition_upper_bound": 104,
+          "method": "exact_label_partitioned_maximum_total_iou_bitmask_dp",
+          "objective_total_iou": 4.999962650343261,
+          "per_label": {
+            "": {
+              "actual_transitions": 36,
+              "candidate_count": 3,
+              "estimated_transition_upper_bound": 96,
+              "matched_count": 3,
+              "reference_count": 3
+            },
+            "desk": {
+              "actual_transitions": 2,
+              "candidate_count": 1,
+              "estimated_transition_upper_bound": 4,
+              "matched_count": 1,
+              "reference_count": 1
+            },
+            "mini fridge": {
+              "actual_transitions": 2,
+              "candidate_count": 1,
+              "estimated_transition_upper_bound": 4,
+              "matched_count": 1,
+              "reference_count": 1
+            }
+          },
+          "tie_break": "lexicographically_smallest_(reference_index,candidate_index)_pairs",
+          "transition_budget": 5000000
+        },
+        "onnx_detections": [
+          {
+            "box_xyxy_px": [
+              2.842261791229248,
+              -4.056873321533203,
+              637.4789428710938,
+              1914.616455078125
+            ],
+            "index": 0,
+            "label": "mini fridge",
+            "score": 0.34723636507987976
+          },
+          {
+            "box_xyxy_px": [
+              141.16506958007812,
+              1507.4356689453125,
+              1066.4605712890625,
+              1922.6636962890625
+            ],
+            "index": 1,
+            "label": "desk",
+            "score": 0.25570088624954224
+          },
+          {
+            "box_xyxy_px": [
+              0.0006115436553955078,
+              -3.3600425720214844,
+              1079.5950927734375,
+              1916.4935302734375
+            ],
+            "index": 2,
+            "label": "",
+            "score": 0.2298308163881302
+          },
+          {
+            "box_xyxy_px": [
+              -0.007306337356567383,
+              1336.557373046875,
+              184.39634704589844,
+              1775.7598876953125
+            ],
+            "index": 3,
+            "label": "",
+            "score": 0.22607900202274323
+          },
+          {
+            "box_xyxy_px": [
+              0.9930986166000366,
+              1544.2283935546875,
+              110.5639877319336,
+              1768.5220947265625
+            ],
+            "index": 4,
+            "label": "",
+            "score": 0.2217818647623062
+          }
+        ],
+        "pytorch_detections": [
+          {
+            "box_xyxy_px": [
+              2.841811180114746,
+              -4.0573883056640625,
+              637.4800415039062,
+              1914.615966796875
+            ],
+            "index": 0,
+            "label": "mini fridge",
+            "score": 0.3474661409854889
+          },
+          {
+            "box_xyxy_px": [
+              141.1648712158203,
+              1507.4356689453125,
+              1066.4605712890625,
+              1922.6636962890625
+            ],
+            "index": 1,
+            "label": "desk",
+            "score": 0.2557655870914459
+          },
+          {
+            "box_xyxy_px": [
+              0.0007081031799316406,
+              -3.3605003356933594,
+              1079.59521484375,
+              1916.4930419921875
+            ],
+            "index": 2,
+            "label": "",
+            "score": 0.22996091842651367
+          },
+          {
+            "box_xyxy_px": [
+              -0.0074350833892822266,
+              1336.5550537109375,
+              184.3955841064453,
+              1775.76123046875
+            ],
+            "index": 3,
+            "label": "",
+            "score": 0.2262629121541977
+          },
+          {
+            "box_xyxy_px": [
+              0.9932072162628174,
+              1544.2279052734375,
+              110.56240844726562,
+              1768.522705078125
+            ],
+            "index": 4,
+            "label": "",
+            "score": 0.22170521318912506
+          }
+        ],
+        "target_size_hw": [
+          1920,
+          1080
+        ],
+        "unmatched_candidate_indices": [],
+        "unmatched_reference_indices": []
+      },
+      {
+        "batch_index": 1,
+        "counts": {
+          "candidate_by_label": {
+            "": 1,
+            "desk": 1,
+            "luggage": 1,
+            "mini fridge": 2
+          },
+          "candidate_total": 5,
+          "matched": 5,
+          "reference_by_label": {
+            "": 1,
+            "desk": 1,
+            "luggage": 1,
+            "mini fridge": 2
+          },
+          "reference_total": 5
+        },
+        "delta_summary": {
+          "max_box_abs_delta_px": 0.00299072265625,
+          "max_score_abs_delta": 0.00036269426345825195,
+          "mean_iou": 0.9999939771002693,
+          "min_iou": 0.9999899069372915
+        },
+        "gates": {
+          "diagnostic": {
+            "complete_one_to_one_label_match": true,
+            "criteria": {
+              "iou_min_inclusive": 0.99,
+              "score_abs_delta_max_inclusive": 0.01
+            },
+            "pass": true
+          },
+          "strict": {
+            "complete_one_to_one_label_match": true,
+            "criteria": {
+              "box_abs_delta_px_max_inclusive": 0.5,
+              "iou_min_inclusive": 0.999,
+              "score_abs_delta_max_inclusive": 0.001
+            },
+            "pass": true
+          }
+        },
+        "matched_pairs": [
+          {
+            "box_delta_candidate_minus_reference_px": [
+              -0.00032138824462890625,
+              -0.0006103515625,
+              -0.00152587890625,
+              0.0003662109375
+            ],
+            "box_max_abs_delta_px": 0.00152587890625,
+            "candidate_box_xyxy_px": [
+              9.999833106994629,
+              1251.3243408203125,
+              965.5316162109375,
+              1914.0439453125
+            ],
+            "candidate_index": 0,
+            "candidate_score": 0.3352262079715729,
+            "iou": 0.9999965932054926,
+            "label": "desk",
+            "reference_box_xyxy_px": [
+              10.000154495239258,
+              1251.324951171875,
+              965.5331420898438,
+              1914.0435791015625
+            ],
+            "reference_index": 0,
+            "reference_score": 0.33512067794799805,
+            "score_abs_delta": 0.0001055300235748291,
+            "score_delta_candidate_minus_reference": 0.0001055300235748291
+          },
+          {
+            "box_delta_candidate_minus_reference_px": [
+              0.000885009765625,
+              0.00054931640625,
+              -0.00140380859375,
+              -0.000244140625
+            ],
+            "box_max_abs_delta_px": 0.00140380859375,
+            "candidate_box_xyxy_px": [
+              285.92864990234375,
+              611.3087768554688,
+              796.2750854492188,
+              1390.6629638671875
+            ],
+            "candidate_index": 1,
+            "candidate_score": 0.3534488379955292,
+            "iou": 0.9999944970975093,
+            "label": "luggage",
+            "reference_box_xyxy_px": [
+              285.9277648925781,
+              611.3082275390625,
+              796.2764892578125,
+              1390.6632080078125
+            ],
+            "reference_index": 1,
+            "reference_score": 0.3538115322589874,
+            "score_abs_delta": 0.00036269426345825195,
+            "score_delta_candidate_minus_reference": -0.00036269426345825195
+          },
+          {
+            "box_delta_candidate_minus_reference_px": [
+              0.000762939453125,
+              -0.00299072265625,
+              -0.00091552734375,
+              -0.000244140625
+            ],
+            "box_max_abs_delta_px": 0.00299072265625,
+            "candidate_box_xyxy_px": [
+              285.5667419433594,
+              619.3507690429688,
+              802.2120971679688,
+              1392.8919677734375
+            ],
+            "candidate_index": 2,
+            "candidate_score": 0.3673221170902252,
+            "iou": 0.9999925693697944,
+            "label": "mini fridge",
+            "reference_box_xyxy_px": [
+              285.56597900390625,
+              619.353759765625,
+              802.2130126953125,
+              1392.8922119140625
+            ],
+            "reference_index": 2,
+            "reference_score": 0.3673977553844452,
+            "score_abs_delta": 7.56382942199707e-05,
+            "score_delta_candidate_minus_reference": -7.56382942199707e-05
+          },
+          {
+            "box_delta_candidate_minus_reference_px": [
+              0.000701904296875,
+              0.00054931640625,
+              -0.00054931640625,
+              -0.0001220703125
+            ],
+            "box_max_abs_delta_px": 0.000701904296875,
+            "candidate_box_xyxy_px": [
+              292.2280578613281,
+              828.1664428710938,
+              794.1723022460938,
+              1393.13037109375
+            ],
+            "candidate_index": 3,
+            "candidate_score": 0.3338201940059662,
+            "iou": 0.9999963188912585,
+            "label": "mini fridge",
+            "reference_box_xyxy_px": [
+              292.22735595703125,
+              828.1658935546875,
+              794.1728515625,
+              1393.1304931640625
+            ],
+            "reference_index": 3,
+            "reference_score": 0.3337237238883972,
+            "score_abs_delta": 9.647011756896973e-05,
+            "score_delta_candidate_minus_reference": 9.647011756896973e-05
+          },
+          {
+            "box_delta_candidate_minus_reference_px": [
+              -0.000244140625,
+              -0.000244140625,
+              -6.103515625e-05,
+              0.000244140625
+            ],
+            "box_max_abs_delta_px": 0.000244140625,
+            "candidate_box_xyxy_px": [
+              701.478271484375,
+              1362.451171875,
+              775.0662841796875,
+              1444.5703125
+            ],
+            "candidate_index": 4,
+            "candidate_score": 0.24845874309539795,
+            "iou": 0.9999899069372915,
+            "label": "",
+            "reference_box_xyxy_px": [
+              701.478515625,
+              1362.451416015625,
+              775.0663452148438,
+              1444.570068359375
+            ],
+            "reference_index": 4,
+            "reference_score": 0.24845311045646667,
+            "score_abs_delta": 5.632638931274414e-06,
+            "score_delta_candidate_minus_reference": 5.632638931274414e-06
+          }
+        ],
+        "matching": {
+          "actual_transitions": 16,
+          "estimated_transition_upper_bound": 36,
+          "method": "exact_label_partitioned_maximum_total_iou_bitmask_dp",
+          "objective_total_iou": 4.999969885501346,
+          "per_label": {
+            "": {
+              "actual_transitions": 2,
+              "candidate_count": 1,
+              "estimated_transition_upper_bound": 4,
+              "matched_count": 1,
+              "reference_count": 1
+            },
+            "desk": {
+              "actual_transitions": 2,
+              "candidate_count": 1,
+              "estimated_transition_upper_bound": 4,
+              "matched_count": 1,
+              "reference_count": 1
+            },
+            "luggage": {
+              "actual_transitions": 2,
+              "candidate_count": 1,
+              "estimated_transition_upper_bound": 4,
+              "matched_count": 1,
+              "reference_count": 1
+            },
+            "mini fridge": {
+              "actual_transitions": 10,
+              "candidate_count": 2,
+              "estimated_transition_upper_bound": 24,
+              "matched_count": 2,
+              "reference_count": 2
+            }
+          },
+          "tie_break": "lexicographically_smallest_(reference_index,candidate_index)_pairs",
+          "transition_budget": 4999896
+        },
+        "onnx_detections": [
+          {
+            "box_xyxy_px": [
+              9.999833106994629,
+              1251.3243408203125,
+              965.5316162109375,
+              1914.0439453125
+            ],
+            "index": 0,
+            "label": "desk",
+            "score": 0.3352262079715729
+          },
+          {
+            "box_xyxy_px": [
+              285.92864990234375,
+              611.3087768554688,
+              796.2750854492188,
+              1390.6629638671875
+            ],
+            "index": 1,
+            "label": "luggage",
+            "score": 0.3534488379955292
+          },
+          {
+            "box_xyxy_px": [
+              285.5667419433594,
+              619.3507690429688,
+              802.2120971679688,
+              1392.8919677734375
+            ],
+            "index": 2,
+            "label": "mini fridge",
+            "score": 0.3673221170902252
+          },
+          {
+            "box_xyxy_px": [
+              292.2280578613281,
+              828.1664428710938,
+              794.1723022460938,
+              1393.13037109375
+            ],
+            "index": 3,
+            "label": "mini fridge",
+            "score": 0.3338201940059662
+          },
+          {
+            "box_xyxy_px": [
+              701.478271484375,
+              1362.451171875,
+              775.0662841796875,
+              1444.5703125
+            ],
+            "index": 4,
+            "label": "",
+            "score": 0.24845874309539795
+          }
+        ],
+        "pytorch_detections": [
+          {
+            "box_xyxy_px": [
+              10.000154495239258,
+              1251.324951171875,
+              965.5331420898438,
+              1914.0435791015625
+            ],
+            "index": 0,
+            "label": "desk",
+            "score": 0.33512067794799805
+          },
+          {
+            "box_xyxy_px": [
+              285.9277648925781,
+              611.3082275390625,
+              796.2764892578125,
+              1390.6632080078125
+            ],
+            "index": 1,
+            "label": "luggage",
+            "score": 0.3538115322589874
+          },
+          {
+            "box_xyxy_px": [
+              285.56597900390625,
+              619.353759765625,
+              802.2130126953125,
+              1392.8922119140625
+            ],
+            "index": 2,
+            "label": "mini fridge",
+            "score": 0.3673977553844452
+          },
+          {
+            "box_xyxy_px": [
+              292.22735595703125,
+              828.1658935546875,
+              794.1728515625,
+              1393.1304931640625
+            ],
+            "index": 3,
+            "label": "mini fridge",
+            "score": 0.3337237238883972
+          },
+          {
+            "box_xyxy_px": [
+              701.478515625,
+              1362.451416015625,
+              775.0663452148438,
+              1444.570068359375
+            ],
+            "index": 4,
+            "label": "",
+            "score": 0.24845311045646667
+          }
+        ],
+        "target_size_hw": [
+          1920,
+          1080
+        ],
+        "unmatched_candidate_indices": [],
+        "unmatched_reference_indices": []
+      }
+    ],
+    "processor": {
+      "class": "transformers.models.grounding_dino.processing_grounding_dino.GroundingDinoProcessor",
+      "directory": "/home/Developer/models/IDEA-Research__grounding-dino-base",
+      "transformers_version": "5.13.1"
+    },
+    "target_sizes_hw": [
+      [
+        1920,
+        1080
+      ],
+      [
+        1920,
+        1080
+      ]
+    ],
+    "text_threshold": 0.25,
+    "threshold": 0.22,
+    "verdict_scope": "diagnostic_only_does_not_replace_frozen_acceptance"
+  },
+  "schema_version": "1.0",
+  "scope": "SF1-L2_PYTORCH_ONNX_BOUNDARY_COMPARISON_ONLY",
+  "verdict": "BOUNDARIES_COMPARED_NO_CAUSAL_ATTRIBUTION"
+}

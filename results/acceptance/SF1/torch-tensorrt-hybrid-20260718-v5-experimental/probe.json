@@ -1,0 +1,887 @@
+{
+  "acceptance_claim": false,
+  "code_commit": "8d56e69b378fd2d9eb62a6d4c38888f18fb46380",
+  "compiler_api": {
+    "fp16_route": "enable_autocast=true with autocast_low_precision_type=torch.float16",
+    "torch_export_export_signature": "(mod: torch.nn.modules.module.Module, args: tuple[typing.Any, ...], kwargs: collections.abc.Mapping[str, typing.Any] | None = None, *, dynamic_shapes: dict[str, typing.Any] | tuple[typing.Any, ...] | list[typing.Any] | None = None, strict: bool = False, preserve_module_call_signature: tuple[str, ...] = (), prefer_deferred_runtime_asserts_over_guards: bool = False) -> torch.export.exported_program.ExportedProgram",
+    "torch_tensorrt_dynamo_compile_signature": "(exported_program: 'ExportedProgram', inputs: 'Optional[Sequence[Sequence[Any]]]' = None, *, arg_inputs: 'Optional[Sequence[Sequence[Any]]]' = None, kwarg_inputs: 'Optional[dict[Any, Any]]' = None, device: 'Optional[Union[Device, torch.device, str]]' = None, disable_tf32: 'bool' = False, assume_dynamic_shape_support: 'bool' = False, sparse_weights: 'bool' = False, engine_capability: 'EngineCapability' = <EngineCapability.STANDARD: 1>, num_avg_timing_iters: 'int' = 1, workspace_size: 'int' = 0, dla_sram_size: 'int' = 1048576, dla_local_dram_size: 'int' = 1073741824, dla_global_dram_size: 'int' = 536870912, truncate_double: 'bool' = False, require_full_compilation: 'bool' = False, min_block_size: 'int' = 5, torch_executed_ops: 'Optional[Collection[Target]]' = None, torch_executed_modules: 'Optional[List[str]]' = None, pass_through_build_failures: 'bool' = False, max_aux_streams: 'Optional[int]' = None, version_compatible: 'bool' = False, optimization_level: 'Optional[int]' = None, use_python_runtime: 'bool' = False, use_fast_partitioner: 'bool' = True, enable_experimental_decompositions: 'bool' = False, dryrun: 'bool' = False, hardware_compatible: 'bool' = False, timing_cache_path: 'str' = '/tmp/torch_tensorrt_engine_cache/timing_cache.bin', runtime_cache_path: 'str' = '/tmp/torch_tensorrt_engine_cache/runtime_cache.bin', dynamic_shapes_kernel_specialization_strategy: 'str' = 'lazy', lazy_engine_init: 'bool' = False, cache_built_engines: 'bool' = False, reuse_cached_engines: 'bool' = False, engine_cache_dir: 'str' = '/tmp/torch_tensorrt_engine_cache', engine_cache_size: 'int' = 5368709120, custom_engine_cache: 'Optional[BaseEngineCache]' = None, use_fp32_acc: 'bool' = False, refit_identical_engine_weights: 'bool' = False, strip_engine_weights: 'bool' = False, immutable_weights: 'bool' = True, enable_weight_streaming: 'bool' = False, tiling_optimization_level: 'str' = 'none', l2_limit_for_tiling: 'int' = -1, offload_module_to_cpu: 'bool' = False, use_distributed_mode_trace: 'bool' = False, enable_autocast: 'bool' = False, autocast_low_precision_type: 'Optional[Union[torch.dtype, dtype]]' = None, autocast_excluded_nodes: 'Collection[str]' = set(), autocast_excluded_ops: 'Collection[Target]' = set(), autocast_max_output_threshold: 'float' = 512, autocast_max_depth_of_reduction: 'Optional[int]' = None, autocast_calibration_dataloader: 'Optional[torch.utils.data.DataLoader]' = None, cpu_memory_budget: 'Optional[int]' = None, enable_resource_partitioning: 'bool' = False, dynamically_allocate_resources: 'bool' = False, decompose_attention: 'bool' = False, attn_bias_is_causal: 'bool' = True, **kwargs: 'Any') -> 'torch.fx.GraphModule'"
+  },
+  "completed_at_unix": 1784405570,
+  "container_image": "dgx-spark/torch-tensorrt-gdino:26.06",
+  "created_at_unix": 1784405497,
+  "export_compatibility": {
+    "mask_rewrite_bit_exact": true,
+    "raw_diff_vs_native_eager_fp32": {
+      "comparison_safety_pass": true,
+      "logits": {
+        "allclose": true,
+        "atol": 1e-07,
+        "bit_exact": true,
+        "candidate_all_finite": false,
+        "candidate_dtype": "float32",
+        "candidate_dtype_supported": true,
+        "comparison_safety_pass": true,
+        "dtype_equal": true,
+        "jointly_finite_count": 21600,
+        "max_abs_on_jointly_finite": 0.0,
+        "mean_abs_on_jointly_finite": 0.0,
+        "nan_free": true,
+        "neginf_free": false,
+        "neginf_pattern_equal": true,
+        "nonfinite_pattern_equal": true,
+        "posinf_free": true,
+        "reference_all_finite": false,
+        "reference_dtype": "float32",
+        "reference_dtype_supported": true,
+        "rtol": 1e-06,
+        "shape_equal": true,
+        "strict_equivalent": true
+      },
+      "pred_boxes": {
+        "allclose": true,
+        "atol": 1e-07,
+        "bit_exact": true,
+        "candidate_all_finite": true,
+        "candidate_dtype": "float32",
+        "candidate_dtype_supported": true,
+        "comparison_safety_pass": true,
+        "dtype_equal": true,
+        "jointly_finite_count": 7200,
+        "max_abs_on_jointly_finite": 0.0,
+        "mean_abs_on_jointly_finite": 0.0,
+        "nan_free": true,
+        "neginf_free": true,
+        "neginf_pattern_equal": true,
+        "nonfinite_pattern_equal": true,
+        "posinf_free": true,
+        "reference_all_finite": true,
+        "reference_dtype": "float32",
+        "reference_dtype_supported": true,
+        "rtol": 1e-06,
+        "shape_equal": true,
+        "strict_equivalent": true
+      },
+      "strict_equivalent": true
+    },
+    "scale_module_count": 1,
+    "sinusoidal_scale_rewrite": "zero_dim_tensor_v1",
+    "site_packages_modified": false
+  },
+  "failure": {
+    "exception_type": "ValueError",
+    "message": "__len__() should return >= 0\n\nWhile executing %add_1 : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%add, %embedding_2), kwargs = {})\nOriginal traceback:\nFile \"/workspace/proj/scripts/gdino_torch_tensorrt_hybrid_probe.py\", line 1085, in forward\n    outputs = self.wrapped(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/grounding_dino/modeling_grounding_dino.py\", line 2497, in forward\n    outputs = self.model(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/grounding_dino/modeling_grounding_dino.py\", line 2086, in forward\n    text_outputs = self.text_backbone(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/bert/modeling_bert.py\", line 657, in forward\n    embedding_output = self.embeddings(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/bert/modeling_bert.py\", line 108, in forward\n    embeddings = embeddings + position_embeddings\nUse tlparse to see full graph. (https://github.com/pytorch/tlparse?tab=readme-ov-file#tlparse-parse-structured-pt2-logs)",
+    "traceback": "Traceback (most recent call last):\n  File \"/workspace/proj/scripts/gdino_torch_tensorrt_hybrid_probe.py\", line 1340, in main\n    fp32_compiled, fp32_record = _run_partition_and_compile(\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/proj/scripts/gdino_torch_tensorrt_hybrid_probe.py\", line 814, in _run_partition_and_compile\n    compiled = torch_tensorrt.dynamo.compile(\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/torch_tensorrt/dynamo/_compiler.py\", line 772, in compile\n    trt_gm = compile_module(\n             ^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/torch_tensorrt/dynamo/_compiler.py\", line 1118, in compile_module\n    trt_module = convert_module(\n                 ^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/torch_tensorrt/dynamo/conversion/_conversion.py\", line 348, in convert_module\n    serialized_interpreter_result = interpret_module_to_result(\n                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/torch_tensorrt/dynamo/conversion/_conversion.py\", line 281, in interpret_module_to_result\n    interpreter_result = interpreter.run()\n                         ^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/torch_tensorrt/dynamo/conversion/_TRTInterpreter.py\", line 612, in run\n    self._construct_trt_network_def()\n  File \"/usr/local/lib/python3.12/dist-packages/torch_tensorrt/dynamo/conversion/_TRTInterpreter.py\", line 384, in _construct_trt_network_def\n    super().run()\n  File \"/usr/local/lib/python3.12/dist-packages/torch/fx/interpreter.py\", line 197, in run\n    self.env[node] = self.run_node(node)\n                     ^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/torch_tensorrt/dynamo/conversion/_TRTInterpreter.py\", line 686, in run_node\n    trt_node: torch.fx.Node = super().run_node(n)\n                              ^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/torch/fx/interpreter.py\", line 294, in run_node\n    return getattr(self, n.op)(n.target, args, kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/torch_tensorrt/dynamo/conversion/_TRTInterpreter.py\", line 797, in call_function\n    return converter(self.ctx, target, args, kwargs, self._cur_node_name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/torch_tensorrt/dynamo/conversion/aten_ops_converters.py\", line 2172, in aten_ops_add\n    return impl.elementwise.add(\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/torch_tensorrt/dynamo/conversion/impl/elementwise/ops.py\", line 464, in add\n    return convert_binary_elementwise(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/torch_tensorrt/dynamo/conversion/impl/elementwise/base.py\", line 153, in convert_binary_elementwise\n    if len(lhs_val.shape) == len(rhs_val.shape) and all(\n                             ^^^^^^^^^^^^^^^^^^\nValueError: __len__() should return >= 0\n\nWhile executing %add_1 : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%add, %embedding_2), kwargs = {})\nOriginal traceback:\nFile \"/workspace/proj/scripts/gdino_torch_tensorrt_hybrid_probe.py\", line 1085, in forward\n    outputs = self.wrapped(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/grounding_dino/modeling_grounding_dino.py\", line 2497, in forward\n    outputs = self.model(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/grounding_dino/modeling_grounding_dino.py\", line 2086, in forward\n    text_outputs = self.text_backbone(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/bert/modeling_bert.py\", line 657, in forward\n    embedding_output = self.embeddings(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/bert/modeling_bert.py\", line 108, in forward\n    embeddings = embeddings + position_embeddings\nUse tlparse to see full graph. (https://github.com/pytorch/tlparse?tab=readme-ov-file#tlparse-parse-structured-pt2-logs)\n"
+  },
+  "gates": {
+    "all_pytorch_fallback_is_failure": true,
+    "decision_tolerance": {
+      "box_abs_px": 0.5,
+      "complete_one_to_one_label_match": true,
+      "diagnostic_only": true,
+      "iou_min": 0.999,
+      "matching": "exact_label_partitioned_maximum_total_iou_bitmask_dp",
+      "permutation_invariant": true,
+      "score_abs": 0.001
+    },
+    "export_rewrite_and_torch_export_always_require_same_process_raw": true,
+    "fp16_raw_tolerance": {
+      "atol": 0.01,
+      "rtol": 0.01
+    },
+    "fp32_raw_tolerance": {
+      "atol": 1e-07,
+      "rtol": 1e-06
+    },
+    "raw_query_slot_report_always_recorded": true,
+    "selected_correctness_gate": "decision-set",
+    "selected_gate_applies_to": [
+      "frozen_reference_vs_container_eager_fp32",
+      "same_process_eager_fp32_vs_torch_tensorrt_fp32",
+      "same_process_eager_fp32_vs_torch_tensorrt_fp16"
+    ],
+    "shape_dtype_and_nonfinite_safety_always_required": true
+  },
+  "inputs": {
+    "baseline_manifest_path": "results/acceptance/SF1/trt-gdino-20260718-v10-dynamo-static/manifest.json",
+    "baseline_manifest_sha256": "99cd568f2afb3e24173029b1b238c00cac00b203e80284119eb8c0332f367c44",
+    "baseline_output_key_mapping": {
+      "logits": "final_logits",
+      "pred_boxes": "final_pred_boxes"
+    },
+    "baseline_outputs_path": "results/acceptance/SF1/topk-stage-host-20260718-v2/stage-boundaries.npz",
+    "baseline_outputs_sha256": "efbc9fb1e7f95f649bc03bbb320ec0944cbdfcc1b2b75eb36648304f6f9ca9c3",
+    "baseline_reference_provenance": {
+      "capture_precision": "eager_fp32",
+      "capture_probe": "gdino_topk_stage_probe",
+      "format": "audited_topk_stage_boundaries",
+      "key_mapping": {
+        "logits": "final_logits",
+        "pred_boxes": "final_pred_boxes"
+      },
+      "precision_policy": {
+        "cudnn_allow_tf32": false,
+        "matmul_allow_tf32": false
+      },
+      "summary_path": "results/acceptance/SF1/topk-stage-host-20260718-v2/summary.json",
+      "summary_sha256": "61773780f365ddb10cadd15de1e1f08839dde1298752b1faa48526163ab42d87",
+      "validated_hashes": {
+        "baseline_manifest_sha256": "99cd568f2afb3e24173029b1b238c00cac00b203e80284119eb8c0332f367c44",
+        "frozen_inputs_sha256": "5410738ad8134275a762a178d27012c16ad281544d0d1c32f3524baf2c85bcf1",
+        "stage_boundaries_npz_sha256": "efbc9fb1e7f95f649bc03bbb320ec0944cbdfcc1b2b75eb36648304f6f9ca9c3"
+      },
+      "verified_no_tf32_capture": true
+    },
+    "batch_size": 2,
+    "dtypes": {
+      "attention_mask": "int64",
+      "input_ids": "int64",
+      "pixel_mask": "int64",
+      "pixel_values": "float32",
+      "token_type_ids": "int64"
+    },
+    "path": "results/acceptance/SF1/trt-gdino-20260718-v10-dynamo-static/sample_inputs.npz",
+    "postprocess_thresholds": {
+      "box": 0.22,
+      "text": 0.25
+    },
+    "prompt": "luggage. mini fridge. water bottle. desk.",
+    "sha256": "5410738ad8134275a762a178d27012c16ad281544d0d1c32f3524baf2c85bcf1",
+    "shapes": {
+      "attention_mask": [
+        2,
+        12
+      ],
+      "input_ids": [
+        2,
+        12
+      ],
+      "pixel_mask": [
+        2,
+        1333,
+        750
+      ],
+      "pixel_values": [
+        2,
+        3,
+        1333,
+        750
+      ],
+      "token_type_ids": [
+        2,
+        12
+      ]
+    },
+    "target_sizes": [
+      [
+        1920,
+        1080
+      ],
+      [
+        1920,
+        1080
+      ]
+    ]
+  },
+  "modes": {
+    "eager_fp32": {
+      "decision_set_diff_vs_frozen_fp32": {
+        "acceptance_boundary": "This decision-set gate is diagnostic evidence only and does not confer a PASS on the independent frozen SF1 acceptance scorer.",
+        "acceptance_claim": false,
+        "constraint": "exact_text_label_equality",
+        "criteria": {
+          "box_abs_delta_px_max_inclusive": 0.5,
+          "complete_one_to_one_label_match": true,
+          "iou_min_inclusive": 0.999,
+          "score_abs_delta_max_inclusive": 0.001
+        },
+        "diagnostic_only": true,
+        "gate_name": "strict_permutation_invariant_label_partitioned_set",
+        "method": "exact_label_partitioned_maximum_total_iou_bitmask_dp",
+        "objective": "maximum_total_iou_with_complete_smaller_side_matching",
+        "per_batch": [
+          {
+            "batch_index": 0,
+            "counts": {
+              "candidate_by_label": {
+                "": 3,
+                "desk": 1,
+                "mini fridge": 1
+              },
+              "candidate_total": 5,
+              "matched": 5,
+              "reference_by_label": {
+                "": 3,
+                "desk": 1,
+                "mini fridge": 1
+              },
+              "reference_total": 5
+            },
+            "delta_summary": {
+              "max_box_abs_delta_px": 0.0001220703125,
+              "max_score_abs_delta": 2.847611904144287e-05,
+              "mean_iou": 0.9999995712812574,
+              "min_iou": 0.9999986253791662
+            },
+            "gates": {
+              "diagnostic": {
+                "complete_one_to_one_label_match": true,
+                "criteria": {
+                  "iou_min_inclusive": 0.99,
+                  "score_abs_delta_max_inclusive": 0.01
+                },
+                "pass": true
+              },
+              "strict": {
+                "complete_one_to_one_label_match": true,
+                "criteria": {
+                  "box_abs_delta_px_max_inclusive": 0.5,
+                  "iou_min_inclusive": 0.999,
+                  "score_abs_delta_max_inclusive": 0.001
+                },
+                "pass": true
+              }
+            },
+            "matched_pairs": [
+              {
+                "box_delta_candidate_minus_reference_px": [
+                  3.218650817871094e-05,
+                  -0.00011444091796875,
+                  -6.103515625e-05,
+                  -0.0001220703125
+                ],
+                "box_max_abs_delta_px": 0.0001220703125,
+                "candidate_box_xyxy_px": [
+                  2.842261791229248,
+                  -4.056816101074219,
+                  637.4789428710938,
+                  1914.6163330078125
+                ],
+                "candidate_index": 0,
+                "candidate_score": 0.3472900390625,
+                "iou": 0.9999997298421223,
+                "label": "mini fridge",
+                "reference_box_xyxy_px": [
+                  2.8422296047210693,
+                  -4.05670166015625,
+                  637.47900390625,
+                  1914.616455078125
+                ],
+                "reference_index": 0,
+                "reference_score": 0.34729477763175964,
+                "score_abs_delta": 4.738569259643555e-06,
+                "score_delta_candidate_minus_reference": -4.738569259643555e-06
+              },
+              {
+                "box_delta_candidate_minus_reference_px": [
+                  6.103515625e-05,
+                  0.0,
+                  -0.0001220703125,
+                  0.0
+                ],
+                "box_max_abs_delta_px": 0.0001220703125,
+                "candidate_box_xyxy_px": [
+                  141.16522216796875,
+                  1507.4359130859375,
+                  1066.4605712890625,
+                  1922.6636962890625
+                ],
+                "candidate_index": 1,
+                "candidate_score": 0.25573188066482544,
+                "iou": 0.9999998021113662,
+                "label": "desk",
+                "reference_box_xyxy_px": [
+                  141.1651611328125,
+                  1507.4359130859375,
+                  1066.460693359375,
+                  1922.6636962890625
+                ],
+                "reference_index": 1,
+                "reference_score": 0.2557087242603302,
+                "score_abs_delta": 2.3156404495239258e-05,
+                "score_delta_candidate_minus_reference": 2.3156404495239258e-05
+              },
+              {
+                "box_delta_candidate_minus_reference_px": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "box_max_abs_delta_px": 0.0,
+                "candidate_box_xyxy_px": [
+                  0.0006437301635742188,
+                  -3.360271453857422,
+                  1079.5950927734375,
+                  1916.4932861328125
+                ],
+                "candidate_index": 2,
+                "candidate_score": 0.22986149787902832,
+                "iou": 1.0,
+                "label": "",
+                "reference_box_xyxy_px": [
+                  0.0006437301635742188,
+                  -3.360271453857422,
+                  1079.5950927734375,
+                  1916.4932861328125
+                ],
+                "reference_index": 2,
+                "reference_score": 0.22985973954200745,
+                "score_abs_delta": 1.7583370208740234e-06,
+                "score_delta_candidate_minus_reference": 1.7583370208740234e-06
+              },
+              {
+                "box_delta_candidate_minus_reference_px": [
+                  4.023313522338867e-05,
+                  0.0,
+                  1.52587890625e-05,
+                  0.0
+                ],
+                "box_max_abs_delta_px": 4.023313522338867e-05,
+                "candidate_box_xyxy_px": [
+                  -0.007290244102478027,
+                  1336.557373046875,
+                  184.39633178710938,
+                  1775.7598876953125
+                ],
+                "candidate_index": 3,
+                "candidate_score": 0.2261420637369156,
+                "iou": 0.999999699073632,
+                "label": "",
+                "reference_box_xyxy_px": [
+                  -0.007330477237701416,
+                  1336.557373046875,
+                  184.3963165283203,
+                  1775.7598876953125
+                ],
+                "reference_index": 3,
+                "reference_score": 0.22614695131778717,
+                "score_abs_delta": 4.887580871582031e-06,
+                "score_delta_candidate_minus_reference": -4.887580871582031e-06
+              },
+              {
+                "box_delta_candidate_minus_reference_px": [
+                  -1.609325408935547e-05,
+                  -0.0001220703125,
+                  1.52587890625e-05,
+                  0.0001220703125
+                ],
+                "box_max_abs_delta_px": 0.0001220703125,
+                "candidate_box_xyxy_px": [
+                  0.9930905699729919,
+                  1544.2283935546875,
+                  110.56396484375,
+                  1768.5220947265625
+                ],
+                "candidate_index": 4,
+                "candidate_score": 0.22190769016742706,
+                "iou": 0.9999986253791662,
+                "label": "",
+                "reference_box_xyxy_px": [
+                  0.9931066632270813,
+                  1544.228515625,
+                  110.56394958496094,
+                  1768.52197265625
+                ],
+                "reference_index": 4,
+                "reference_score": 0.22187921404838562,
+                "score_abs_delta": 2.847611904144287e-05,
+                "score_delta_candidate_minus_reference": 2.847611904144287e-05
+              }
+            ],
+            "matching": {
+              "actual_transitions": 40,
+              "estimated_transition_upper_bound": 104,
+              "method": "exact_label_partitioned_maximum_total_iou_bitmask_dp",
+              "objective_total_iou": 4.999997856406287,
+              "per_label": {
+                "": {
+                  "actual_transitions": 36,
+                  "candidate_count": 3,
+                  "estimated_transition_upper_bound": 96,
+                  "matched_count": 3,
+                  "reference_count": 3
+                },
+                "desk": {
+                  "actual_transitions": 2,
+                  "candidate_count": 1,
+                  "estimated_transition_upper_bound": 4,
+                  "matched_count": 1,
+                  "reference_count": 1
+                },
+                "mini fridge": {
+                  "actual_transitions": 2,
+                  "candidate_count": 1,
+                  "estimated_transition_upper_bound": 4,
+                  "matched_count": 1,
+                  "reference_count": 1
+                }
+              },
+              "tie_break": "lexicographically_smallest_(reference_index,candidate_index)_pairs",
+              "transition_budget": 5000000
+            },
+            "unmatched_candidate_indices": [],
+            "unmatched_reference_indices": []
+          },
+          {
+            "batch_index": 1,
+            "counts": {
+              "candidate_by_label": {
+                "": 1,
+                "desk": 1,
+                "luggage": 1,
+                "mini fridge": 2
+              },
+              "candidate_total": 5,
+              "matched": 5,
+              "reference_by_label": {
+                "": 1,
+                "desk": 1,
+                "luggage": 1,
+                "mini fridge": 2
+              },
+              "reference_total": 5
+            },
+            "delta_summary": {
+              "max_box_abs_delta_px": 0.0003662109375,
+              "max_score_abs_delta": 4.470348358154297e-07,
+              "mean_iou": 0.9999996093541237,
+              "min_iou": 0.9999991357306868
+            },
+            "gates": {
+              "diagnostic": {
+                "complete_one_to_one_label_match": true,
+                "criteria": {
+                  "iou_min_inclusive": 0.99,
+                  "score_abs_delta_max_inclusive": 0.01
+                },
+                "pass": true
+              },
+              "strict": {
+                "complete_one_to_one_label_match": true,
+                "criteria": {
+                  "box_abs_delta_px_max_inclusive": 0.5,
+                  "iou_min_inclusive": 0.999,
+                  "score_abs_delta_max_inclusive": 0.001
+                },
+                "pass": true
+              }
+            },
+            "matched_pairs": [
+              {
+                "box_delta_candidate_minus_reference_px": [
+                  3.24249267578125e-05,
+                  0.0001220703125,
+                  -0.00018310546875,
+                  -0.0001220703125
+                ],
+                "box_max_abs_delta_px": 0.00018310546875,
+                "candidate_box_xyxy_px": [
+                  9.999865531921387,
+                  1251.3245849609375,
+                  965.5316162109375,
+                  1914.0439453125
+                ],
+                "candidate_index": 0,
+                "candidate_score": 0.33517616987228394,
+                "iou": 0.9999994060474128,
+                "label": "desk",
+                "reference_box_xyxy_px": [
+                  9.999833106994629,
+                  1251.324462890625,
+                  965.5317993164062,
+                  1914.0440673828125
+                ],
+                "reference_index": 0,
+                "reference_score": 0.33517611026763916,
+                "score_abs_delta": 5.960464477539063e-08,
+                "score_delta_candidate_minus_reference": 5.960464477539063e-08
+              },
+              {
+                "box_delta_candidate_minus_reference_px": [
+                  3.0517578125e-05,
+                  0.0,
+                  -6.103515625e-05,
+                  0.0
+                ],
+                "box_max_abs_delta_px": 6.103515625e-05,
+                "candidate_box_xyxy_px": [
+                  285.9286804199219,
+                  611.3087158203125,
+                  796.2750244140625,
+                  1390.662841796875
+                ],
+                "candidate_index": 1,
+                "candidate_score": 0.35352757573127747,
+                "iou": 0.9999998206066938,
+                "label": "luggage",
+                "reference_box_xyxy_px": [
+                  285.92864990234375,
+                  611.3087158203125,
+                  796.2750854492188,
+                  1390.662841796875
+                ],
+                "reference_index": 1,
+                "reference_score": 0.35352712869644165,
+                "score_abs_delta": 4.470348358154297e-07,
+                "score_delta_candidate_minus_reference": 4.470348358154297e-07
+              },
+              {
+                "box_delta_candidate_minus_reference_px": [
+                  0.0,
+                  -0.0001220703125,
+                  0.0,
+                  0.0001220703125
+                ],
+                "box_max_abs_delta_px": 0.0001220703125,
+                "candidate_box_xyxy_px": [
+                  285.5668029785156,
+                  619.350830078125,
+                  802.212158203125,
+                  1392.8922119140625
+                ],
+                "candidate_index": 2,
+                "candidate_score": 0.3670476973056793,
+                "iou": 0.9999996843858251,
+                "label": "mini fridge",
+                "reference_box_xyxy_px": [
+                  285.5668029785156,
+                  619.3509521484375,
+                  802.212158203125,
+                  1392.89208984375
+                ],
+                "reference_index": 2,
+                "reference_score": 0.36704781651496887,
+                "score_abs_delta": 1.1920928955078125e-07,
+                "score_delta_candidate_minus_reference": -1.1920928955078125e-07
+              },
+              {
+                "box_delta_candidate_minus_reference_px": [
+                  0.0,
+                  0.0001220703125,
+                  0.0,
+                  0.0003662109375
+                ],
+                "box_max_abs_delta_px": 0.0003662109375,
+                "candidate_box_xyxy_px": [
+                  292.2281188964844,
+                  828.1663818359375,
+                  794.1724853515625,
+                  1393.1304931640625
+                ],
+                "candidate_index": 3,
+                "candidate_score": 0.3339039981365204,
+                "iou": 0.9999991357306868,
+                "label": "mini fridge",
+                "reference_box_xyxy_px": [
+                  292.2281188964844,
+                  828.166259765625,
+                  794.1724853515625,
+                  1393.130126953125
+                ],
+                "reference_index": 3,
+                "reference_score": 0.3339041471481323,
+                "score_abs_delta": 1.4901161193847656e-07,
+                "score_delta_candidate_minus_reference": -1.4901161193847656e-07
+              },
+              {
+                "box_delta_candidate_minus_reference_px": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "box_max_abs_delta_px": 0.0,
+                "candidate_box_xyxy_px": [
+                  701.4782104492188,
+                  1362.451171875,
+                  775.0663452148438,
+                  1444.5703125
+                ],
+                "candidate_index": 4,
+                "candidate_score": 0.2484346330165863,
+                "iou": 1.0,
+                "label": "",
+                "reference_box_xyxy_px": [
+                  701.4782104492188,
+                  1362.451171875,
+                  775.0663452148438,
+                  1444.5703125
+                ],
+                "reference_index": 4,
+                "reference_score": 0.24843451380729675,
+                "score_abs_delta": 1.1920928955078125e-07,
+                "score_delta_candidate_minus_reference": 1.1920928955078125e-07
+              }
+            ],
+            "matching": {
+              "actual_transitions": 16,
+              "estimated_transition_upper_bound": 36,
+              "method": "exact_label_partitioned_maximum_total_iou_bitmask_dp",
+              "objective_total_iou": 4.999998046770618,
+              "per_label": {
+                "": {
+                  "actual_transitions": 2,
+                  "candidate_count": 1,
+                  "estimated_transition_upper_bound": 4,
+                  "matched_count": 1,
+                  "reference_count": 1
+                },
+                "desk": {
+                  "actual_transitions": 2,
+                  "candidate_count": 1,
+                  "estimated_transition_upper_bound": 4,
+                  "matched_count": 1,
+                  "reference_count": 1
+                },
+                "luggage": {
+                  "actual_transitions": 2,
+                  "candidate_count": 1,
+                  "estimated_transition_upper_bound": 4,
+                  "matched_count": 1,
+                  "reference_count": 1
+                },
+                "mini fridge": {
+                  "actual_transitions": 10,
+                  "candidate_count": 2,
+                  "estimated_transition_upper_bound": 24,
+                  "matched_count": 2,
+                  "reference_count": 2
+                }
+              },
+              "tie_break": "lexicographically_smallest_(reference_index,candidate_index)_pairs",
+              "transition_budget": 4999896
+            },
+            "unmatched_candidate_indices": [],
+            "unmatched_reference_indices": []
+          }
+        ],
+        "strict_pass": true,
+        "transition_budget": {
+          "configured": 5000000,
+          "conservative_estimate_consumed": 140,
+          "remaining": 4999860
+        }
+      },
+      "mean_ms": 657.1902966308594,
+      "ordered_decision_diff_vs_frozen_fp32": {
+        "candidate_detection_counts": [
+          5,
+          5
+        ],
+        "max_box_delta_px": 0.0003662109375,
+        "max_score_delta": 2.847611904144287e-05,
+        "reference_detection_counts": [
+          5,
+          5
+        ],
+        "strict_decision_equivalent_at_1e-3_and_half_px": true,
+        "structure_equal": true
+      },
+      "p50_ms": 656.8289184570312,
+      "p95_ms": 660.2023315429688,
+      "peak_memory_bytes": 3718139904,
+      "raw_diff_vs_frozen_fp32": {
+        "comparison_safety_pass": true,
+        "logits": {
+          "allclose": false,
+          "atol": 1e-07,
+          "bit_exact": false,
+          "candidate_all_finite": false,
+          "candidate_dtype": "float32",
+          "candidate_dtype_supported": true,
+          "comparison_safety_pass": true,
+          "dtype_equal": true,
+          "jointly_finite_count": 21600,
+          "max_abs_on_jointly_finite": 0.927922248840332,
+          "mean_abs_on_jointly_finite": 0.001334689324721694,
+          "nan_free": true,
+          "neginf_free": false,
+          "neginf_pattern_equal": true,
+          "nonfinite_pattern_equal": true,
+          "posinf_free": true,
+          "reference_all_finite": false,
+          "reference_dtype": "float32",
+          "reference_dtype_supported": true,
+          "rtol": 1e-06,
+          "shape_equal": true,
+          "strict_equivalent": false
+        },
+        "pred_boxes": {
+          "allclose": false,
+          "atol": 1e-07,
+          "bit_exact": false,
+          "candidate_all_finite": true,
+          "candidate_dtype": "float32",
+          "candidate_dtype_supported": true,
+          "comparison_safety_pass": true,
+          "dtype_equal": true,
+          "jointly_finite_count": 7200,
+          "max_abs_on_jointly_finite": 0.6263843178749084,
+          "mean_abs_on_jointly_finite": 0.00039874331559985876,
+          "nan_free": true,
+          "neginf_free": true,
+          "neginf_pattern_equal": true,
+          "nonfinite_pattern_equal": true,
+          "posinf_free": true,
+          "reference_all_finite": true,
+          "reference_dtype": "float32",
+          "reference_dtype_supported": true,
+          "rtol": 1e-06,
+          "shape_equal": true,
+          "strict_equivalent": false
+        },
+        "strict_equivalent": false
+      },
+      "runs": 50,
+      "samples_ms": [
+        656.093017578125,
+        655.4185180664062,
+        658.970458984375,
+        656.8321533203125,
+        653.42724609375,
+        655.5653076171875,
+        656.8228759765625,
+        659.3641357421875,
+        655.0938720703125,
+        656.94677734375,
+        655.539794921875,
+        654.5416870117188,
+        659.8699951171875,
+        655.2075805664062,
+        654.7327880859375,
+        656.1847534179688,
+        656.9888916015625,
+        659.5597534179688,
+        656.5550537109375,
+        656.556884765625,
+        658.1847534179688,
+        659.0328369140625,
+        656.3846435546875,
+        658.0918579101562,
+        656.060302734375,
+        656.6795654296875,
+        658.35498046875,
+        658.3823852539062,
+        656.7342529296875,
+        658.6277465820312,
+        656.97705078125,
+        657.4833374023438,
+        654.3811645507812,
+        655.8182983398438,
+        661.975341796875,
+        660.98486328125,
+        656.82568359375,
+        656.3248901367188,
+        659.572265625,
+        655.8099365234375,
+        657.2225952148438,
+        660.4742431640625,
+        655.145263671875,
+        658.0399780273438,
+        658.0142211914062,
+        655.2163696289062,
+        657.6451416015625,
+        656.5361328125,
+        659.0643920898438,
+        659.1987915039062
+      ],
+      "selected_correctness_gate": {
+        "acceptance_claim": false,
+        "criteria": "raw shape/supported-dtype/nonfinite safety + diagnostic exact label-partitioned permutation-invariant decision-set strict gate",
+        "decision_set_is_diagnostic_only": true,
+        "pass": true,
+        "raw_comparison_safety_pass": true,
+        "selected": "decision-set"
+      },
+      "throughput_images_per_second": 3.043258566435272,
+      "warmup": 10
+    }
+  },
+  "platform": {
+    "cuda": "13.3",
+    "gpu": "NVIDIA GB10",
+    "machine": "aarch64",
+    "python": "3.12.3",
+    "tensorrt": "11.0.0.114",
+    "tf32_disabled_in_torch_and_tensorrt": true,
+    "torch": "2.13.0a0+8145d630e8.nv26.06",
+    "torch_tensorrt": "2.13.0a0",
+    "transformers": "5.13.1"
+  },
+  "process_peak_rss_bytes": 4024467456,
+  "saved_outputs": {
+    "keys": [
+      "eager_fp32_logits",
+      "eager_fp32_pred_boxes",
+      "exported_fp32_logits",
+      "exported_fp32_pred_boxes",
+      "patched_eager_fp32_logits",
+      "patched_eager_fp32_pred_boxes"
+    ],
+    "path": "results/acceptance/SF1/torch-tensorrt-hybrid-20260718-v5-experimental/probe.outputs.npz",
+    "sha256": "409b5b7008e0d7565a014c03d5a893b5cf9a0963af82899f567b35284c129d8c"
+  },
+  "schema_version": "1.1",
+  "scope": "SF1_L2_TORCH_TENSORRT_HYBRID_FEASIBILITY_ONLY",
+  "status": "NO_GO",
+  "torch_export": {
+    "export_seconds": 3.9006940440740436,
+    "graph_path": "results/acceptance/SF1/torch-tensorrt-hybrid-20260718-v5-experimental/probe.exported_graph.txt",
+    "graph_sha256": "a871d46a7ef0c0e399c1d0a3adbc63c03663f70e0f21410a7c1fef8d080a2023",
+    "raw_diff_vs_native_eager_fp32": {
+      "comparison_safety_pass": true,
+      "logits": {
+        "allclose": true,
+        "atol": 1e-07,
+        "bit_exact": true,
+        "candidate_all_finite": false,
+        "candidate_dtype": "float32",
+        "candidate_dtype_supported": true,
+        "comparison_safety_pass": true,
+        "dtype_equal": true,
+        "jointly_finite_count": 21600,
+        "max_abs_on_jointly_finite": 0.0,
+        "mean_abs_on_jointly_finite": 0.0,
+        "nan_free": true,
+        "neginf_free": false,
+        "neginf_pattern_equal": true,
+        "nonfinite_pattern_equal": true,
+        "posinf_free": true,
+        "reference_all_finite": false,
+        "reference_dtype": "float32",
+        "reference_dtype_supported": true,
+        "rtol": 1e-06,
+        "shape_equal": true,
+        "strict_equivalent": true
+      },
+      "pred_boxes": {
+        "allclose": true,
+        "atol": 1e-07,
+        "bit_exact": true,
+        "candidate_all_finite": true,
+        "candidate_dtype": "float32",
+        "candidate_dtype_supported": true,
+        "comparison_safety_pass": true,
+        "dtype_equal": true,
+        "jointly_finite_count": 7200,
+        "max_abs_on_jointly_finite": 0.0,
+        "mean_abs_on_jointly_finite": 0.0,
+        "nan_free": true,
+        "neginf_free": true,
+        "neginf_pattern_equal": true,
+        "nonfinite_pattern_equal": true,
+        "posinf_free": true,
+        "reference_all_finite": true,
+        "reference_dtype": "float32",
+        "reference_dtype_supported": true,
+        "rtol": 1e-06,
+        "shape_equal": true,
+        "strict_equivalent": true
+      },
+      "strict_equivalent": true
+    },
+    "strict": false
+  },
+  "verdict": "NO_GO_UNCONTROLLED_PROBE_FAILURE",
+  "verdict_scope": "diagnostic_only_does_not_replace_frozen_acceptance"
+}

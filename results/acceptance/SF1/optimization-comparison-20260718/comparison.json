@@ -1,89 +1,216 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
   "scope": "SF1_DIAGNOSTIC_OPTIMIZATION_COMPARISON_NOT_HERO_ACCEPTANCE",
-  "code_commit": "fdead9a5",
+  "code_commit": "7c20d3d503fba456e2319fc3be676c841ecfa5e1",
   "frozen_workload": {
     "batch_size": 2,
     "prompt": "luggage. mini fridge. water bottle. desk.",
-    "input_sha256": "5410738ad8134275a762a178d27012c16ad281544d0d1c32f3524baf2c85bcf1"
+    "input_sha256": "5410738ad8134275a762a178d27012c16ad281544d0d1c32f3524baf2c85bcf1",
+    "target_sizes_hw": [[1920, 1080], [1920, 1080]],
+    "box_threshold": 0.22,
+    "text_threshold": 0.25
+  },
+  "acceptance_boundary": {
+    "diagnostic_only": true,
+    "independent_frozen_acceptance_claim": false,
+    "reason": "Two images and one prompt are insufficient for a deployment or R@1 claim; an untouched holdout is still required.",
+    "raw_query_slot_equivalence_is_not_detection_semantics": true,
+    "decision_matcher": "exact_label_partitioned_maximum_total_iou_bitmask_dp"
+  },
+  "precision_policy_reconstruction": {
+    "legacy_oracle_recorded_policy": false,
+    "bit_exact_replay_policy": {
+      "cuda_matmul_allow_tf32": false,
+      "cudnn_allow_tf32": true,
+      "float32_matmul_precision": "highest"
+    },
+    "required_future_action": "Seal explicit precision policy in every oracle manifest."
+  },
+  "topk_diagnosis": {
+    "encoder_proposal_count": 20906,
+    "selected_query_count": 900,
+    "host_default_vs_host_no_tf32": {
+      "topk_set_overlap_per_batch": [900, 900],
+      "same_rank_count_per_batch": [837, 840],
+      "raw_final_pred_boxes_max_abs": 0.98414,
+      "proposal_id_aligned_final_pred_boxes_max_abs_upper": 0.000203,
+      "strict_detection_set_gate": "PASS"
+    },
+    "host_no_tf32_vs_ngc_no_tf32": {
+      "topk_set_overlap_per_batch": [900, 900],
+      "same_rank_count_per_batch": [896, 900],
+      "strict_detection_set_gate": "PASS"
+    },
+    "host_default_vs_ngc_default": {
+      "topk_set_overlap_per_batch": [896, 897],
+      "same_rank_count_per_batch": [223, 224],
+      "strict_detection_set_gate": "FAIL",
+      "relaxed_detection_set_gate": "PASS"
+    },
+    "conclusion": "TopK amplifies small proposal drift into query-slot permutations; unsealed cuDNN TF32 policy is a major confounder."
+  },
+  "onnx_runtime": {
+    "original_vs_instrumented_final_outputs_bit_exact": true,
+    "topk": {
+      "count": 1,
+      "axis": 1,
+      "k": 900,
+      "largest": 1,
+      "sorted": 1
+    },
+    "grid_sample_node_count": 48,
+    "grid_sample_causal_attribution": false,
+    "host_no_tf32_boundary": {
+      "proposal_scores_max_abs": 0.0000743866,
+      "proposal_coord_logits_max_abs": 0.000211239,
+      "topk_set_overlap_per_batch": [900, 899],
+      "raw_final_pred_boxes_max_abs": 0.609811,
+      "proposal_id_aligned_final_pred_boxes_max_abs": 0.000007689,
+      "proposal_id_aligned_final_logits_max_abs": 1.366632,
+      "pytorch_detection_counts": [5, 5],
+      "onnx_detection_counts": [5, 5],
+      "min_iou": 0.999998341,
+      "max_score_abs_delta": 0.000274301,
+      "max_box_abs_delta_px": 0.000244141,
+      "strict_diagnostic_gate": "PASS"
+    },
+    "legacy_default_oracle_boundary": {
+      "raw_final_logits_max_abs": 4.166533,
+      "raw_final_pred_boxes_max_abs": 0.98414,
+      "pytorch_detection_counts": [5, 5],
+      "onnx_detection_counts": [5, 5],
+      "min_iou": 0.999979697,
+      "max_score_abs_delta": 0.000362694,
+      "max_box_abs_delta_px": 0.00299072,
+      "strict_diagnostic_gate": "PASS"
+    }
+  },
+  "pytorch_runtime": {
+    "eager_fp32": {
+      "p50_ms": 680.78186,
+      "p95_ms": 686.528293,
+      "throughput_images_per_second": 2.936241,
+      "correctness_gate": "PASS"
+    },
+    "eager_fp16": {
+      "p50_ms": 497.981705,
+      "p95_ms": 501.274377,
+      "speedup_vs_eager_fp32_p50": 1.366374,
+      "detection_counts": [5, 5],
+      "ordered_detection_structure_equal": false,
+      "correctness_gate": "FAIL"
+    },
+    "eager_bf16": {
+      "p50_ms": 502.190262,
+      "p95_ms": 508.126436,
+      "speedup_vs_eager_fp32_p50": 1.355625,
+      "detection_counts": [4, 5],
+      "correctness_gate": "FAIL"
+    },
+    "compile_fp32": {
+      "p50_ms": 581.831543,
+      "p95_ms": 585.628351,
+      "throughput_images_per_second": 3.436767,
+      "speedup_vs_eager_fp32_p50": 1.170067,
+      "first_lazy_invocation_ms": 59136.479,
+      "graph_break_count": 10,
+      "detection_counts": [5, 5],
+      "max_score_abs_delta": 0.0000778735,
+      "max_box_abs_delta_px": 0.000366211,
+      "correctness_gate": "PASS"
+    },
+    "compile_bf16": {
+      "p50_ms": 312.83989,
+      "p95_ms": 315.61347,
+      "throughput_images_per_second": 6.390725,
+      "speedup_vs_eager_fp32_p50": 2.176135,
+      "first_lazy_invocation_ms": 66204.494,
+      "graph_break_count": 11,
+      "detection_counts": [4, 5],
+      "correctness_gate": "FAIL"
+    }
+  },
+  "eager_fp32_profile": {
+    "whole_forward_p50_ms": 682.378174,
+    "instrumentation_p50_ratio": 1.001844,
+    "frozen_oracle_bit_exact": true,
+    "instrumented_output_bit_exact": true,
+    "components": {
+      "text_backbone": {"p50_ms": 3.826768, "share": 0.005598},
+      "visual_backbone": {"p50_ms": 214.392838, "share": 0.313606},
+      "encoder": {"p50_ms": 400.953705, "share": 0.586501},
+      "decoder": {"p50_ms": 49.078735, "share": 0.071791},
+      "remainder": {"p50_ms": 14.936259, "share": 0.021848}
+    },
+    "backbone_only_three_x_amdahl_speedup_ceiling": 1.264
+  },
+  "torch_tensorrt": {
+    "status": "NO_GO_ENGINE_BUILD_FAILURE",
+    "container": "dgx-spark/torch-tensorrt-gdino:26.06",
+    "image_id": "sha256:106a53ef9cbe05f3f0899fbd60df84e7d8564ed969f91161f2ad252497f61931",
+    "stack": {
+      "torch": "2.13.0a0+8145d630e8.nv26.06",
+      "torch_tensorrt": "2.13.0a0",
+      "tensorrt": "11.0.0.114",
+      "cuda": "13.3"
+    },
+    "container_eager_no_tf32": {
+      "p50_ms": 659.631592,
+      "raw_logits_max_abs_vs_host_no_tf32": 0.927922,
+      "raw_pred_boxes_max_abs_vs_host_no_tf32": 0.626384,
+      "detection_counts": [5, 5],
+      "strict_detection_set_gate": "PASS"
+    },
+    "torch_export_same_process_raw_bit_exact": true,
+    "dryrun": {
+      "total_operators": 4521,
+      "converter_supported_operators": 4520,
+      "converter_supported_percent": 99.98,
+      "planned_trt_partition_operator_counts": [3280, 1240],
+      "torch_operator_count": 1,
+      "torch_operator": "torch.ops.aten.all.dim"
+    },
+    "build_failure": {
+      "operator": "torch.ops.aten.add.Tensor",
+      "module": "BERT embeddings + position_embeddings",
+      "exception": "ValueError: __len__() should return >= 0",
+      "experimental_decompositions_changed_failure": false,
+      "requested_module_fallback_took_effect": false,
+      "requested_module_fallback_non_effect_reason": "not localized"
+    },
+    "fp32_hybrid_latency_measured": false,
+    "fp16_hybrid_attempted": false,
+    "reported_speedup": null
+  },
+  "existing_full_tensorrt": {
+    "fp32_no_tf32": {
+      "p50_ms": 647.9,
+      "nominal_speedup": 1.05,
+      "pytorch_detection_counts": [5, 5],
+      "tensorrt_detection_counts": [2, 3],
+      "correctness_gate": "FAIL"
+    },
+    "fp16": {
+      "p50_ms": 277.2,
+      "nominal_speedup": 2.45,
+      "pytorch_detection_counts": [5, 5],
+      "tensorrt_detection_counts": [1, 3],
+      "correctness_gate": "FAIL"
+    }
   },
   "semantic_reranker": {
     "status": "DIAGNOSTIC_SIGNAL_NOT_INDEPENDENT_ACCEPTANCE",
-    "frozen_human_gt_read": false,
-    "semantic_weight": 0.15,
-    "development": {
-      "queries": 127,
-      "baseline_recall_at_1": 0.496063,
-      "candidate_recall_at_1": 0.637795
-    },
-    "opened_proxy_partition": {
-      "queries": 58,
-      "baseline_top1_hits": 46,
-      "candidate_top1_hits": 51,
-      "net_top1_hits": 5,
-      "baseline_recall_at_1": 0.793103,
-      "candidate_recall_at_1": 0.87931,
-      "delta_recall_at_1": 0.086207,
-      "baseline_wilson_95": [0.672308, 0.877485],
-      "candidate_wilson_95": [0.771206, 0.94029]
-    },
-    "blocking_boundaries": [
-      "the frozen projection was trained with all 502 proxy tracklets",
-      "the old selection artifact exposed aggregate transcription coverage across both partitions",
-      "the 58-query proxy partition is now consumed and cannot be reopened for a new claim",
-      "this result is not the official hero R@1 and did not use the frozen human GT"
-    ]
-  },
-  "pytorch_precision": {
-    "fp32": {
-      "p50_ms": 680.429077,
-      "p95_ms": 683.667856,
-      "throughput_images_per_second": 2.939699,
-      "decision_gate": "PASS"
-    },
-    "amp_fp16": {
-      "p50_ms": 497.981705,
-      "p95_ms": 501.274377,
-      "throughput_images_per_second": 4.016918,
-      "speedup_vs_fp32_p50": 1.366374,
-      "detection_counts": [5, 5],
-      "decision_structure_equal": false,
-      "decision_gate": "FAIL"
-    },
-    "amp_bf16": {
-      "p50_ms": 502.500641,
-      "p95_ms": 507.486145,
-      "throughput_images_per_second": 3.981178,
-      "speedup_vs_fp32_p50": 1.354086,
-      "detection_counts": [4, 5],
-      "reference_detection_counts": [5, 5],
-      "decision_structure_equal": false,
-      "decision_gate": "FAIL"
-    }
-  },
-  "torch_tensorrt": {
-    "status": "NO_GO",
-    "verdict": "NO_GO_CONTAINER_EAGER_FP32_BASELINE_MISMATCH",
-    "container": "dgx-spark/torch-tensorrt-gdino:26.06",
-    "base_image": "nvcr.io/nvidia/pytorch:26.06-py3@sha256:43c018d6a12963f1a1bad85ef8574b5c2a978eec2be0ebcacfb87f69e0d210e1",
-    "container_eager_fp32_p50_ms": 657.453491,
-    "finite_logits_max_abs_vs_frozen_fp32": 4.167068,
-    "boxes_max_abs_vs_frozen_fp32": 0.98414,
-    "trt_partition_or_compile_attempted": false,
-    "reported_speedup": null
+    "development_recall_at_1": {"baseline": 0.496063, "candidate": 0.637795},
+    "opened_proxy_recall_at_1": {"baseline": 0.793103, "candidate": 0.87931},
+    "blocking_boundary": "The frozen projection saw all 502 proxy tracklets and the 58-query proxy partition is consumed."
   },
   "custom_converter": {
-    "status": "NO_GO_STAGE_LEVEL_LOCALIZATION_ONLY",
-    "fp16_first_material_observation": "model.text_backbone.encoder.layer.1",
-    "fp16_first_large_observation": "model.backbone.conv_encoder.model.swin.encoder.layers.1",
-    "bf16_first_material_observation": "model.text_backbone.encoder.layer.0",
-    "bf16_first_large_observation": "model.text_projection",
-    "boundary": "stage samples show distributed drift but do not identify a causal operator"
+    "status": "DEFER",
+    "reason": "GridSample/MSDeformAttn has not been causally localized; the current Torch-TensorRT build first stops when the aten.add converter encounters a symbolic-shape ValueError."
   },
   "tf_trt": {
     "status": "NO_GO_PREREQUISITE",
-    "tensorflow_installed_in_project_environment": false,
-    "native_tensorflow_grounding_dino_saved_model_present": false,
+    "native_tensorflow_fp32_model_present": false,
     "pytorch_fp32_alignment_available": false,
     "performance_measured": false
   }

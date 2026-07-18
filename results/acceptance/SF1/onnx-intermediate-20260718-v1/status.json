@@ -1,0 +1,9 @@
+{
+  "incomplete": false,
+  "intermediate_outputs_valid": true,
+  "result_path": "results/acceptance/SF1/onnx-intermediate-20260718-v1/result.json",
+  "schema_version": "1.0",
+  "scope": "SF1-L2_ONNX_INTERMEDIATE_SEMANTICS_ONLY",
+  "state": "COMPLETE_INTERMEDIATES_CAPTURED",
+  "updated_at_unix": 1784403996
+}

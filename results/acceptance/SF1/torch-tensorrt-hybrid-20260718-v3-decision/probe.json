@@ -1,0 +1,48 @@
+{
+  "acceptance_claim": false,
+  "code_commit": "8d56e69b378fd2d9eb62a6d4c38888f18fb46380",
+  "completed_at_unix": 1784405238,
+  "container_image": "dgx-spark/torch-tensorrt-gdino:26.06",
+  "created_at_unix": 1784405236,
+  "failure": {
+    "exception_type": "KeyError",
+    "message": "'getpwuid(): uid not found: 1002'",
+    "traceback": "Traceback (most recent call last):\n  File \"/workspace/proj/scripts/gdino_torch_tensorrt_hybrid_probe.py\", line 973, in main\n    import torch_tensorrt\n  File \"/usr/local/lib/python3.12/dist-packages/torch_tensorrt/__init__.py\", line 90, in <module>\n    from torch_tensorrt.runtime import *  # noqa: F403\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/torch_tensorrt/runtime/__init__.py\", line 1, in <module>\n    from torch_tensorrt.dynamo.runtime import (  # noqa: F401\n  File \"/usr/local/lib/python3.12/dist-packages/torch_tensorrt/dynamo/__init__.py\", line 10, in <module>\n    from ._compiler import (\n  File \"/usr/local/lib/python3.12/dist-packages/torch_tensorrt/dynamo/_compiler.py\", line 17, in <module>\n    from torch_tensorrt.dynamo import _defaults, partitioning\n  File \"/usr/local/lib/python3.12/dist-packages/torch_tensorrt/dynamo/_defaults.py\", line 78, in <module>\n    current_user = pwd.getpwuid(os.getuid())[0]\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^\nKeyError: 'getpwuid(): uid not found: 1002'\n"
+  },
+  "gates": {
+    "all_pytorch_fallback_is_failure": true,
+    "decision_tolerance": {
+      "box_abs_px": 0.5,
+      "complete_one_to_one_label_match": true,
+      "diagnostic_only": true,
+      "iou_min": 0.999,
+      "matching": "exact_label_partitioned_maximum_total_iou_bitmask_dp",
+      "permutation_invariant": true,
+      "score_abs": 0.001
+    },
+    "export_rewrite_and_torch_export_always_require_same_process_raw": true,
+    "fp16_raw_tolerance": {
+      "atol": 0.01,
+      "rtol": 0.01
+    },
+    "fp32_raw_tolerance": {
+      "atol": 1e-07,
+      "rtol": 1e-06
+    },
+    "raw_query_slot_report_always_recorded": true,
+    "selected_correctness_gate": "decision-set",
+    "selected_gate_applies_to": [
+      "frozen_reference_vs_container_eager_fp32",
+      "same_process_eager_fp32_vs_torch_tensorrt_fp32",
+      "same_process_eager_fp32_vs_torch_tensorrt_fp16"
+    ],
+    "shape_dtype_and_nonfinite_safety_always_required": true
+  },
+  "modes": {},
+  "process_peak_rss_bytes": 876019712,
+  "schema_version": "1.1",
+  "scope": "SF1_L2_TORCH_TENSORRT_HYBRID_FEASIBILITY_ONLY",
+  "status": "NO_GO",
+  "verdict": "NO_GO_UNCONTROLLED_PROBE_FAILURE",
+  "verdict_scope": "diagnostic_only_does_not_replace_frozen_acceptance"
+}

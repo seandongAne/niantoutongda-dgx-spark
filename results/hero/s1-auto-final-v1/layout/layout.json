@@ -1,0 +1,19 @@
+{
+  "alternatives": {
+    "cups_and_drinks": "auto_chest_of_drawers_01",
+    "study_stationery": "auto_chest_of_drawers_01",
+    "technical_snacks_pack": "auto_display_cabinet_01",
+    "technical_toys_pack": "auto_chest_of_drawers_01",
+    "toiletries_and_care": "auto_chest_of_drawers_01"
+  },
+  "assignments": {
+    "cups_and_drinks": "auto_display_cabinet_01",
+    "study_stationery": "auto_study_desk_01",
+    "technical_snacks_pack": "auto_chest_of_drawers_01",
+    "technical_toys_pack": "auto_wall_shelf_01",
+    "toiletries_and_care": "auto_vanity_01"
+  },
+  "conflicts": [],
+  "objective": 50,
+  "status": "PLAN_READY"
+}

@@ -1,0 +1,28 @@
+{
+  "cmd": ".venv/bin/python /Users/seandong/Documents/DGX Spark Thing/scripts/results_page.py --run-dir /Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1 --config /Users/seandong/Documents/DGX Spark Thing/configs/hero_pipeline_s1_final.yaml",
+  "code": {
+    "/Users/seandong/Documents/DGX Spark Thing/scripts/results_page.py": "83b11990333296d657ae2c7596bec00dec70a396841f06bde3d55d63e260445c"
+  },
+  "finished_at": "2026-07-18T06:28:57+00:00",
+  "inputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/configs/hero_pipeline_s1_final.yaml": "513116d972cc6a486436fc596da6d4d9e6f0f07171766467728909a0a3ca4afd",
+    "/Users/seandong/Documents/DGX Spark Thing/fixtures/hero_s1/technical_closure.json": "b818fa771470e8186a977794442b8de1dc70b5d560b094307bf76c670b4f11df",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/audit/replay-report.json": "1f0ef371c631628089320ea3e7320362a409f8d099230f9d3a0bc6f7fe030a5b",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/group/boxlist.json": "b4df63cf543d06e57a467c025402ae70b81f8a0abd6563aa4f4158e0dc26dde6",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/group/placement_groups.jsonl": "9f3b5c04c1093442a7c970d8530492f3c1f8024ed73240bacffe41414abe69ff",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/inventory/display.jsonl": "bf4af337fd92b3a8eac66d8f9b637d746a92ad2a8348027b1807128340e51fb3",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/inventory/metrics.json": "702ffa3215590a40e0f5903300138b5a7469f8a2017af187fc9a6e38ac98c0b9",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/layout/layout.json": "959dee047058c1e593545df31e8365d655afa12b8cb07ece691a17f249e33ff4",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/regions/regions.json": "c51407c00dddaf8eac4c41226cbf6708ae50624b764f9665a1519e69759e4848",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/risk/metrics.json": "a450ad1c04512615f27fe43f75a515e884f18d6275a0a609975e7523b816045d",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/spatial/metrics.json": "fdaa6b29e7f1d3d480935857088d0fac1ae804c6b545ca5450ecee40754323ea",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/spatial_score/metrics.json": "9010e1f8864f8c867da0b1dacb1640ba6c6bb7251c02e06712742a7e07d9274a",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/taskcards/taskcards.jsonl": "2442a388f67692483c41bb9ac499c2d74397d4c2463bdd6eb4705cee825f5cb8"
+  },
+  "outputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/index.html": "1f8f124f614c64ecff680ef3f3feb538ffb579c15361901645d3d218a40f0e67"
+  },
+  "stage": "report",
+  "started_at": "2026-07-18T06:28:57+00:00",
+  "status": "done"
+}

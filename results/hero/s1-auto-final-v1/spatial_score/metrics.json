@@ -1,0 +1,18 @@
+{
+  "acceptance_passed": true,
+  "capacity_class_mismatch_count": 0,
+  "exact_semantic_match_count": 5,
+  "extra_prediction_count": 0,
+  "gate_reasons": [],
+  "informational_power_mismatch_count": 2,
+  "matched_anchor_count": 5,
+  "missing_anchor_count": 0,
+  "normalized_hash": "3f4f38e330acd671267c87aeef90e96e77baa1d91be52c3f5e73fb4cb991d980",
+  "prediction_entry_count": 5,
+  "required_expected_anchor_count": 5,
+  "schema_version": "1.0",
+  "score": "5/5",
+  "source_video_id": "new_1",
+  "support_type_mismatch_count": 0,
+  "truth_anchor_count": 5
+}

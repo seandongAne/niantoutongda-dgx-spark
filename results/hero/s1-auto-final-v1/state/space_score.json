@@ -1,0 +1,20 @@
+{
+  "cmd": ".venv/bin/python /Users/seandong/Documents/DGX Spark Thing/scripts/space_score_task.py --regions /Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/spatial/regions.json --truth /Users/seandong/Documents/DGX Spark Thing/fixtures/hero_s1/space_truth.semantic-v1.json --out-dir /Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/spatial_score --expected-count 5",
+  "code": {
+    "/Users/seandong/Documents/DGX Spark Thing/backend/tools/spatial/scoring.py": "f0304fc415e78eb139b46e0a72d0a329a07cd8168cd959ba164182c2f1e05fde",
+    "/Users/seandong/Documents/DGX Spark Thing/scripts/space_score_task.py": "cee7acd175f718cc307b58547859b36cb472f6b0bab046f7f34722698f3b6ed1"
+  },
+  "finished_at": "2026-07-18T06:28:56+00:00",
+  "inputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/fixtures/hero_s1/space_truth.semantic-v1.json": "58938fb661fa6ba45aed61a5c315088642523a585254e664726c7ac9c9b2ff18",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/spatial/regions.json": "c51407c00dddaf8eac4c41226cbf6708ae50624b764f9665a1519e69759e4848"
+  },
+  "outputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/spatial_score/metrics.json": "9010e1f8864f8c867da0b1dacb1640ba6c6bb7251c02e06712742a7e07d9274a",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/spatial_score/normalized.sha256": "84554f6efd0a419f1c392b96bc60f7625675a652c92f7c0e72e9691e46033100",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/spatial_score/score_manifest.json": "c4447ef0bb6fb3c30180905f8928124df0fbe05c3ea411ae03c2185d59ba506e"
+  },
+  "stage": "space_score",
+  "started_at": "2026-07-18T06:28:56+00:00",
+  "status": "done"
+}

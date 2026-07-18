@@ -1,0 +1,20 @@
+{
+  "cmd": ".venv/bin/python /Users/seandong/Documents/DGX Spark Thing/scripts/replay_trace.py --fragments /Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/inventory/trace.jsonl /Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/group/trace.jsonl /Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/layout/trace.jsonl /Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/taskcards/trace.jsonl --out /Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/audit/events.jsonl --report /Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/audit/replay-report.json --require-main-chain",
+  "code": {
+    "/Users/seandong/Documents/DGX Spark Thing/scripts/replay_trace.py": "f9dae5a205dd30d68be4507dd79b1394a442c799c2b4473e3b5d2423e97d9e20"
+  },
+  "finished_at": "2026-07-18T06:28:57+00:00",
+  "inputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/group/trace.jsonl": "bc3b2dd96fb7b483559fd3975acfe59d2d644abc9f914009f26903a893eb70a0",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/inventory/trace.jsonl": "0a698977d7e627d9ea0e060aaa6129abd4cbe1d0072b6af12615bda63f356371",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/layout/trace.jsonl": "bff6835adfb200ca96619e2655b5bdc59da888ef9dcb6993974793411dfa6257",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/taskcards/trace.jsonl": "3a636bd9c55504315197cc17b8d565ba0fc5d6a6210a7ad9a3b5e07de98bf945"
+  },
+  "outputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/audit/events.jsonl": "c29cede65df84768c335a350c9293f5df2f5e0e8c938178b54a99310c625e19f",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/audit/replay-report.json": "1f0ef371c631628089320ea3e7320362a409f8d099230f9d3a0bc6f7fe030a5b"
+  },
+  "stage": "trace",
+  "started_at": "2026-07-18T06:28:57+00:00",
+  "status": "done"
+}

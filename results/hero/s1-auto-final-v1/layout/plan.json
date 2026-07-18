@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0",
+  "plan_id": "plan-hero-v1",
+  "assignments": [
+    {
+      "schema_version": "1.0",
+      "group_id": "cups_and_drinks",
+      "region_id": "auto_display_cabinet_01",
+      "score_breakdown": {
+        "narration_hint": 10
+      },
+      "alternative_region_id": "auto_chest_of_drawers_01"
+    },
+    {
+      "schema_version": "1.0",
+      "group_id": "study_stationery",
+      "region_id": "auto_study_desk_01",
+      "score_breakdown": {
+        "narration_hint": 10
+      },
+      "alternative_region_id": "auto_chest_of_drawers_01"
+    },
+    {
+      "schema_version": "1.0",
+      "group_id": "technical_snacks_pack",
+      "region_id": "auto_chest_of_drawers_01",
+      "score_breakdown": {
+        "narration_hint": 10
+      },
+      "alternative_region_id": "auto_display_cabinet_01"
+    },
+    {
+      "schema_version": "1.0",
+      "group_id": "technical_toys_pack",
+      "region_id": "auto_wall_shelf_01",
+      "score_breakdown": {
+        "narration_hint": 10
+      },
+      "alternative_region_id": "auto_chest_of_drawers_01"
+    },
+    {
+      "schema_version": "1.0",
+      "group_id": "toiletries_and_care",
+      "region_id": "auto_vanity_01",
+      "score_breakdown": {
+        "narration_hint": 10
+      },
+      "alternative_region_id": "auto_chest_of_drawers_01"
+    }
+  ],
+  "hard_constraints": [
+    "支撑类型兼容",
+    "区域容量",
+    "电源证据",
+    "同放/互斥/禁放"
+  ],
+  "soft_scores": {
+    "objective": 50
+  },
+  "solver_status": "PLAN_READY",
+  "conflicts": []
+}

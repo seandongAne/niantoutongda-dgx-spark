@@ -1,0 +1,21 @@
+{
+  "cmd": "/Users/seandong/Documents/DGX Spark Thing/scripts/pull_results.sh",
+  "code": {},
+  "finished_at": "2026-07-18T06:28:56+00:00",
+  "inputs": {},
+  "outputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero_s1/reid-final/clarifications.jsonl": "f75a5c47f545189143b02408b65ce966081f5c999e2119a1f7d05bdc5f24814d",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero_s1/reid-final/entities.jsonl": "e82a498b446ca1be7e892b9c69db07b8546f474aa793be899e06686ce74be16f",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero_s1/reid-final/metrics.json": "2bea50d70db5335525bf7dd5fc1df8cf6c890a9cf13bb2ec8e2250cde5fa6caa",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero_s1/space-anchor/anchor_candidates.json": "78427a7d271a377688d8f5184bfea240badc8d70b32b4b8b8ed2db84a9b969ed",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero_s1/space-anchor/hashes.json": "e54cfce5b207fa1e79fdbe2e1a6b4f5bf7c69f9ff5e15cf0443593942b5b7dda",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero_s1/space-anchor/metrics.json": "d56864ccbf78e46559c83ab3387d4e3be36ab8627e6463ed0695ebbf292d3212",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero_s1/space-auto/auto_observations.jsonl": "f1c8eb81f72e3472a7b2d44bbe69d9c76ab4bb0a5d0727ce3a2c7f843fcb6842",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero_s1/space-auto/hashes.json": "756054c4fef73604cb37e45cdcf9f895da65784f20cfaf75fde9521cab7233cd",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero_s1/space-auto/metrics.json": "8a5ed2a9db8fe5f3664f2ccefb2ec355b38726bc09a5d17bb46c5c69d7793bd6",
+    "/Users/seandong/Documents/DGX Spark Thing/results/s5/attributes_hero_s1.jsonl": "80362edbc33326fd009de0b5b202bf4e5b58ac2c7e40ff83a6f2a529a4d23338"
+  },
+  "stage": "pull",
+  "started_at": "2026-07-18T06:28:45+00:00",
+  "status": "done"
+}

@@ -1,0 +1,26 @@
+{
+  "cmd": ".venv/bin/python /Users/seandong/Documents/DGX Spark Thing/scripts/space_task.py --video-id new_1 --observations /Users/seandong/Documents/DGX Spark Thing/results/hero_s1/space-auto/auto_observations.jsonl --out-dir /Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/spatial --observation-hashes /Users/seandong/Documents/DGX Spark Thing/results/hero_s1/space-auto/hashes.json --anchor-candidates /Users/seandong/Documents/DGX Spark Thing/results/hero_s1/space-anchor/anchor_candidates.json --anchor-hashes /Users/seandong/Documents/DGX Spark Thing/results/hero_s1/space-anchor/hashes.json --anchor-contract /Users/seandong/Documents/DGX Spark Thing/fixtures/hero_s1/space_anchor_contract.production-v1.json --min-regions 5 --min-observations 2 --min-confidence 0.75 --min-hard-field-confidence 0.7 --min-power-confidence 0.7 --min-field-consensus 0.67 --dedupe-iou 0.35 --min-anchor-vote-share 0.6 --min-vlm-mean-confidence 0.5 --min-assignment-score 0.7 --min-assignment-margin 0.05 --support-saturation-observations 30 --expected-anchor study_desk --expected-anchor vanity --expected-anchor wall_shelf --expected-anchor chest_of_drawers --expected-anchor display_cabinet",
+  "code": {
+    "/Users/seandong/Documents/DGX Spark Thing/backend/tools/spatial/assignment.py": "2f6c2d0eb075855641b6b2a3c121e0567ec3002afd49b3609279e5d7b1dc81bb",
+    "/Users/seandong/Documents/DGX Spark Thing/backend/tools/spatial/producer.py": "08295982244fbf3dbf1e73a85370b72ee71d5576daf54a916e134ec0768d5040",
+    "/Users/seandong/Documents/DGX Spark Thing/scripts/space_task.py": "5a7096ed48c4836c482763e47cd6f29ce330dece5c31f0705192af1482333759"
+  },
+  "finished_at": "2026-07-18T06:28:56+00:00",
+  "inputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/fixtures/hero_s1/space_anchor_contract.production-v1.json": "bb72857f80e4963f24fffa87181f9d089033bd3f27f785b0d988dff253d75d18",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero_s1/space-anchor/anchor_candidates.json": "78427a7d271a377688d8f5184bfea240badc8d70b32b4b8b8ed2db84a9b969ed",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero_s1/space-anchor/hashes.json": "e54cfce5b207fa1e79fdbe2e1a6b4f5bf7c69f9ff5e15cf0443593942b5b7dda",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero_s1/space-auto/auto_observations.jsonl": "f1c8eb81f72e3472a7b2d44bbe69d9c76ab4bb0a5d0727ce3a2c7f843fcb6842",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero_s1/space-auto/hashes.json": "756054c4fef73604cb37e45cdcf9f895da65784f20cfaf75fde9521cab7233cd"
+  },
+  "outputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/spatial/assignment.json": "8b7bd144cb7af3302c293ac86741842c9d3835c3a2747235aa3ad8b5426ab768",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/spatial/candidate_manifest.json": "d8f7236ab5a462878a85be2f6a6ff61ac18ed162fcaac57740ed4df75032a84e",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/spatial/metrics.json": "fdaa6b29e7f1d3d480935857088d0fac1ae804c6b545ca5450ecee40754323ea",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/spatial/normalized.sha256": "5f2970f5b4bd5c84089536d743adadbdb229d3b586689cf1c39ffe4d22094984",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/spatial/regions.json": "c51407c00dddaf8eac4c41226cbf6708ae50624b764f9665a1519e69759e4848"
+  },
+  "stage": "space",
+  "started_at": "2026-07-18T06:28:56+00:00",
+  "status": "done"
+}

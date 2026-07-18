@@ -1,0 +1,18 @@
+{
+  "cmd": ".venv/bin/python /Users/seandong/Documents/DGX Spark Thing/scripts/risk_task.py --closure /Users/seandong/Documents/DGX Spark Thing/fixtures/hero_s1/technical_closure.json --facts /Users/seandong/Documents/DGX Spark Thing/fixtures/hero_s1/risk_facts.pending.json --out-dir /Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/risk",
+  "code": {
+    "/Users/seandong/Documents/DGX Spark Thing/scripts/risk_task.py": "cfc6c8f479e307a07b407ab09f3758a90aaa198010b3b68a898dcdc5ab5374d7"
+  },
+  "finished_at": "2026-07-18T06:28:57+00:00",
+  "inputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/fixtures/hero_s1/risk_facts.pending.json": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356",
+    "/Users/seandong/Documents/DGX Spark Thing/fixtures/hero_s1/technical_closure.json": "b818fa771470e8186a977794442b8de1dc70b5d560b094307bf76c670b4f11df"
+  },
+  "outputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/risk/assessments.json": "9f51368b722f7bf64b4ce16f964fe69c07f09cb232cc04c6274b64fd4eab3190",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-auto-final-v1/risk/metrics.json": "a450ad1c04512615f27fe43f75a515e884f18d6275a0a609975e7523b816045d"
+  },
+  "stage": "risk",
+  "started_at": "2026-07-18T06:28:57+00:00",
+  "status": "done"
+}

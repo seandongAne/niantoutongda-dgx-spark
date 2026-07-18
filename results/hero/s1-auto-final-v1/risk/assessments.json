@@ -1,0 +1,50 @@
+{
+  "assessments": [
+    {
+      "confidence": 0.0,
+      "disclaimer_zh": "仅为辅助风险提醒，不构成安全认证，也不能替代现场人员或专业人员复核。",
+      "evidence": {},
+      "evidence_refs": [],
+      "reason_codes": [
+        "MISSING_EVIDENCE:child_present"
+      ],
+      "rule_id": "CHILD_SHARP_TOOL_REACH",
+      "status": "NEEDS_USER",
+      "subject_ids": []
+    },
+    {
+      "confidence": 0.0,
+      "disclaimer_zh": "仅为辅助风险提醒，不构成安全认证，也不能替代现场人员或专业人员复核。",
+      "evidence": {},
+      "evidence_refs": [],
+      "reason_codes": [
+        "MISSING_EVIDENCE:trip_hazard_present"
+      ],
+      "rule_id": "TRIP_HAZARD_IN_PATH",
+      "status": "NEEDS_USER",
+      "subject_ids": []
+    },
+    {
+      "confidence": 0.0,
+      "disclaimer_zh": "仅为辅助风险提醒，不构成安全认证，也不能替代现场人员或专业人员复核。",
+      "evidence": {},
+      "evidence_refs": [],
+      "reason_codes": [
+        "MISSING_EVIDENCE:powered_item_present"
+      ],
+      "rule_id": "POWER_IN_WET_ZONE",
+      "status": "NEEDS_USER",
+      "subject_ids": []
+    }
+  ],
+  "blocking": false,
+  "closure_id": "hero_s1_technical_closure_v2",
+  "defer_reason_zh": "儿童触及、通道绊倒和湿区关系不能由当前空房视频可靠推导；规则引擎保留为已实现能力，但不作为本轮比赛技术闭环门。",
+  "rule_order": [
+    "CHILD_SHARP_TOOL_REACH",
+    "TRIP_HAZARD_IN_PATH",
+    "POWER_IN_WET_ZONE"
+  ],
+  "schema_version": "1.0",
+  "scope_status": "DEFERRED"
+}

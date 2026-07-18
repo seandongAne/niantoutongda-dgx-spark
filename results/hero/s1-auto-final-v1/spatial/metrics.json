@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "video_id": "new_1",
+  "observation_count": 2278,
+  "candidate_count": 168,
+  "observed_candidate_count": 168,
+  "not_observed_count": 0,
+  "auto_accepted_count": 5,
+  "needs_user_count": 0,
+  "projected_region_count": 5,
+  "min_regions_required": 5,
+  "region_gate_passed": true,
+  "expected_anchor_count": 5,
+  "observed_expected_anchor_count": 5,
+  "expected_coverage_rate": 1.0,
+  "power_state_counts": {
+    "UNKNOWN": 168
+  },
+  "gate_status": "PASS",
+  "gate_reasons": [],
+  "normalized_hash": "37ace5cb7ea7cd5115660765a378f8a081634774c7a2b73994d03314e175d184"
+}

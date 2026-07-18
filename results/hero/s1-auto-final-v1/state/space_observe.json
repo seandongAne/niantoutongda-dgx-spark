@@ -1,0 +1,10 @@
+{
+  "cmd": "source ~/venv/bin/activate && cd ~/proj && python scripts/ingest_task.py --out local-data/hero_s1/space-ingest --config-version hero-s1-space-v1 --vocab fixtures/hero_s1/space_vocab.json --box-threshold 0.25 --tile-box-threshold 0.22 --frame-batch-size 2 --no-stationary-tiles --videos new_1=local-data/hero_s1/new_1.mp4 && python scripts/space_observation_adapter.py --ingest-dir local-data/hero_s1/space-ingest/new_1 --vocab fixtures/hero_s1/space_vocab.json --out-dir results/hero_s1/space-auto --video-id new_1 && curl -fsS http://127.0.0.1:8000/v1/models >/dev/null && python scripts/space_anchor_classifier.py --observations results/hero_s1/space-auto/auto_observations.jsonl --ingest-dir local-data/hero_s1/space-ingest/new_1 --out-dir results/hero_s1/space-anchor --evidence-dir local-data/hero_s1/space-anchor-evidence --expected-anchor study_desk --expected-anchor vanity --expected-anchor wall_shelf --expected-anchor chest_of_drawers --expected-anchor display_cabinet --anchor-description 'study_desk=the long brown writing desk beside the sofa and window, with a broad work surface and dark legs; exclude coffee tables, printers, and cabinets' --anchor-description 'vanity=only the floral-leaf-cloth-covered black digital-piano or narrow-console top; exclude coffee tables, desks, conventional vanities, and wall shelves' --anchor-description 'wall_shelf=the wall-mounted wooden board with visible black brackets directly above the floral-covered black digital piano; exclude all furniture tops' --anchor-description 'chest_of_drawers=the usable flat top of the reddish-brown multi-drawer wooden chest immediately beside the floral-covered black digital piano; exclude wardrobes, appliances, and shelves' --anchor-description 'display_cabinet=the gray glass-front enclosed printer or cabinet beside the brown study desk and sofa; use one narrow interior compartment or shelf, visual capacity small' --concurrency 8",
+  "code": {},
+  "finished_at": "2026-07-18T06:28:34+00:00",
+  "inputs": {},
+  "outputs": {},
+  "stage": "space_observe",
+  "started_at": "2026-07-18T06:28:31+00:00",
+  "status": "done"
+}

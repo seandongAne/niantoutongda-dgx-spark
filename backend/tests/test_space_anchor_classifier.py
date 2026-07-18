@@ -18,10 +18,12 @@ from scripts.space_anchor_classifier import (
     automatic_visual_instance_ids,
     build_classification_views,
     build_contact_sheet,
+    calibrate_prediction_geometry,
     classify_one,
     parse_prediction,
     parse_anchor_prediction,
     parse_hard_field_prediction,
+    semantic_visual_instance_ids,
 )
 
 
@@ -156,6 +158,58 @@ def test_far_apart_tracks_never_merge_even_with_identical_embedding():
     instances = automatic_visual_instance_ids(grouped, embeddings=embeddings)
 
     assert instances["t-a"] != instances["t-b"]
+
+
+def test_semantic_consensus_merges_part_and_whole_tracks():
+    frames = [f"kf_{index:06d}.jpg" for index in range(3)]
+    grouped = {
+        "t-a": [
+            _observation("t-a", frame, (0, 0, 200, 100), timestamp=index * 100)
+            for index, frame in enumerate(frames)
+        ],
+        "t-b": [
+            _observation("t-b", frame, (10, 20, 190, 80), timestamp=index * 100)
+            for index, frame in enumerate(frames)
+        ],
+    }
+    prediction = {
+        "anchor_scores": {"vanity": 95, "wall_shelf": 0, "other": 5},
+        "anchor_max_scores": {"vanity": 95, "wall_shelf": 0, "other": 5},
+        "anchor_vote_counts": {"vanity": 3, "wall_shelf": 0, "other": 0},
+        "best_anchor": "vanity",
+        "display_name_zh": "花布台面",
+        "support_type": "surface",
+        "support_confidence": 90,
+        "capacity_class": "medium",
+        "capacity_confidence": 85,
+        "view_count": 3,
+    }
+    candidates = []
+    for track_id in ("t-a", "t-b"):
+        evidence = TrackEvidence(
+            track_id=track_id,
+            observations=tuple(grouped[track_id]),
+            prototype_refs=(),
+            hero_ref=None,
+            visual_instance_id=f"initial-{track_id}",
+        )
+        candidates.append(
+            _candidate_from_prediction(
+                evidence,
+                prediction,
+                contact_ref=f"{track_id}.jpg",
+                contact_sha256="a" * 64,
+                model="nemotron-test",
+            )
+        )
+
+    instances = semantic_visual_instance_ids(
+        grouped,
+        candidates,
+        {"t-a": "initial-a", "t-b": "initial-b"},
+    )
+
+    assert instances["t-a"] == instances["t-b"]
 
 
 def test_main_vlm_budget_covers_observed_nested_response(monkeypatch):
@@ -351,6 +405,35 @@ def test_view_aggregation_uses_real_best_anchor_votes():
     assert candidate.semantic_observation_count == 3
     assert hypotheses["study_desk"].label_vote_count == 2
     assert hypotheses["wall_shelf"].label_vote_count == 0
+
+
+def test_thin_shelf_geometry_calibrates_one_narrow_support_to_small():
+    evidence = TrackEvidence(
+        track_id="t-shelf",
+        observations=tuple(
+            _observation(
+                "t-shelf",
+                f"kf_{index:06d}.jpg",
+                (0, index, 500, 50 + index),
+            )
+            for index in range(3)
+        ),
+        prototype_refs=(),
+        hero_ref=None,
+        visual_instance_id="auto_visual_shelf",
+    )
+    prediction = {
+        "support_type": "shelf",
+        "support_confidence": 95,
+        "capacity_class": "medium",
+        "capacity_confidence": 85,
+    }
+
+    projected, calibrations = calibrate_prediction_geometry(evidence, prediction)
+
+    assert projected["capacity_class"] == "small"
+    assert projected["capacity_confidence"] == 85
+    assert calibrations[0]["median_bbox_aspect_ratio"] == 10.0
 
 
 def test_strict_prediction_parser_and_candidate_projection():

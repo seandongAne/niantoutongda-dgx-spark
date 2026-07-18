@@ -43,7 +43,8 @@ from backend.tools.spatial import (  # noqa: E402
 
 CLASSIFIER_SCHEMA_VERSION = "1.0"
 CLASSIFIER_VERSION = "space-anchor-nemotron-v8"
-VISUAL_INSTANCE_VERSION = "spatiotemporal-dino-v2"
+VISUAL_INSTANCE_VERSION = "spatiotemporal-semantic-v3"
+THIN_SHELF_CALIBRATION_VERSION = "thin-shelf-geometry-v1"
 MAIN_MAX_TOKENS = 700
 MAX_CLASSIFICATION_VIEWS = 3
 MIN_VALID_CLASSIFICATION_VIEWS = 2
@@ -499,6 +500,150 @@ def automatic_visual_instance_ids(
         for track_id in items:
             instance_by_track[track_id] = instance_id
     return instance_by_track
+
+
+def semantic_visual_instance_ids(
+    grouped: Mapping[str, Sequence[SpatialObservation]],
+    candidates: Sequence[AutomaticAnchorCandidate],
+    initial_ids: Mapping[str, str],
+    *,
+    embeddings: Mapping[str, TrackEmbedding] | None = None,
+    max_gap_ms: int = 10_000,
+) -> dict[str, str]:
+    """Consolidate part/whole fragments only after independent semantic votes agree."""
+
+    embeddings = embeddings or {}
+    track_ids = sorted(grouped)
+    if set(initial_ids) != set(track_ids):
+        raise ValueError("initial visual instance IDs must cover every track")
+    union = _UnionFind(track_ids)
+    by_initial: dict[str, list[str]] = defaultdict(list)
+    for track_id in track_ids:
+        by_initial[initial_ids[track_id]].append(track_id)
+    for members in by_initial.values():
+        for track_id in members[1:]:
+            union.union(members[0], track_id)
+
+    dominant: dict[str, tuple[str, str, str]] = {}
+    for candidate in candidates:
+        if len(candidate.source_track_ids) != 1:
+            continue
+        track_id = candidate.source_track_ids[0]
+        hypotheses = [
+            item
+            for item in candidate.anchor_hypotheses
+            if item.label_vote_count >= 2
+            and item.mean_confidence >= 0.70
+            and item.support_type is not None
+            and item.capacity_class is not None
+        ]
+        if not hypotheses:
+            continue
+        winner = min(
+            hypotheses,
+            key=lambda item: (
+                -item.label_vote_count,
+                -item.mean_confidence,
+                -item.max_confidence,
+                _canonical_anchor(item.anchor),
+            ),
+        )
+        dominant[track_id] = (
+            _canonical_anchor(winner.anchor),
+            winner.support_type.value,
+            winner.capacity_class.value,
+        )
+
+    frame_boxes: dict[str, dict[str, tuple[float, float, float, float]]] = {}
+    rows: dict[str, list[SpatialObservation]] = {}
+    for track_id in track_ids:
+        track_rows = sorted(
+            (item for item in grouped[track_id] if item.bbox is not None),
+            key=lambda item: (item.timestamp_ms, item.frame_ref),
+        )
+        rows[track_id] = track_rows
+        frame_boxes[track_id] = {
+            item.frame_ref: item.bbox for item in track_rows if item.bbox is not None
+        }
+
+    cannot_link: set[tuple[str, str]] = set()
+    semantic_edges: list[tuple[int, float, str, str]] = []
+    for left_index, left in enumerate(track_ids):
+        if left not in dominant:
+            continue
+        for right in track_ids[left_index + 1 :]:
+            if right not in dominant or dominant[left] != dominant[right]:
+                continue
+            shared = sorted(set(frame_boxes[left]) & set(frame_boxes[right]))
+            if shared:
+                ioms = [
+                    _bbox_iom(frame_boxes[left][frame], frame_boxes[right][frame])
+                    for frame in shared
+                ]
+                distances = [
+                    _bbox_center_distance(
+                        frame_boxes[left][frame], frame_boxes[right][frame]
+                    )
+                    for frame in shared
+                ]
+                if (
+                    len(shared) >= 2
+                    and sum(value < 0.20 for value in ioms) / len(ioms) >= 0.80
+                    and _median(distances) > 0.25
+                ):
+                    cannot_link.add((left, right))
+                    continue
+                if (
+                    len(shared) >= 2
+                    and _median(ioms) >= 0.85
+                    and sum(value >= 0.80 for value in ioms) / len(ioms) >= 0.80
+                ):
+                    semantic_edges.append((0, -_median(ioms), left, right))
+                continue
+            if not rows[left] or not rows[right]:
+                continue
+            left_start, left_end = rows[left][0].timestamp_ms, rows[left][-1].timestamp_ms
+            right_start, right_end = (
+                rows[right][0].timestamp_ms,
+                rows[right][-1].timestamp_ms,
+            )
+            if left_end < right_start:
+                gap = right_start - left_end
+            elif right_end < left_start:
+                gap = left_start - right_end
+            else:
+                continue
+            if gap > max_gap_ms:
+                continue
+            cosine = _embedding_cosine(embeddings.get(left), embeddings.get(right))
+            if cosine is not None and cosine >= 0.50:
+                semantic_edges.append((1, -cosine, left, right))
+
+    def can_union(left: str, right: str) -> bool:
+        left_root, right_root = union.find(left), union.find(right)
+        if left_root == right_root:
+            return False
+        left_members = {item for item in track_ids if union.find(item) == left_root}
+        right_members = {item for item in track_ids if union.find(item) == right_root}
+        return not any(
+            tuple(sorted((a, b))) in cannot_link
+            for a in left_members
+            for b in right_members
+        )
+
+    for _, _, left, right in sorted(semantic_edges):
+        if can_union(left, right):
+            union.union(left, right)
+
+    members: dict[str, list[str]] = defaultdict(list)
+    for track_id in track_ids:
+        members[union.find(track_id)].append(track_id)
+    result: dict[str, str] = {}
+    for items in sorted((sorted(value) for value in members.values()), key=lambda x: x[0]):
+        digest = hashlib.sha256("\n".join(items).encode("utf-8")).hexdigest()[:16]
+        for track_id in items:
+            result[track_id] = f"auto_visual_{digest}"
+    return result
 
 
 def _letterbox(image: Image.Image, size: tuple[int, int]) -> Image.Image:
@@ -1178,6 +1323,43 @@ def aggregate_view_predictions(
     }
 
 
+def calibrate_prediction_geometry(
+    evidence: TrackEvidence, prediction: Mapping[str, Any]
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """Apply narrow, deterministic geometry calibration to visual hard fields."""
+
+    projected = dict(prediction)
+    calibrations: list[dict[str, Any]] = []
+    if prediction["support_type"] != "shelf" or prediction["capacity_class"] != "medium":
+        return projected, calibrations
+    aspect_ratios = sorted(
+        (item.bbox[2] - item.bbox[0]) / (item.bbox[3] - item.bbox[1])
+        for item in evidence.observations
+        if item.bbox is not None and item.bbox[3] > item.bbox[1]
+    )
+    if not aspect_ratios:
+        return projected, calibrations
+    median_aspect = _median(aspect_ratios)
+    # A single, extremely thin horizontal support is the classifier's own
+    # documented ``small = one narrow shelf`` case.  This rule is independent
+    # of anchor identity and never upgrades unknown/low-confidence evidence.
+    if median_aspect >= 4.0 and int(prediction["capacity_confidence"]) >= 70:
+        projected["capacity_class"] = "small"
+        projected["capacity_confidence"] = min(
+            90, int(prediction["capacity_confidence"])
+        )
+        calibrations.append(
+            {
+                "version": THIN_SHELF_CALIBRATION_VERSION,
+                "field": "capacity_class",
+                "from": "medium",
+                "to": "small",
+                "median_bbox_aspect_ratio": round(median_aspect, 8),
+            }
+        )
+    return projected, calibrations
+
+
 def _candidate_from_prediction(
     evidence: TrackEvidence,
     prediction: Mapping[str, Any],
@@ -1186,6 +1368,7 @@ def _candidate_from_prediction(
     contact_sha256: str,
     model: str,
     view_evidence: Sequence[tuple[str, str]] = (),
+    extra_model_versions: Sequence[str] = (),
 ) -> AutomaticAnchorCandidate:
     observation_count = len(evidence.observations)
     semantic_observation_count = int(
@@ -1267,7 +1450,13 @@ def _candidate_from_prediction(
                 }
             ),
             "source_track_ids": [evidence.track_id],
-            "model_versions": sorted({*detector_versions, f"{CLASSIFIER_VERSION}@{model}"}),
+            "model_versions": sorted(
+                {
+                    *detector_versions,
+                    *extra_model_versions,
+                    f"{CLASSIFIER_VERSION}@{model}",
+                }
+            ),
             "anchor_hypotheses": hypotheses,
         }
     )
@@ -1477,17 +1666,23 @@ def classify_one(
         ]
     if prediction is None:
         return None, diagnostic
-    return (
-        _candidate_from_prediction(
-            evidence,
-            prediction,
-            contact_ref=diagnostic["contact_ref"],
-            contact_sha256=contact_sha,
-            model=client.model,
-            view_evidence=view_evidence,
-        ),
-        diagnostic,
+    projected_prediction, calibrations = calibrate_prediction_geometry(
+        evidence, prediction
     )
+    if calibrations:
+        diagnostic["projection_calibrations"] = calibrations
+    candidate = _candidate_from_prediction(
+        evidence,
+        projected_prediction,
+        contact_ref=diagnostic["contact_ref"],
+        contact_sha256=contact_sha,
+        model=client.model,
+        view_evidence=view_evidence,
+        extra_model_versions=(
+            [THIN_SHELF_CALIBRATION_VERSION] if calibrations else []
+        ),
+    )
+    return candidate, diagnostic
 
 
 def run_classifier(
@@ -1584,6 +1779,28 @@ def run_classifier(
                 with _print_lock:
                     print(f"[space-anchor] {completed}/{len(futures)}", flush=True)
 
+    pre_semantic_instance_count = len(set(instance_ids.values()))
+    instance_ids = semantic_visual_instance_ids(
+        grouped,
+        candidates,
+        instance_ids,
+        embeddings=track_embeddings,
+    )
+    candidates = [
+        candidate.model_copy(
+            update={
+                "visual_instance_id": instance_ids[candidate.source_track_ids[0]],
+                "model_versions": sorted(
+                    {*candidate.model_versions, VISUAL_INSTANCE_VERSION}
+                ),
+            }
+        )
+        for candidate in candidates
+    ]
+    for diagnostic in diagnostics:
+        track_id = str(diagnostic.get("track_id") or "")
+        if track_id in instance_ids:
+            diagnostic["visual_instance_id"] = instance_ids[track_id]
     candidates.sort(key=lambda item: item.candidate_id)
     diagnostics.sort(key=lambda item: item["track_id"])
     failed = len(evidence_rows) - len(candidates)
@@ -1644,6 +1861,10 @@ def run_classifier(
         "requested_classification_view_count": requested_view_count,
         "valid_classification_view_count": valid_view_count,
         "visual_instance_algorithm": VISUAL_INSTANCE_VERSION,
+        "pre_semantic_visual_instance_count": pre_semantic_instance_count,
+        "semantic_instance_merge_count": max(
+            0, pre_semantic_instance_count - len(set(instance_ids.values()))
+        ),
         "automatic_visual_instance_count": len(set(instance_ids.values())),
         "automatic_visual_instances": [
             {

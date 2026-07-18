@@ -9,10 +9,14 @@ from backend.tools.spatial import SpatialObservation
 from scripts.space_anchor_classifier import (
     MAIN_MAX_TOKENS,
     Client,
+    TrackEmbedding,
     TrackEvidence,
     _candidate_from_prediction,
+    _classify_image,
     _expected_anchors,
+    aggregate_view_predictions,
     automatic_visual_instance_ids,
+    build_classification_views,
     build_contact_sheet,
     classify_one,
     parse_prediction,
@@ -27,6 +31,7 @@ def _observation(
     bbox: tuple[float, float, float, float],
     *,
     timestamp: int = 0,
+    anchor: str = "automatic_proposal",
 ) -> SpatialObservation:
     return SpatialObservation(
         video_id="new",
@@ -34,7 +39,7 @@ def _observation(
         frame_ref=frame,
         bbox=bbox,
         region_track_id=track,
-        anchor_label="automatic_proposal",
+        anchor_label=anchor,
         support_type="surface",
         capacity_class="medium",
         model_confidence=0.8,
@@ -64,6 +69,95 @@ def test_parallel_category_tracks_share_automatic_visual_instance():
     assert instances["t-c"] != instances["t-a"]
 
 
+def test_nested_tracks_merge_with_geometry_and_automatic_embedding():
+    grouped = {
+        "t-a": [
+            _observation("t-a", f"kf_{index:06d}.jpg", (0, 0, 100, 20))
+            for index in range(3)
+        ],
+        "t-b": [
+            _observation("t-b", f"kf_{index:06d}.jpg", (1, 2, 99, 18))
+            for index in range(3)
+        ],
+    }
+    embeddings = {
+        "t-a": TrackEmbedding(model="dino", vector=(1.0, 0.0)),
+        "t-b": TrackEmbedding(model="dino", vector=(0.8, 0.6)),
+    }
+
+    instances = automatic_visual_instance_ids(grouped, embeddings=embeddings)
+
+    assert instances["t-a"] == instances["t-b"]
+
+
+def test_short_gap_motion_continuation_merges_same_detector_class():
+    def box(center_x):
+        return (center_x - 50, 0, center_x + 50, 200)
+
+    grouped = {
+        "t-a": [
+            _observation(
+                "t-a",
+                f"a_{index}.jpg",
+                box(center),
+                timestamp=timestamp,
+                anchor="display_cabinet",
+            )
+            for index, (timestamp, center) in enumerate(((0, 100), (100, 110), (200, 120)))
+        ],
+        "t-b": [
+            _observation(
+                "t-b",
+                f"b_{index}.jpg",
+                box(center),
+                timestamp=timestamp,
+                anchor="display_cabinet",
+            )
+            for index, (timestamp, center) in enumerate(
+                ((1200, 220), (1300, 230), (1400, 240))
+            )
+        ],
+    }
+    embeddings = {
+        "t-a": TrackEmbedding(model="dino", vector=(1.0, 0.0)),
+        "t-b": TrackEmbedding(model="dino", vector=(0.9, 0.435889894)),
+    }
+
+    instances = automatic_visual_instance_ids(grouped, embeddings=embeddings)
+
+    assert instances["t-a"] == instances["t-b"]
+
+
+def test_far_apart_tracks_never_merge_even_with_identical_embedding():
+    grouped = {
+        "t-a": [
+            _observation(
+                "t-a",
+                "a.jpg",
+                (0, 0, 100, 200),
+                timestamp=0,
+                anchor="display_cabinet",
+            )
+        ],
+        "t-b": [
+            _observation(
+                "t-b",
+                "b.jpg",
+                (0, 0, 100, 200),
+                timestamp=80_000,
+                anchor="display_cabinet",
+            )
+        ],
+    }
+    embeddings = {
+        track: TrackEmbedding(model="dino", vector=(1.0, 0.0)) for track in grouped
+    }
+
+    instances = automatic_visual_instance_ids(grouped, embeddings=embeddings)
+
+    assert instances["t-a"] != instances["t-b"]
+
+
 def test_main_vlm_budget_covers_observed_nested_response(monkeypatch):
     client = Client(
         "http://local",
@@ -86,6 +180,63 @@ def test_main_vlm_budget_covers_observed_nested_response(monkeypatch):
     assert "requested covered console" in client.prompt
 
 
+def test_prediction_cache_key_includes_target_prompt(tmp_path, monkeypatch):
+    raw = json.dumps(
+        {
+            "anchor_scores": {"study_desk": 90, "other": 10},
+            "best_anchor": "study_desk",
+            "display_name_zh": "学习桌",
+            "support_type": "surface",
+            "support_confidence": 90,
+            "capacity_class": "medium",
+            "capacity_confidence": 90,
+        }
+    )
+    cache = {}
+    cache_path = tmp_path / "cache.jsonl"
+    lock = __import__("threading").Lock()
+    calls = []
+
+    def client(description):
+        result = Client(
+            "http://local",
+            "nemotron-test",
+            ["study_desk"],
+            True,
+            anchor_descriptions={"study_desk": description},
+        )
+
+        def chat(_image_bytes):
+            calls.append(description)
+            return raw
+
+        monkeypatch.setattr(result, "chat", chat)
+        return result
+
+    first, first_hit, *_ = _classify_image(
+        client("plain writing desk"),
+        b"same-image",
+        cache=cache,
+        cache_path=cache_path,
+        cache_lock=lock,
+        track_id="t-a",
+        view_index=1,
+    )
+    second, second_hit, *_ = _classify_image(
+        client("floral covered writing desk"),
+        b"same-image",
+        cache=cache,
+        cache_path=cache_path,
+        cache_lock=lock,
+        track_id="t-a",
+        view_index=1,
+    )
+
+    assert first is not None and second is not None
+    assert first_hit is False and second_hit is False
+    assert calls == ["plain writing desk", "floral covered writing desk"]
+
+
 def test_contact_sheet_uses_automatic_frame_and_crop(tmp_path, monkeypatch):
     frame = tmp_path / "kf_000010.jpg"
     Image.new("RGB", (320, 180), (230, 230, 230)).save(frame)
@@ -105,6 +256,101 @@ def test_contact_sheet_uses_automatic_frame_and_crop(tmp_path, monkeypatch):
     assert sources == [str(frame)]
     with Image.open(Path(frame)) as source:
         assert source.size == (320, 180)
+
+
+def test_classification_views_are_independent_target_crops(tmp_path, monkeypatch):
+    refs = []
+    colors = ((220, 10, 10), (10, 220, 10), (10, 10, 220))
+    for index, color in enumerate(colors, 1):
+        path = tmp_path / f"crop-{index}.jpg"
+        Image.new("RGB", (120 + index, 80 + index), color).save(path)
+        refs.append(path.name)
+    frame = tmp_path / "kf_000010.jpg"
+    Image.new("RGB", (320, 180), (230, 230, 230)).save(frame)
+    monkeypatch.setattr("scripts.space_anchor_classifier.PROJ", tmp_path)
+    evidence = TrackEvidence(
+        track_id="t-a",
+        observations=(_observation("t-a", frame.name, (80, 40, 240, 150)),),
+        prototype_refs=tuple(refs),
+        hero_ref=None,
+        visual_instance_id="auto_visual_x",
+    )
+
+    views = build_classification_views(evidence)
+
+    assert len(views) == 3
+    assert [Path(ref).name for _, ref in views] == refs
+    assert all(encoded.startswith(b"\xff\xd8") for encoded, _ in views)
+
+
+def test_view_aggregation_uses_real_best_anchor_votes():
+    predictions = [
+        {
+            "anchor_scores": {"study_desk": 90, "wall_shelf": 5, "other": 5},
+            "best_anchor": "study_desk",
+            "display_name_zh": "学习桌一",
+            "support_type": "surface",
+            "support_confidence": 90,
+            "capacity_class": "medium",
+            "capacity_confidence": 80,
+        },
+        {
+            "anchor_scores": {"study_desk": 80, "wall_shelf": 10, "other": 10},
+            "best_anchor": "study_desk",
+            "display_name_zh": "学习桌二",
+            "support_type": "surface",
+            "support_confidence": 80,
+            "capacity_class": "medium",
+            "capacity_confidence": 90,
+        },
+        {
+            "anchor_scores": {"study_desk": 10, "wall_shelf": 5, "other": 85},
+            "best_anchor": "other",
+            "display_name_zh": "其他",
+            "support_type": "unknown",
+            "support_confidence": 20,
+            "capacity_class": "unknown",
+            "capacity_confidence": 20,
+        },
+    ]
+
+    aggregated = aggregate_view_predictions(
+        predictions, ["study_desk", "wall_shelf"]
+    )
+
+    assert aggregated["view_count"] == 3
+    assert aggregated["anchor_vote_counts"] == {
+        "other": 1,
+        "study_desk": 2,
+        "wall_shelf": 0,
+    }
+    assert aggregated["anchor_scores"]["study_desk"] == 60
+    assert aggregated["anchor_max_scores"]["study_desk"] == 90
+    assert aggregated["support_type"] == "surface"
+    assert aggregated["capacity_class"] == "medium"
+
+    evidence = TrackEvidence(
+        track_id="t-a",
+        observations=(
+            _observation("t-a", "kf_000001.jpg", (0, 0, 100, 100)),
+        )
+        * 5,
+        prototype_refs=(),
+        hero_ref=None,
+        visual_instance_id="auto_visual_x",
+    )
+    candidate = _candidate_from_prediction(
+        evidence,
+        aggregated,
+        contact_ref="audit.jpg",
+        contact_sha256="a" * 64,
+        model="nemotron-test",
+    )
+    hypotheses = {item.anchor: item for item in candidate.anchor_hypotheses}
+    assert candidate.observation_count == 5
+    assert candidate.semantic_observation_count == 3
+    assert hypotheses["study_desk"].label_vote_count == 2
+    assert hypotheses["wall_shelf"].label_vote_count == 0
 
 
 def test_strict_prediction_parser_and_candidate_projection():
@@ -306,7 +552,9 @@ def test_unresolved_hard_fields_are_preserved_but_assignment_ineligible(
     tmp_path, monkeypatch
 ):
     frame = tmp_path / "kf_000001.jpg"
+    second = tmp_path / "crop_000002.jpg"
     Image.new("RGB", (320, 180), (230, 230, 230)).save(frame)
+    Image.new("RGB", (200, 120), (220, 220, 220)).save(second)
     monkeypatch.setattr("scripts.space_anchor_classifier.PROJ", tmp_path)
     raw = json.dumps(
         {
@@ -323,6 +571,8 @@ def test_unresolved_hard_fields_are_preserved_but_assignment_ineligible(
         anchors = ["study_desk"]
         model = "nemotron-test"
         schema = {"type": "object"}
+        prompt = "classify the central target"
+        guided = True
 
         def chat(self, image_bytes):
             return raw
@@ -333,7 +583,7 @@ def test_unresolved_hard_fields_are_preserved_but_assignment_ineligible(
     evidence = TrackEvidence(
         track_id="t-a",
         observations=(_observation("t-a", frame.name, (10, 10, 200, 150)),),
-        prototype_refs=(),
+        prototype_refs=(frame.name, second.name),
         hero_ref=None,
         visual_instance_id="auto_visual_x",
     )

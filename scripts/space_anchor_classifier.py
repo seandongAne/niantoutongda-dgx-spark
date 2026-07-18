@@ -4,9 +4,9 @@
 The command consumes only automatic ingest artifacts and the configured anchor
 vocabulary.  It never accepts a hand-authored region manifest, visual review,
 candidate override, or manual track mapping.  For every automatic furniture
-track it creates a contact sheet (scene + highlighted target + crop views), asks
-the local VLM for calibrated anchor/support/capacity hypotheses, and emits the
-strict assignment contract consumed by ``space_task.py``.
+track it classifies up to three independent target-only crops, aggregates real
+view votes and emits the strict assignment contract consumed by
+``space_task.py``.  A separate contact sheet remains audit evidence only.
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ import sys
 import threading
 import urllib.error
 import urllib.request
-from collections import defaultdict
+from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from pathlib import Path
@@ -42,8 +42,11 @@ from backend.tools.spatial import (  # noqa: E402
 )
 
 CLASSIFIER_SCHEMA_VERSION = "1.0"
-CLASSIFIER_VERSION = "space-anchor-nemotron-v7"
+CLASSIFIER_VERSION = "space-anchor-nemotron-v8"
+VISUAL_INSTANCE_VERSION = "spatiotemporal-dino-v2"
 MAIN_MAX_TOKENS = 700
+MAX_CLASSIFICATION_VIEWS = 3
+MIN_VALID_CLASSIFICATION_VIEWS = 2
 ANCHOR_CANDIDATES_FILENAME = "anchor_candidates.json"
 METRICS_FILENAME = "metrics.json"
 HASHES_FILENAME = "hashes.json"
@@ -78,6 +81,12 @@ class TrackEvidence:
     prototype_refs: tuple[str, ...]
     hero_ref: str | None
     visual_instance_id: str
+
+
+@dataclass(frozen=True)
+class TrackEmbedding:
+    model: str
+    vector: tuple[float, ...]
 
 
 def _canonical_anchor(value: str) -> str:
@@ -149,6 +158,37 @@ def _load_tracklets(path: Path) -> dict[str, Tracklet]:
     return result
 
 
+def _load_track_embeddings(
+    tracklets: Mapping[str, Tracklet],
+) -> dict[str, TrackEmbedding]:
+    """Load only strictly valid, finite, normalized automatic DINO vectors."""
+
+    result: dict[str, TrackEmbedding] = {}
+    expected_dimension: int | None = None
+    for track_id in sorted(tracklets):
+        ref = str(tracklets[track_id].embedding_ref or "").strip()
+        if not ref:
+            continue
+        path = _resolve_path(ref)
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            model = str(payload["model"]).strip()
+            vector = tuple(float(value) for value in payload["vector"])
+        except (OSError, KeyError, TypeError, ValueError, json.JSONDecodeError):
+            continue
+        if not model or not vector or not all(math.isfinite(value) for value in vector):
+            continue
+        if expected_dimension is None:
+            expected_dimension = len(vector)
+        if len(vector) != expected_dimension:
+            continue
+        norm = math.sqrt(math.fsum(value * value for value in vector))
+        if not math.isclose(norm, 1.0, rel_tol=0.0, abs_tol=1e-3):
+            continue
+        result[track_id] = TrackEmbedding(model=model, vector=vector)
+    return result
+
+
 def _bbox_iou(
     left: tuple[float, float, float, float],
     right: tuple[float, float, float, float],
@@ -161,6 +201,101 @@ def _bbox_iou(
     left_area = (left[2] - left[0]) * (left[3] - left[1])
     right_area = (right[2] - right[0]) * (right[3] - right[1])
     return intersection / (left_area + right_area - intersection)
+
+
+def _bbox_iom(
+    left: tuple[float, float, float, float],
+    right: tuple[float, float, float, float],
+) -> float:
+    x1, y1 = max(left[0], right[0]), max(left[1], right[1])
+    x2, y2 = min(left[2], right[2]), min(left[3], right[3])
+    if x2 <= x1 or y2 <= y1:
+        return 0.0
+    intersection = (x2 - x1) * (y2 - y1)
+    smaller_area = min(
+        (left[2] - left[0]) * (left[3] - left[1]),
+        (right[2] - right[0]) * (right[3] - right[1]),
+    )
+    return intersection / smaller_area if smaller_area > 0 else 0.0
+
+
+def _bbox_center_distance(
+    left: tuple[float, float, float, float],
+    right: tuple[float, float, float, float],
+) -> float:
+    left_center = ((left[0] + left[2]) / 2, (left[1] + left[3]) / 2)
+    right_center = ((right[0] + right[2]) / 2, (right[1] + right[3]) / 2)
+    scale = max(
+        1.0,
+        math.hypot(left[2] - left[0], left[3] - left[1]),
+        math.hypot(right[2] - right[0], right[3] - right[1]),
+    )
+    return math.hypot(
+        left_center[0] - right_center[0], left_center[1] - right_center[1]
+    ) / scale
+
+
+def _median(values: Sequence[float]) -> float:
+    ordered = sorted(values)
+    if not ordered:
+        raise ValueError("median requires at least one value")
+    middle = len(ordered) // 2
+    if len(ordered) % 2:
+        return ordered[middle]
+    return (ordered[middle - 1] + ordered[middle]) / 2
+
+
+def _embedding_cosine(
+    left: TrackEmbedding | None, right: TrackEmbedding | None
+) -> float | None:
+    if (
+        left is None
+        or right is None
+        or left.model != right.model
+        or len(left.vector) != len(right.vector)
+    ):
+        return None
+    return math.fsum(a * b for a, b in zip(left.vector, right.vector, strict=True))
+
+
+def _center(observation: SpatialObservation) -> tuple[float, float]:
+    assert observation.bbox is not None
+    x1, y1, x2, y2 = observation.bbox
+    return (x1 + x2) / 2, (y1 + y2) / 2
+
+
+def _predict_center(
+    observations: Sequence[SpatialObservation], target_ms: int
+) -> tuple[float, float]:
+    points = [(item.timestamp_ms, *_center(item)) for item in observations]
+    if len(points) == 1 or len({item[0] for item in points}) == 1:
+        return points[-1][1], points[-1][2]
+    mean_time = math.fsum(item[0] for item in points) / len(points)
+    denominator = math.fsum((item[0] - mean_time) ** 2 for item in points)
+
+    def predict(index: int) -> float:
+        mean_value = math.fsum(item[index] for item in points) / len(points)
+        slope = math.fsum(
+            (item[0] - mean_time) * (item[index] - mean_value) for item in points
+        ) / denominator
+        return mean_value + slope * (target_ms - mean_time)
+
+    return predict(1), predict(2)
+
+
+def _motion_error(
+    history: Sequence[SpatialObservation], target: SpatialObservation
+) -> float:
+    predicted = _predict_center(history, target.timestamp_ms)
+    actual = _center(target)
+    assert target.bbox is not None
+    diagonal = max(
+        1.0,
+        math.hypot(
+            target.bbox[2] - target.bbox[0], target.bbox[3] - target.bbox[1]
+        ),
+    )
+    return math.hypot(predicted[0] - actual[0], predicted[1] - actual[1]) / diagonal
 
 
 class _UnionFind:
@@ -184,43 +319,174 @@ class _UnionFind:
 def automatic_visual_instance_ids(
     grouped: Mapping[str, Sequence[SpatialObservation]],
     *,
+    embeddings: Mapping[str, TrackEmbedding] | None = None,
     min_shared_frames: int = 2,
     min_median_iou: float = 0.80,
+    max_short_gap_ms: int = 1_500,
 ) -> dict[str, str]:
-    """Group parallel category tracks that cover the same physical object."""
+    """Group parallel, nested and short-gap fragments of one physical object.
+
+    Existing high-IoU grouping remains available without embeddings.  More
+    permissive nested/continuation edges fail closed unless the automatic DINO
+    vectors and conservative temporal geometry agree.
+    """
 
     if min_shared_frames < 1:
         raise ValueError("min_shared_frames must be positive")
     if not 0.0 <= min_median_iou <= 1.0:
         raise ValueError("min_median_iou must be in [0, 1]")
+    if max_short_gap_ms < 0:
+        raise ValueError("max_short_gap_ms must be non-negative")
+    embeddings = embeddings or {}
     track_ids = sorted(grouped)
     union = _UnionFind(track_ids)
     frame_boxes: dict[str, dict[str, tuple[float, float, float, float]]] = {}
+    track_rows: dict[str, list[SpatialObservation]] = {}
+    track_labels: dict[str, str] = {}
+    track_videos: dict[str, str] = {}
     tracks_by_frame: dict[str, list[str]] = defaultdict(list)
     for track_id in track_ids:
+        rows = sorted(
+            (item for item in grouped[track_id] if item.bbox is not None),
+            key=lambda item: (item.timestamp_ms, item.frame_ref),
+        )
+        track_rows[track_id] = rows
+        labels = {_canonical_anchor(item.anchor_label) for item in rows}
+        videos = {item.video_id for item in rows}
+        track_labels[track_id] = next(iter(labels)) if len(labels) == 1 else ""
+        track_videos[track_id] = next(iter(videos)) if len(videos) == 1 else ""
         boxes: dict[str, tuple[float, float, float, float]] = {}
-        for observation in grouped[track_id]:
-            if observation.bbox is None:
-                continue
+        for observation in rows:
+            assert observation.bbox is not None
             boxes[observation.frame_ref] = observation.bbox
         frame_boxes[track_id] = boxes
         for frame_ref in boxes:
             tracks_by_frame[frame_ref].append(track_id)
 
-    overlaps: dict[tuple[str, str], list[float]] = defaultdict(list)
+    overlaps: dict[
+        tuple[str, str], list[tuple[float, float, float]]
+    ] = defaultdict(list)
     for frame_ref in sorted(tracks_by_frame):
         frame_tracks = sorted(set(tracks_by_frame[frame_ref]))
         for left_index, left in enumerate(frame_tracks):
             for right in frame_tracks[left_index + 1 :]:
+                left_box = frame_boxes[left][frame_ref]
+                right_box = frame_boxes[right][frame_ref]
                 overlaps[(left, right)].append(
-                    _bbox_iou(frame_boxes[left][frame_ref], frame_boxes[right][frame_ref])
+                    (
+                        _bbox_iou(left_box, right_box),
+                        _bbox_iom(left_box, right_box),
+                        _bbox_center_distance(left_box, right_box),
+                    )
                 )
+
+    cannot_link: set[tuple[str, str]] = set()
+    edges: list[tuple[int, float, str, str]] = []
     for (left, right), values in sorted(overlaps.items()):
-        eligible = sorted(value for value in values if value >= min_median_iou)
-        if len(eligible) < min_shared_frames:
+        ious = [item[0] for item in values]
+        ioms = [item[1] for item in values]
+        distances = [item[2] for item in values]
+        if (
+            len(values) >= 2
+            and sum(value < 0.20 for value in ioms) / len(values) >= 0.80
+            and _median(distances) > 0.25
+        ):
+            cannot_link.add((left, right))
             continue
-        median = eligible[len(eligible) // 2]
-        if median >= min_median_iou:
+        high_ious = [value for value in ious if value >= min_median_iou]
+        if len(high_ious) >= min_shared_frames:
+            edges.append((0, -_median(high_ious), left, right))
+            continue
+        cosine = _embedding_cosine(embeddings.get(left), embeddings.get(right))
+        if (
+            len(values) >= 3
+            and _median(ioms) >= 0.95
+            and sum(value >= 0.85 for value in ioms) / len(values) >= 0.80
+            and _median(distances) <= 0.03
+            and sum(value <= 0.05 for value in distances) / len(values) >= 0.80
+            and cosine is not None
+            and cosine >= 0.70
+        ):
+            edges.append((1, -cosine, left, right))
+
+    for left_index, left in enumerate(track_ids):
+        for right in track_ids[left_index + 1 :]:
+            if (left, right) in overlaps:
+                continue
+            if (
+                not track_rows[left]
+                or not track_rows[right]
+                or not track_videos[left]
+                or track_videos[left] != track_videos[right]
+                or not track_labels[left]
+                or track_labels[left] != track_labels[right]
+            ):
+                continue
+            left_first, left_last = (
+                track_rows[left][0].timestamp_ms,
+                track_rows[left][-1].timestamp_ms,
+            )
+            right_first, right_last = (
+                track_rows[right][0].timestamp_ms,
+                track_rows[right][-1].timestamp_ms,
+            )
+            if left_last < right_first:
+                earlier, later = left, right
+                gap = right_first - left_last
+            elif right_last < left_first:
+                earlier, later = right, left
+                gap = left_first - right_last
+            else:
+                continue
+            if gap > max_short_gap_ms:
+                continue
+            cosine = _embedding_cosine(embeddings.get(earlier), embeddings.get(later))
+            if cosine is None or cosine < 0.35:
+                continue
+            early_rows, late_rows = track_rows[earlier], track_rows[later]
+            if len(early_rows) < 3 or len(late_rows) < 3:
+                continue
+            early_box = early_rows[-1].bbox
+            late_box = late_rows[0].bbox
+            assert early_box is not None and late_box is not None
+            early_width, early_height = (
+                early_box[2] - early_box[0],
+                early_box[3] - early_box[1],
+            )
+            late_width, late_height = (
+                late_box[2] - late_box[0],
+                late_box[3] - late_box[1],
+            )
+            early_aspect, late_aspect = early_width / early_height, late_width / late_height
+            aspect_factor = max(early_aspect, late_aspect) / min(
+                early_aspect, late_aspect
+            )
+            early_area, late_area = early_width * early_height, late_width * late_height
+            area_factor = max(early_area, late_area) / min(early_area, late_area)
+            forward_error = _motion_error(early_rows[-3:], late_rows[0])
+            backward_error = _motion_error(late_rows[:3], early_rows[-1])
+            if (
+                aspect_factor <= 1.25
+                and area_factor <= 1.50
+                and forward_error <= 0.15
+                and backward_error <= 0.30
+            ):
+                edges.append((2, -cosine, earlier, later))
+
+    def can_union(left: str, right: str) -> bool:
+        left_root, right_root = union.find(left), union.find(right)
+        if left_root == right_root:
+            return False
+        left_members = {item for item in track_ids if union.find(item) == left_root}
+        right_members = {item for item in track_ids if union.find(item) == right_root}
+        return not any(
+            tuple(sorted((a, b))) in cannot_link
+            for a in left_members
+            for b in right_members
+        )
+
+    for _, _, left, right in sorted(edges):
+        if can_union(left, right):
             union.union(left, right)
 
     members: dict[str, list[str]] = defaultdict(list)
@@ -260,6 +526,33 @@ def _expanded_crop(
     if bounds[2] <= bounds[0] or bounds[3] <= bounds[1]:
         raise ValueError("bbox does not intersect the evidence frame")
     return image.crop(bounds)
+
+
+def _context_crop_with_target(
+    image: Image.Image,
+    bbox: tuple[float, float, float, float],
+    *,
+    context_ratio: float = 0.45,
+) -> Image.Image:
+    """Crop enough local context for thin surfaces and retain target grounding."""
+
+    x1, y1, x2, y2 = bbox
+    span = max(x2 - x1, y2 - y1)
+    padding = max(8.0, span * context_ratio)
+    left = max(0, math.floor(x1 - padding))
+    top = max(0, math.floor(y1 - padding))
+    right = min(image.width, math.ceil(x2 + padding))
+    bottom = min(image.height, math.ceil(y2 + padding))
+    if right <= left or bottom <= top:
+        raise ValueError("bbox does not intersect the evidence frame")
+    crop = image.crop((left, top, right, bottom))
+    draw = ImageDraw.Draw(crop)
+    draw.rectangle(
+        (x1 - left, y1 - top, x2 - left, y2 - top),
+        outline=(255, 0, 0),
+        width=max(4, crop.width // 120),
+    )
+    return crop
 
 
 def _frame_index(value: str) -> int | None:
@@ -336,6 +629,50 @@ def build_contact_sheet(evidence: TrackEvidence) -> tuple[bytes, list[str]]:
     return buffer.getvalue(), sources
 
 
+def build_classification_views(
+    evidence: TrackEvidence,
+) -> list[tuple[bytes, str]]:
+    """Return up to three independent, target-only automatic crop views.
+
+    Prototype crops are preferred because they contain the tracked proposal
+    rather than a full scene with unrelated furniture.  A locally grounded
+    representative crop is used only when ingest supplied fewer than three
+    prototype frames.
+    """
+
+    views: list[tuple[bytes, str]] = []
+    seen_refs: set[str] = set()
+    for ref in evidence.prototype_refs:
+        path = _resolve_path(ref)
+        normalized = str(path)
+        if normalized in seen_refs or not path.exists():
+            continue
+        with Image.open(path) as opened:
+            target = _letterbox(opened.convert("RGB"), (768, 768))
+        buffer = io.BytesIO()
+        target.save(buffer, format="JPEG", quality=92, optimize=True)
+        views.append((buffer.getvalue(), normalized))
+        seen_refs.add(normalized)
+        if len(views) == MAX_CLASSIFICATION_VIEWS:
+            return views
+
+    representative = _representative_observation(evidence.observations, evidence.hero_ref)
+    if representative.bbox is None:
+        return views
+    frame_path = _resolve_path(representative.frame_ref)
+    normalized = str(frame_path)
+    if normalized not in seen_refs and frame_path.exists():
+        with Image.open(frame_path) as opened:
+            grounded = _context_crop_with_target(
+                opened.convert("RGB"), representative.bbox
+            )
+        grounded = _letterbox(grounded, (768, 768))
+        buffer = io.BytesIO()
+        grounded.save(buffer, format="JPEG", quality=92, optimize=True)
+        views.append((buffer.getvalue(), normalized))
+    return views[:MAX_CLASSIFICATION_VIEWS]
+
+
 def _json_schema(anchors: Sequence[str]) -> dict[str, Any]:
     score_properties = {
         anchor: {"type": "integer", "minimum": 0, "maximum": 100}
@@ -389,14 +726,19 @@ def _prompt(
         for anchor in anchors
     )
     return (
-        "The image is an automatically generated evidence sheet from a new-home video. "
-        "Top-left is the room scene; the RED rectangle is the target object/usable region. "
-        "The other panels are automatic zoomed views of the same tracked object. Ignore "
-        "other furniture outside the red rectangle. Classify the target independently; "
-        "do not infer from crop framing or assume that it belongs to a requested class. "
+        "The image is one automatically cropped target view from a new-home video. "
+        "The tracked target occupies the center of the image; small surrounding pixels "
+        "are context only. Classify this target alone. Never classify furniture that is "
+        "merely visible behind, below, or beside the central crop. Do not infer from crop "
+        "framing or assume that the target belongs to a requested class. Treat every "
+        "quoted anchor identifier as an opaque stable output token: its parenthesized "
+        "description is the only semantic definition. "
         f"Allowed anchor classes are: {categories}; use other when none fits. "
         "Return integer anchor_scores from 0 to 100 as calibrated confidence for every "
-        "class (scores need not sum to 100) and best_anchor. support_type means the usable "
+        "class (scores need not sum to 100) and best_anchor. Give 90 or above only when "
+        "the central crop directly shows the description's defining visual cues; use "
+        "0-20 when those cues are absent or only occur outside the target. support_type "
+        "means the usable "
         "placement relation: surface for a tabletop/top, shelf for a shelf/compartment, "
         "floor only for a floor zone, unknown if not visible. capacity_class is visual "
         "relative usable capacity, not exact measurement: small = one narrow shelf or one "
@@ -430,7 +772,7 @@ HARD_FIELD_SCHEMA: dict[str, Any] = {
 }
 
 HARD_FIELD_PROMPT = (
-    "Re-inspect only the RED target and its zoom panels. Return EXACTLY one flat JSON "
+    "Re-inspect only the central automatically cropped target. Return EXACTLY one flat JSON "
     "object with all four keys: support_type (surface/shelf/floor/unknown), "
     "support_confidence (0-100), capacity_class (small/medium/large/unknown), and "
     "capacity_confidence (0-100). Confidence must be your independent visual "
@@ -737,6 +1079,105 @@ def _aggregate_power(
     )
 
 
+def aggregate_view_predictions(
+    predictions: Sequence[Mapping[str, Any]], anchors: Sequence[str]
+) -> dict[str, Any]:
+    """Aggregate independent target views into real votes and calibrated scores."""
+
+    if len(predictions) < MIN_VALID_CLASSIFICATION_VIEWS:
+        raise ValueError(
+            f"at least {MIN_VALID_CLASSIFICATION_VIEWS} valid views are required"
+        )
+    expected_scores = {*anchors, "other"}
+    if any(set(item["anchor_scores"]) != expected_scores for item in predictions):
+        raise ValueError("view predictions do not share the expected anchor schema")
+
+    view_count = len(predictions)
+    vote_counts = Counter(str(item["best_anchor"]) for item in predictions)
+    mean_scores = {
+        anchor: int(
+            round(
+                math.fsum(float(item["anchor_scores"][anchor]) for item in predictions)
+                / view_count
+            )
+        )
+        for anchor in sorted(expected_scores)
+    }
+    max_scores = {
+        anchor: max(int(item["anchor_scores"][anchor]) for item in predictions)
+        for anchor in sorted(expected_scores)
+    }
+    best_anchor = min(
+        expected_scores,
+        key=lambda anchor: (
+            -vote_counts[anchor],
+            -mean_scores[anchor],
+            -max_scores[anchor],
+            anchor,
+        ),
+    )
+
+    def consensus(value_key: str, confidence_key: str) -> tuple[str, int]:
+        values = [str(item[value_key]) for item in predictions]
+        counts = Counter(value for value in values if value != "unknown")
+        if not counts:
+            return "unknown", 0
+        winner = min(
+            counts,
+            key=lambda value: (
+                -counts[value],
+                -math.fsum(
+                    float(item[confidence_key])
+                    for item in predictions
+                    if str(item[value_key]) == value
+                ),
+                value,
+            ),
+        )
+        if counts[winner] <= view_count / 2:
+            return "unknown", 0
+        confidences = [
+            int(item[confidence_key])
+            for item in predictions
+            if str(item[value_key]) == winner
+        ]
+        return winner, int(round(math.fsum(confidences) / len(confidences)))
+
+    support_type, support_confidence = consensus(
+        "support_type", "support_confidence"
+    )
+    capacity_class, capacity_confidence = consensus(
+        "capacity_class", "capacity_confidence"
+    )
+    matching_names = [
+        (
+            int(item["anchor_scores"][best_anchor]),
+            str(item["display_name_zh"]),
+        )
+        for item in predictions
+        if str(item["best_anchor"]) == best_anchor
+    ]
+    display_name = (
+        min(matching_names, key=lambda item: (-item[0], item[1]))[1]
+        if matching_names
+        else ANCHOR_DISPLAY_ZH.get(best_anchor, "自动识别区域")
+    )
+    return {
+        "anchor_scores": mean_scores,
+        "anchor_max_scores": max_scores,
+        "anchor_vote_counts": {
+            anchor: vote_counts[anchor] for anchor in sorted(expected_scores)
+        },
+        "best_anchor": best_anchor,
+        "display_name_zh": display_name,
+        "support_type": support_type,
+        "support_confidence": support_confidence,
+        "capacity_class": capacity_class,
+        "capacity_confidence": capacity_confidence,
+        "view_count": view_count,
+    }
+
+
 def _candidate_from_prediction(
     evidence: TrackEvidence,
     prediction: Mapping[str, Any],
@@ -744,8 +1185,12 @@ def _candidate_from_prediction(
     contact_ref: str,
     contact_sha256: str,
     model: str,
+    view_evidence: Sequence[tuple[str, str]] = (),
 ) -> AutomaticAnchorCandidate:
     observation_count = len(evidence.observations)
+    semantic_observation_count = int(
+        prediction.get("view_count") or observation_count
+    )
     support = None if prediction["support_type"] == "unknown" else prediction["support_type"]
     capacity = (
         None if prediction["capacity_class"] == "unknown" else prediction["capacity_class"]
@@ -756,13 +1201,30 @@ def _candidate_from_prediction(
         if anchor == "other":
             continue
         score = float(prediction["anchor_scores"][anchor]) / 100.0
-        vote_count = max(1, min(observation_count, int(round(score * observation_count))))
+        vote_counts = prediction.get("anchor_vote_counts")
+        max_scores = prediction.get("anchor_max_scores")
+        vote_count = (
+            int(vote_counts.get(anchor, 0))
+            if isinstance(vote_counts, Mapping)
+            else max(
+                1,
+                min(
+                    semantic_observation_count,
+                    int(round(score * semantic_observation_count)),
+                ),
+            )
+        )
+        max_score = (
+            float(max_scores.get(anchor, 0)) / 100.0
+            if isinstance(max_scores, Mapping)
+            else score
+        )
         hypotheses.append(
             {
                 "anchor": anchor,
                 "label_vote_count": vote_count,
                 "mean_confidence": score,
-                "max_confidence": score,
+                "max_confidence": max_score,
                 "proposal_display_name_zh": prediction["display_name_zh"],
                 "support_type": support,
                 "support_confidence": float(prediction["support_confidence"]) / 100.0,
@@ -784,6 +1246,7 @@ def _candidate_from_prediction(
             "candidate_id": f"auto_anchor_{evidence.track_id}",
             "visual_instance_id": evidence.visual_instance_id,
             "observation_count": observation_count,
+            "semantic_observation_count": semantic_observation_count,
             "display_name_zh": prediction["display_name_zh"],
             "power_state": power_state.value,
             "power_confidence": power_confidence,
@@ -791,7 +1254,16 @@ def _candidate_from_prediction(
             "evidence_refs": sorted(
                 {
                     *original_refs,
-                    f"auto_vlm_contact:{contact_ref}@sha256:{contact_sha256}",
+                    *(
+                        {
+                            f"auto_vlm_view:{ref}@sha256:{digest}"
+                            for ref, digest in view_evidence
+                        }
+                        if view_evidence
+                        else {
+                            f"auto_vlm_contact:{contact_ref}@sha256:{contact_sha256}"
+                        }
+                    ),
                 }
             ),
             "source_track_ids": [evidence.track_id],
@@ -801,23 +1273,31 @@ def _candidate_from_prediction(
     )
 
 
-def classify_one(
+def _classify_image(
     client: Client,
-    evidence: TrackEvidence,
+    image_bytes: bytes,
     *,
-    out_dir: Path,
-    evidence_dir: Path,
     cache: dict[str, dict[str, Any]],
     cache_path: Path,
     cache_lock: threading.Lock,
-) -> tuple[AutomaticAnchorCandidate | None, dict[str, Any]]:
-    image_bytes, sources = build_contact_sheet(evidence)
+    track_id: str,
+    view_index: int,
+) -> tuple[dict[str, Any] | None, bool, bool, list[str], str]:
     image_sha = _sha256_bytes(image_bytes)
-    schema_sha = _sha256_bytes(_json_bytes(client.schema))
-    cache_key = f"{image_sha}:{schema_sha}:{CLASSIFIER_VERSION}:{client.model}"
-    evidence_dir.mkdir(parents=True, exist_ok=True)
-    contact_path = evidence_dir / f"{evidence.track_id}.jpg"
-    contact_path.write_bytes(image_bytes)
+    inference_contract_sha = _sha256_bytes(
+        _json_bytes(
+            {
+                "prompt": client.prompt,
+                "schema": client.schema,
+                "hard_field_prompt": HARD_FIELD_PROMPT,
+                "hard_field_schema": HARD_FIELD_SCHEMA,
+                "guided": client.guided,
+            }
+        ).rstrip(b"\n")
+    )
+    cache_key = (
+        f"{image_sha}:{inference_contract_sha}:{CLASSIFIER_VERSION}:{client.model}"
+    )
     with cache_lock:
         prediction = cache.get(cache_key)
     cache_hit = prediction is not None
@@ -839,7 +1319,11 @@ def classify_one(
                 with client.lock:
                     client.usage["errors"] += 1
                 with _print_lock:
-                    print(f"[warn] {evidence.track_id} attempt {attempt + 1}: {exc}", file=sys.stderr)
+                    print(
+                        f"[warn] {track_id} view {view_index} attempt "
+                        f"{attempt + 1}: {exc}",
+                        file=sys.stderr,
+                    )
                 raw_text = None
             if raw_text is not None:
                 break
@@ -863,7 +1347,7 @@ def classify_one(
                             client.usage["errors"] += 1
                         with _print_lock:
                             print(
-                                f"[warn] {evidence.track_id} hard-fields "
+                                f"[warn] {track_id} view {view_index} hard-fields "
                                 f"attempt {attempt + 1}: {exc}",
                                 file=sys.stderr,
                             )
@@ -872,12 +1356,6 @@ def classify_one(
                         prediction = {**anchor_fields, **hard_fields}
                         break
                 if prediction is None:
-                    # Semantic classification succeeded, but the model ignored
-                    # both hard-field attempts.  Preserve the track
-                    # as an auditable candidate with UNKNOWN/zero hard fields;
-                    # the assignment layer will reject every edge from it.
-                    # This separates batch transport/parser failure from the
-                    # stricter per-edge support/capacity evidence gate.
                     prediction = {
                         **anchor_fields,
                         "support_type": "unknown",
@@ -898,17 +1376,94 @@ def classify_one(
                         )
                         + "\n"
                     )
+    return prediction, cache_hit, hard_fields_unresolved, raw_responses, image_sha
+
+
+def classify_one(
+    client: Client,
+    evidence: TrackEvidence,
+    *,
+    out_dir: Path,
+    evidence_dir: Path,
+    cache: dict[str, dict[str, Any]],
+    cache_path: Path,
+    cache_lock: threading.Lock,
+) -> tuple[AutomaticAnchorCandidate | None, dict[str, Any]]:
+    contact_bytes, contact_sources = build_contact_sheet(evidence)
+    contact_sha = _sha256_bytes(contact_bytes)
+    evidence_dir.mkdir(parents=True, exist_ok=True)
+    contact_path = evidence_dir / f"{evidence.track_id}.jpg"
+    contact_path.write_bytes(contact_bytes)
+    view_rows: list[dict[str, Any]] = []
+    predictions: list[dict[str, Any]] = []
+    view_evidence: list[tuple[str, str]] = []
+    all_raw_responses: list[str] = []
+    for view_index, (image_bytes, source_ref) in enumerate(
+        build_classification_views(evidence), 1
+    ):
+        view_path = evidence_dir / f"{evidence.track_id}.view-{view_index}.jpg"
+        view_path.write_bytes(image_bytes)
+        prediction, cache_hit, unresolved, raw_responses, image_sha = _classify_image(
+            client,
+            image_bytes,
+            cache=cache,
+            cache_path=cache_path,
+            cache_lock=cache_lock,
+            track_id=evidence.track_id,
+            view_index=view_index,
+        )
+        relative_view_ref = (
+            view_path.relative_to(PROJ).as_posix()
+            if view_path.is_relative_to(PROJ)
+            else view_path.as_posix()
+        )
+        view_rows.append(
+            {
+                "view_index": view_index,
+                "source_ref": source_ref,
+                "evidence_ref": relative_view_ref,
+                "sha256": image_sha,
+                "cache_hit": cache_hit,
+                "status": (
+                    "HARD_FIELDS_UNRESOLVED"
+                    if unresolved
+                    else "OK" if prediction is not None else "CLASSIFICATION_FAILED"
+                ),
+                "prediction": prediction,
+            }
+        )
+        if raw_responses:
+            all_raw_responses.extend(raw_responses)
+        if prediction is not None:
+            predictions.append(prediction)
+            view_evidence.append((relative_view_ref, image_sha))
+
+    prediction = (
+        aggregate_view_predictions(predictions, client.anchors)
+        if len(predictions) >= MIN_VALID_CLASSIFICATION_VIEWS
+        else None
+    )
+    hard_fields_unresolved = bool(
+        prediction is not None
+        and (
+            prediction["support_type"] == "unknown"
+            or prediction["capacity_class"] == "unknown"
+        )
+    )
     diagnostic = {
         "track_id": evidence.track_id,
         "visual_instance_id": evidence.visual_instance_id,
-        "contact_sha256": image_sha,
+        "contact_sha256": contact_sha,
         "contact_ref": (
             contact_path.relative_to(PROJ).as_posix()
             if contact_path.is_relative_to(PROJ)
             else contact_path.as_posix()
         ),
-        "source_refs": sources,
-        "cache_hit": cache_hit,
+        "source_refs": contact_sources,
+        "requested_view_count": len(view_rows),
+        "valid_view_count": len(predictions),
+        "cache_hit": bool(view_rows) and all(item["cache_hit"] for item in view_rows),
+        "views": view_rows,
         "status": (
             "HARD_FIELDS_UNRESOLVED"
             if hard_fields_unresolved
@@ -916,8 +1471,10 @@ def classify_one(
         ),
         "prediction": prediction,
     }
-    if (prediction is None or hard_fields_unresolved) and raw_responses:
-        diagnostic["response_excerpts"] = [item[-2000:] for item in raw_responses]
+    if (prediction is None or hard_fields_unresolved) and all_raw_responses:
+        diagnostic["response_excerpts"] = [
+            item[-2000:] for item in all_raw_responses
+        ]
     if prediction is None:
         return None, diagnostic
     return (
@@ -925,8 +1482,9 @@ def classify_one(
             evidence,
             prediction,
             contact_ref=diagnostic["contact_ref"],
-            contact_sha256=image_sha,
+            contact_sha256=contact_sha,
             model=client.model,
+            view_evidence=view_evidence,
         ),
         diagnostic,
     )
@@ -959,7 +1517,10 @@ def run_classifier(
     missing = sorted(set(grouped) - set(tracklets))
     if missing:
         raise ValueError(f"automatic tracks missing from ingest: {missing[:5]}")
-    instance_ids = automatic_visual_instance_ids(grouped)
+    track_embeddings = _load_track_embeddings(tracklets)
+    instance_ids = automatic_visual_instance_ids(
+        grouped, embeddings=track_embeddings
+    )
     evidence_rows: list[TrackEvidence] = []
     for track_id in sorted(grouped):
         tracklet = tracklets[track_id]
@@ -1030,6 +1591,13 @@ def run_classifier(
     hard_field_unresolved = sum(
         item["status"] == "HARD_FIELDS_UNRESOLVED" for item in diagnostics
     )
+    requested_view_count = sum(
+        int(item.get("requested_view_count", 0)) for item in diagnostics
+    )
+    valid_view_count = sum(int(item.get("valid_view_count", 0)) for item in diagnostics)
+    visual_instance_members: dict[str, list[str]] = defaultdict(list)
+    for track_id, instance_id in sorted(instance_ids.items()):
+        visual_instance_members[instance_id].append(track_id)
     if failed_rate > max_failed_rate:
         failure_path = out_dir / "failure_diagnostics.json"
         failure_path.write_bytes(
@@ -1070,7 +1638,21 @@ def run_classifier(
             hard_field_unresolved / len(evidence_rows) if evidence_rows else 1.0,
             8,
         ),
+        "classification_vote_source": "INDEPENDENT_TARGET_CROPS",
+        "minimum_valid_views_per_track": MIN_VALID_CLASSIFICATION_VIEWS,
+        "maximum_views_per_track": MAX_CLASSIFICATION_VIEWS,
+        "requested_classification_view_count": requested_view_count,
+        "valid_classification_view_count": valid_view_count,
+        "visual_instance_algorithm": VISUAL_INSTANCE_VERSION,
         "automatic_visual_instance_count": len(set(instance_ids.values())),
+        "automatic_visual_instances": [
+            {
+                "visual_instance_id": instance_id,
+                "source_track_ids": sorted(members),
+            }
+            for instance_id, members in sorted(visual_instance_members.items())
+        ],
+        "valid_track_embedding_count": len(track_embeddings),
         "model": model,
         "endpoint": endpoint,
         "guided_json": guided,
@@ -1088,6 +1670,23 @@ def run_classifier(
             "expected_anchors": _sha256_bytes(_json_bytes(list(expected_anchors)).rstrip(b"\n")),
             "anchor_descriptions": _sha256_bytes(
                 _json_bytes(dict(sorted((anchor_descriptions or {}).items()))).rstrip(b"\n")
+            ),
+            "classification_views": _sha256_bytes(
+                _json_bytes(
+                    [
+                        {
+                            "track_id": item["track_id"],
+                            "views": [
+                                {
+                                    "source_ref": view["source_ref"],
+                                    "sha256": view["sha256"],
+                                }
+                                for view in item.get("views", [])
+                            ],
+                        }
+                        for item in diagnostics
+                    ]
+                ).rstrip(b"\n")
             ),
         },
         "outputs": {

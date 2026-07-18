@@ -116,3 +116,21 @@
 - **十日谈重构并填至 D6**:海事时代骨架换成真实弧线(生死门→换题→链路与真值
   →StepFun 3.7 整合训练一环→演示固化占位→结果与边界),口径=错误归因/难样本
   判定/伪标签域内自适应,数字与判卷档案逐一对应。
+
+## 增量 D6-5:基础完赛——赛方参考代码全链路跑通(下午)
+
+- **背景**:赛方宣布基础完赛只需跑通参考代码(OpenClaw + ComfyUI 超级英雄照片
+  生成 workshop);链接页即讲义网页版,无附加要求。节点 bundle
+  (`~/build_a_claw_workshop-bundle`,模型 ~53GB)完好。
+- **执行**:讲义打两处补丁(bind lan→loopback + 移除
+  `dangerouslyDisableDeviceAuth`;1.3 超时 60→300s),ctl 脚本 0.0.0.0→127.0.0.1、
+  openclaw-ctl 还原纯净版(剥离 07-12 StepFun env 注入),`jupyter nbconvert
+  --execute` 无头跑完全部章节,**0 单元格错误**;chat UI 经 SSH 隧道 + 设备配对
+  完成 5.3 终测,Agent 调 skill 回图成功。证据三件套(执行版 notebook + 双路径
+  生成图)+ 偏差清单落 `results/basic_completion/`。
+- **事故与教训**:qwen3.6:35b 运行态 34.5GB 与 ComfyUI 同驻,系统可用内存一度
+  4.9GB,连带 OOM 了正在跑的 reid-final(未写出产出,旧档无损);停 ComfyUI 后
+  原命令重启。**教训:workshop/演示类大模型任务与主链任务必须错峰。**
+- **遗留**:公网活演示(多节点版 9000/7072 端口方案)与安全纪律冲突,默认不开,
+  需用户拍板;`~/.config/stepfun/stepfun.env` 仍存 API key(违反凭据纪律,
+  AutoTune 已关账,建议尽快撤销/清除)。

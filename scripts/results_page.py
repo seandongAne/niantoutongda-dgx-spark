@@ -38,6 +38,27 @@ CSS_COLOR = {
     "brown": "#a16207", "beige": "#d6c7a1",
 }
 
+BOX_TYPE_LABEL = {
+    "life_group": "生活组",
+    "technical_pack_unit": "独立装箱单元",
+}
+
+RISK_RULE_LABEL = {
+    "CHILD_SHARP_TOOL_REACH": "儿童可触及锐器",
+    "TRIP_HAZARD_IN_PATH": "通道绊倒风险",
+    "POWER_IN_WET_ZONE": "潮湿区域用电",
+}
+
+RISK_STATUS_LABEL = {
+    "TRIGGERED": ("已触发", "danger"),
+    "NEEDS_USER": ("待人工确认", "warning"),
+    "NOT_APPLICABLE": ("当前条件不成立", "neutral"),
+}
+
+DEFAULT_RISK_DISCLAIMER_ZH = (
+    "仅为辅助风险提醒，不构成安全认证，也不能替代现场人员或专业人员复核。"
+)
+
 
 def load_jsonl(path: Path) -> list[dict]:
     if not path.exists():
@@ -85,9 +106,28 @@ def img_tag(run_dir: Path, ref: str, cls: str = "hero") -> str:
 
 
 def build_page(run_dir: Path) -> str:
-    display = {r["entity_id"]: r for r in load_jsonl(run_dir / "naming/display.jsonl")}
-    groups = load_jsonl(run_dir / "group/groups.jsonl")
-    clarifications = load_jsonl(run_dir / "group/clarifications.jsonl")
+    trusted_display_path = run_dir / "inventory/display.jsonl"
+    trusted_inventory_mode = trusted_display_path.exists()
+    display_path = (
+        trusted_display_path
+        if trusted_inventory_mode
+        else run_dir / "naming/display.jsonl"
+    )
+    placement_groups_path = run_dir / "group/placement_groups.jsonl"
+    groups_path = (
+        placement_groups_path
+        if placement_groups_path.exists()
+        else run_dir / "group/groups.jsonl"
+    )
+    display = {r["entity_id"]: r for r in load_jsonl(display_path)}
+    groups = load_jsonl(groups_path)
+    trusted_clarifications_path = run_dir / "inventory/clarifications.jsonl"
+    clarifications_path = (
+        trusted_clarifications_path
+        if trusted_clarifications_path.exists()
+        else run_dir / "group/clarifications.jsonl"
+    )
+    clarifications = load_jsonl(clarifications_path)
     conflicts = load_json(run_dir / "group/conflicts.json", [])
     layout = load_json(run_dir / "layout/layout.json", {})
     regions = load_json(run_dir / "regions/regions.json", {})
@@ -96,6 +136,48 @@ def build_page(run_dir: Path) -> str:
     trace_report = load_json(run_dir / "audit/replay-report.json", {})
     bundle = load_json(run_dir / "bundle.json", {})
 
+    # 可选的完整落地摘要。每块只在自身所需的小型产物齐全时出现；旧 run
+    # 没有这些文件时继续生成原页面，不把候选/审计大 JSON 内嵌进成果页。
+    inventory_metrics_path = run_dir / "inventory/metrics.json"
+    inventory_clarifications_path = run_dir / "inventory/clarifications.jsonl"
+    inventory_metrics = (
+        load_json(inventory_metrics_path, {})
+        if inventory_metrics_path.exists() and inventory_clarifications_path.exists()
+        else None
+    )
+    inventory_clarifications = (
+        load_jsonl(inventory_clarifications_path)
+        if inventory_metrics is not None
+        else []
+    )
+
+    boxlist_path = run_dir / "group/boxlist.json"
+    group_metrics_path = run_dir / "group/metrics.json"
+    boxlist = (
+        load_json(boxlist_path, {})
+        if boxlist_path.exists() and group_metrics_path.exists()
+        else None
+    )
+    group_metrics = (
+        load_json(group_metrics_path, {}) if boxlist is not None else None
+    )
+
+    spatial_metrics_path = run_dir / "spatial/metrics.json"
+    spatial_metrics = (
+        load_json(spatial_metrics_path, {}) if spatial_metrics_path.exists() else None
+    )
+
+    risk_assessments_path = run_dir / "risk/assessments.json"
+    risk_metrics_path = run_dir / "risk/metrics.json"
+    risk_assessments = (
+        load_json(risk_assessments_path, {})
+        if risk_assessments_path.exists() and risk_metrics_path.exists()
+        else None
+    )
+    risk_metrics = (
+        load_json(risk_metrics_path, {}) if risk_assessments is not None else None
+    )
+
     group_of = {eid: g for g in groups for eid in g.get("entity_ids", [])}
     region_names = {
         e["region_id"]: e["display_name_zh"] for e in regions.get("entries", [])
@@ -103,7 +185,7 @@ def build_page(run_dir: Path) -> str:
 
     # ---- 顶部统计 ----
     stats = [
-        (len(display), "实体"),
+        (len(display), "可信库存实体" if trusted_inventory_mode else "实体"),
         (len(groups), "生活组合"),
         (len(cards), "任务卡"),
         (len(clarifications), "待澄清"),
@@ -114,9 +196,15 @@ def build_page(run_dir: Path) -> str:
     if trace_report:
         stats.append((trace_report.get("message_count", 0), "Agent 消息"))
     stat_tiles = "".join(
-        f'<div class="stat"><div class="stat-n">{n}</div>'
+        f'<div class="stat"><div class="stat-n">{esc(n)}</div>'
         f'<div class="stat-l">{esc(label)}</div></div>'
         for n, label in stats
+    )
+    entity_heading = "可信库存实体" if trusted_inventory_mode else "实体卡"
+    entity_note = (
+        "数据所有者确认的 20 行投影，raw ReID 仅保留为审计证据"
+        if trusted_inventory_mode
+        else "展示名 = 本地 VLM 读 hero 图,同款不同色自动消歧"
     )
 
     # ---- 实体卡 ----
@@ -264,9 +352,9 @@ def build_page(run_dir: Path) -> str:
 
     # ---- 澄清与冲突 ----
     clar_rows = "".join(
-        f'<tr><td class="mono">{esc(c.get("entity_id") or "—")}</td>'
-        f'<td>{esc(c["question_zh"])}</td>'
-        f'<td>{chip(c["reason"], "warning")}</td></tr>'
+        f'<tr><td class="mono">{esc(c.get("entity_id") or c.get("projected_entity_id") or c.get("canonical_id") or "—")}</td>'
+        f'<td>{esc(c.get("question_zh", "待确认"))}</td>'
+        f'<td>{chip(c.get("reason") or c.get("status") or "待确认", "warning")}</td></tr>'
         for c in clarifications
     ) or '<tr><td colspan="3" class="dim">无待澄清项 — 旁白证据覆盖全部实体</td></tr>'
     conflict_list = "".join(
@@ -303,6 +391,167 @@ def build_page(run_dir: Path) -> str:
             + f'{esc(verify_trace.get("adjudication_closed", 0))} 条用户裁决</td><td class="mono dim">{esc(producer_counts)}</td></tr>'
             + "</tbody></table></div>"
         )
+
+    # ---- 完整落地可见性（均为有界摘要，不转储源 JSON） ----
+    inventory_sec = ""
+    if isinstance(inventory_metrics, dict):
+        raw_count = inventory_metrics.get("raw_entity_count", "—")
+        trusted_count = inventory_metrics.get("trusted_inventory_count", "—")
+        question_cap = inventory_metrics.get("clarification_cap", "—")
+        question_count = len(inventory_clarifications)
+        unresolved = inventory_metrics.get("raw_link_unresolved_count", "—")
+        eligible = inventory_metrics.get("downstream_eligible_count", "—")
+        inventory_sec = (
+            '<h2 id="trusted-inventory">可信库存 '
+            '<span class="note">raw ReID 留作模型审计，可信投影进入下游</span></h2>'
+            '<div class="summary-grid">'
+            '<div class="summary-card"><div class="summary-k">原始实体 → 可信库存</div>'
+            f'<div class="summary-v">{esc(raw_count)} → {esc(trusted_count)}</div></div>'
+            '<div class="summary-card"><div class="summary-k">轻确认问题</div>'
+            f'<div class="summary-v">{esc(question_count)} <span class="summary-unit">/ 上限 '
+            f'{esc(question_cap)}</span></div></div>'
+            '<div class="summary-card"><div class="summary-k">下游可用</div>'
+            f'<div class="summary-v">{esc(eligible)}</div>'
+            f'<div class="dim">raw 链接未决 {esc(unresolved)} 项，不阻断可信库存</div></div>'
+            '</div>'
+        )
+
+    boxlist_sec = ""
+    if isinstance(boxlist, dict) and isinstance(group_metrics, dict):
+        boxes = boxlist.get("boxes", [])
+        boxes = boxes if isinstance(boxes, list) else []
+        box_rows = []
+        for box in boxes[:8]:
+            if not isinstance(box, dict):
+                continue
+            items = box.get("items", [])
+            item_count = len(items) if isinstance(items, list) else 0
+            box_type = box.get("box_type", "")
+            box_rows.append(
+                f'<tr><td>{esc(box.get("box_label_zh", "未命名箱"))}</td>'
+                f'<td class="mono dim">{esc(box.get("box_id", "—"))}</td>'
+                f'<td>{chip(BOX_TYPE_LABEL.get(str(box_type), str(box_type) or "未分类"), "secondary")}</td>'
+                f'<td>{esc(item_count)}</td></tr>'
+            )
+        if len(boxes) > 8:
+            box_rows.append(
+                f'<tr><td colspan="4" class="dim">另有 {esc(len(boxes) - 8)} 个箱单条目，'
+                '本页仅展示摘要</td></tr>'
+            )
+        group_count = group_metrics.get("group_count", "—")
+        placement_count = group_metrics.get("placement_group_count", "—")
+        covered_count = group_metrics.get(
+            "covered_canonical_item_count",
+            boxlist.get("canonical_item_count", "—"),
+        )
+        inventory_count = group_metrics.get(
+            "trusted_inventory_count",
+            boxlist.get("canonical_item_count", "—"),
+        )
+        box_count = group_metrics.get("box_count", boxlist.get("box_count", "—"))
+        boxlist_sec = (
+            '<h2 id="boxlist">箱单 '
+            '<span class="note">三组生活组合与独立装箱单元共同覆盖可信库存</span></h2>'
+            '<div class="summary-grid">'
+            '<div class="summary-card"><div class="summary-k">生活组合</div>'
+            f'<div class="summary-v">{esc(group_count)}</div></div>'
+            '<div class="summary-card"><div class="summary-k">placement 单元</div>'
+            f'<div class="summary-v">{esc(placement_count)}</div></div>'
+            '<div class="summary-card"><div class="summary-k">物品覆盖</div>'
+            f'<div class="summary-v">{esc(covered_count)}/{esc(inventory_count)}</div></div>'
+            '<div class="summary-card"><div class="summary-k">箱数</div>'
+            f'<div class="summary-v">{esc(box_count)}</div></div>'
+            '</div>'
+            '<div class="panel"><table><thead><tr><th>箱单</th><th>箱号</th>'
+            '<th>类型</th><th>物品数</th></tr></thead>'
+            f'<tbody>{"".join(box_rows)}</tbody></table></div>'
+        )
+
+    spatial_sec = ""
+    if isinstance(spatial_metrics, dict):
+        gate_status = spatial_metrics.get("gate_status")
+        if not gate_status:
+            gate_status = "PASS" if spatial_metrics.get("region_gate_passed") else "NEEDS_USER"
+        gate_kind = "success" if gate_status == "PASS" else "warning"
+        gate_reasons = spatial_metrics.get("gate_reasons", [])
+        gate_reasons = gate_reasons if isinstance(gate_reasons, list) else []
+        reason_html = (
+            f'<div class="dim">门原因：{esc("; ".join(str(item) for item in gate_reasons[:4]))}</div>'
+            if gate_reasons
+            else '<div class="dim">覆盖与可信候选门已满足</div>'
+        )
+        spatial_sec = (
+            '<h2 id="automatic-space">自动空间 '
+            '<span class="note">自动观测跨帧去重后，可信候选才投影至布局区域</span></h2>'
+            '<div class="panel"><div class="panel-head"><h3>空间生产门</h3>'
+            f'{chip(str(gate_status), gate_kind)}</div>'
+            '<div class="summary-grid compact">'
+            '<div class="summary-card"><div class="summary-k">候选区域</div>'
+            f'<div class="summary-v">{esc(spatial_metrics.get("candidate_count", "—"))}</div></div>'
+            '<div class="summary-card"><div class="summary-k">自动接受</div>'
+            f'<div class="summary-v">{esc(spatial_metrics.get("auto_accepted_count", "—"))}</div></div>'
+            '<div class="summary-card"><div class="summary-k">已投影</div>'
+            f'<div class="summary-v">{esc(spatial_metrics.get("projected_region_count", "—"))}</div></div>'
+            '<div class="summary-card"><div class="summary-k">待确认 / 未观测</div>'
+            f'<div class="summary-v small">{esc(spatial_metrics.get("needs_user_count", "—"))} / '
+            f'{esc(spatial_metrics.get("not_observed_count", "—"))}</div></div>'
+            f'</div>{reason_html}</div>'
+        )
+
+    risk_sec = ""
+    if isinstance(risk_assessments, dict) and isinstance(risk_metrics, dict):
+        assessment_rows = risk_assessments.get("assessments", [])
+        assessment_rows = assessment_rows if isinstance(assessment_rows, list) else []
+        risk_rows = []
+        for assessment in assessment_rows[:3]:
+            if not isinstance(assessment, dict):
+                continue
+            rule_id = str(assessment.get("rule_id", "未知规则"))
+            status_value = str(assessment.get("status", "NEEDS_USER"))
+            status_label = RISK_STATUS_LABEL.get(
+                status_value, (status_value, "neutral")
+            )
+            reasons = assessment.get("reason_codes", [])
+            reasons = reasons if isinstance(reasons, list) else []
+            risk_rows.append(
+                f'<tr><td>{esc(RISK_RULE_LABEL.get(rule_id, rule_id))}</td>'
+                f'<td>{chip(*status_label)}</td>'
+                f'<td>{esc(assessment.get("confidence", "—"))}</td>'
+                f'<td class="detail">{esc("; ".join(str(item) for item in reasons[:3]) or "—")}</td></tr>'
+            )
+        status_counts = risk_metrics.get("status_counts", {})
+        status_counts = status_counts if isinstance(status_counts, dict) else {}
+        status_chips = "".join(
+            chip(
+                f"{RISK_STATUS_LABEL[status][0]} {status_counts.get(status, 0)}",
+                RISK_STATUS_LABEL[status][1],
+            )
+            for status in ("TRIGGERED", "NEEDS_USER", "NOT_APPLICABLE")
+        )
+        disclaimer = risk_metrics.get(
+            "disclaimer_zh", DEFAULT_RISK_DISCLAIMER_ZH
+        )
+        risk_sec = (
+            '<h2 id="risk-reminders">风险提醒 '
+            '<span class="note">固定三条规则，只消费有引用的显式事实</span></h2>'
+            '<div class="panel"><div class="panel-head"><h3>三条规则状态</h3>'
+            f'{status_chips}</div><table><thead><tr><th>规则</th><th>状态</th>'
+            '<th>置信度</th><th>原因码</th></tr></thead>'
+            f'<tbody>{"".join(risk_rows)}</tbody></table>'
+            f'<div class="disclaimer">⚠ {esc(disclaimer)}</div></div>'
+        )
+
+    completion_sections = inventory_sec + boxlist_sec + spatial_sec + risk_sec
+    optional_nav = "".join(
+        link
+        for section, link in (
+            (inventory_sec, '<a href="#trusted-inventory">可信库存</a>'),
+            (boxlist_sec, '<a href="#boxlist">箱单</a>'),
+            (spatial_sec, '<a href="#automatic-space">自动空间</a>'),
+            (risk_sec, '<a href="#risk-reminders">风险提醒</a>'),
+        )
+        if section
+    )
 
     bundle_id = bundle.get("bundle_id", run_dir.name)
     return f"""<!DOCTYPE html>
@@ -358,6 +607,16 @@ main {{ max-width:1120px; margin:0 auto; padding:28px 28px 80px; }}
   padding:14px 18px; }}
 .stat-n {{ font-size:26px; font-weight:700; letter-spacing:-.02em; }}
 .stat-l {{ color:var(--dim); font-size:12px; margin-top:2px; }}
+.summary-grid {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:12px; margin:10px 0 14px; }}
+.summary-grid.compact {{ grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); }}
+.summary-card {{ background:var(--panel); border:1px solid var(--line);
+  border-radius:var(--radius); padding:14px 18px; }}
+.summary-k {{ color:var(--dim); font-size:12px; }}
+.summary-v {{ font-size:24px; font-weight:700; letter-spacing:-.02em; margin-top:2px; }}
+.summary-v.small {{ font-size:20px; }}
+.summary-unit {{ color:var(--dim); font-size:13px; font-weight:500; }}
+.arrow {{ color:var(--primary); padding:0 5px; }}
 h2 {{ margin:36px 0 14px; font-size:17px; letter-spacing:-.01em;
   display:flex; align-items:baseline; gap:10px; }}
 h2 .note {{ font-size:12px; font-weight:400; color:var(--muted); }}
@@ -400,6 +659,8 @@ td {{ text-align:left; padding:8px 10px; border-top:1px solid var(--line); font-
 .detail {{ color:var(--dim); font-size:12.5px; }}
 .mono {{ font-family:ui-monospace,SFMono-Regular,monospace; font-size:12px; }}
 .warn {{ color:var(--danger); margin-top:10px; font-size:13px; }}
+.disclaimer {{ margin-top:12px; padding:9px 12px; border-radius:10px;
+  color:var(--warning); background:var(--warning-bg); font-size:12.5px; }}
 .target {{ margin:2px 0 8px; font-size:14px; }}
 .items {{ list-style:none; margin:6px 0; padding:0; display:flex; flex-direction:column; gap:6px; }}
 .items li {{ display:flex; align-items:center; gap:9px; background:var(--panel-2);
@@ -417,7 +678,7 @@ footer {{ color:var(--muted); font-size:12px; margin-top:28px; }}
 </style></head><body>
 <header>
   <div class="brand"><i></i>AI 搬家复原</div>
-  <nav><a href="#entities">实体</a><a href="#groups">生活组合</a><a href="#layout">布局</a>
+  <nav>{optional_nav}<a href="#entities">实体</a><a href="#groups">生活组合</a><a href="#layout">布局</a>
   <a href="#cards">任务卡</a>{'<a href="#verify">验收</a>' if verify_rows else ''}<a href="#clarify">澄清</a><a href="#trace">复跑指纹</a></nav>
   <div class="spacer"></div>
   {chip(bundle_id, "primary")}
@@ -428,7 +689,8 @@ footer {{ color:var(--muted); font-size:12px; margin-top:28px; }}
   <div class="sub">旧房间 → 实体识别 → 生活组合 → 新家布局 → 任务卡 · 全链确定性复跑</div>
   <div class="stats">{stat_tiles}</div>
 </div>
-<h2 id="entities">实体卡 <span class="note">展示名 = 本地 VLM 读 hero 图,同款不同色自动消歧</span></h2>
+{completion_sections}
+<h2 id="entities">{esc(entity_heading)} <span class="note">{esc(entity_note)}</span></h2>
 <div class="grid">{"".join(entity_cards)}</div>
 <h2 id="groups">生活组合 <span class="note">证据优先级:旁白 &gt; 轻确认 &gt; 模板 &gt; 共现佐证</span></h2>
 {"".join(group_secs)}

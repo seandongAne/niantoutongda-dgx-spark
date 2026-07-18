@@ -110,6 +110,48 @@
   证据提交为 `8e3d11f6`;全量后端复跑 `360 passed`,全部新脚本 `py_compile`、
   JSON 解析和 `git diff --check` 通过。
 
+### 增量 D7-3:三线执行——margin 定案、选择性 BF16、TRT 哨兵定位与文本外置编译(晚间)
+
+- 发射前安全门 `✅ SPARK CLEAN`,首连 70 GiB available、swap 0;全部长任务
+  setsid -f 后台+独立日志,GPU 阶段严格串行(opt_chain/chain2/v8/v9 四次发射)。
+  隔离分支在 `/private/tmp` 临时检出中的 7 个提交(fdead9a5..ffeb3fd8)已 fetch 为
+  `backup/semantic-perf-20260718` 并 `--ff-only` 收编 main,消除重启即失的证据风险。
+- **margin 定案**:compile BF16 `[4,5]` 丢失的检测=img0 q2,FP32 分数 `0.2300`
+  对阈值 `0.22` 边距仅 `0.010`,BF16 推至 `0.2173`;img0 另有两检测挤在
+  `0.2217-0.2263`。BF16 类候选在分数容差 1e-3 的 strict 门下数学上不可过,
+  可判别口径为 decision-set strict/diagnostic 双档。
+- **线① 选择性 autocast**(`gdino_selective_autocast_bench.py`;双 TF32 false +
+  matmul precision highest 显式封存;region 钩子进出 autocast 并将区域输出回铸
+  FP32;fp32_repeat 位精确):三候选全部 `[5,5]`、10/10 一对一配对、零翻转——
+  **BF16 检测丢失被选择性精度消除**。encoder-only 将配对分数差压至 `≤3.4e-3`;
+  当前唯一挡 diagnostic 门(IoU≥0.99/分数≤1e-2)的是 img1 单框 `3.9-8.3px` 漂移
+  (IoU `0.977-0.982`),源头为 backbone/encoder BF16 扰动 proposal 初始框,FP32
+  decoder 精修未完全收敛。速度(eager,对同策略 fp32 681ms):backbone `1.136×`、
+  encoder `1.152×`、双区 `1.336×`。verdict=
+  `NO_GO_ALL_SELECTIVE_CANDIDATES_FAIL_SET_GATES`,按冻结口径如实记 FAIL;若未来
+  裁决"集合等价+IoU≥0.98"口径,双区 1.336× 即刻可用——口径裁决权在用户。
+- **线② TRT 哨兵定位**(`gdino_trt_instrumented_sentinel_dump.py`):bit-exact
+  插桩 ONNX 经 trtexec `--noTF32` 构建诊断 engine(60s/952MiB),12 哨兵对 ORT
+  参照。verdict=`DIVERGES_BEFORE_TOPK`,实际收窄远超区段级:proposal 坐标
+  `2.1e-4`、encoder GridSample `1.5e-4/4.6e-5`、proposal-ID 对齐后最终框 `1e-5`
+  全部干净;**只有类别 logits 坏**(encoder 对比头 max `4.8`/mean `0.61`,final
+  logits max `5.9`),TopK 集合因此仅 613/484(每批 900)重合、检测 `[2,3]`。
+  GridSample 在 encoder 正式排除;视觉记忆、文本入融合、decoder 框路径全部无辜。
+  **TRT bug 收窄至文本-图像对比头 matmul 或其 slice_scatter 填充二选一**;下一层
+  二分只需在 scatter 前加一哨兵;若坐实 slice_scatter,可用 concat 填充改写修复。
+  插桩 engine 阻断融合,计时不可比,不产生速度数字。
+- **线③ 文本外置**(`--text-outside-export`:BERT last_hidden_state 由 forward
+  hook 捕获后 eager 预计算,作第 6 个显式导出输入;stub 位精确门/占位符计数门/
+  参数残留门三重 fail-closed):v7/v9 两次证明——图 4521→4225 算子(BERT 296 个
+  移出)、占位符 6/6、`text_backbone` 参数零残留、stub 对 patched eager 位精确、
+  dry-run 99.98% 两段 TRT 分区(2984+1240),**真实 FP32 engine 编译两次成功,
+  卡三轮的 `aten.add` 转换器失败点被绕死**。但 profile/benchmark 阶段两次 OOM
+  (exit 137,进程峰值约 +36GiB 撞 Nemotron vLLM 51GiB 驻留),`probe.json` 因
+  SIGKILL 未落盘,证据=partition/compiled_graph 侧文件+日志。v8 另证:
+  `offload_module_to_cpu` 与 cuda 示例输入发生 FakeTensor 设备冲突,不可用。
+- Commits:工装 `4734724e`/`e7ee723e`/`f06b38e4`/`34474b65`,证据 `1bbbc91d`/
+  `8e70b098`/`9a64e458`/`d9976001`,journal 手术 `58a93562`。
+
 ## 失败与教训
 
 - identity/tracklet 零交集仍不足以证明模型层独立:上游 learned projection 若已经见过
@@ -131,9 +173,29 @@
   的 module FQN 回退都不能被写成有效优化。下一步先做最小复现或匹配稳定版本,不在
   未形成 engine 时继续累计名义覆盖率。
 
+- 贴边检测(边距 0.010)让任何数值扰动都可能翻转决策;固定阈值上的检测数门天然
+  放大 1e-2 级漂移。BF16 候选的生死应由 decision-set 双档口径给出,positional
+  1e-3 门对其无判别力,只作诊断留档。
+- 哨兵定位的解释边界:插桩输出阻断 TRT 融合,该 engine 时延与生产 engine 不可比;
+  "对比头/slice_scatter"是二选一嫌疑而非已证因果,需 scatter 前哨兵完成最后一层
+  二分后才能写根因。
+- 共享节点上"编译后执行"阶段的内存峰值(约 +36GiB)连续两次击杀探针;
+  `empty_cache` 不足以对抗 51GiB 驻留服务,错峰纪律对编译类任务同样适用。
+  `offload_module_to_cpu` 会把权重搬 CPU 而示例输入在 cuda,FakeTensor 设备传播
+  直接失败——不是可用的省内存手段。
+
 ## 明日计划
 
-- 三线执行结果落档后收口:任一候选过冻结检测集合门,才进入更大独立冻结集回归与
+- **待用户裁决(TRT 线唯一阻塞)**:是否临时错峰停 Nemotron vLLM 以完成 v10
+  (文本外置 FP32 engine 的门禁与计时,完毕即恢复服务);替代方案为 batch 1 缩
+  负载压峰值,但与冻结负载口径不一致,只能作诊断。
+- TRT 根因最后一层二分:在对比头 matmul 输出(slice_scatter 前)追加哨兵重跑
+  定位脚本;若坐实 slice_scatter,以 concat 填充改写导出图,先过 ORT 门再重建
+  clean engine 过检测门。
+- 选择性 BF16 是否进主链=验收口径裁决:候选与全部数字已备齐([5,5] 零翻转、
+  encoder-only 分数差 ≤3.4e-3、唯一残留 img1 单框 IoU 0.982);若裁定新口径,
+  先扩独立冻结检测集回归再谈采纳,不在两图上反复调参。
+- 三线执行结果已落档;任一候选过冻结检测集合门,才进入更大独立冻结集回归与
   端到端吞吐;未过门的只记诊断,不产生性能声明。
 - 为语义重排采集并冻结未参与本轮选参的新 `holdout_b`;若继续使用 learned projection,
   只准用 dev identity 训练后再封存 holdout。新集到位前只修评估工装,不再产生提升声明。

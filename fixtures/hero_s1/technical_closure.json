@@ -1,0 +1,141 @@
+{
+  "schema_version": "1.0",
+  "closure_id": "hero_s1_technical_closure_v1",
+  "source_item_fixture": "fixtures/hero_s1/items.json",
+  "canonical_item_ids": [
+    "water_bottle",
+    "sunscreen_tin",
+    "marker_set",
+    "utility_knife",
+    "plush_toy",
+    "coffee_jar",
+    "rubiks_cube",
+    "pen",
+    "scissors",
+    "pencil_sharpener",
+    "set_square",
+    "hand_cream",
+    "hair_clip",
+    "comb",
+    "popping_candy",
+    "hawthorn_sticks",
+    "biscuits",
+    "tea_bag",
+    "book",
+    "mug"
+  ],
+  "life_groups": [
+    {
+      "group_id": "study_stationery",
+      "name_zh": "学习文具",
+      "canonical_item_ids": [
+        "marker_set",
+        "utility_knife",
+        "pen",
+        "scissors",
+        "pencil_sharpener",
+        "set_square",
+        "book"
+      ]
+    },
+    {
+      "group_id": "cups_and_drinks",
+      "name_zh": "杯子饮品",
+      "canonical_item_ids": [
+        "water_bottle",
+        "coffee_jar",
+        "tea_bag",
+        "mug"
+      ]
+    },
+    {
+      "group_id": "toiletries_and_care",
+      "name_zh": "洗漱护理",
+      "canonical_item_ids": [
+        "sunscreen_tin",
+        "hand_cream",
+        "hair_clip",
+        "comb"
+      ]
+    }
+  ],
+  "independent_pack_item_ids": [
+    "plush_toy",
+    "rubiks_cube",
+    "popping_candy",
+    "hawthorn_sticks",
+    "biscuits"
+  ],
+  "item_partition_contract": {
+    "all_source_items_must_be_covered": true,
+    "each_source_item_must_appear_exactly_once": true,
+    "independent_items_are_valid_pack_items": true
+  },
+  "space_ground_truth": {
+    "source_region_fixture": "fixtures/hero_s1/regions.json",
+    "usage": "ground_truth_acceptance_only",
+    "must_not_be_used_as_auto_spatial_producer_input": true,
+    "target_region_ids": [
+      "study_desk",
+      "vanity_top",
+      "wall_shelf",
+      "chest_top",
+      "display_cabinet"
+    ]
+  },
+  "risk_contract": {
+    "min_evidence_confidence": 0.8,
+    "disclaimer_zh": "仅为辅助风险提醒，不构成安全认证，也不能替代现场人员或专业人员复核。",
+    "rules": [
+      {
+        "rule_id": "CHILD_SHARP_TOOL_REACH",
+        "required_fact_keys": [
+          "child_present",
+          "sharp_tool_present",
+          "within_child_reach"
+        ],
+        "trigger_contract": "全部事实均有证据、置信度达标且为 true 时才触发"
+      },
+      {
+        "rule_id": "TRIP_HAZARD_IN_PATH",
+        "required_fact_keys": [
+          "trip_hazard_present",
+          "in_walk_path"
+        ],
+        "trigger_contract": "全部事实均有证据、置信度达标且为 true 时才触发"
+      },
+      {
+        "rule_id": "POWER_IN_WET_ZONE",
+        "required_fact_keys": [
+          "powered_item_present",
+          "wet_zone_present",
+          "in_wet_zone"
+        ],
+        "trigger_contract": "全部事实均有证据、置信度达标且为 true 时才触发"
+      }
+    ]
+  },
+  "scale_measurement_inputs": [
+    {
+      "slot_id": "known_reference_length_cm",
+      "label_zh": "已知参照物长度",
+      "status": "pending",
+      "value_cm": null,
+      "evidence_refs": []
+    },
+    {
+      "slot_id": "doorway_clear_width_cm",
+      "label_zh": "门洞净宽",
+      "status": "pending",
+      "value_cm": null,
+      "evidence_refs": []
+    },
+    {
+      "slot_id": "walk_path_clear_width_cm",
+      "label_zh": "主要通道净宽",
+      "status": "pending",
+      "value_cm": null,
+      "evidence_refs": []
+    }
+  ]
+}

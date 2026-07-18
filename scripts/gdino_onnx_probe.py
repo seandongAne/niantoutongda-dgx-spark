@@ -197,7 +197,11 @@ def main() -> int:
         num_pos_feats=128,
         temperature=10000,
     ):
-        scale = pos_tensor.new_tensor(2 * math.pi)
+        scale = torch.tensor(
+            2 * math.pi,
+            dtype=torch.float32,
+            device=pos_tensor.device,
+        )
         dim_t = torch.arange(
             num_pos_feats,
             dtype=torch.float32,

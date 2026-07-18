@@ -172,7 +172,8 @@ def main() -> int:
         if not context.set_tensor_address(name, tensor.data_ptr()):
             raise RuntimeError(f"failed to bind TensorRT tensor: {name}")
 
-    stream = torch.cuda.current_stream()
+    torch.cuda.current_stream().synchronize()
+    stream = torch.cuda.Stream()
     for _ in range(args.warmup):
         if not context.execute_async_v3(stream.cuda_stream):
             raise RuntimeError("TensorRT warmup execution failed")
@@ -194,10 +195,18 @@ def main() -> int:
     baseline_outputs = np.load(args.torch_outputs)
     raw_diff = {}
     for name in ("logits", "pred_boxes"):
-        delta = np.abs(baseline_outputs[name] - trt_outputs[name])
+        baseline_finite = np.isfinite(baseline_outputs[name])
+        trt_finite = np.isfinite(trt_outputs[name])
+        jointly_finite = baseline_finite & trt_finite
+        delta = np.abs(
+            baseline_outputs[name][jointly_finite] - trt_outputs[name][jointly_finite]
+        )
         raw_diff[name] = {
-            "max_abs": float(delta.max()),
-            "mean_abs": float(delta.mean()),
+            "baseline_nonfinite_count": int((~baseline_finite).sum()),
+            "tensorrt_nonfinite_count": int((~trt_finite).sum()),
+            "jointly_finite_count": int(jointly_finite.sum()),
+            "max_abs_on_jointly_finite": float(delta.max()) if delta.size else None,
+            "mean_abs_on_jointly_finite": float(delta.mean()) if delta.size else None,
         }
 
     baseline_manifest = json.loads(Path(args.baseline_manifest).read_text())
@@ -222,6 +231,13 @@ def main() -> int:
         args.text_threshold,
     )
     decision_diff = _decision_diff(torch_decisions, trt_decisions)
+    decision_diff["all_tensorrt_outputs_finite"] = all(
+        item["tensorrt_nonfinite_count"] == 0 for item in raw_diff.values()
+    )
+    decision_diff["strict_decision_equivalent_at_1e-3_and_half_px"] = (
+        decision_diff["strict_decision_equivalent_at_1e-3_and_half_px"]
+        and decision_diff["all_tensorrt_outputs_finite"]
+    )
 
     mean_ms = statistics.fmean(timings_ms)
     batch_size = int(baseline_manifest["batch_size"])
@@ -244,12 +260,15 @@ def main() -> int:
             "sha256": _sha256(engine_path),
             "size_bytes": engine_path.stat().st_size,
             "device_memory_size_bytes": int(
-                getattr(engine, "device_memory_size_v2", engine.device_memory_size)
+                engine.device_memory_size_v2
+                if hasattr(engine, "device_memory_size_v2")
+                else engine.device_memory_size
             ),
             "inputs": input_names,
             "outputs": output_names,
         },
         "tensorrt_core": {
+            "cuda_stream": "non_default",
             "warmup": args.warmup,
             "runs": args.runs,
             "mean_ms": mean_ms,

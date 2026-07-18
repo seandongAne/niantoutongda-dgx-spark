@@ -917,6 +917,17 @@ def main() -> int:
             "partition report remains the authority on whether the exclusion took effect."
         ),
     )
+    parser.add_argument(
+        "--text-outside-export",
+        action="store_true",
+        help=(
+            "Precompute the BERT text backbone eagerly and feed its last hidden "
+            "state as an explicit export input, so the text embedding subgraph "
+            "(including the aten.add converter failure site) never enters "
+            "torch.export. The exported program must prove the text feature is a "
+            "real placeholder and that no text-backbone parameters remain."
+        ),
+    )
     parser.add_argument("--code-commit")
     parser.add_argument(
         "--container-image",
@@ -968,6 +979,7 @@ def main() -> int:
             "raw_query_slot_report_always_recorded": True,
             "shape_dtype_and_nonfinite_safety_always_required": True,
             "requested_torch_executed_modules": list(args.torch_executed_modules),
+            "text_outside_export_requested": bool(args.text_outside_export),
             "fp32_raw_tolerance": {"rtol": args.fp32_rtol, "atol": args.fp32_atol},
             "fp16_raw_tolerance": {"rtol": args.fp16_rtol, "atol": args.fp16_atol},
             "decision_tolerance": {
@@ -1327,15 +1339,140 @@ def main() -> int:
                 "export compatibility rewrite exceeds the FP32 tolerance",
             )
 
+        export_wrapper = wrapper
+        export_inputs = positional_inputs
+        original_text_backbone = None
+        if args.text_outside_export:
+            core = model.model
+            captured: dict[str, Any] = {}
+
+            def _capture_text_hook(_module, _hook_args, _hook_kwargs, output):
+                captured["output"] = output
+                return None
+
+            capture_handle = core.text_backbone.register_forward_hook(
+                _capture_text_hook, with_kwargs=True
+            )
+            try:
+                with torch.inference_mode():
+                    wrapper(*positional_inputs)
+            finally:
+                capture_handle.remove()
+            if "output" not in captured:
+                raise ProbeAbort(
+                    "NO_GO_TEXT_OUTSIDE_EXPORT_CAPTURE_FAILED",
+                    "text backbone was not invoked during the capture forward",
+                )
+            raw_text_output = captured["output"]
+            captured_hidden = (
+                raw_text_output.last_hidden_state
+                if hasattr(raw_text_output, "last_hidden_state")
+                else raw_text_output[0]
+            )
+            # Clone outside inference_mode so the tensor is a plain example input.
+            text_last_hidden = captured_hidden.detach().clone()
+
+            class _TextBackboneOutput:
+                def __init__(self, last_hidden_state):
+                    self.last_hidden_state = last_hidden_state
+
+                def __getitem__(self, index):
+                    if index == 0:
+                        return self.last_hidden_state
+                    raise IndexError(index)
+
+            class _TextBackboneStub(torch.nn.Module):
+                def __init__(self):
+                    super().__init__()
+                    self.injected = None
+
+                def forward(self, *_stub_args, **_stub_kwargs):
+                    if self.injected is None:
+                        raise RuntimeError(
+                            "text features were not injected before text backbone forward"
+                        )
+                    return _TextBackboneOutput(self.injected)
+
+            original_text_backbone = core.text_backbone
+            text_stub = _TextBackboneStub()
+            core.text_backbone = text_stub
+
+            class TextOutsideWrapper(torch.nn.Module):
+                def __init__(self, wrapped, stub):
+                    super().__init__()
+                    self.wrapped = wrapped
+                    self.stub = stub
+
+                def forward(
+                    self,
+                    pixel_values,
+                    input_ids,
+                    token_type_ids,
+                    attention_mask,
+                    pixel_mask,
+                    text_last_hidden_state,
+                ):
+                    self.stub.injected = text_last_hidden_state
+                    outputs = self.wrapped(
+                        pixel_values=pixel_values,
+                        input_ids=input_ids,
+                        token_type_ids=token_type_ids,
+                        attention_mask=attention_mask,
+                        pixel_mask=pixel_mask,
+                        return_dict=True,
+                    )
+                    self.stub.injected = None
+                    return outputs.logits, outputs.pred_boxes
+
+            export_wrapper = TextOutsideWrapper(model, text_stub).cuda().eval()
+            export_inputs = positional_inputs + (text_last_hidden,)
+            with torch.inference_mode():
+                stub_outputs = _arrays(export_wrapper(*export_inputs))
+            stub_diff = _raw_diff(
+                patched_outputs,
+                stub_outputs,
+                rtol=args.fp32_rtol,
+                atol=args.fp32_atol,
+            )
+            result["export_compatibility"]["text_outside_export"] = {
+                "requested": True,
+                "capture_via_forward_hook": True,
+                "text_last_hidden_state_shape": list(text_last_hidden.shape),
+                "text_last_hidden_state_dtype": str(text_last_hidden.dtype),
+                "raw_diff_vs_patched_eager_fp32": stub_diff,
+            }
+            if not stub_diff["strict_equivalent"]:
+                raise ProbeAbort(
+                    "NO_GO_TEXT_OUTSIDE_EXPORT_REWRITE_MISMATCH",
+                    "text-outside-export stub does not reproduce patched eager outputs",
+                )
+
         export_started = time.perf_counter()
-        exported = torch.export.export(wrapper, positional_inputs, strict=False)
+        exported = torch.export.export(export_wrapper, export_inputs, strict=False)
         export_seconds = time.perf_counter() - export_started
         exported_graph_path = output_path.with_suffix(".exported_graph.txt")
         if exported_graph_path.exists():
             raise FileExistsError(f"refusing to overwrite {exported_graph_path}")
         _atomic_write_text(exported_graph_path, str(exported.graph_module.graph) + "\n")
+        text_outside_proof = None
+        if args.text_outside_export:
+            user_input_count = len(exported.graph_signature.user_inputs)
+            graph_text = exported_graph_path.read_text()
+            text_params_remaining = "text_backbone_embeddings" in graph_text
+            text_outside_proof = {
+                "user_input_count": user_input_count,
+                "expected_user_input_count": len(export_inputs),
+                "text_backbone_embedding_params_in_graph": text_params_remaining,
+            }
+            if user_input_count != len(export_inputs) or text_params_remaining:
+                raise ProbeAbort(
+                    "NO_GO_TEXT_OUTSIDE_EXPORT_NOT_PROVEN",
+                    "exported program lost the text-feature placeholder or still "
+                    "contains text backbone parameters",
+                    evidence=text_outside_proof,
+                )
         with torch.inference_mode():
-            exported_outputs = _arrays(exported.module()(*positional_inputs))
+            exported_outputs = _arrays(exported.module()(*export_inputs))
         export_diff = _raw_diff(
             eager_outputs,
             exported_outputs,
@@ -1349,6 +1486,8 @@ def main() -> int:
             "graph_sha256": _sha256(exported_graph_path),
             "raw_diff_vs_native_eager_fp32": export_diff,
         }
+        if text_outside_proof is not None:
+            result["torch_export"]["text_outside_export_proof"] = text_outside_proof
         saved_outputs["exported_fp32_logits"] = exported_outputs["logits"]
         saved_outputs["exported_fp32_pred_boxes"] = exported_outputs["pred_boxes"]
         if not export_diff["strict_equivalent"]:
@@ -1361,19 +1500,19 @@ def main() -> int:
             torch,
             torch_tensorrt,
             exported,
-            positional_inputs,
+            export_inputs,
             args,
             mode="fp32",
             report_path=output_path.with_suffix(".fp32.partition.txt"),
             graph_path=output_path.with_suffix(".fp32.compiled_graph.txt"),
         )
         fp32_record["runtime_profile"] = _profile_trt_events(
-            torch, fp32_compiled, positional_inputs
+            torch, fp32_compiled, export_inputs
         )
         fp32_metrics, fp32_outputs = _benchmark(
             torch,
             fp32_compiled,
-            positional_inputs,
+            export_inputs,
             warmup=args.warmup,
             runs=args.runs,
         )
@@ -1453,6 +1592,8 @@ def main() -> int:
 
         # Re-run eager after engine construction so compilation side effects cannot
         # be mistaken for a candidate speed/correctness result.
+        if original_text_backbone is not None:
+            model.model.text_backbone = original_text_backbone
         with torch.inference_mode():
             eager_after_compile = _arrays(wrapper(*positional_inputs))
         eager_stability = _raw_diff(
@@ -1477,19 +1618,19 @@ def main() -> int:
                 torch,
                 torch_tensorrt,
                 exported,
-                positional_inputs,
+                export_inputs,
                 args,
                 mode="fp16",
                 report_path=output_path.with_suffix(".fp16.partition.txt"),
                 graph_path=output_path.with_suffix(".fp16.compiled_graph.txt"),
             )
             fp16_record["runtime_profile"] = _profile_trt_events(
-                torch, fp16_compiled, positional_inputs
+                torch, fp16_compiled, export_inputs
             )
             fp16_metrics, fp16_outputs = _benchmark(
                 torch,
                 fp16_compiled,
-                positional_inputs,
+                export_inputs,
                 warmup=args.warmup,
                 runs=args.runs,
             )

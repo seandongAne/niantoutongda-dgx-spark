@@ -407,6 +407,7 @@ def main() -> int:
     mode_specs = [
         ("fp32", ()),
         ("selective_bf16_backbone", ("visual_backbone",)),
+        ("selective_bf16_encoder", ("encoder",)),
         ("selective_bf16_backbone_encoder", ("visual_backbone", "encoder")),
         ("fp32_repeat", ()),
     ]
@@ -492,7 +493,11 @@ def main() -> int:
                 )
         mode_reports[mode_name] = report
 
-    candidates = ("selective_bf16_backbone", "selective_bf16_backbone_encoder")
+    candidates = (
+        "selective_bf16_backbone",
+        "selective_bf16_encoder",
+        "selective_bf16_backbone_encoder",
+    )
     candidate_summary = {}
     for name in candidates:
         report = mode_reports[name]

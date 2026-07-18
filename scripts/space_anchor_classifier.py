@@ -50,6 +50,14 @@ DEFAULT_MODEL = (
     "/models/nv-community__NVIDIA-Nemotron-Nano-12B-v2-VL-NVFP4-QAD"
 )
 
+ANCHOR_DISPLAY_ZH = {
+    "study_desk": "学习桌面",
+    "vanity": "梳妆台面",
+    "wall_shelf": "墙面置物架",
+    "chest_of_drawers": "斗柜台面",
+    "display_cabinet": "展示柜层板",
+}
+
 _FRAME_RE = re.compile(r"(?:^|_)f(?P<index>\d+)(?:_|\.|$)")
 _print_lock = threading.Lock()
 
@@ -446,11 +454,37 @@ def parse_prediction(text: str, anchors: Sequence[str]) -> dict[str, Any] | None
         normalized_scores = {
             anchor: max(0, min(100, int(scores[anchor]))) for anchor in sorted(scores)
         }
-        best_anchor = str(payload["best_anchor"])
-        support_type = str(payload["support_type"])
-        capacity_class = str(payload["capacity_class"])
-        support_confidence = max(0, min(100, int(payload["support_confidence"])))
-        capacity_confidence = max(0, min(100, int(payload["capacity_confidence"])))
+        best_anchor = str(payload.get("best_anchor") or payload["target_object"])
+        support_raw = payload["support_type"]
+        capacity_raw = payload["capacity_class"]
+        support_type = str(
+            support_raw.get("name") if isinstance(support_raw, dict) else support_raw
+        )
+        capacity_class = str(
+            capacity_raw.get("name") if isinstance(capacity_raw, dict) else capacity_raw
+        )
+        support_confidence = max(
+            0,
+            min(
+                100,
+                int(
+                    support_raw.get("confidence")
+                    if isinstance(support_raw, dict)
+                    else payload["support_confidence"]
+                ),
+            ),
+        )
+        capacity_confidence = max(
+            0,
+            min(
+                100,
+                int(
+                    capacity_raw.get("confidence")
+                    if isinstance(capacity_raw, dict)
+                    else payload["capacity_confidence"]
+                ),
+            ),
+        )
     except (KeyError, TypeError, ValueError):
         return None
     if best_anchor not in expected_scores:
@@ -465,6 +499,8 @@ def parse_prediction(text: str, anchors: Sequence[str]) -> dict[str, Any] | None
         "display_name_zh": str(
             payload.get("display_name_zh")
             or payload.get("display_name")
+            or ANCHOR_DISPLAY_ZH.get(best_anchor)
+            or best_anchor.replace("_", " ")
             or "自动识别区域"
         ).strip()[:24]
         or "自动识别区域",

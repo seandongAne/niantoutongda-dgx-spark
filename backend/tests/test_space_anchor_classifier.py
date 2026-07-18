@@ -145,3 +145,28 @@ def test_parser_accepts_model_display_name_alias_without_relaxing_hard_fields():
 
     assert parsed is not None
     assert parsed["display_name_zh"] == "学习桌"
+
+
+def test_parser_normalizes_nested_nemotron_hard_fields():
+    parsed = parse_prediction(
+        json.dumps(
+            {
+                "target_object": "study_desk",
+                "anchor_scores": {"study_desk": 90, "other": 5},
+                "best_anchor": "study_desk",
+                "support_type": {"name": "surface", "confidence": 85},
+                "capacity_class": {"name": "medium", "confidence": 75},
+            }
+        ),
+        ["study_desk"],
+    )
+
+    assert parsed == {
+        "anchor_scores": {"other": 5, "study_desk": 90},
+        "best_anchor": "study_desk",
+        "display_name_zh": "学习桌面",
+        "support_type": "surface",
+        "support_confidence": 85,
+        "capacity_class": "medium",
+        "capacity_confidence": 75,
+    }

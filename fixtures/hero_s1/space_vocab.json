@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0",
+  "vocab_version": "hero-s1-space-vocab1",
+  "batch_size": 3,
+  "entries": [
+    {
+      "canonical_id": "study_desk",
+      "category_id": "study_desk",
+      "display_label_zh": "学习桌",
+      "detection_prompts": ["study desk", "writing desk", "wooden study table"],
+      "confusable_group": "horizontal_furniture",
+      "notes": "新家开放词汇家具检测概念。"
+    },
+    {
+      "canonical_id": "vanity",
+      "category_id": "vanity",
+      "display_label_zh": "梳妆台",
+      "detection_prompts": ["vanity table", "dressing table", "makeup vanity"],
+      "confusable_group": "horizontal_furniture",
+      "notes": "新家开放词汇家具检测概念。"
+    },
+    {
+      "canonical_id": "wall_shelf",
+      "category_id": "wall_shelf",
+      "display_label_zh": "墙面置物架",
+      "detection_prompts": ["wall mounted shelf", "floating wall shelf", "wall shelf"],
+      "confusable_group": "shelf_cabinet",
+      "notes": "新家开放词汇家具检测概念。"
+    },
+    {
+      "canonical_id": "chest_of_drawers",
+      "category_id": "chest_of_drawers",
+      "display_label_zh": "斗柜",
+      "detection_prompts": ["chest of drawers", "wooden dresser", "drawer cabinet"],
+      "confusable_group": "horizontal_furniture",
+      "notes": "新家开放词汇家具检测概念。"
+    },
+    {
+      "canonical_id": "display_cabinet",
+      "category_id": "display_cabinet",
+      "display_label_zh": "展示柜",
+      "detection_prompts": ["glass display cabinet", "display cabinet", "glass door cabinet"],
+      "confusable_group": "shelf_cabinet",
+      "notes": "新家开放词汇家具检测概念。"
+    },
+    {
+      "canonical_id": "electrical_outlet",
+      "category_id": "electrical_outlet",
+      "display_label_zh": "电源插座",
+      "detection_prompts": ["electrical wall outlet", "power socket", "wall power outlet"],
+      "confusable_group": null,
+      "notes": "仅作为电源邻近证据，不生成放置区域。"
+    }
+  ]
+}

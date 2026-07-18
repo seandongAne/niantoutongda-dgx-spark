@@ -13,6 +13,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import html
 import json
 import os
@@ -74,6 +75,41 @@ def load_json(path: Path, default):
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else default
 
 
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1 << 20), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _current_state_artifacts(run_dir: Path) -> list[dict] | None:
+    """Read current completed-stage hashes without depending on a stale bundle.
+
+    ``report`` and ``bundle`` are excluded because report is being generated and
+    including its previous hash would create a self-reference.  ``None`` keeps
+    legacy runs without state files on the bundle-based compatibility path.
+    """
+
+    state_dir = run_dir / "state"
+    if not state_dir.is_dir():
+        return None
+    artifacts: list[dict] = []
+    for state_path in sorted(state_dir.glob("*.json")):
+        state = load_json(state_path, {})
+        stage = str(state.get("stage") or state_path.stem)
+        if stage in {"report", "bundle"} or state.get("status") != "done":
+            continue
+        outputs = state.get("outputs", {})
+        if not isinstance(outputs, dict):
+            continue
+        artifacts.extend(
+            {"stage": stage, "path": str(path), "sha256": str(digest)}
+            for path, digest in sorted(outputs.items())
+        )
+    return artifacts
+
+
 def esc(value: object) -> str:
     return html.escape(str(value))
 
@@ -105,7 +141,7 @@ def img_tag(run_dir: Path, ref: str, cls: str = "hero") -> str:
     )
 
 
-def build_page(run_dir: Path) -> str:
+def build_page(run_dir: Path, config_path: Path | None = None) -> str:
     trusted_display_path = run_dir / "inventory/display.jsonl"
     trusted_inventory_mode = trusted_display_path.exists()
     display_path = (
@@ -135,6 +171,7 @@ def build_page(run_dir: Path) -> str:
     verdicts = load_json(run_dir / "verify/verdicts.json", {})
     trace_report = load_json(run_dir / "audit/replay-report.json", {})
     bundle = load_json(run_dir / "bundle.json", {})
+    state_artifacts = _current_state_artifacts(run_dir)
 
     # 可选的完整落地摘要。每块只在自身所需的小型产物齐全时出现；旧 run
     # 没有这些文件时继续生成原页面，不把候选/审计大 JSON 内嵌进成果页。
@@ -366,12 +403,21 @@ def build_page(run_dir: Path) -> str:
         f'<tr><td>{chip(a["stage"], "primary")}</td>'
         f'<td class="mono">{esc(Path(a["path"]).name)}</td>'
         f'<td class="mono dim">{esc(a["sha256"][:16])}…</td></tr>'
-        for a in bundle.get("artifacts", [])
+        for a in (
+            state_artifacts
+            if state_artifacts is not None
+            else bundle.get("artifacts", [])
+        )
+    )
+    config_hashes = (
+        {config_path.name: _sha256_file(config_path)}
+        if config_path is not None
+        else bundle.get("config_refs", {})
     )
     config_refs = "".join(
         f'<tr><td>{chip("config", "secondary")}</td><td class="mono">{esc(k)}</td>'
         f'<td class="mono dim">{esc(v[:16])}…</td></tr>'
-        for k, v in bundle.get("config_refs", {}).items()
+        for k, v in config_hashes.items()
     )
     main_trace = trace_report.get("main_chain", {})
     verify_trace = trace_report.get("verification", {})
@@ -715,11 +761,12 @@ footer {{ color:var(--muted); font-size:12px; margin-top:28px; }}
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--run-dir", required=True, type=Path)
+    ap.add_argument("--config", type=Path, default=None)
     ap.add_argument("--out", type=Path, default=None)
     args = ap.parse_args()
     out = args.out or (args.run_dir / "index.html")
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(build_page(args.run_dir), encoding="utf-8")
+    out.write_text(build_page(args.run_dir, args.config), encoding="utf-8")
     print(json.dumps({"page": str(out)}, ensure_ascii=False))
     return 0
 

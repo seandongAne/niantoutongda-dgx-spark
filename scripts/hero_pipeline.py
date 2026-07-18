@@ -81,7 +81,9 @@ def _p(value: str) -> Path:
     return path if path.is_absolute() else PROJ / path
 
 
-def build_stages(cfg: dict, py: str) -> dict[str, Stage]:
+def build_stages(
+    cfg: dict, py: str, config_path: Path | None = None
+) -> dict[str, Stage]:
     run = _p(cfg["run_dir"])
     trace_id = str(cfg.get("trace_id") or run.name)
     stage_cfg: dict = cfg.get("stages", {}) or {}
@@ -489,10 +491,18 @@ def build_stages(cfg: dict, py: str) -> dict[str, Stage]:
             inputs.append(run / "verify/verdicts.json")
         if sc("trace").get("enabled"):
             inputs.append(run / "audit/replay-report.json")
+        report_argv = [
+            py,
+            str(PROJ / "scripts/results_page.py"),
+            "--run-dir",
+            str(run),
+        ]
+        if config_path is not None:
+            report_argv += ["--config", str(config_path)]
+            inputs.append(config_path)
         stages["report"] = Stage(
             "report", "local",
-            argv=[py, str(PROJ / "scripts/results_page.py"),
-                  "--run-dir", str(run)],
+            argv=report_argv,
             inputs=inputs,
             outputs=[run / "index.html"],
         )
@@ -679,7 +689,7 @@ def main() -> int:
         cfg["run_dir"] = str(args.run_dir)
     run = _p(cfg["run_dir"])
     py = cfg.get("python", sys.executable)
-    stages = build_stages(cfg, py)
+    stages = build_stages(cfg, py, config_path=args.config.resolve())
     order = [n for n in STAGE_ORDER if n in stages]
 
     for flag in (args.from_stage, args.until_stage, args.only, args.adopt_stage):

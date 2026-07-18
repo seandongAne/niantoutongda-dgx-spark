@@ -1,3 +1,4 @@
+import hashlib
 import json
 from pathlib import Path
 
@@ -288,3 +289,48 @@ def test_incomplete_optional_artifact_pairs_do_not_render_partial_blocks(tmp_pat
     assert 'id="trusted-inventory"' not in page
     assert 'id="boxlist"' not in page
     assert 'id="risk-reminders"' not in page
+
+
+def test_results_page_prefers_current_stage_state_and_explicit_config_hash(tmp_path):
+    run_dir = tmp_path / "state-backed"
+    _write_json(
+        run_dir / "bundle.json",
+        {
+            "bundle_id": "state-backed",
+            "config_refs": {"stale.yaml": "1" * 64},
+            "artifacts": [
+                {
+                    "stage": "regions",
+                    "path": "/stale/old-regions.json",
+                    "sha256": "2" * 64,
+                }
+            ],
+        },
+    )
+    _write_json(
+        run_dir / "state/regions.json",
+        {
+            "stage": "regions",
+            "status": "done",
+            "outputs": {"/current/regions.json": "3" * 64},
+        },
+    )
+    _write_json(
+        run_dir / "state/report.json",
+        {
+            "stage": "report",
+            "status": "done",
+            "outputs": {"/stale/index.html": "4" * 64},
+        },
+    )
+    config = tmp_path / "current.yaml"
+    config.write_text("run_dir: current\n", encoding="utf-8")
+
+    page = build_page(run_dir, config)
+
+    assert "current.yaml" in page
+    assert hashlib.sha256(config.read_bytes()).hexdigest()[:16] in page
+    assert "regions.json" in page and ("3" * 16) in page
+    assert "stale.yaml" not in page
+    assert "old-regions.json" not in page
+    assert "index.html" not in page

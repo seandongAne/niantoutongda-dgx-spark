@@ -38,13 +38,17 @@ STAGE_ORDER = [
     "ingest",
     "attributes",
     "reid",
+    "space_observe",
     "pull",
+    "inventory",
     "naming",
     "narration",
+    "space",
     "regions",
     "group",
     "layout",
     "taskcards",
+    "risk",
     "verify",
     "trace",
     "report",
@@ -86,6 +90,12 @@ def build_stages(cfg: dict, py: str) -> dict[str, Stage]:
         return stage_cfg.get(name) or {}
 
     stages: dict[str, Stage] = {}
+    inventory_enabled = bool(sc("inventory").get("enabled"))
+    space_enabled = bool(sc("space").get("enabled"))
+    trusted_inventory_mode = bool(
+        sc("group").get("enabled")
+        and sc("group").get("trusted_inventory")
+    )
 
     if sc("healthcheck").get("enabled"):
         stages["healthcheck"] = Stage(
@@ -93,7 +103,7 @@ def build_stages(cfg: dict, py: str) -> dict[str, Stage]:
             argv=[str(PROJ / "scripts/spark_healthcheck.sh")], always_run=True,
         )
 
-    for name in ("ingest", "reid", "attributes"):
+    for name in ("ingest", "reid", "attributes", "space_observe"):
         c = sc(name)
         if c.get("enabled"):
             stages[name] = Stage(
@@ -107,6 +117,47 @@ def build_stages(cfg: dict, py: str) -> dict[str, Stage]:
             "pull", "local",
             argv=[str(_p(a)) if i == 0 else a for i, a in enumerate(sc("pull")["cmd"])],
             outputs=[_p(o) for o in sc("pull").get("local_outputs", [])],
+        )
+
+    if inventory_enabled:
+        c = sc("inventory")
+        out_dir = run / "inventory"
+        trace_out = out_dir / "trace.jsonl"
+        entities = _p(c["entities"])
+        items = _p(c["items"])
+        anchor_review = _p(c["anchor_review"])
+        stages["inventory"] = Stage(
+            "inventory",
+            "local",
+            argv=[
+                py,
+                str(PROJ / "scripts/inventory_task.py"),
+                "--entities",
+                str(entities),
+                "--items",
+                str(items),
+                "--anchor-review",
+                str(anchor_review),
+                "--out-dir",
+                str(out_dir),
+                "--max-clarifications",
+                str(c.get("max_clarifications", 4)),
+                "--trace-id",
+                trace_id,
+                "--trace-out",
+                str(trace_out),
+            ],
+            inputs=[entities, items, anchor_review],
+            outputs=[
+                out_dir / "inventory.jsonl",
+                out_dir / "trusted_entities.jsonl",
+                out_dir / "display.jsonl",
+                out_dir / "clarifications.jsonl",
+                out_dir / "metrics.json",
+                out_dir / "manifest.json",
+                out_dir / "hashes.json",
+                trace_out,
+            ],
         )
 
     if sc("naming").get("enabled"):
@@ -144,9 +195,55 @@ def build_stages(cfg: dict, py: str) -> dict[str, Stage]:
         stages["narration"] = Stage("narration", "local", argv=argv,
                                     inputs=[src], outputs=[out])
 
+    if space_enabled:
+        c = sc("space")
+        observations = _p(c["observations"])
+        out_dir = run / "spatial"
+        argv = [
+            py,
+            str(PROJ / "scripts/space_task.py"),
+            "--video-id",
+            str(c["video_id"]),
+            "--observations",
+            str(observations),
+            "--out-dir",
+            str(out_dir),
+        ]
+        for keys, flag in (
+            (("min_regions", "min"), "--min-regions"),
+            (("min_observations", "min_observations_per_region"), "--min-observations"),
+            (("min_confidence", "min_model_confidence"), "--min-confidence"),
+            (("min_hard_field_confidence",), "--min-hard-field-confidence"),
+            (("min_power_confidence",), "--min-power-confidence"),
+            (("min_field_consensus",), "--min-field-consensus"),
+            (("dedupe_iou", "dedupe_iou_threshold"), "--dedupe-iou"),
+        ):
+            value = next((c[key] for key in keys if key in c), None)
+            if value is not None:
+                argv += [flag, str(value)]
+        expected_anchors = c.get("expected_anchor", c.get("expected_anchors", []))
+        if isinstance(expected_anchors, str):
+            expected_anchors = [expected_anchors]
+        for anchor in expected_anchors:
+            argv += ["--expected-anchor", str(anchor)]
+        if c.get("allow_partial_expected_coverage"):
+            argv.append("--allow-partial-expected-coverage")
+        stages["space"] = Stage(
+            "space",
+            "local",
+            argv=argv,
+            inputs=[observations],
+            outputs=[
+                out_dir / "candidate_manifest.json",
+                out_dir / "regions.json",
+                out_dir / "metrics.json",
+                out_dir / "normalized.sha256",
+            ],
+        )
+
     if sc("regions").get("enabled"):
         c = sc("regions")
-        src = _p(c["manifest"])
+        src = run / "spatial/regions.json" if space_enabled else _p(c["manifest"])
         out_dir = run / "regions"
         stages["regions"] = Stage(
             "regions", "local",
@@ -158,34 +255,76 @@ def build_stages(cfg: dict, py: str) -> dict[str, Stage]:
 
     if sc("group").get("enabled"):
         c = sc("group")
-        display = run / "naming/display.jsonl"
-        narration = run / "narration/narration.jsonl"
         out_dir = run / "group"
-        trace_parent = run / "naming/trace.jsonl"
         trace_out = out_dir / "trace.jsonl"
-        argv = [py, str(PROJ / "scripts/group_task.py"),
-                "--display", str(display), "--narration", str(narration),
-                "--config-version", c.get("config_version", "group-v1"),
-                "--out-dir", str(out_dir),
-                "--trace-id", trace_id,
-                "--trace-parent", str(trace_parent),
-                "--trace-out", str(trace_out)]
-        inputs = [display, narration, trace_parent]
-        for opt in ("confirmations", "template_rules", "cooccurrence"):
-            if c.get(opt):
-                argv += [f"--{opt.replace('_', '-')}", str(_p(c[opt]))]
-                inputs.append(_p(c[opt]))
-        stages["group"] = Stage(
-            "group", "local", argv=argv, inputs=inputs,
-            outputs=[out_dir / "groups.jsonl", out_dir / "life_groups.jsonl",
-                     out_dir / "resolutions.jsonl",
-                     out_dir / "clarifications.jsonl", out_dir / "conflicts.json",
-                     trace_out],
-        )
+        if trusted_inventory_mode:
+            closure = _p(c["closure"])
+            inventory = run / "inventory/inventory.jsonl"
+            display = run / "inventory/display.jsonl"
+            trace_parent = run / "inventory/trace.jsonl"
+            stages["group"] = Stage(
+                "group",
+                "local",
+                argv=[
+                    py,
+                    str(PROJ / "scripts/trusted_group_task.py"),
+                    "--closure",
+                    str(closure),
+                    "--inventory",
+                    str(inventory),
+                    "--display",
+                    str(display),
+                    "--out-dir",
+                    str(out_dir),
+                    "--trace-id",
+                    trace_id,
+                    "--trace-parent",
+                    str(trace_parent),
+                    "--trace-out",
+                    str(trace_out),
+                ],
+                inputs=[closure, inventory, display, trace_parent],
+                outputs=[
+                    out_dir / "groups.jsonl",
+                    out_dir / "life_groups.jsonl",
+                    out_dir / "placement_groups.jsonl",
+                    out_dir / "independent_pack_items.jsonl",
+                    out_dir / "boxlist.json",
+                    out_dir / "metrics.json",
+                    trace_out,
+                ],
+            )
+        else:
+            display = run / "naming/display.jsonl"
+            narration = run / "narration/narration.jsonl"
+            trace_parent = run / "naming/trace.jsonl"
+            argv = [py, str(PROJ / "scripts/group_task.py"),
+                    "--display", str(display), "--narration", str(narration),
+                    "--config-version", c.get("config_version", "group-v1"),
+                    "--out-dir", str(out_dir),
+                    "--trace-id", trace_id,
+                    "--trace-parent", str(trace_parent),
+                    "--trace-out", str(trace_out)]
+            inputs = [display, narration, trace_parent]
+            for opt in ("confirmations", "template_rules", "cooccurrence"):
+                if c.get(opt):
+                    argv += [f"--{opt.replace('_', '-')}", str(_p(c[opt]))]
+                    inputs.append(_p(c[opt]))
+            stages["group"] = Stage(
+                "group", "local", argv=argv, inputs=inputs,
+                outputs=[out_dir / "groups.jsonl", out_dir / "life_groups.jsonl",
+                         out_dir / "resolutions.jsonl",
+                         out_dir / "clarifications.jsonl", out_dir / "conflicts.json",
+                         trace_out],
+            )
 
     if sc("layout").get("enabled"):
         c = sc("layout")
-        groups = run / "group/groups.jsonl"
+        groups = run / (
+            "group/placement_groups.jsonl"
+            if trusted_inventory_mode
+            else "group/groups.jsonl"
+        )
         regions = run / "regions/regions.json"
         out_dir = run / "layout"
         trace_parent = run / "group/trace.jsonl"
@@ -205,8 +344,18 @@ def build_stages(cfg: dict, py: str) -> dict[str, Stage]:
 
     if sc("taskcards").get("enabled"):
         out_dir = run / "taskcards"
-        inputs = [run / "group/groups.jsonl", run / "layout/layout.json",
-                  run / "regions/regions.json", run / "naming/display.jsonl",
+        group_input = run / (
+            "group/placement_groups.jsonl"
+            if trusted_inventory_mode
+            else "group/groups.jsonl"
+        )
+        display_input = run / (
+            "inventory/display.jsonl"
+            if inventory_enabled
+            else "naming/display.jsonl"
+        )
+        inputs = [group_input, run / "layout/layout.json",
+                  run / "regions/regions.json", display_input,
                   run / "layout/trace.jsonl"]
         trace_out = out_dir / "trace.jsonl"
         stages["taskcards"] = Stage(
@@ -220,6 +369,28 @@ def build_stages(cfg: dict, py: str) -> dict[str, Stage]:
                   "--trace-out", str(trace_out)],
             inputs=inputs,
             outputs=[out_dir / "taskcards.jsonl", out_dir / "taskcards.md", trace_out],
+        )
+
+    if sc("risk").get("enabled"):
+        c = sc("risk")
+        closure = _p(c["closure"])
+        facts = _p(c["facts"])
+        out_dir = run / "risk"
+        stages["risk"] = Stage(
+            "risk",
+            "local",
+            argv=[
+                py,
+                str(PROJ / "scripts/risk_task.py"),
+                "--closure",
+                str(closure),
+                "--facts",
+                str(facts),
+                "--out-dir",
+                str(out_dir),
+            ],
+            inputs=[closure, facts],
+            outputs=[out_dir / "assessments.json", out_dir / "metrics.json"],
         )
 
     if sc("verify").get("enabled"):
@@ -243,7 +414,11 @@ def build_stages(cfg: dict, py: str) -> dict[str, Stage]:
     if sc("trace").get("enabled"):
         c = sc("trace")
         fragments = [
-            run / "naming/trace.jsonl",
+            run / (
+                "inventory/trace.jsonl"
+                if trusted_inventory_mode
+                else "naming/trace.jsonl"
+            ),
             run / "group/trace.jsonl",
             run / "layout/trace.jsonl",
             run / "taskcards/trace.jsonl",
@@ -282,9 +457,26 @@ def build_stages(cfg: dict, py: str) -> dict[str, Stage]:
         )
 
     if sc("report").get("enabled"):
-        inputs = [run / "naming/display.jsonl", run / "group/groups.jsonl",
-                  run / "layout/layout.json", run / "regions/regions.json",
-                  run / "taskcards/taskcards.jsonl"]
+        display = run / (
+            "inventory/display.jsonl"
+            if inventory_enabled
+            else "naming/display.jsonl"
+        )
+        groups = run / (
+            "group/placement_groups.jsonl"
+            if trusted_inventory_mode
+            else "group/groups.jsonl"
+        )
+        inputs = [display, groups, run / "layout/layout.json",
+                  run / "regions/regions.json", run / "taskcards/taskcards.jsonl"]
+        if inventory_enabled:
+            inputs.append(run / "inventory/metrics.json")
+        if trusted_inventory_mode:
+            inputs.append(run / "group/boxlist.json")
+        if space_enabled:
+            inputs.append(run / "spatial/metrics.json")
+        if sc("risk").get("enabled"):
+            inputs.append(run / "risk/metrics.json")
         if sc("verify").get("enabled"):
             inputs.append(run / "verify/verdicts.json")
         if sc("trace").get("enabled"):

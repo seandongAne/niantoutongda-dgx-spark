@@ -65,7 +65,7 @@ done
 [ -n "$TRT_PYTHON" ] || { echo "TRT_PYTHON_NOT_FOUND under $TRT_ROOT" >&2; exit 3; }
 
 LD_LIBRARY_PATH="$TRT_LIB${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
-  "$TRTEXEC" --version
+  "$TRTEXEC" --help >/dev/null
 PYTHONPATH="$TRT_PYTHON${PYTHONPATH:+:$PYTHONPATH}" \
 LD_LIBRARY_PATH="$TRT_LIB${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
   "$PYTHON_BIN" -c 'import onnx, onnxscript, tensorrt; print("onnx", onnx.__version__, "onnxscript", onnxscript.__version__, "tensorrt", tensorrt.__version__)'

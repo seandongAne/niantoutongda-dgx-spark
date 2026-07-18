@@ -14,6 +14,7 @@ import argparse
 import hashlib
 import json
 import platform
+import resource
 import statistics
 import subprocess
 import time
@@ -66,6 +67,7 @@ def main() -> int:
     parser.add_argument("--warmup", type=int, default=5)
     parser.add_argument("--runs", type=int, default=20)
     parser.add_argument("--opset", type=int, default=17)
+    parser.add_argument("--code-commit")
     args = parser.parse_args()
     if args.batch_size < 1 or args.warmup < 0 or args.runs < 1:
         parser.error("batch-size/runs must be positive and warmup non-negative")
@@ -154,6 +156,7 @@ def main() -> int:
             end.synchronize()
             timings_ms.append(float(start.elapsed_time(end)))
         peak_memory_bytes = int(torch.cuda.max_memory_allocated())
+        process_peak_rss_bytes = int(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss) * 1024
     assert outputs is not None
 
     input_np = {name: batch[name].detach().cpu().numpy() for name in input_names}
@@ -199,7 +202,7 @@ def main() -> int:
         "schema_version": "1.0",
         "scope": "SF1-L2_TENSORRT_FEASIBILITY_ONLY",
         "created_at_unix": int(time.time()),
-        "code_commit": _git_commit(project),
+        "code_commit": args.code_commit or _git_commit(project),
         "platform": {
             "machine": platform.machine(),
             "python": platform.python_version(),
@@ -229,6 +232,7 @@ def main() -> int:
             "throughput_images_per_second": args.batch_size
             / (statistics.fmean(timings_ms) / 1000.0),
             "peak_memory_bytes": peak_memory_bytes,
+            "process_peak_rss_bytes": process_peak_rss_bytes,
             "samples_ms": timings_ms,
         },
         "onnx": {

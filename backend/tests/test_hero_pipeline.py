@@ -508,6 +508,9 @@ def test_final_config_is_strict_auto_with_fresh_pull_and_semantic_score():
     assert str(truth_path) not in space.argv
     assert contract_path not in score.inputs
     assert score.inputs[1] == truth_path
+    assert space.argv[
+        space.argv.index("--support-saturation-observations") + 1
+    ] == "30"
     run_path = Path(cfg["run_dir"])
     expected_spatial = PROJ / run_path / "spatial/regions.json"
     assert regions.inputs == [expected_spatial]

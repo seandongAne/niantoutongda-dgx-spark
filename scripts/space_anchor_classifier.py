@@ -49,9 +49,6 @@ MAIN_MAX_TOKENS = 700
 MAX_CLASSIFICATION_VIEWS = 3
 MIN_VALID_CLASSIFICATION_VIEWS = 2
 MIN_TARGET_VIEW_PIXELS = 20_000
-LONG_GAP_SEMANTIC_MAX_MS = 120_000
-LONG_GAP_SEMANTIC_MIN_COSINE = 0.60
-LONG_GAP_SEMANTIC_MIN_CONFIDENCE = 0.85
 ANCHOR_CANDIDATES_FILENAME = "anchor_candidates.json"
 METRICS_FILENAME = "metrics.json"
 HASHES_FILENAME = "hashes.json"
@@ -529,7 +526,6 @@ def semantic_visual_instance_ids(
             union.union(members[0], track_id)
 
     dominant: dict[str, tuple[str, str, str]] = {}
-    strong_consensus: set[str] = set()
     for candidate in candidates:
         if len(candidate.source_track_ids) != 1:
             continue
@@ -558,11 +554,6 @@ def semantic_visual_instance_ids(
             winner.support_type.value,
             winner.capacity_class.value,
         )
-        if (
-            winner.label_vote_count == candidate.semantic_observation_count
-            and winner.mean_confidence >= LONG_GAP_SEMANTIC_MIN_CONFIDENCE
-        ):
-            strong_consensus.add(track_id)
 
     frame_boxes: dict[str, dict[str, tuple[float, float, float, float]]] = {}
     rows: dict[str, list[SpatialObservation]] = {}
@@ -632,14 +623,10 @@ def semantic_visual_instance_ids(
             else:
                 continue
             cosine = _embedding_cosine(embeddings.get(left), embeddings.get(right))
-            if cosine is not None and (
-                (gap <= max_gap_ms and cosine >= 0.50)
-                or (
-                    gap <= LONG_GAP_SEMANTIC_MAX_MS
-                    and left in strong_consensus
-                    and right in strong_consensus
-                    and cosine >= LONG_GAP_SEMANTIC_MIN_COSINE
-                )
+            if (
+                gap <= max_gap_ms
+                and cosine is not None
+                and cosine >= 0.50
             ):
                 semantic_edges.append((1, -cosine, left, right))
 

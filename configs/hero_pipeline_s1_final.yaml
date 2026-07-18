@@ -126,6 +126,8 @@ stages:
     min_vlm_mean_confidence: 0.50
     min_assignment_score: 0.70
     min_assignment_margin: 0.05
+    # 104 秒视频约每秒一条检测；30 条连续视觉支撑才计满 observation 分量。
+    support_saturation_observations: 30
     expected_anchor:
       - study_desk
       - vanity

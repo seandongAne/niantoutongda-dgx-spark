@@ -214,7 +214,7 @@ def test_semantic_consensus_merges_part_and_whole_tracks():
     assert instances["t-a"] == instances["t-b"]
 
 
-def test_strong_semantic_consensus_can_merge_long_gap_fragments():
+def test_semantic_consensus_never_merges_long_gap_fragments():
     grouped = {
         "t-a": [
             _observation("t-a", "a.jpg", (0, 0, 200, 100), timestamp=0),
@@ -263,72 +263,7 @@ def test_strong_semantic_consensus_can_merge_long_gap_fragments():
         embeddings=embeddings,
     )
 
-    assert instances["t-a"] == instances["t-b"]
-
-
-def test_long_gap_semantic_merge_requires_same_video_and_unanimous_votes():
-    def run(*, right_video: str, chest_votes: int) -> dict[str, str]:
-        grouped = {
-            "t-a": [
-                _observation("t-a", "a.jpg", (0, 0, 200, 100), timestamp=0),
-            ],
-            "t-b": [
-                _observation(
-                    "t-b",
-                    "b.jpg",
-                    (0, 0, 200, 100),
-                    timestamp=67_000,
-                    video=right_video,
-                ),
-            ],
-        }
-        prediction = {
-            "anchor_scores": {"chest_of_drawers": 90, "other": 10},
-            "anchor_max_scores": {"chest_of_drawers": 95, "other": 10},
-            "anchor_vote_counts": {
-                "chest_of_drawers": chest_votes,
-                "other": 3 - chest_votes,
-            },
-            "best_anchor": "chest_of_drawers",
-            "display_name_zh": "红棕色多抽屉柜",
-            "support_type": "surface",
-            "support_confidence": 90,
-            "capacity_class": "medium",
-            "capacity_confidence": 85,
-            "view_count": 3,
-        }
-        candidates = [
-            _candidate_from_prediction(
-                TrackEvidence(
-                    track_id=track_id,
-                    observations=tuple(grouped[track_id]),
-                    prototype_refs=(),
-                    hero_ref=None,
-                    visual_instance_id=f"initial-{track_id}",
-                ),
-                prediction,
-                contact_ref=f"{track_id}.jpg",
-                contact_sha256="b" * 64,
-                model="nemotron-test",
-            )
-            for track_id in grouped
-        ]
-        embeddings = {
-            track_id: TrackEmbedding(model="dino", vector=(1.0, 0.0))
-            for track_id in grouped
-        }
-        return semantic_visual_instance_ids(
-            grouped,
-            candidates,
-            {"t-a": "initial-a", "t-b": "initial-b"},
-            embeddings=embeddings,
-        )
-
-    cross_video = run(right_video="different", chest_votes=3)
-    split_vote = run(right_video="new", chest_votes=2)
-
-    assert cross_video["t-a"] != cross_video["t-b"]
-    assert split_vote["t-a"] != split_vote["t-b"]
+    assert instances["t-a"] != instances["t-b"]
 
 
 def test_main_vlm_budget_covers_observed_nested_response(monkeypatch):

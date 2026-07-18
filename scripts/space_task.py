@@ -111,6 +111,15 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--min-assignment-score", type=float, default=0.70)
     parser.add_argument("--min-assignment-margin", type=float, default=0.05)
     parser.add_argument(
+        "--support-saturation-observations",
+        type=int,
+        default=5,
+        help=(
+            "detector observation count that saturates the assignment support "
+            "component"
+        ),
+    )
+    parser.add_argument(
         "--expected-anchor",
         action="append",
         default=[],
@@ -188,6 +197,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 min_power_confidence=args.min_power_confidence,
                 min_assignment_score=args.min_assignment_score,
                 min_runner_up_margin=args.min_assignment_margin,
+                support_saturation_observations=(
+                    args.support_saturation_observations
+                ),
             ),
             anchor_contracts=contract_manifest.anchors,
         )

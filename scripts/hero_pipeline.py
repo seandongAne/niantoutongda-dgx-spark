@@ -253,6 +253,10 @@ def build_stages(
             (("min_vlm_mean_confidence",), "--min-vlm-mean-confidence"),
             (("min_assignment_score",), "--min-assignment-score"),
             (("min_assignment_margin",), "--min-assignment-margin"),
+            (
+                ("support_saturation_observations",),
+                "--support-saturation-observations",
+            ),
         ):
             value = next((c[key] for key in keys if key in c), None)
             if value is not None:

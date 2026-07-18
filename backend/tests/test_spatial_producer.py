@@ -559,6 +559,8 @@ def test_assignment_cli_requires_contract_and_mismatch_removes_stale_regions(
         str(out_dir),
         "--min-regions",
         "1",
+        "--support-saturation-observations",
+        "7",
         "--expected-anchor",
         "desk",
     ]
@@ -594,6 +596,7 @@ def test_assignment_cli_requires_contract_and_mismatch_removes_stale_regions(
         (out_dir / "assignment.json").read_text(encoding="utf-8")
     )
     assert assignment["expected_anchor_contracts"][0]["anchor"] == "desk"
+    assert assignment["config"]["support_saturation_observations"] == 7
     assert assignment["edges"][0]["rejection_reasons"] == [
         "capacity_class_contract_mismatch",
         "support_type_contract_mismatch",

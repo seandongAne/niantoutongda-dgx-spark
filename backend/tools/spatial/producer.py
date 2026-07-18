@@ -728,9 +728,19 @@ def produce_spatial_regions(
         gate_reasons.append(
             f"min_regions_not_met:{len(accepted)}/{config.min_regions}"
         )
-    if config.require_expected_coverage and not_observed:
-        labels = ",".join(sorted(candidate.anchor or "unknown" for candidate in not_observed))
-        gate_reasons.append(f"expected_anchors_not_observed:{labels}")
+    accepted_anchor_labels = {
+        _canonical_anchor(candidate.anchor)
+        for candidate in accepted
+        if candidate.anchor
+    }
+    expected_not_auto_accepted = [
+        anchor
+        for anchor in config.expected_anchor_labels
+        if _canonical_anchor(anchor) not in accepted_anchor_labels
+    ]
+    if config.require_expected_coverage and expected_not_auto_accepted:
+        labels = ",".join(sorted(expected_not_auto_accepted, key=_canonical_anchor))
+        gate_reasons.append(f"expected_anchors_not_auto_accepted:{labels}")
     gate_status = GateStatus.NEEDS_USER if gate_reasons else GateStatus.PASS
 
     candidate_manifest = SpatialCandidateManifest(

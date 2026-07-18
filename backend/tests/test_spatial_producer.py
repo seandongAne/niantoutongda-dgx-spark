@@ -177,6 +177,53 @@ def test_expected_anchor_not_observed_is_explicit_and_blocks_gate():
     assert result.region_manifest is None
 
 
+def test_observed_but_unaccepted_expected_anchor_cannot_be_replaced_by_duplicate_regions():
+    observations: list[dict] = []
+    for index, anchor in enumerate(["bed", "bed", "desk", "closet", "shelf"]):
+        x1 = index * 0.15
+        observations.extend(
+            [
+                _observation(
+                    anchor,
+                    index * 3 + 1,
+                    [x1, 0.1, x1 + 0.1, 0.3],
+                    region_track_id=f"{anchor}-{index}",
+                ),
+                _observation(
+                    anchor,
+                    index * 3 + 2,
+                    [x1 + 0.005, 0.105, x1 + 0.105, 0.305],
+                    region_track_id=f"{anchor}-{index}",
+                ),
+            ]
+        )
+    observations.append(
+        _observation(
+            "corner",
+            99,
+            [0.82, 0.1, 0.92, 0.3],
+            region_track_id="corner-0",
+        )
+    )
+
+    result = produce_spatial_regions(
+        "new_1",
+        observations,
+        SpatialProducerConfig(
+            min_regions=5,
+            expected_anchor_labels=["bed", "desk", "closet", "shelf", "corner"],
+        ),
+    )
+
+    assert result.metrics.auto_accepted_count == 5
+    assert result.metrics.expected_coverage_rate == 1.0
+    assert result.metrics.gate_status is GateStatus.NEEDS_USER
+    assert result.region_manifest is None
+    assert result.metrics.gate_reasons == [
+        "expected_anchors_not_auto_accepted:corner"
+    ]
+
+
 def test_polygon_input_aliases_and_jsonl_loader(tmp_path):
     path = tmp_path / "observations.jsonl"
     payload = {

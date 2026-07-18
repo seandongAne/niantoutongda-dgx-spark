@@ -102,3 +102,17 @@
   `pull_results.sh` 的 50MB 门自建成起从未生效;改 `--out-format '%l %n'` 逐文件
   求和,实测对 138MB 增量正确拒绝。sweep 全量产物(139MB)走 R2 通道实战首拉,
   zstd 压至单块、秒级到本地。
+
+## 增量 D6-4:交付三件套备便(上午)
+
+- **验收一键就绪**:`fixtures/hero_s1/acceptance.template.json` 按 s1-final 真实
+  卡片/区域/实体 ID 预填(present 预填 false=失败安全,不填表跑出的是 FAILED
+  而非假 VERIFIED),已过 AcceptanceManifest 合同校验;拍摄/填表/发射三步指引
+  `docs/验收照片指引_hero_s1.md`。照片到手后:填表 → verify/strict 翻 true →
+  `--from-stage verify`,G7a/G7b 同跑取证。
+- **演示脚本底稿** `docs/演示视频脚本_v1.md`:9 镜头 100–120s,素材指针全部指向
+  已归档产物,双生态段位对齐评分标准(NVFP4/vLLM 15× vs StepFun 调优代理),
+  诚实边界段预答未达门;录屏采集清单机器侧可先备。
+- **十日谈重构并填至 D6**:海事时代骨架换成真实弧线(生死门→换题→链路与真值
+  →StepFun 3.7 整合训练一环→演示固化占位→结果与边界),口径=错误归因/难样本
+  判定/伪标签域内自适应,数字与判卷档案逐一对应。

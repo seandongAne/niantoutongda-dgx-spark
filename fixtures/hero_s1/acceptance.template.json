@@ -1,0 +1,16 @@
+{
+  "photos": [
+    {
+      "photo_ref": "local-data/hero_s1/acceptance/chest_top_after.jpg",
+      "region_id": "chest_top",
+      "match_source": "manual",
+      "matches": [
+        {"entity_id": "entity_07b63114b8a4", "present": false},
+        {"entity_id": "entity_31fe1e1340f1", "present": false},
+        {"entity_id": "entity_63855de17cfe", "present": false},
+        {"entity_id": "entity_81bfd78cd410", "present": false}
+      ]
+    }
+  ],
+  "adjudications": []
+}

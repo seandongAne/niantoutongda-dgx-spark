@@ -22,6 +22,9 @@
   多精度对照,只在输出和检测决策等价门通过后接受性能收益。
 - 在不再读取两次终检 GT 的前提下,试验 schema 转写与实例级语义签名重排;先分离
   选参/冻结证据边界,再测 PyTorch AMP、Torch-TensorRT 混合执行和 TF-TRT 前置门。
+- 复核 Grounding DINO 的 precision policy、encoder proposal、TopK query 排位与
+  ONNX 后处理集合等价;同时测 `torch.compile`、模块耗时构成和 Torch-TensorRT
+  真正 engine build,修正只看 raw query-slot 最大偏差的旧口径。
 
 ## 关键证据或截图
 
@@ -369,6 +372,51 @@
   `results/acceptance/SF1/optimization-comparison-20260718/`;全量后端验证
   `360 passed`,`py_compile` 与 `git diff --check` 通过。
 
+### 增量 D6-16:TopK/TF32 复核、compile 与混合 TRT 实际构建(夜间)
+
+- Spark 安全门保持 `✅ SPARK CLEAN`;每次模型加载前 `free -h` 均为约 70 GiB
+  available、swap 0,既有 Nemotron vLLM 未停止。全部长任务用 nohup 与独立日志,
+  远端证据先逐文件拉回；代码提交为 `8d56e69b`、模块回退参数提交为 `7c20d3d5`。
+- 旧冻结 oracle 未记录 precision policy。当前 host 默认状态为 matmul TF32
+  `false`、cuDNN TF32 `true`、float32 matmul precision `highest`;显式复现该状态时
+  与旧 oracle logits/boxes bit-exact。切为双 TF32 `false` 后,两批 TopK 集合仍各
+  900/900 相同,但同 rank 仅 837/900、840/900;raw boxes 最大偏差 `0.98414`,按
+  encoder proposal ID 对齐后约 `2.0e-4`,检测集合严格 PASS。
+- NGC 与 host 同为双 TF32 `false` 时,TopK 只剩 4/0 个槽位变化且集合完全相同,
+  检测集合严格 PASS。两端各用框架默认 cuDNN TF32 时,不同 cuDNN build 使同 rank
+  降到约 223/224,并替换 4/3 个 proposal。旧 v2 的大 raw 差异因此包含 precision
+  policy 与 query 排位混杂,不能直接判定容器检测语义失败。
+- ONNX 原图与插桩图最终输出 bit-exact;图中确认一个 `K=900` 的 TopK 和 48 个
+  GridSample。相对 host no-TF32,proposal score/coord 最大偏差分别 `7.44e-5`、
+  `2.11e-4`;第二批 TopK 仅替换 1/900 proposal。正式 AutoProcessor 后处理为
+  `[5,5]→[5,5]`,10 个检测全部完成标签约束最大 IoU 匹配,最差 IoU `0.9999983`,
+  score 差 `2.74e-4`,框差 `0.00025 px`,strict diagnostic PASS。相对旧默认 oracle
+  也为 `[5,5]→[5,5]`,最差 IoU `0.9999797`;因此原 `4.17/0.984` ORT raw 剪刀差
+  中的槽位与 boxes 部分主要来自非决策 query 错位,不是此前 TensorRT `[1,3]` 的
+  检测退化;proposal-ID 对齐后 final logits 最大偏差仍为 `1.3666`,不能把全部漂移
+  归因于 TopK。
+- `torch.compile` FP32 将 P50 从 `680.78` 降至 `581.83 ms`,为 `1.170×`;检测数
+  `[5,5]`,score 差 `≤7.79e-5`、框差 `≤0.00037 px`,门禁 PASS。首次 lazy
+  invocation 为 `59.1 s`,仍有 10 个 `Tensor.item()` graph break。compile BF16
+  P50 `312.84 ms`、`2.176×`,但检测数 `[4,5]`,正确性 FAIL;不启用。
+- 模块级 FP32 profile 经 unhooked frozen-oracle 与 hooked bit-exact 双门:视觉
+  backbone `214.39 ms/31.36%`,encoder `400.95 ms/58.65%`,decoder
+  `49.08 ms/7.18%`,文本 backbone `3.83 ms/0.56%`,其余 `14.94 ms/2.18%`。
+  视觉 backbone 即便单独 3×,Amdahl 全链上限也只有约 `1.264×`,未扣分区开销。
+- Torch-TensorRT v4 的容器 eager no-TF32 检测集合先通过,export 兼容改写与
+  `torch.export` 对 same-process eager 均 bit-exact。dry-run 为 4520/4521
+  converter-supported、规划两段 TRT partition(3280+1240 算子),99.98% 覆盖;
+  实际 FP32 build 在 BERT `embeddings + position_embeddings` 的
+  `aten.add.Tensor` converter
+  触发 `ValueError: __len__() should return >= 0`。experimental decompositions 未
+  改变失败点;指定 module FQN 的回退请求也未生效,原因尚未定位。没有形成 engine,
+  因此没有 FP32/FP16 混合延迟或加速数字。
+- 复核版报告与机器可读摘要落在
+  `results/acceptance/SF1/optimization-comparison-20260718/`;正式边界对比位于
+  `onnx-pytorch-boundary-comparison-20260718/`,混合构建证据位于 v4-v6 目录。
+  证据提交为 `8e3d11f6`;全量后端复跑 `360 passed`,全部新脚本 `py_compile`、
+  JSON 解析和 `git diff --check` 通过。
+
 ## 失败与教训
 
 - AutoTune-v1 将澄清从 1379 降至 677,但完整合并仍为 14/20、R@1 仅 0.8083,
@@ -415,6 +463,14 @@
 - Torch-TensorRT 容器包含目标编译器并不保证可与现有 PyTorch oracle 比较;26.06 的
   `2.13.0a0/CUDA 13.3` 与现有 `2.13.0+cu130` 在同权重同输入下已发生大幅有限值漂移。
   必须把容器 eager FP32 放在编译前,否则很容易把运行栈漂移误归因给 TensorRT。
+- 上一增量把 query-slot raw 最大差直接当作检测语义门,并把旧 oracle 的框架默认
+  精度当成已知条件,结论过严。复核后应拆成三层:shape/dtype/非有限值安全门、raw
+  排位诊断、标签+IoU 检测集合门;precision policy 必须显式封存。ORT 在当前样本的
+  集合门通过,现有 TensorRT engine 的检测丢失仍成立,两者不能混写。
+- Torch-TensorRT 99.98% dry-run converter 覆盖不等于 engine 可构建;本轮实际失败
+  发生在已标为 supported 的 `aten.add.Tensor`。experimental decomposition 与未命中
+  的 module FQN 回退都不能被写成有效优化。下一步先做最小复现或匹配稳定版本,不在
+  未形成 engine 时继续累计名义覆盖率。
 
 ## 明日计划
 
@@ -441,6 +497,10 @@
   只准用 dev identity 训练后再封存 holdout。新集到位前只修评估工装,不再产生提升声明。
 - AMP 下一轮先做 FX/ATen 算子级漂移和 selective FP32 island 消融,再用更大冻结检测集
   以标签+IoU 匹配报告新增、丢失和重排;无法形成局部稳定岛时停止自定义 converter。
-- Torch-TensorRT 先取得与现有 PyTorch build 数值一致的隔离运行栈;容器 eager FP32
-  raw oracle PASS 后才重开 dry-run 分区覆盖、hybrid FP32 与 FP16。TF-TRT 继续旁路,
-  没有 native TF FP32 SavedModel 对齐时不创建性能结果。
+- 冻结新的检测 holdout,把 matmul/cuDNN TF32、float32 matmul precision、模型、
+  processor、输入与集合匹配器哈希一起封入合同;raw query-slot 继续报告,但不再单独
+  替代标签+IoU 检测集合门。
+- Torch-TensorRT 先为 BERT embedding `aten.add` 符号 shape 构建错误形成最小复现,
+  再选择匹配的稳定版本或经 dry-run 证明有效的 PyTorch island。FP32 engine 集合门
+  PASS 后才测 FP16/BF16;TF-TRT 继续旁路,没有 native TF FP32 SavedModel 对齐时
+  不创建性能结果。

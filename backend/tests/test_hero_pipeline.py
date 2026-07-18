@@ -69,9 +69,20 @@ def test_full_chain_then_resume_then_from_stage(tmp_path):
 
     third = run_pipeline(run_dir, "--from-stage", "layout")
     assert third.returncode == 0, third.stderr
-    assert "[skip] group" in third.stdout
+    assert "[run ] group" not in third.stdout
+    assert "[skip] group" not in third.stdout
     assert "[run ] layout" in third.stdout
     assert "[run ] taskcards" in third.stdout
+
+
+def test_from_stage_excludes_earlier_stages_even_without_prior_state(tmp_path):
+    """新 run-dir 也不得把 --from-stage 之前的长任务误判成应执行。"""
+    proc = run_pipeline(tmp_path / "new-run", "--from-stage", "layout", "--dry-run")
+    assert proc.returncode == 0, proc.stderr
+    assert "[run ] group " not in proc.stdout
+    assert "[skip] group" not in proc.stdout
+    assert "[run ] layout" in proc.stdout
+    assert "[run ] taskcards" in proc.stdout
 
 
 def test_dry_run_lists_plan_without_side_effects(tmp_path):

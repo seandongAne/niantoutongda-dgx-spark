@@ -834,6 +834,7 @@ def main() -> int:
         forced = set()
         if args.from_stage:
             selected_from = selected[selected.index(args.from_stage):]
+            selected = selected_from
             forced = set(selected_from)
 
     plan: list[tuple[Stage, str]] = []

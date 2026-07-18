@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import platform
 import resource
 import statistics
@@ -166,6 +167,31 @@ def main() -> int:
         position_ids = torch.clamp(position_ids, min=0).to(torch.long)
         return attention_mask, position_ids
 
+    def exportable_sinusoidal_position_embedding(
+        pos_tensor,
+        num_pos_feats=128,
+        temperature=10000,
+    ):
+        scale = pos_tensor.new_tensor(2 * math.pi)
+        dim_t = torch.arange(
+            num_pos_feats,
+            dtype=torch.float32,
+            device=pos_tensor.device,
+        )
+        dim_t = temperature ** (
+            2 * torch.div(dim_t, 2, rounding_mode="floor") / num_pos_feats
+        )
+        coords = pos_tensor.unbind(-1)
+        embeddings = [coord[..., None] * scale / dim_t for coord in coords]
+        embeddings = [
+            torch.stack((item[..., 0::2].sin(), item[..., 1::2].cos()), dim=-1)
+            .flatten(-2)
+            for item in embeddings
+        ]
+        if len(embeddings) >= 2:
+            embeddings[0], embeddings[1] = embeddings[1], embeddings[0]
+        return torch.cat(embeddings, dim=-1).to(pos_tensor.dtype)
+
     original_masks = original_mask_builder(batch["input_ids"])
     replacement_masks = exportable_mask_builder(batch["input_ids"])
     mask_patch_verified = all(
@@ -220,6 +246,28 @@ def main() -> int:
         process_peak_rss_bytes = int(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss) * 1024
     assert outputs is not None
 
+    modeling_grounding_dino.generate_masks_with_special_tokens_and_transfer_map = (
+        exportable_mask_builder
+    )
+    modeling_grounding_dino.encode_sinusoidal_position_embedding = (
+        exportable_sinusoidal_position_embedding
+    )
+    scale_modules = [
+        module
+        for module in model.modules()
+        if isinstance(module, modeling_grounding_dino.GroundingDinoSinePositionEmbedding)
+    ]
+    for module in scale_modules:
+        module.scale = torch.tensor(float(module.scale), device="cuda")
+    with torch.inference_mode():
+        export_compatible_outputs = wrapper(*positional_inputs)
+    model_patch_verified = all(
+        torch.equal(reference, candidate)
+        for reference, candidate in zip(outputs, export_compatible_outputs)
+    )
+    if not model_patch_verified:
+        raise RuntimeError("export compatibility rewrites changed frozen model outputs")
+
     input_np = {name: batch[name].detach().cpu().numpy() for name in input_names}
     np.savez_compressed(output_dir / "sample_inputs.npz", **input_np)
     np.savez_compressed(
@@ -269,6 +317,9 @@ def main() -> int:
         "export_compatibility": {
             "special_token_mask_rewrite": "broadcast_amax_amin_equal_identity_v2",
             "bit_exact_on_frozen_inputs": mask_patch_verified,
+            "sinusoidal_scale_rewrite": "zero_dim_tensor_v1",
+            "scale_module_count": len(scale_modules),
+            "bit_exact_model_outputs_before_export": model_patch_verified,
             "site_packages_modified": False,
         },
     }
@@ -290,6 +341,9 @@ def main() -> int:
     try:
         modeling_grounding_dino.generate_masks_with_special_tokens_and_transfer_map = (
             exportable_mask_builder
+        )
+        modeling_grounding_dino.encode_sinusoidal_position_embedding = (
+            exportable_sinusoidal_position_embedding
         )
         export_options = {
             "input_names": input_names,

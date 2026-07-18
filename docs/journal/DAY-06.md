@@ -2,7 +2,7 @@
 
 > 赛程日:D6
 >
-> 当日主责:AutoTune-v1 一天时间盒——整合 StepFun 3.7 多模态能力作为模型训练一环
+> 当日主责:AutoTune-v1、基础完赛与英雄任务全自动空间技术闭环
 >
 > 状态:进行中
 
@@ -14,8 +14,12 @@
 - 目标门:G2c 完整合并 ≥16/20、G2d R@1 ≥0.90、G2e 澄清 ≤40(终局基线
   14/20、0.8031、1379)。
 - 附:落地 R2 回程传输通道(spark→Mac),终结大文件走 SSH。
+- 在不新增视频、不重跑 ReID 的前提下,以独立目标视图和全局一对一门完成自动五区,
+  替换 D5 的视觉裁定生产路径,并复跑 3306→20、组合、布局、任务卡与审计主链。
 
-## 增量 D6-1:AutoTune 工装与云端归因通道(凌晨)
+## 关键证据或截图
+
+### 增量 D6-1:AutoTune 工装与云端归因通道(凌晨)
 
 - 工装四件套入库(`395f0db`、`600abf9`):StepFun 客户端补图片通道(单 crop
   368 prompt tokens);`autotune_tutor.py`(归因+配对,内容寻址缓存+调用台账);
@@ -36,7 +40,7 @@
 - 归因产物:`results/autotune/attribution/`(8 记录 + merge_pairs.jsonl 46 对
   + 英文检测短语建议存档)。配对通道 400 不确定带对并发标注中。
 
-## 增量 D6-2:R2 回程通道——大文件传输彻底告别 SSH(清晨)
+### 增量 D6-2:R2 回程通道——大文件传输彻底告别 SSH(清晨)
 
 - 动因:D5 拉回 1.1GB crops 走 SSH 耗近一小时;赛方明令大文件不走 SSH。素材日
   已验证下行(Mac→R2→spark r2.dev 并发拉),本日补上行(spark→Mac),自此
@@ -72,7 +76,7 @@
     有效吞吐 ~2MB/s ≈ SSH 实测(17KB/s)的 120 倍;1.1GB 级拉取 ~10 分钟。
   - trap 清理实测:失败路径(workers.dev 探测失败)与成功路径均正确善后。
 
-## 增量 D6-3:工作点扫描、两次判卷与主链定版(上午)
+### 增量 D6-3:工作点扫描、两次判卷与主链定版(上午)
 
 - **伪标签 → SF1 → 18 组合扫描**:tutor 同物对 + 缝合边 + 高置信链接经并查集出
   117 身份/511 样本(GT 重叠率仅 12.52%,审计数),SF1 三种子门 PASS(R@1
@@ -103,7 +107,7 @@
   求和,实测对 138MB 增量正确拒绝。sweep 全量产物(139MB)走 R2 通道实战首拉,
   zstd 压至单块、秒级到本地。
 
-## 增量 D6-4:交付三件套备便(上午)
+### 增量 D6-4:交付三件套备便(上午)
 
 - **验收一键就绪**:`fixtures/hero_s1/acceptance.template.json` 按 s1-final 真实
   卡片/区域/实体 ID 预填(present 预填 false=失败安全,不填表跑出的是 FAILED
@@ -117,7 +121,7 @@
   →StepFun 3.7 整合训练一环→演示固化占位→结果与边界),口径=错误归因/难样本
   判定/伪标签域内自适应,数字与判卷档案逐一对应。
 
-## 增量 D6-5:基础完赛——赛方参考代码全链路跑通(下午)
+### 增量 D6-5:基础完赛——赛方参考代码全链路跑通(下午)
 
 - **背景**:赛方宣布基础完赛只需跑通参考代码(OpenClaw + ComfyUI 超级英雄照片
   生成 workshop);链接页即讲义网页版,无附加要求。节点 bundle
@@ -134,3 +138,65 @@
 - **遗留**:公网活演示(多节点版 9000/7072 端口方案)与安全纪律冲突,默认不开,
   需用户拍板;`~/.config/stepfun/stepfun.env` 仍存 API key(违反凭据纪律,
   AutoTune 已关账,建议尽快撤销/清除)。
+
+### 增量 D6-6:自动空间生产器替换人工五区(下午)
+
+- OOM 恢复后先过安全和内存门:`scripts/spark_healthcheck.sh` 输出
+  `✅ SPARK CLEAN`;121 GiB 总内存、70 GiB available、0 swap,无 ComfyUI、Qwen、
+  ReID 或旧空间分类进程。本增量没有再次启动 ReID,只复用已落盘的小型产物与
+  Spark 上现有 Nemotron 12B 视觉服务。
+- 自动候选生产将 2278 条空间观测整理为 168 个 track,每轨最多 3 个独立目标裁剪;
+  504/504 个视图返回合法结果、失败 0。5 个低信息 track 保留诊断但业务票清零,
+  最终得到 53 个自动视觉实例;候选 normalized hash 为
+  `0ced8a84133c0862682dcea0dcd2905434dbf68d1241209a13ce16e6959518e2`。
+- 可信门将 detector 支撑数与 VLM 语义票拆开:`semantic_observation_count` 只计独立
+  目标视图,raw `observation_count` 只贡献 10% 有界持续支撑;小于 2 个 20,000 像素
+  有效视图的候选不可参与分配。runner-up 按物理实例计算,同实例 sibling 候选不会
+  制造假 0 margin。
+- 生产 anchor contract 只冻结 anchor/support/capacity 要求,可拒绝但不可回填模型
+  输出。严格分配得到 5/5、`gate_status=PASS`、`needs_user=0`,全局 margin
+  `0.06333333 ≥ 0.05`;assignment hash 为
+  `43958ebfedeb50afb344bf551a869da614d923bee72161d9530b78a0361a6777`,空间 normalized
+  hash 为 `37ace5cb7ea7cd5115660765a378f8a081634774c7a2b73994d03314e175d184`。
+- 独立 scorer 不含 candidate/track/region ID,只消费生产侧五区并评分;结果 5/5、
+  精确语义匹配 5、额外预测 0、support/capacity mismatch 均 0,normalized hash
+  `3f4f38e330acd671267c87aeef90e96e77baa1d91be52c3f5e73fb4cb991d980`。两项电源差异
+  仅作信息记录,不扩写为空房安全结论。
+- 正式运行 `results/hero/s1-auto-final-v1/` 完成 3306→20 可信投影、4/4 澄清封顶、
+  3 个生活组合覆盖 15 件、2 个技术装箱单元承接其余 5 件、5 个 placement 单元、
+  `PLAN_READY`、5 张 `REGION_PLANNED` 任务卡。placement 与任务卡均为 20 个唯一
+  `hero_*` 实体,缺失/额外/重复均 0;三条风险规则保持 `DEFERRED/non-blocking`。
+- 四 Agent 主链回放 `PASS`、`main_chain.complete=1`;bundle 收录 46 个阶段产物并
+  逐项通过 SHA-256。生产器没有读取 scorer truth,scorer 没有产出 `regions.json`,
+  下游区域 SHA 与生产区域一致。结果页为 `results/hero/s1-auto-final-v1/index.html`。
+- 实现链 commits:`c61204ee`(自动 VLM 分配)、`292c543a`(断点运行不误启 ReID)、
+  `7897cd69`(生产 contract)、`fe926bbf`(独立目标视图真票)、`c8d30026`(保守语义
+  碎片归并)、`8bf22b54`(低信息隔离与物理 runner-up)、`b604742d`(持续观测支撑并
+  禁止长时弱相似合并)、`0ce17bd7`(冻结正式主链 51 个文件)。全仓验证
+  `290 passed`,`git diff --check` 通过。
+
+## 失败与教训
+
+- AutoTune-v1 将澄清从 1379 降至 677,但完整合并仍为 14/20、R@1 仅 0.8083,
+  未达 16/20 与 0.90 的预注册门。代理指标能选工作点,不能替代冻结人工 GT。
+- R2 Worker 方案在 Spark 网络现实中被 DNS/SNI 阻断证伪;改为限时 S3 预签名 URL
+  后才满足无节点凭据、可恢复和可清理要求。传输链必须用真实双向 E2E,不能只测 Mac。
+- Qwen 35B 与 ComfyUI 同驻造成 OOM 并拖挂 ReID。无 swap 的统一内存环境必须按
+  工作负载错峰,每次模型任务前检查 `free -h`,OOM 后先自检和查残留进程。
+- 自动空间一版曾允许相隔 67 秒、DINO cosine≈0.63 的同语义轨合并;两件同类家具
+  也可能满足该条件。门审在正式运行前删除长时弱相似分支,改用 10% 有界持续观测
+  支撑区分候选,两个视觉实例始终保持独立。
+- 原始调研把“优先开箱顺序”列为必须完成;当前 5 张任务卡的 `priority` 全为 3,
+  只证明字段和任务卡存在,尚未形成有差异、可验收的开箱顺序。二维码只有稳定 box ID,
+  未生成二维码;复原前后照片和现场安全事实按范围延期。这些不能计入已完成。
+
+## 明日计划
+
+- 先补原始调研唯一仍缺的核心项:基于生活组合、使用频率和任务依赖生成有差异的优先
+  开箱顺序,加入确定性测试并复跑正式 bundle。
+- 二维码作为可演示项单独决定是否落地;若做,只绑定 5 个稳定 box ID,不扩张到每件
+  小物。复原前后照片继续只作可选物理执行验收。
+- 演示前用冻结配置做一次内容寻址复跑,确认自动空间无需人工 region/anchor ID 即可
+  重现 5/5、20/20 和 trace `PASS`;ComfyUI、Qwen 35B 与主链模型严格错峰。
+- AutoTune 已关账后撤销并清理 Spark 上遗留的 StepFun API key,不把凭据继续留在
+  曾被入侵的 `Developer` 账户。

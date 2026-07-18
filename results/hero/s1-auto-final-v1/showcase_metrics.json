@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "complete_restore": {
+    "value": 17,
+    "total": 20,
+    "label_zh": "跨视频完整复原",
+    "source": "results/acceptance/HERO_S1/closure-multiview-v2/gt-eval.json"
+  },
+  "multi_strategy_coverage": {
+    "hits": 495,
+    "opportunities": 577,
+    "percent": 85.79,
+    "label_zh": "多策略覆盖",
+    "source": "results/acceptance/HERO_S1/multiview-closure-attempt/README.md"
+  }
+}

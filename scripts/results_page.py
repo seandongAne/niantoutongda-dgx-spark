@@ -325,6 +325,7 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
     verdicts = load_json(run_dir / "verify/verdicts.json", {})
     trace_report = load_json(run_dir / "audit/replay-report.json", {})
     bundle = load_json(run_dir / "bundle.json", {})
+    showcase_metrics = load_json(run_dir / "showcase_metrics.json", {})
     state_artifacts = _current_state_artifacts(run_dir)
 
     # 可选的完整落地摘要。每块只在自身所需的小型产物齐全时出现；旧 run
@@ -925,6 +926,25 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
         accepted_count = spatial_metrics.get("auto_accepted_count", "—")
         score = spatial_score_metrics.get("score", "—")
 
+        complete_restore = showcase_metrics.get("complete_restore", {})
+        strategy_coverage = showcase_metrics.get("multi_strategy_coverage", {})
+        showcase_proof = ""
+        if isinstance(complete_restore, dict) and isinstance(strategy_coverage, dict):
+            complete_value = complete_restore.get("value")
+            complete_total = complete_restore.get("total")
+            coverage_percent = strategy_coverage.get("percent")
+            if (
+                isinstance(complete_value, int)
+                and isinstance(complete_total, int)
+                and 0 <= complete_value <= complete_total
+                and isinstance(coverage_percent, (int, float))
+                and 0 <= coverage_percent <= 100
+            ):
+                showcase_proof = (
+                    f'<span><b>{esc(complete_value)}/{esc(complete_total)}</b> 跨视频完整复原</span>'
+                    f'<span><b>{esc(f"{coverage_percent:.2f}%")}</b> 多策略覆盖</span>'
+                )
+
         visual_class = " judge-hero-with-visual" if room_visual or old_crop_strip else ""
         demo_sec = (
             f'<section class="judge-hero{visual_class}" id="top">'
@@ -938,6 +958,7 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
             f'<span><b>≤{esc(question_cap)}</b> 个关键问题</span>'
             f'<span><b>{esc(accepted_count)}/5</b> 个区域自动找到</span>'
             f'<span><b>{esc(len(cards))}</b> 张任务卡</span>'
+            f'{showcase_proof}'
             '</div><div class="hero-actions">'
             '<a class="button button-primary" href="#demo-story">30 秒看懂闭环</a>'
             '<a class="button button-secondary" href="#evidence">查看完整证据</a>'

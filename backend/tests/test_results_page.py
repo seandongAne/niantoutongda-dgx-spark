@@ -325,6 +325,13 @@ def test_results_page_promotes_judge_story_only_after_every_hard_gate_passes(tmp
     run_dir.mkdir()
     _write_completion_summaries(run_dir)
     _write_json(
+        run_dir / "showcase_metrics.json",
+        {
+            "complete_restore": {"value": 17, "total": 20},
+            "multi_strategy_coverage": {"percent": 85.79},
+        },
+    )
+    _write_json(
         run_dir / "layout/layout.json",
         {
             "status": "PLAN_READY",
@@ -384,6 +391,8 @@ def test_results_page_promotes_judge_story_only_after_every_hard_gate_passes(tmp
     assert "核心流程已跑通" in page
     assert 'id="demo-story"' in page
     assert "3306→20" in page
+    assert "17/20</b> 跨视频完整复原" in page
+    assert "85.79%</b> 多策略覆盖" in page
     assert "个候选" in page and "另一套检查给出 5/5" in page
     assert "代表任务卡" in page and "学习文具箱" in page
     assert 'alt="可信展示名物品图"' in page

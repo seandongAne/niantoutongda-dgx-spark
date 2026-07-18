@@ -157,10 +157,8 @@ def main() -> int:
         attention_mask = (next_special.unsqueeze(2) == next_special.unsqueeze(1)) & (
             valid_block.unsqueeze(1)
         )
-        identity = (
-            torch.eye(sequence_length, device=device, dtype=torch.bool)
-            .unsqueeze(0)
-            .expand(batch_size, -1, -1)
+        identity = (query_positions == candidate_positions).expand(
+            batch_size, -1, -1
         )
         attention_mask = identity | attention_mask
         position_ids = positions.unsqueeze(0).expand(batch_size, -1) - previous_special - 1
@@ -269,7 +267,7 @@ def main() -> int:
             "samples_ms": timings_ms,
         },
         "export_compatibility": {
-            "special_token_mask_rewrite": "broadcast_amax_amin_v1",
+            "special_token_mask_rewrite": "broadcast_amax_amin_equal_identity_v2",
             "bit_exact_on_frozen_inputs": mask_patch_verified,
             "site_packages_modified": False,
         },

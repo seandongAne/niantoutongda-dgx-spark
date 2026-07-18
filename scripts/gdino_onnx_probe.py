@@ -77,6 +77,7 @@ def main() -> int:
     import torch
     from PIL import Image
     from transformers import AutoModelForZeroShotObjectDetection, AutoProcessor
+    from transformers.models.grounding_dino import modeling_grounding_dino
 
     if not torch.cuda.is_available():
         raise RuntimeError("CUDA is required for the Spark TensorRT baseline")
@@ -115,6 +116,61 @@ def main() -> int:
     missing = [name for name in input_names if name not in batch]
     if missing:
         raise RuntimeError(f"processor did not provide required inputs: {missing}")
+
+    original_mask_builder = (
+        modeling_grounding_dino.generate_masks_with_special_tokens_and_transfer_map
+    )
+
+    def exportable_mask_builder(input_ids):
+        batch_size, sequence_length = input_ids.shape
+        device = input_ids.device
+        special_mask = (
+            (input_ids == 101)
+            | (input_ids == 102)
+            | (input_ids == 1012)
+            | (input_ids == 1029)
+        )
+        positions = torch.arange(sequence_length, device=device)
+        query_positions = positions.view(1, sequence_length, 1)
+        candidate_positions = positions.view(1, 1, sequence_length)
+        special_candidates = special_mask.unsqueeze(1)
+        previous_special = torch.where(
+            special_candidates & (candidate_positions <= query_positions),
+            candidate_positions,
+            -1,
+        ).amax(dim=2)
+        next_special = torch.where(
+            special_candidates & (candidate_positions >= query_positions),
+            candidate_positions,
+            sequence_length,
+        ).amin(dim=2)
+        valid_block = (
+            (next_special != 0)
+            & (next_special != sequence_length - 1)
+            & (next_special != sequence_length)
+        )
+        attention_mask = (next_special.unsqueeze(2) == next_special.unsqueeze(1)) & (
+            valid_block.unsqueeze(1)
+        )
+        identity = (
+            torch.eye(sequence_length, device=device, dtype=torch.bool)
+            .unsqueeze(0)
+            .expand(batch_size, -1, -1)
+        )
+        attention_mask = identity | attention_mask
+        position_ids = positions.unsqueeze(0).expand(batch_size, -1) - previous_special - 1
+        position_ids = torch.where(valid_block, position_ids, torch.zeros_like(position_ids))
+        position_ids = torch.clamp(position_ids, min=0).to(torch.long)
+        return attention_mask, position_ids
+
+    original_masks = original_mask_builder(batch["input_ids"])
+    replacement_masks = exportable_mask_builder(batch["input_ids"])
+    mask_patch_verified = all(
+        torch.equal(original, replacement)
+        for original, replacement in zip(original_masks, replacement_masks)
+    )
+    if not mask_patch_verified:
+        raise RuntimeError("exportable special-token mask rewrite is not bit-exact")
 
     class ExportWrapper(torch.nn.Module):
         def __init__(self, wrapped):
@@ -207,6 +263,11 @@ def main() -> int:
             "process_peak_rss_bytes": process_peak_rss_bytes,
             "samples_ms": timings_ms,
         },
+        "export_compatibility": {
+            "special_token_mask_rewrite": "broadcast_amax_amin_v1",
+            "bit_exact_on_frozen_inputs": mask_patch_verified,
+            "site_packages_modified": False,
+        },
     }
     (output_dir / "baseline_manifest.json").write_text(
         json.dumps(baseline_manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
@@ -224,6 +285,9 @@ def main() -> int:
     }
     export_started = time.perf_counter()
     try:
+        modeling_grounding_dino.generate_masks_with_special_tokens_and_transfer_map = (
+            exportable_mask_builder
+        )
         export_options = {
             "input_names": input_names,
             "output_names": ["logits", "pred_boxes"],

@@ -1,7 +1,7 @@
 {
   "photos": [
     {
-      "photo_ref": "acceptance/desk_after.jpg",
+      "photo_ref": "fixtures/hero_dev/acceptance/desk_after.ppm",
       "region_id": "desk_top",
       "match_source": "manual",
       "matches": [
@@ -10,7 +10,7 @@
       ]
     },
     {
-      "photo_ref": "acceptance/closet_after.jpg",
+      "photo_ref": "fixtures/hero_dev/acceptance/closet_after.ppm",
       "region_id": "closet_shelf",
       "match_source": "manual",
       "matches": [
@@ -19,7 +19,7 @@
       ]
     },
     {
-      "photo_ref": "acceptance/bedside_after.jpg",
+      "photo_ref": "fixtures/hero_dev/acceptance/bedside_after.ppm",
       "region_id": "bedside",
       "match_source": "manual",
       "matches": [

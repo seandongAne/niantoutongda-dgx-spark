@@ -87,6 +87,24 @@ def _p(value: str) -> Path:
     return path if path.is_absolute() else PROJ / path
 
 
+def _acceptance_photo_paths(manifest: Path, photo_root: Path) -> list[Path]:
+    """把 manifest 中的照片纳入阶段输入 hash；缺文件由主循环 fail-closed。"""
+
+    if not manifest.exists():
+        return []
+    payload = json.loads(manifest.read_text(encoding="utf-8"))
+    rows = payload.get("photos", [])
+    if not isinstance(rows, list):
+        raise ValueError(f"{manifest}: photos must be a list")
+    paths = []
+    for index, row in enumerate(rows):
+        if not isinstance(row, dict) or not str(row.get("photo_ref", "")).strip():
+            raise ValueError(f"{manifest}: photos[{index}] missing photo_ref")
+        ref = Path(str(row["photo_ref"]))
+        paths.append(ref if ref.is_absolute() else photo_root / ref)
+    return paths
+
+
 def build_stages(
     cfg: dict, py: str, config_path: Path | None = None
 ) -> dict[str, Stage]:
@@ -539,19 +557,39 @@ def build_stages(
     if sc("verify").get("enabled"):
         c = sc("verify")
         photos = _p(c["photos"])
+        photo_root = _p(c.get("photo_root", "."))
+        photo_inputs = _acceptance_photo_paths(photos, photo_root)
         cards = run / "taskcards/taskcards.jsonl"
         out_dir = run / "verify"
         trace_parent = run / "taskcards/trace.jsonl"
+        argv = [py, str(PROJ / "scripts/verify_task.py"),
+                "--cards", str(cards), "--photos", str(photos),
+                "--photo-root", str(photo_root),
+                "--out-dir", str(out_dir),
+                "--trace-parent", str(trace_parent),
+                "--trace-out", str(out_dir / "messages.jsonl")]
+        if c.get("worker_timeout_seconds") is not None:
+            argv += ["--worker-timeout-seconds", str(c["worker_timeout_seconds"])]
         stages["verify"] = Stage(
             "verify", "local",
-            argv=[py, str(PROJ / "scripts/verify_task.py"),
-                  "--cards", str(cards), "--photos", str(photos),
-                  "--out-dir", str(out_dir),
-                  "--trace-parent", str(trace_parent),
-                  "--trace-out", str(out_dir / "messages.jsonl")],
-            inputs=[cards, photos, trace_parent],
-            outputs=[out_dir / "messages.jsonl", out_dir / "verdicts.json",
-                     out_dir / "taskcards_verified.jsonl"],
+            argv=argv,
+            inputs=[cards, photos, trace_parent, *photo_inputs],
+            outputs=[
+                out_dir / "requests.jsonl",
+                out_dir / "mem-results.jsonl",
+                out_dir / "space-results.jsonl",
+                out_dir / "messages.jsonl",
+                out_dir / "verdicts.json",
+                out_dir / "taskcards_verified.jsonl",
+            ],
+            code_dependencies=[
+                PROJ / "scripts/verification_worker.py",
+                PROJ / "backend/schemas/core.py",
+                PROJ / "backend/schemas/hero_bundle.py",
+                PROJ / "backend/tools/trace/store.py",
+                PROJ / "backend/tools/verification/acceptance.py",
+                PROJ / "backend/tools/verification/verdict.py",
+            ],
         )
 
     if sc("trace").get("enabled"):

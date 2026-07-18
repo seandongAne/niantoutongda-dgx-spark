@@ -218,7 +218,15 @@ class AcceptanceAdjudication(_HeroContract):
 
 
 class AcceptanceManifest(_HeroContract):
+    """验收照片与任务卡范围。
+
+    selected_card_ids 省略时保持旧合同语义：本次清单适用于调用方传入的
+    全部任务卡。显式提供时只允许这些任务卡进入验收；空列表不是“全不验”，
+    而是无效输入，避免误把一次未配置的验收当成成功运行。
+    """
+
     photos: list[AcceptancePhoto] = Field(min_length=1)
+    selected_card_ids: Optional[list[str]] = Field(default=None, min_length=1)
     adjudications: list[AcceptanceAdjudication] = []
 
     @model_validator(mode="after")
@@ -226,10 +234,27 @@ class AcceptanceManifest(_HeroContract):
         refs = [p.photo_ref for p in self.photos]
         if len(refs) != len(set(refs)):
             raise ValueError("photo_ref 重复")
+        if self.selected_card_ids is not None:
+            if any(not card_id.strip() for card_id in self.selected_card_ids):
+                raise ValueError("selected_card_ids 不能包含空白 card_id")
+            if len(self.selected_card_ids) != len(set(self.selected_card_ids)):
+                raise ValueError("selected_card_ids 重复")
         card_ids = [item.card_id for item in self.adjudications]
         if len(card_ids) != len(set(card_ids)):
             raise ValueError("adjudication card_id 重复")
+        if self.selected_card_ids is not None:
+            unselected = sorted(set(card_ids) - set(self.selected_card_ids))
+            if unselected:
+                raise ValueError(
+                    "adjudication card_id 不在 selected_card_ids: "
+                    + ", ".join(unselected)
+                )
         return self
+
+    def includes_card(self, card_id: str) -> bool:
+        """调用方在创建任何验收消息前用此方法筛掉未选择任务卡。"""
+
+        return self.selected_card_ids is None or card_id in self.selected_card_ids
 
 
 class StageArtifact(_HeroContract):

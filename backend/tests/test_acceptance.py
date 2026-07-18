@@ -184,12 +184,14 @@ def test_cli_writes_messages_verdicts_and_updated_cards(tmp_path):
     cards_path = tmp_path / "taskcards.jsonl"
     cards_path.write_text(_card().model_dump_json() + "\n", encoding="utf-8")
     photos_path = tmp_path / "acceptance.json"
+    photo_path = tmp_path / "p1.jpg"
+    photo_path.write_bytes(b"synthetic-test-photo")
     photos_path.write_text(
         _manifest([
             _photo("desk_top", [
                 AcceptanceMatch(entity_id="e1", present=True, match_score=0.9),
                 AcceptanceMatch(entity_id="e2", present=True, match_score=0.8),
-            ]),
+            ], ref=str(photo_path)),
         ]).model_dump_json(),
         encoding="utf-8",
     )

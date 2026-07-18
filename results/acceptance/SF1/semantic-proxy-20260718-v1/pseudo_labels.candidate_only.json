@@ -1,0 +1,1702 @@
+{
+ "_provenance": "AutoTune-v1 伪标签:模型高置信证据+tutor 建议;非人工真值,禁用于判卷",
+ "dataset_version": "hero-s1-vocab1",
+ "entities": [
+  {
+   "anchor_id": "pseudo_000",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t025",
+     "old_1_t122"
+    ],
+    "old_3": [
+     "old_3_t5371"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_001",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t1100",
+     "old_1_t892"
+    ],
+    "old_3": [
+     "old_3_t1043",
+     "old_3_t676",
+     "old_3_t754",
+     "old_3_t985"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_002",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t1132",
+     "old_1_t838"
+    ],
+    "old_2": [
+     "old_2_t577"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_003",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t1199",
+     "old_1_t1596"
+    ],
+    "old_2": [
+     "old_2_t1168"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_004",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t1234",
+     "old_1_t1394"
+    ],
+    "old_2": [
+     "old_2_t1196"
+    ],
+    "old_3": [
+     "old_3_t1433"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_005",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t1259",
+     "old_1_t1344",
+     "old_1_t1391",
+     "old_1_t1497"
+    ],
+    "old_2": [
+     "old_2_t1163",
+     "old_2_t1207",
+     "old_2_t1244"
+    ],
+    "old_3": [
+     "old_3_t1491",
+     "old_3_t1527",
+     "old_3_t1528",
+     "old_3_t1571"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_006",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t1292",
+     "old_1_t1493"
+    ],
+    "old_3": [
+     "old_3_t1427"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_007",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t1328",
+     "old_1_t1499"
+    ],
+    "old_2": [
+     "old_2_t1248"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_008",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t169",
+     "old_1_t1935",
+     "old_1_t2224",
+     "old_1_t2327",
+     "old_1_t2392"
+    ],
+    "old_2": [
+     "old_2_t005",
+     "old_2_t4430",
+     "old_2_t4460",
+     "old_2_t4943",
+     "old_2_t4964",
+     "old_2_t4973"
+    ],
+    "old_3": [
+     "old_3_t4967",
+     "old_3_t4976"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_009",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t205",
+     "old_1_t231",
+     "old_1_t256"
+    ],
+    "old_3": [
+     "old_3_t5352"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_010",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2107"
+    ],
+    "old_2": [
+     "old_2_t4821"
+    ],
+    "old_3": [
+     "old_3_t5070"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_011",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2108",
+     "old_1_t2115"
+    ],
+    "old_2": [
+     "old_2_t064"
+    ],
+    "old_3": [
+     "old_3_t169",
+     "old_3_t4662",
+     "old_3_t5166"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_012",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2112",
+     "old_1_t2118",
+     "old_1_t2240",
+     "old_1_t2363",
+     "old_1_t2417"
+    ],
+    "old_2": [
+     "old_2_t4807",
+     "old_2_t4906",
+     "old_2_t5079"
+    ],
+    "old_3": [
+     "old_3_t4831",
+     "old_3_t4936",
+     "old_3_t4969",
+     "old_3_t4985",
+     "old_3_t5023",
+     "old_3_t5201",
+     "old_3_t5208"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_013",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2113"
+    ],
+    "old_2": [
+     "old_2_t4809"
+    ],
+    "old_3": [
+     "old_3_t4837",
+     "old_3_t5255"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_014",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2152"
+    ],
+    "old_2": [
+     "old_2_t4824"
+    ],
+    "old_3": [
+     "old_3_t4857"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_015",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2157",
+     "old_1_t2397"
+    ],
+    "old_3": [
+     "old_3_t4664"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_016",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2162",
+     "old_1_t2401"
+    ],
+    "old_2": [
+     "old_2_t4898"
+    ],
+    "old_3": [
+     "old_3_t4904",
+     "old_3_t5061"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_017",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2169",
+     "old_1_t2377"
+    ],
+    "old_3": [
+     "old_3_t4896"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_018",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2183"
+    ],
+    "old_2": [
+     "old_2_t4910"
+    ],
+    "old_3": [
+     "old_3_t4948"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_019",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2197",
+     "old_1_t2278"
+    ],
+    "old_2": [
+     "old_2_t4955",
+     "old_2_t4993",
+     "old_2_t5006"
+    ],
+    "old_3": [
+     "old_3_t4977",
+     "old_3_t4998",
+     "old_3_t5006"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_020",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2198",
+     "old_1_t2353",
+     "old_1_t2403"
+    ],
+    "old_2": [
+     "old_2_t5081"
+    ],
+    "old_3": [
+     "old_3_t5087"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_021",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2203"
+    ],
+    "old_2": [
+     "old_2_t4972"
+    ],
+    "old_3": [
+     "old_3_t4960",
+     "old_3_t5029"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_022",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2210",
+     "old_1_t2220"
+    ],
+    "old_2": [
+     "old_2_t010"
+    ],
+    "old_3": [
+     "old_3_t344"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_023",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2211",
+     "old_1_t2326"
+    ],
+    "old_2": [
+     "old_2_t5047"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_024",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2217",
+     "old_1_t2349"
+    ],
+    "old_2": [
+     "old_2_t5069"
+    ],
+    "old_3": [
+     "old_3_t5080"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_025",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2230",
+     "old_1_t2283"
+    ],
+    "old_2": [
+     "old_2_t4956",
+     "old_2_t5008"
+    ],
+    "old_3": [
+     "old_3_t4963"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_026",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2236",
+     "old_1_t2259",
+     "old_1_t2300",
+     "old_1_t2331"
+    ],
+    "old_2": [
+     "old_2_t4980",
+     "old_2_t5015"
+    ],
+    "old_3": [
+     "old_3_t4996"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_027",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2239"
+    ],
+    "old_2": [
+     "old_2_t4924"
+    ],
+    "old_3": [
+     "old_3_t5055"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_028",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2252",
+     "old_1_t2329"
+    ],
+    "old_2": [
+     "old_2_t4971",
+     "old_2_t5050"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_029",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2261"
+    ],
+    "old_2": [
+     "old_2_t4966"
+    ],
+    "old_3": [
+     "old_3_t4971"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_030",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2262"
+    ],
+    "old_2": [
+     "old_2_t4797",
+     "old_2_t5066"
+    ],
+    "old_3": [
+     "old_3_t5001"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_031",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2265",
+     "old_1_t2272"
+    ],
+    "old_2": [
+     "old_2_t4990"
+    ],
+    "old_3": [
+     "old_3_t4994"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_032",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2270"
+    ],
+    "old_2": [
+     "old_2_t4975"
+    ],
+    "old_3": [
+     "old_3_t4990"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_033",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2276",
+     "old_1_t2280",
+     "old_1_t2319"
+    ],
+    "old_2": [
+     "old_2_t4987",
+     "old_2_t5021",
+     "old_2_t5030"
+    ],
+    "old_3": [
+     "old_3_t4993",
+     "old_3_t5047"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_034",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2281"
+    ],
+    "old_2": [
+     "old_2_t4983"
+    ],
+    "old_3": [
+     "old_3_t5004"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_035",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2292"
+    ],
+    "old_2": [
+     "old_2_t5007"
+    ],
+    "old_3": [
+     "old_3_t5009"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_036",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2330"
+    ],
+    "old_2": [
+     "old_2_t5041"
+    ],
+    "old_3": [
+     "old_3_t4844",
+     "old_3_t5072",
+     "old_3_t5217"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_037",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2340"
+    ],
+    "old_2": [
+     "old_2_t5071"
+    ],
+    "old_3": [
+     "old_3_t5189"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_038",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2373"
+    ],
+    "old_2": [
+     "old_2_t5082"
+    ],
+    "old_3": [
+     "old_3_t5099"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_039",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t2402"
+    ],
+    "old_2": [
+     "old_2_t5098"
+    ],
+    "old_3": [
+     "old_3_t5020"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_040",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3129",
+     "old_1_t3347",
+     "old_1_t3449",
+     "old_1_t3461"
+    ],
+    "old_3": [
+     "old_3_t1986",
+     "old_3_t2023",
+     "old_3_t3377",
+     "old_3_t3440"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_041",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3131",
+     "old_1_t3208"
+    ],
+    "old_2": [
+     "old_2_t3474"
+    ],
+    "old_3": [
+     "old_3_t2585"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_042",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3132",
+     "old_1_t3277",
+     "old_1_t3355",
+     "old_1_t3466"
+    ],
+    "old_3": [
+     "old_3_t3446"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_043",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3161",
+     "old_1_t3218"
+    ],
+    "old_3": [
+     "old_3_t2234"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_044",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3187",
+     "old_1_t3210"
+    ],
+    "old_2": [
+     "old_2_t1671"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_045",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t321",
+     "old_1_t367",
+     "old_1_t417",
+     "old_1_t468",
+     "old_1_t572"
+    ],
+    "old_3": [
+     "old_3_t440"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_046",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3211",
+     "old_1_t3296"
+    ],
+    "old_2": [
+     "old_2_t2870"
+    ],
+    "old_3": [
+     "old_3_t3479",
+     "old_3_t3573"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_047",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3212"
+    ],
+    "old_2": [
+     "old_2_t2360"
+    ],
+    "old_3": [
+     "old_3_t4234",
+     "old_3_t4297"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_048",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3235"
+    ],
+    "old_2": [
+     "old_2_t3817"
+    ],
+    "old_3": [
+     "old_3_t3351"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_049",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3299",
+     "old_1_t4107"
+    ],
+    "old_2": [
+     "old_2_t2505"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_050",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3300",
+     "old_1_t3379"
+    ],
+    "old_3": [
+     "old_3_t3419"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_051",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3316",
+     "old_1_t3544"
+    ],
+    "old_3": [
+     "old_3_t3816",
+     "old_3_t3926"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_052",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3332",
+     "old_1_t3359"
+    ],
+    "old_3": [
+     "old_3_t3352"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_053",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t335",
+     "old_1_t545"
+    ],
+    "old_3": [
+     "old_3_t442"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_054",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3374",
+     "old_1_t4573"
+    ],
+    "old_2": [
+     "old_2_t2740",
+     "old_2_t2756"
+    ],
+    "old_3": [
+     "old_3_t3382"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_055",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3425",
+     "old_1_t3428"
+    ],
+    "old_3": [
+     "old_3_t3392",
+     "old_3_t3403"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_056",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3496"
+    ],
+    "old_2": [
+     "old_2_t1876"
+    ],
+    "old_3": [
+     "old_3_t3930"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_057",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3550"
+    ],
+    "old_2": [
+     "old_2_t1823",
+     "old_2_t1879"
+    ],
+    "old_3": [
+     "old_3_t3782"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_058",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3560",
+     "old_1_t3635"
+    ],
+    "old_3": [
+     "old_3_t3837",
+     "old_3_t3939",
+     "old_3_t3960"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_059",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3565",
+     "old_1_t3568",
+     "old_1_t3578"
+    ],
+    "old_2": [
+     "old_2_t1865"
+    ],
+    "old_3": [
+     "old_3_t3826",
+     "old_3_t3842",
+     "old_3_t3860",
+     "old_3_t3947",
+     "old_3_t4343"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_060",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3627",
+     "old_1_t3644"
+    ],
+    "old_2": [
+     "old_2_t1641",
+     "old_2_t1908"
+    ],
+    "old_3": [
+     "old_3_t3829"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_061",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3684"
+    ],
+    "old_2": [
+     "old_2_t2264"
+    ],
+    "old_3": [
+     "old_3_t3982",
+     "old_3_t4348"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_062",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3695"
+    ],
+    "old_2": [
+     "old_2_t2312"
+    ],
+    "old_3": [
+     "old_3_t3969",
+     "old_3_t3978"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_063",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3704"
+    ],
+    "old_2": [
+     "old_2_t2180"
+    ],
+    "old_3": [
+     "old_3_t3999",
+     "old_3_t4063",
+     "old_3_t4295",
+     "old_3_t4321"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_064",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3707"
+    ],
+    "old_2": [
+     "old_2_t2316"
+    ],
+    "old_3": [
+     "old_3_t3974"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_065",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3711",
+     "old_1_t4089"
+    ],
+    "old_2": [
+     "old_2_t2288"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_066",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3718"
+    ],
+    "old_2": [
+     "old_2_t2265"
+    ],
+    "old_3": [
+     "old_3_t3987"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_067",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3729"
+    ],
+    "old_2": [
+     "old_2_t2274"
+    ],
+    "old_3": [
+     "old_3_t4023"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_068",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3732"
+    ],
+    "old_2": [
+     "old_2_t2322"
+    ],
+    "old_3": [
+     "old_3_t3992"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_069",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3737"
+    ],
+    "old_2": [
+     "old_2_t2279"
+    ],
+    "old_3": [
+     "old_3_t4033",
+     "old_3_t4079"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_070",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3741"
+    ],
+    "old_2": [
+     "old_2_t2255"
+    ],
+    "old_3": [
+     "old_3_t3997"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_071",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3742"
+    ],
+    "old_2": [
+     "old_2_t2341"
+    ],
+    "old_3": [
+     "old_3_t3971"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_072",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3753"
+    ],
+    "old_2": [
+     "old_2_t2337"
+    ],
+    "old_3": [
+     "old_3_t3979"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_073",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3754"
+    ],
+    "old_2": [
+     "old_2_t2340"
+    ],
+    "old_3": [
+     "old_3_t3977"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_074",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3780",
+     "old_1_t3782",
+     "old_1_t3783",
+     "old_1_t3824"
+    ],
+    "old_2": [
+     "old_2_t2350",
+     "old_2_t2351"
+    ],
+    "old_3": [
+     "old_3_t4252",
+     "old_3_t4271",
+     "old_3_t4298"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_075",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3784"
+    ],
+    "old_2": [
+     "old_2_t2363"
+    ],
+    "old_3": [
+     "old_3_t4236",
+     "old_3_t4299"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_076",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3800",
+     "old_1_t3805"
+    ],
+    "old_2": [
+     "old_2_t2325",
+     "old_2_t2380"
+    ],
+    "old_3": [
+     "old_3_t4246",
+     "old_3_t4267",
+     "old_3_t4306"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_077",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3943"
+    ],
+    "old_2": [
+     "old_2_t2186"
+    ],
+    "old_3": [
+     "old_3_t4113"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_078",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3954"
+    ],
+    "old_2": [
+     "old_2_t2193"
+    ],
+    "old_3": [
+     "old_3_t4121"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_079",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3967"
+    ],
+    "old_2": [
+     "old_2_t2187"
+    ],
+    "old_3": [
+     "old_3_t4123"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_080",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t3971"
+    ],
+    "old_2": [
+     "old_2_t2541"
+    ],
+    "old_3": [
+     "old_3_t4320"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_081",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t4036",
+     "old_1_t4113",
+     "old_1_t4208"
+    ],
+    "old_3": [
+     "old_3_t3489",
+     "old_3_t3726"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_082",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t4077",
+     "old_1_t4093"
+    ],
+    "old_3": [
+     "old_3_t3772"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_083",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t4110",
+     "old_1_t4141",
+     "old_1_t4164",
+     "old_1_t4180",
+     "old_1_t4181"
+    ],
+    "old_2": [
+     "old_2_t2509",
+     "old_2_t2511",
+     "old_2_t2520",
+     "old_2_t2562",
+     "old_2_t2585"
+    ],
+    "old_3": [
+     "old_3_t3560",
+     "old_3_t3562",
+     "old_3_t3566",
+     "old_3_t3679",
+     "old_3_t3682",
+     "old_3_t3684",
+     "old_3_t3727",
+     "old_3_t3747"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_084",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t4130"
+    ],
+    "old_2": [
+     "old_2_t2515"
+    ],
+    "old_3": [
+     "old_3_t3559",
+     "old_3_t3681"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_085",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t4161",
+     "old_1_t4204"
+    ],
+    "old_3": [
+     "old_3_t3595"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_086",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t4163"
+    ],
+    "old_2": [
+     "old_2_t2859"
+    ],
+    "old_3": [
+     "old_3_t3598"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_087",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t4165"
+    ],
+    "old_2": [
+     "old_2_t2716"
+    ],
+    "old_3": [
+     "old_3_t3137"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_088",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t4167",
+     "old_1_t4172"
+    ],
+    "old_2": [
+     "old_2_t2573",
+     "old_2_t2576"
+    ],
+    "old_3": [
+     "old_3_t3572",
+     "old_3_t3680",
+     "old_3_t3705"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_089",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t4171",
+     "old_1_t4211",
+     "old_1_t4228"
+    ],
+    "old_2": [
+     "old_2_t2906",
+     "old_2_t2912",
+     "old_2_t2915"
+    ],
+    "old_3": [
+     "old_3_t3596",
+     "old_3_t3609"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_090",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t4221"
+    ],
+    "old_2": [
+     "old_2_t2865"
+    ],
+    "old_3": [
+     "old_3_t3542"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_091",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t4258",
+     "old_1_t4297"
+    ],
+    "old_2": [
+     "old_2_t2929"
+    ],
+    "old_3": [
+     "old_3_t3623"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_092",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t4466"
+    ],
+    "old_2": [
+     "old_2_t3852"
+    ],
+    "old_3": [
+     "old_3_t3233"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_093",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t4484"
+    ],
+    "old_2": [
+     "old_2_t3705"
+    ],
+    "old_3": [
+     "old_3_t3219"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_094",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t4571"
+    ],
+    "old_2": [
+     "old_2_t3821"
+    ],
+    "old_3": [
+     "old_3_t2951"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_095",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t4590"
+    ],
+    "old_2": [
+     "old_2_t3857"
+    ],
+    "old_3": [
+     "old_3_t3239"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_096",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t4718"
+    ],
+    "old_2": [
+     "old_2_t3121"
+    ],
+    "old_3": [
+     "old_3_t3040"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_097",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t4745"
+    ],
+    "old_2": [
+     "old_2_t3091",
+     "old_2_t3170"
+    ],
+    "old_3": [
+     "old_3_t3068",
+     "old_3_t3127"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_098",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t4773"
+    ],
+    "old_2": [
+     "old_2_t3193"
+    ],
+    "old_3": [
+     "old_3_t2710"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_099",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t4792"
+    ],
+    "old_2": [
+     "old_2_t3199",
+     "old_2_t3233"
+    ],
+    "old_3": [
+     "old_3_t2734",
+     "old_3_t2990"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_100",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t4798"
+    ],
+    "old_2": [
+     "old_2_t3219"
+    ],
+    "old_3": [
+     "old_3_t2306",
+     "old_3_t2657",
+     "old_3_t2853"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_101",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t4802",
+     "old_1_t4868"
+    ],
+    "old_2": [
+     "old_2_t3236"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_102",
+   "confirmed_tracklet_ids_by_video": {
+    "old_1": [
+     "old_1_t4809"
+    ],
+    "old_2": [
+     "old_2_t3232"
+    ],
+    "old_3": [
+     "old_3_t2737"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_103",
+   "confirmed_tracklet_ids_by_video": {
+    "old_2": [
+     "old_2_t001",
+     "old_2_t4454",
+     "old_2_t4941"
+    ],
+    "old_3": [
+     "old_3_t4959"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_104",
+   "confirmed_tracklet_ids_by_video": {
+    "old_2": [
+     "old_2_t1337",
+     "old_2_t1556"
+    ],
+    "old_3": [
+     "old_3_t1619",
+     "old_3_t1924"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_105",
+   "confirmed_tracklet_ids_by_video": {
+    "old_2": [
+     "old_2_t2099",
+     "old_2_t2594"
+    ],
+    "old_3": [
+     "old_3_t3482"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_106",
+   "confirmed_tracklet_ids_by_video": {
+    "old_2": [
+     "old_2_t2862",
+     "old_2_t2917",
+     "old_2_t2954"
+    ],
+    "old_3": [
+     "old_3_t3640"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_107",
+   "confirmed_tracklet_ids_by_video": {
+    "old_2": [
+     "old_2_t3256",
+     "old_2_t3258"
+    ],
+    "old_3": [
+     "old_3_t2027",
+     "old_3_t2703",
+     "old_3_t2953"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_108",
+   "confirmed_tracklet_ids_by_video": {
+    "old_2": [
+     "old_2_t3387",
+     "old_2_t3426"
+    ],
+    "old_3": [
+     "old_3_t2465"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_109",
+   "confirmed_tracklet_ids_by_video": {
+    "old_2": [
+     "old_2_t3669",
+     "old_2_t3815"
+    ],
+    "old_3": [
+     "old_3_t3222",
+     "old_3_t3235"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_110",
+   "confirmed_tracklet_ids_by_video": {
+    "old_2": [
+     "old_2_t3787",
+     "old_2_t3854"
+    ],
+    "old_3": [
+     "old_3_t3231"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_111",
+   "confirmed_tracklet_ids_by_video": {
+    "old_2": [
+     "old_2_t4461",
+     "old_2_t4530"
+    ],
+    "old_3": [
+     "old_3_t4556"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_112",
+   "confirmed_tracklet_ids_by_video": {
+    "old_2": [
+     "old_2_t4579",
+     "old_2_t4589"
+    ],
+    "old_3": [
+     "old_3_t4602",
+     "old_3_t4708"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_113",
+   "confirmed_tracklet_ids_by_video": {
+    "old_2": [
+     "old_2_t4813",
+     "old_2_t4823"
+    ],
+    "old_3": [
+     "old_3_t4938"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_114",
+   "confirmed_tracklet_ids_by_video": {
+    "old_2": [
+     "old_2_t4957",
+     "old_2_t5058"
+    ],
+    "old_3": [
+     "old_3_t4912"
+    ]
+   }
+  },
+  {
+   "anchor_id": "pseudo_115",
+   "confirmed_tracklet_ids_by_video": {
+    "old_2": [
+     "old_2_t4976",
+     "old_2_t5044"
+    ],
+    "old_3": [
+     "old_3_t5000"
+    ]
+   }
+  }
+ ]
+}

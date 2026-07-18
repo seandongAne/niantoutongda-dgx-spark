@@ -1,0 +1,39 @@
+{
+  "clusters": {
+    "dropped": {
+      "conflict": 1,
+      "single_video": 235,
+      "thin_train": 37,
+      "too_small": 197
+    },
+    "kept": 116
+  },
+  "created_at": "2026-07-18T18:13:27+00:00",
+  "edges": {
+    "link_edges": 259,
+    "stitch_edges": 451,
+    "tutor_diff_constraints": 67,
+    "tutor_same_edges": 327,
+    "tutor_source_filtered": 46
+  },
+  "gt_overlap": {
+    "labeled_total": 502,
+    "note": "GT omitted; independent proxy construction did not read frozen truth",
+    "status": "NOT_COMPUTED_NO_GT_READ"
+  },
+  "params": {
+    "min_link_score": 0.93,
+    "min_tutor_conf": 0.7
+  },
+  "samples": 502,
+  "sources": {
+    "reid_dir": "/Users/seandong/Documents/DGX Spark Thing/results/hero_s1/reid-w2",
+    "tutor_pairs": {
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/autotune/tutor_pairs.jsonl",
+      "sha256": "3525291ef76fadf4691098ef9b554146c41741ad8e41244eddfd0f758c4cefc0"
+    },
+    "tutor_source_prefixes": [
+      "candidates"
+    ]
+  }
+}

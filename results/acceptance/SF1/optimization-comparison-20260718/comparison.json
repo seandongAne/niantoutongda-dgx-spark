@@ -1,0 +1,90 @@
+{
+  "schema_version": "1.0",
+  "scope": "SF1_DIAGNOSTIC_OPTIMIZATION_COMPARISON_NOT_HERO_ACCEPTANCE",
+  "code_commit": "fdead9a5",
+  "frozen_workload": {
+    "batch_size": 2,
+    "prompt": "luggage. mini fridge. water bottle. desk.",
+    "input_sha256": "5410738ad8134275a762a178d27012c16ad281544d0d1c32f3524baf2c85bcf1"
+  },
+  "semantic_reranker": {
+    "status": "DIAGNOSTIC_SIGNAL_NOT_INDEPENDENT_ACCEPTANCE",
+    "frozen_human_gt_read": false,
+    "semantic_weight": 0.15,
+    "development": {
+      "queries": 127,
+      "baseline_recall_at_1": 0.496063,
+      "candidate_recall_at_1": 0.637795
+    },
+    "opened_proxy_partition": {
+      "queries": 58,
+      "baseline_top1_hits": 46,
+      "candidate_top1_hits": 51,
+      "net_top1_hits": 5,
+      "baseline_recall_at_1": 0.793103,
+      "candidate_recall_at_1": 0.87931,
+      "delta_recall_at_1": 0.086207,
+      "baseline_wilson_95": [0.672308, 0.877485],
+      "candidate_wilson_95": [0.771206, 0.94029]
+    },
+    "blocking_boundaries": [
+      "the frozen projection was trained with all 502 proxy tracklets",
+      "the old selection artifact exposed aggregate transcription coverage across both partitions",
+      "the 58-query proxy partition is now consumed and cannot be reopened for a new claim",
+      "this result is not the official hero R@1 and did not use the frozen human GT"
+    ]
+  },
+  "pytorch_precision": {
+    "fp32": {
+      "p50_ms": 680.429077,
+      "p95_ms": 683.667856,
+      "throughput_images_per_second": 2.939699,
+      "decision_gate": "PASS"
+    },
+    "amp_fp16": {
+      "p50_ms": 497.981705,
+      "p95_ms": 501.274377,
+      "throughput_images_per_second": 4.016918,
+      "speedup_vs_fp32_p50": 1.366374,
+      "detection_counts": [5, 5],
+      "decision_structure_equal": false,
+      "decision_gate": "FAIL"
+    },
+    "amp_bf16": {
+      "p50_ms": 502.500641,
+      "p95_ms": 507.486145,
+      "throughput_images_per_second": 3.981178,
+      "speedup_vs_fp32_p50": 1.354086,
+      "detection_counts": [4, 5],
+      "reference_detection_counts": [5, 5],
+      "decision_structure_equal": false,
+      "decision_gate": "FAIL"
+    }
+  },
+  "torch_tensorrt": {
+    "status": "NO_GO",
+    "verdict": "NO_GO_CONTAINER_EAGER_FP32_BASELINE_MISMATCH",
+    "container": "dgx-spark/torch-tensorrt-gdino:26.06",
+    "base_image": "nvcr.io/nvidia/pytorch:26.06-py3@sha256:43c018d6a12963f1a1bad85ef8574b5c2a978eec2be0ebcacfb87f69e0d210e1",
+    "container_eager_fp32_p50_ms": 657.453491,
+    "finite_logits_max_abs_vs_frozen_fp32": 4.167068,
+    "boxes_max_abs_vs_frozen_fp32": 0.98414,
+    "trt_partition_or_compile_attempted": false,
+    "reported_speedup": null
+  },
+  "custom_converter": {
+    "status": "NO_GO_STAGE_LEVEL_LOCALIZATION_ONLY",
+    "fp16_first_material_observation": "model.text_backbone.encoder.layer.1",
+    "fp16_first_large_observation": "model.backbone.conv_encoder.model.swin.encoder.layers.1",
+    "bf16_first_material_observation": "model.text_backbone.encoder.layer.0",
+    "bf16_first_large_observation": "model.text_projection",
+    "boundary": "stage samples show distributed drift but do not identify a causal operator"
+  },
+  "tf_trt": {
+    "status": "NO_GO_PREREQUISITE",
+    "tensorflow_installed_in_project_environment": false,
+    "native_tensorflow_grounding_dino_saved_model_present": false,
+    "pytorch_fp32_alignment_available": false,
+    "performance_measured": false
+  }
+}

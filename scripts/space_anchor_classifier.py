@@ -42,7 +42,7 @@ from backend.tools.spatial import (  # noqa: E402
 )
 
 CLASSIFIER_SCHEMA_VERSION = "1.0"
-CLASSIFIER_VERSION = "space-anchor-nemotron-v1"
+CLASSIFIER_VERSION = "space-anchor-nemotron-v2"
 ANCHOR_CANDIDATES_FILENAME = "anchor_candidates.json"
 METRICS_FILENAME = "metrics.json"
 HASHES_FILENAME = "hashes.json"
@@ -388,6 +388,38 @@ def _prompt(anchors: Sequence[str]) -> str:
     )
 
 
+HARD_FIELD_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "support_type": {
+            "type": "string",
+            "enum": ["surface", "shelf", "floor", "unknown"],
+        },
+        "support_confidence": {"type": "integer", "minimum": 0, "maximum": 100},
+        "capacity_class": {
+            "type": "string",
+            "enum": ["small", "medium", "large", "unknown"],
+        },
+        "capacity_confidence": {"type": "integer", "minimum": 0, "maximum": 100},
+    },
+    "required": [
+        "support_type",
+        "support_confidence",
+        "capacity_class",
+        "capacity_confidence",
+    ],
+    "additionalProperties": False,
+}
+
+HARD_FIELD_PROMPT = (
+    "Re-inspect only the RED target and its zoom panels. Return EXACTLY one flat JSON "
+    "object with all four keys: support_type (surface/shelf/floor/unknown), "
+    "support_confidence (0-100), capacity_class (small/medium/large/unknown), and "
+    "capacity_confidence (0-100). Confidence must be your independent visual "
+    "confidence in that field. Do not omit confidence and do not nest values."
+)
+
+
 class Client:
     def __init__(self, endpoint: str, model: str, anchors: Sequence[str], guided: bool) -> None:
         self.endpoint = endpoint.rstrip("/")
@@ -399,17 +431,24 @@ class Client:
         self.usage = {"calls": 0, "errors": 0, "prompt_tokens": 0, "completion_tokens": 0}
         self.lock = threading.Lock()
 
-    def chat(self, image_bytes: bytes) -> str:
+    def _chat(
+        self,
+        image_bytes: bytes,
+        *,
+        prompt: str,
+        schema: Mapping[str, Any],
+        max_tokens: int,
+    ) -> str:
         encoded = base64.b64encode(image_bytes).decode("ascii")
         payload: dict[str, Any] = {
             "model": self.model,
             "temperature": 0.0,
-            "max_tokens": 220,
+            "max_tokens": max_tokens,
             "messages": [
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": self.prompt},
+                        {"type": "text", "text": prompt},
                         {
                             "type": "image_url",
                             "image_url": {"url": f"data:image/jpeg;base64,{encoded}"},
@@ -419,7 +458,7 @@ class Client:
             ],
         }
         if self.guided:
-            payload["guided_json"] = self.schema
+            payload["guided_json"] = schema
         request = urllib.request.Request(
             self.endpoint + "/chat/completions",
             data=json.dumps(payload).encode("utf-8"),
@@ -435,8 +474,24 @@ class Client:
             self.usage["completion_tokens"] += int(usage.get("completion_tokens", 0))
         return str(result["choices"][0]["message"]["content"])
 
+    def chat(self, image_bytes: bytes) -> str:
+        return self._chat(
+            image_bytes,
+            prompt=self.prompt,
+            schema=self.schema,
+            max_tokens=220,
+        )
 
-def parse_prediction(text: str, anchors: Sequence[str]) -> dict[str, Any] | None:
+    def chat_hard_fields(self, image_bytes: bytes) -> str:
+        return self._chat(
+            image_bytes,
+            prompt=HARD_FIELD_PROMPT,
+            schema=HARD_FIELD_SCHEMA,
+            max_tokens=100,
+        )
+
+
+def _parse_json_object(text: str) -> dict[str, Any] | None:
     start, end = text.find("{"), text.rfind("}")
     if start < 0 or end <= start:
         return None
@@ -446,6 +501,12 @@ def parse_prediction(text: str, anchors: Sequence[str]) -> dict[str, Any] | None
         return None
     if not isinstance(payload, dict):
         return None
+    return payload
+
+
+def _parse_anchor_fields(
+    payload: Mapping[str, Any], anchors: Sequence[str]
+) -> dict[str, Any] | None:
     expected_scores = {*anchors, "other"}
     scores = payload.get("anchor_scores")
     if not isinstance(scores, dict) or set(scores) != expected_scores:
@@ -455,6 +516,26 @@ def parse_prediction(text: str, anchors: Sequence[str]) -> dict[str, Any] | None
             anchor: max(0, min(100, int(scores[anchor]))) for anchor in sorted(scores)
         }
         best_anchor = str(payload.get("best_anchor") or payload["target_object"])
+    except (KeyError, TypeError, ValueError):
+        return None
+    if best_anchor not in expected_scores:
+        return None
+    return {
+        "anchor_scores": normalized_scores,
+        "best_anchor": best_anchor,
+        "display_name_zh": str(
+            payload.get("display_name_zh")
+            or payload.get("display_name")
+            or ANCHOR_DISPLAY_ZH.get(best_anchor)
+            or best_anchor.replace("_", " ")
+            or "自动识别区域"
+        ).strip()[:24]
+        or "自动识别区域",
+    }
+
+
+def _parse_hard_fields(payload: Mapping[str, Any]) -> dict[str, Any] | None:
+    try:
         support_raw = payload["support_type"]
         capacity_raw = payload["capacity_class"]
         support_type = str(
@@ -487,28 +568,37 @@ def parse_prediction(text: str, anchors: Sequence[str]) -> dict[str, Any] | None
         )
     except (KeyError, TypeError, ValueError):
         return None
-    if best_anchor not in expected_scores:
-        return None
     if support_type not in {"surface", "shelf", "floor", "unknown"}:
         return None
     if capacity_class not in {"small", "medium", "large", "unknown"}:
         return None
     return {
-        "anchor_scores": normalized_scores,
-        "best_anchor": best_anchor,
-        "display_name_zh": str(
-            payload.get("display_name_zh")
-            or payload.get("display_name")
-            or ANCHOR_DISPLAY_ZH.get(best_anchor)
-            or best_anchor.replace("_", " ")
-            or "自动识别区域"
-        ).strip()[:24]
-        or "自动识别区域",
         "support_type": support_type,
         "support_confidence": support_confidence,
         "capacity_class": capacity_class,
         "capacity_confidence": capacity_confidence,
     }
+
+
+def parse_anchor_prediction(text: str, anchors: Sequence[str]) -> dict[str, Any] | None:
+    payload = _parse_json_object(text)
+    return _parse_anchor_fields(payload, anchors) if payload is not None else None
+
+
+def parse_hard_field_prediction(text: str) -> dict[str, Any] | None:
+    payload = _parse_json_object(text)
+    return _parse_hard_fields(payload) if payload is not None else None
+
+
+def parse_prediction(text: str, anchors: Sequence[str]) -> dict[str, Any] | None:
+    payload = _parse_json_object(text)
+    if payload is None:
+        return None
+    anchor_fields = _parse_anchor_fields(payload, anchors)
+    hard_fields = _parse_hard_fields(payload)
+    if anchor_fields is None or hard_fields is None:
+        return None
+    return {**anchor_fields, **hard_fields}
 
 
 def _load_cache(path: Path) -> dict[str, dict[str, Any]]:
@@ -632,18 +722,49 @@ def classify_one(
     with cache_lock:
         prediction = cache.get(cache_key)
     cache_hit = prediction is not None
+    raw_responses: list[str] = []
     if prediction is None:
+        raw_text: str | None = None
         for attempt in range(2):
             try:
-                prediction = parse_prediction(client.chat(image_bytes), client.anchors)
+                raw_text = client.chat(image_bytes)
+                raw_responses.append(raw_text)
             except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError) as exc:
                 with client.lock:
                     client.usage["errors"] += 1
                 with _print_lock:
                     print(f"[warn] {evidence.track_id} attempt {attempt + 1}: {exc}", file=sys.stderr)
-                prediction = None
-            if prediction is not None:
+                raw_text = None
+            if raw_text is not None:
                 break
+        prediction = (
+            parse_prediction(raw_text, client.anchors) if raw_text is not None else None
+        )
+        if prediction is None and raw_text is not None:
+            anchor_fields = parse_anchor_prediction(raw_text, client.anchors)
+            if anchor_fields is not None:
+                for attempt in range(2):
+                    try:
+                        hard_text = client.chat_hard_fields(image_bytes)
+                        raw_responses.append(hard_text)
+                        hard_fields = parse_hard_field_prediction(hard_text)
+                    except (
+                        urllib.error.URLError,
+                        urllib.error.HTTPError,
+                        TimeoutError,
+                    ) as exc:
+                        with client.lock:
+                            client.usage["errors"] += 1
+                        with _print_lock:
+                            print(
+                                f"[warn] {evidence.track_id} hard-fields "
+                                f"attempt {attempt + 1}: {exc}",
+                                file=sys.stderr,
+                            )
+                        hard_fields = None
+                    if hard_fields is not None:
+                        prediction = {**anchor_fields, **hard_fields}
+                        break
         if prediction is not None:
             with cache_lock:
                 cache[cache_key] = prediction
@@ -670,6 +791,8 @@ def classify_one(
         "status": "OK" if prediction is not None else "CLASSIFICATION_FAILED",
         "prediction": prediction,
     }
+    if prediction is None and raw_responses:
+        diagnostic["failed_response_excerpt"] = raw_responses[-1][-2000:]
     if prediction is None:
         return None, diagnostic
     return (

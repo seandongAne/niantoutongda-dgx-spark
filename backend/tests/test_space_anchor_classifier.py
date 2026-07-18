@@ -13,6 +13,8 @@ from scripts.space_anchor_classifier import (
     automatic_visual_instance_ids,
     build_contact_sheet,
     parse_prediction,
+    parse_anchor_prediction,
+    parse_hard_field_prediction,
 )
 
 
@@ -170,3 +172,28 @@ def test_parser_normalizes_nested_nemotron_hard_fields():
         "capacity_class": "medium",
         "capacity_confidence": 75,
     }
+
+
+def test_missing_hard_confidences_can_be_repaired_by_independent_second_call():
+    first = json.dumps(
+        {
+            "anchor_scores": {"chest_of_drawers": 85, "other": 0},
+            "best_anchor": "chest_of_drawers",
+            "support_type": "surface",
+            "capacity_class": "medium",
+        }
+    )
+    repair = json.dumps(
+        {
+            "support_type": "surface",
+            "support_confidence": 88,
+            "capacity_class": "medium",
+            "capacity_confidence": 81,
+        }
+    )
+
+    assert parse_prediction(first, ["chest_of_drawers"]) is None
+    anchor = parse_anchor_prediction(first, ["chest_of_drawers"])
+    hard = parse_hard_field_prediction(repair)
+    assert anchor is not None and hard is not None
+    assert {**anchor, **hard}["capacity_confidence"] == 81

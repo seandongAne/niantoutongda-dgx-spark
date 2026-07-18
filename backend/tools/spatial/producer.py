@@ -836,6 +836,8 @@ def produce_assigned_spatial_regions(
     anchor_candidates: Sequence[Mapping[str, Any] | Any],
     config: SpatialProducerConfig,
     assignment_config: Any = None,
+    *,
+    anchor_contracts: Sequence[Mapping[str, Any] | Any] | None = None,
 ) -> tuple[SpatialProductionResult, Any]:
     """Project a strict automatic VLM assignment to the downstream region contract.
 
@@ -901,7 +903,8 @@ def produce_assigned_spatial_regions(
         )
         if backed_count != candidate.observation_count:
             raise ValueError(
-                f"{candidate.candidate_id}: observation_count {candidate.observation_count} "
+                f"{candidate.candidate_id}: observation_count "
+                f"{candidate.observation_count} "
                 f"does not match automatic evidence {backed_count}"
             )
 
@@ -909,6 +912,7 @@ def produce_assigned_spatial_regions(
         config.expected_anchor_labels,
         validated_candidates,
         assignment_config,
+        anchor_contracts=anchor_contracts,
     )
     gate_reasons = list(assignment.gate_reasons)
     if len(config.expected_anchor_labels) != config.min_regions:

@@ -69,11 +69,11 @@ stages:
       --expected-anchor wall_shelf
       --expected-anchor chest_of_drawers
       --expected-anchor display_cabinet
-      --anchor-description 'study_desk=a writing or study desk work surface'
-      --anchor-description 'vanity=the requested floral-cloth-covered narrow table or console top; this stable ID does not require a mirror or makeup furniture'
-      --anchor-description 'wall_shelf=a wall-mounted wooden floating shelf'
-      --anchor-description 'chest_of_drawers=the usable top or body of a chest of drawers or dresser'
-      --anchor-description 'display_cabinet=a glass-door display cabinet and its usable shelves'
+      --anchor-description 'study_desk=the long brown writing desk beside the sofa and window, with a broad work surface and dark legs; exclude coffee tables, printers, and cabinets'
+      --anchor-description 'vanity=only the floral-leaf-cloth-covered black digital-piano or narrow-console top; exclude coffee tables, desks, conventional vanities, and wall shelves'
+      --anchor-description 'wall_shelf=the wall-mounted wooden board with visible black brackets directly above the floral-covered black digital piano; exclude all furniture tops'
+      --anchor-description 'chest_of_drawers=the usable flat top of the reddish-brown multi-drawer wooden chest immediately beside the floral-covered black digital piano; exclude wardrobes, appliances, and shelves'
+      --anchor-description 'display_cabinet=the gray glass-front enclosed printer or cabinet beside the brown study desk and sofa; use one narrow interior compartment or shelf, visual capacity small'
       --concurrency 8
 
   pull:
@@ -113,6 +113,8 @@ stages:
     observation_hashes: results/hero_s1/space-auto/hashes.json
     anchor_candidates: results/hero_s1/space-anchor/anchor_candidates.json
     anchor_hashes: results/hero_s1/space-anchor/hashes.json
+    # 产品侧语义合同只做 hard gate；独立 scorer 仍读取另一份 semantic truth。
+    anchor_contract: fixtures/hero_s1/space_anchor_contract.production-v1.json
     min_regions: 5
     min_observations: 2
     min_confidence: 0.75

@@ -1,3 +1,4 @@
+import copy
 import json
 
 import pytest
@@ -178,6 +179,14 @@ def test_vlm_global_assignment_projects_exactly_expected_anchors_and_rejects_ext
             confidence=0.99,
         )
     )
+    contracts = [
+        {
+            "anchor": anchor,
+            "support_type": support_by_anchor[anchor],
+            "capacity_class": capacity_by_anchor[anchor],
+        }
+        for anchor in anchors
+    ]
 
     result, assignment = produce_assigned_spatial_regions(
         "new_1",
@@ -185,6 +194,7 @@ def test_vlm_global_assignment_projects_exactly_expected_anchors_and_rejects_ext
         candidates,
         SpatialProducerConfig(min_regions=5, expected_anchor_labels=anchors),
         AnchorAssignmentConfig(),
+        anchor_contracts=contracts,
     )
 
     assert assignment.gate_passed
@@ -199,6 +209,34 @@ def test_vlm_global_assignment_projects_exactly_expected_anchors_and_rejects_ext
     assert statuses.count(CandidateStatus.AUTO_ACCEPTED) == 5
     assert statuses.count(CandidateStatus.NOT_SELECTED) == 1
     assert result.candidate_manifest.assignment_normalized_hash == assignment.normalized_hash
+
+    mismatching = copy.deepcopy(candidates)
+    display = next(
+        item
+        for item in mismatching
+        if item["anchor_hypotheses"][0]["anchor"] == "display_cabinet"
+    )
+    display["anchor_hypotheses"][0]["capacity_class"] = "medium"
+    failed, failed_assignment = produce_assigned_spatial_regions(
+        "new_1",
+        observations,
+        mismatching,
+        SpatialProducerConfig(min_regions=5, expected_anchor_labels=anchors),
+        AnchorAssignmentConfig(),
+        anchor_contracts=contracts,
+    )
+    assert not failed.gate_passed
+    assert failed.region_manifest is None
+    assert failed.metrics.projected_region_count == 0
+    assert failed_assignment.unassigned_anchor_labels == ["display_cabinet"]
+    rejected_edge = next(
+        edge
+        for edge in failed_assignment.edges
+        if edge.candidate_id == display["candidate_id"]
+    )
+    assert rejected_edge.rejection_reasons == [
+        "capacity_class_contract_mismatch"
+    ]
 
 
 def test_stable_cross_frame_dedup_and_region_manifest_projection():
@@ -468,3 +506,95 @@ def test_cli_shadow_mode_keeps_failed_gate_as_diagnostics_only(tmp_path):
     assert metrics["gate_status"] == "NEEDS_USER"
     assert metrics["region_gate_passed"] is False
     assert "--manifest" not in build_parser().format_help()
+
+
+def test_assignment_cli_requires_contract_and_mismatch_removes_stale_regions(
+    tmp_path,
+):
+    observations_path = tmp_path / "auto-observations.jsonl"
+    observations = [
+        _observation(
+            "desk",
+            1,
+            [0, 0, 10, 10],
+            region_track_id="auto-track-desk",
+        ),
+        _observation(
+            "desk",
+            2,
+            [1, 0, 11, 10],
+            region_track_id="auto-track-desk",
+        ),
+    ]
+    observations_path.write_text(
+        "".join(json.dumps(item) + "\n" for item in observations),
+        encoding="utf-8",
+    )
+    candidates_path = tmp_path / "anchor-candidates.json"
+    candidates_path.write_text(
+        json.dumps(
+            [
+                _automatic_candidate(
+                    "candidate-desk",
+                    "auto-track-desk",
+                    "desk",
+                    support="surface",
+                    capacity="medium",
+                )
+            ]
+        ),
+        encoding="utf-8",
+    )
+    out_dir = tmp_path / "out"
+    out_dir.mkdir()
+    (out_dir / "regions.json").write_text("stale", encoding="utf-8")
+    base_args = [
+        "--video-id",
+        "new_1",
+        "--observations",
+        str(observations_path),
+        "--anchor-candidates",
+        str(candidates_path),
+        "--out-dir",
+        str(out_dir),
+        "--min-regions",
+        "1",
+        "--expected-anchor",
+        "desk",
+    ]
+
+    with pytest.raises(SystemExit):
+        space_task_main(base_args)
+    assert not (out_dir / "regions.json").exists()
+
+    contract_path = tmp_path / "production-anchor-contract.json"
+    contract_path.write_text(
+        json.dumps(
+            {
+                "anchors": [
+                    {
+                        "anchor": "desk",
+                        "support_type": "shelf",
+                        "capacity_class": "small",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    code = space_task_main(
+        [*base_args, "--anchor-contract", str(contract_path)]
+    )
+
+    assert code == 2
+    assert not (out_dir / "regions.json").exists()
+    metrics = json.loads((out_dir / "metrics.json").read_text(encoding="utf-8"))
+    assert metrics["gate_status"] == "NEEDS_USER"
+    assignment = json.loads(
+        (out_dir / "assignment.json").read_text(encoding="utf-8")
+    )
+    assert assignment["expected_anchor_contracts"][0]["anchor"] == "desk"
+    assert assignment["edges"][0]["rejection_reasons"] == [
+        "capacity_class_contract_mismatch",
+        "support_type_contract_mismatch",
+    ]

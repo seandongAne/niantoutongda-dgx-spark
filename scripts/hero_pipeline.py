@@ -210,6 +210,14 @@ def build_stages(
 
     if space_enabled:
         c = sc("space")
+        if c.get("anchor_candidates") and not c.get("anchor_contract"):
+            raise ValueError(
+                "space.anchor_candidates requires production space.anchor_contract"
+            )
+        if c.get("anchor_contract") and not c.get("anchor_candidates"):
+            raise ValueError(
+                "space.anchor_contract requires automatic space.anchor_candidates"
+            )
         observations = _p(c["observations"])
         out_dir = run / "spatial"
         argv = [
@@ -227,6 +235,7 @@ def build_stages(
             ("observation_hashes", "--observation-hashes"),
             ("anchor_candidates", "--anchor-candidates"),
             ("anchor_hashes", "--anchor-hashes"),
+            ("anchor_contract", "--anchor-contract"),
         ):
             if c.get(key):
                 path = _p(c[key])

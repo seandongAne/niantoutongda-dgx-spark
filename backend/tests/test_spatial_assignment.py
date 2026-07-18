@@ -11,6 +11,7 @@ from backend.tools.spatial import (
     GateStatus,
     assign_automatic_anchors,
 )
+from backend.tools.spatial.assignment import ExpectedAnchorContractManifest
 
 
 def _score_only_config(
@@ -300,6 +301,190 @@ def test_low_absolute_score_keeps_proposal_but_blocks_trust():
     assert result.gate_reasons == [
         "assignment_score_below_threshold:anchor_a:0.60000000/0.70000000"
     ]
+
+
+def test_production_contract_rejects_higher_score_semantic_mismatch():
+    candidates = [
+        _candidate(
+            "higher-but-wrong",
+            "instance-wrong",
+            {"display_cabinet": 0.95},
+            support_type="shelf",
+            capacity_class="medium",
+        ),
+        _candidate(
+            "lower-and-matching",
+            "instance-matching",
+            {"display_cabinet": 0.85},
+            support_type="shelf",
+            capacity_class="small",
+        ),
+    ]
+    contracts = [
+        {
+            "anchor": "display_cabinet",
+            "support_type": "shelf",
+            "capacity_class": "small",
+        }
+    ]
+
+    result = assign_automatic_anchors(
+        ["display_cabinet"],
+        candidates,
+        _score_only_config(),
+        anchor_contracts=contracts,
+    )
+
+    assert result.gate_passed
+    assert result.assignments[0].candidate_id == "lower-and-matching"
+    # The selected hard fields remain the model hypothesis; the contract is a
+    # gate and never supplies replacement values.
+    assert result.assignments[0].support_type.value == "shelf"
+    assert result.assignments[0].capacity_class.value == "small"
+    by_id = {edge.candidate_id: edge for edge in result.edges}
+    assert by_id["higher-but-wrong"].eligible is False
+    assert by_id["higher-but-wrong"].rejection_reasons == [
+        "capacity_class_contract_mismatch"
+    ]
+    assert by_id["higher-but-wrong"].required_support_type.value == "shelf"
+    assert by_id["higher-but-wrong"].required_capacity_class.value == "small"
+    assert result.expected_anchor_contracts[0].anchor == "display_cabinet"
+
+
+def test_contract_mismatch_fails_closed_and_contract_is_hashed():
+    candidate = _candidate(
+        "candidate-a",
+        "instance-a",
+        {"anchor_a": 0.90},
+        support_type="surface",
+        capacity_class="medium",
+    )
+    matching = [
+        {
+            "anchor": "anchor_a",
+            "support_type": "surface",
+            "capacity_class": "medium",
+        }
+    ]
+    mismatching = [
+        {
+            "anchor": "anchor_a",
+            "support_type": "shelf",
+            "capacity_class": "small",
+        }
+    ]
+
+    passed = assign_automatic_anchors(
+        ["anchor_a"],
+        [candidate],
+        _score_only_config(),
+        anchor_contracts=matching,
+    )
+    failed = assign_automatic_anchors(
+        ["anchor_a"],
+        [candidate],
+        _score_only_config(),
+        anchor_contracts=mismatching,
+    )
+
+    assert passed.gate_passed
+    assert not failed.gate_passed
+    assert failed.assignments == []
+    assert failed.unassigned_anchor_labels == ["anchor_a"]
+    assert failed.gate_reasons == [
+        "complete_one_to_one_assignment_not_found:anchor_a"
+    ]
+    assert failed.edges[0].rejection_reasons == [
+        "capacity_class_contract_mismatch",
+        "support_type_contract_mismatch",
+    ]
+    assert passed.input_hash != failed.input_hash
+    assert passed.normalized_hash != failed.normalized_hash
+
+
+def test_contract_requires_exact_unique_expected_anchor_coverage():
+    candidates = [
+        _candidate("candidate-a", "instance-a", {"anchor_a": 0.90}),
+        _candidate("candidate-b", "instance-b", {"anchor_b": 0.90}),
+    ]
+    contracts = [
+        {
+            "anchor": "anchor_b",
+            "support_type": "surface",
+            "capacity_class": "medium",
+        },
+        {
+            "anchor": "anchor_a",
+            "support_type": "surface",
+            "capacity_class": "medium",
+        },
+    ]
+    first = assign_automatic_anchors(
+        ["anchor_a", "anchor_b"],
+        candidates,
+        _score_only_config(),
+        anchor_contracts=contracts,
+    )
+    reordered = assign_automatic_anchors(
+        ["anchor_b", "anchor_a"],
+        list(reversed(candidates)),
+        _score_only_config(),
+        anchor_contracts=list(reversed(contracts)),
+    )
+    assert first.input_hash == reordered.input_hash
+    assert first.normalized_hash == reordered.normalized_hash
+
+    with pytest.raises(ValueError, match="must exactly cover"):
+        assign_automatic_anchors(
+            ["anchor_a", "anchor_b"],
+            candidates,
+            _score_only_config(),
+            anchor_contracts=contracts[:1],
+        )
+    with pytest.raises(ValueError, match="duplicate"):
+        ExpectedAnchorContractManifest.model_validate(
+            {"anchors": [contracts[0], {**contracts[0], "anchor": "ANCHOR B"}]}
+        )
+
+
+def test_zero_vote_hypothesis_is_valid_diagnostic_but_ineligible():
+    candidate = _candidate("candidate-a", "instance-a", {"anchor_a": 0.0})
+    candidate["anchor_hypotheses"][0]["label_vote_count"] = 0
+    candidate["semantic_observation_count"] = 3
+
+    result = assign_automatic_anchors(
+        ["anchor_a"],
+        [candidate],
+        _score_only_config(),
+    )
+
+    assert not result.gate_passed
+    assert result.edges[0].rejection_reasons == [
+        "label_vote_count_below_threshold"
+    ]
+
+
+def test_semantic_vote_share_uses_view_count_while_support_uses_raw_count():
+    candidate = _candidate("candidate-a", "instance-a", {"anchor_a": 0.90})
+    candidate["observation_count"] = 30
+    candidate["semantic_observation_count"] = 3
+    candidate["anchor_hypotheses"][0]["label_vote_count"] = 2
+    config = AnchorAssignmentConfig(
+        min_candidate_observations=2,
+        min_label_vote_count=2,
+        min_label_vote_share=0.60,
+        min_mean_confidence=0.50,
+        min_assignment_score=0.0,
+        min_runner_up_margin=0.0,
+        support_saturation_observations=5,
+    )
+
+    result = assign_automatic_anchors(["anchor_a"], [candidate], config)
+
+    assert result.gate_passed
+    components = result.assignments[0].score_components
+    assert components.label_vote_share == 0.66666667
+    assert components.observation_support == 1.0
 
 
 def test_vlm_hard_fields_require_independent_confidence():

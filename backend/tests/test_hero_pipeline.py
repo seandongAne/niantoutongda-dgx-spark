@@ -495,7 +495,19 @@ def test_final_config_is_strict_auto_with_fresh_pull_and_semantic_score():
     assert "--shadow-only" not in space.argv
     assert "--anchor-candidates" in space.argv
     assert "--anchor-hashes" in space.argv
+    assert "--anchor-contract" in space.argv
     assert "--observation-hashes" in space.argv
+    contract_path = PROJ / cfg["stages"]["space"]["anchor_contract"]
+    truth_path = PROJ / cfg["stages"]["space_score"]["truth"]
+    assert contract_path in space.inputs
+    assert space.argv[space.argv.index("--anchor-contract") + 1] == str(
+        contract_path
+    )
+    assert contract_path != truth_path
+    assert truth_path not in space.inputs
+    assert str(truth_path) not in space.argv
+    assert contract_path not in score.inputs
+    assert score.inputs[1] == truth_path
     run_path = Path(cfg["run_dir"])
     expected_spatial = PROJ / run_path / "spatial/regions.json"
     assert regions.inputs == [expected_spatial]
@@ -512,3 +524,22 @@ def test_final_config_is_strict_auto_with_fresh_pull_and_semantic_score():
         [*space.argv, *map(str, regions.inputs), *regions.argv]
     )
     assert not any(value in production_text for value in forbidden)
+
+
+def test_anchor_candidates_require_separate_production_contract(tmp_path):
+    cfg = {
+        "run_dir": str(tmp_path / "run"),
+        "stages": {
+            "space": {
+                "enabled": True,
+                "video_id": "new_1",
+                "observations": str(tmp_path / "observations.jsonl"),
+                "anchor_candidates": str(tmp_path / "candidates.json"),
+                "expected_anchor": ["desk"],
+            },
+            "bundle": {"enabled": False},
+        },
+    }
+
+    with pytest.raises(ValueError, match="requires production space.anchor_contract"):
+        build_stages(cfg, "PYTHON")

@@ -29,6 +29,9 @@ from backend.tools.spatial import (  # noqa: E402
     produce_spatial_regions,
     write_spatial_outputs,
 )
+from backend.tools.spatial.assignment import (  # noqa: E402
+    load_expected_anchor_contract_manifest,
+)
 
 ASSIGNMENT_FILENAME = "assignment.json"
 
@@ -87,6 +90,14 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         help="classifier hashes.json used to authenticate anchor_candidates.json",
     )
+    parser.add_argument(
+        "--anchor-contract",
+        type=Path,
+        help=(
+            "strict production anchor/support/capacity contract; required with "
+            "--anchor-candidates and intentionally separate from scorer truth"
+        ),
+    )
     parser.add_argument("--out-dir", required=True, type=Path)
     parser.add_argument("--min-regions", type=int, default=5)
     parser.add_argument("--min-observations", type=int, default=2)
@@ -124,6 +135,11 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+    # A malformed or mismatched rerun must not leave an earlier trusted region
+    # manifest reachable in the same output directory.
+    stale_region_path = args.out_dir / "regions.json"
+    if stale_region_path.exists():
+        stale_region_path.unlink()
     config = SpatialProducerConfig(
         min_regions=args.min_regions,
         min_observations_per_region=args.min_observations,
@@ -146,6 +162,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.anchor_candidates is not None:
         if not config.expected_anchor_labels:
             parser.error("--anchor-candidates requires at least one --expected-anchor")
+        if args.anchor_contract is None:
+            parser.error("--anchor-candidates requires --anchor-contract")
         if args.anchor_hashes is not None:
             _verify_hashed_input(
                 args.anchor_candidates,
@@ -153,6 +171,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "anchor_candidates.json",
             )
         candidates = load_automatic_anchor_candidates(args.anchor_candidates)
+        contract_manifest = load_expected_anchor_contract_manifest(
+            args.anchor_contract
+        )
         result, assignment = produce_assigned_spatial_regions(
             args.video_id,
             observations,
@@ -168,10 +189,13 @@ def main(argv: Sequence[str] | None = None) -> int:
                 min_assignment_score=args.min_assignment_score,
                 min_runner_up_margin=args.min_assignment_margin,
             ),
+            anchor_contracts=contract_manifest.anchors,
         )
     else:
         if args.anchor_hashes is not None:
             parser.error("--anchor-hashes requires --anchor-candidates")
+        if args.anchor_contract is not None:
+            parser.error("--anchor-contract requires --anchor-candidates")
         result = produce_spatial_regions(args.video_id, observations, config)
     outputs = write_spatial_outputs(result, args.out_dir)
     if assignment is not None:

@@ -53,7 +53,10 @@ class AutomaticAnchorHypothesis(_AssignmentContract):
     """Automatic label statistics for one candidate and one anchor."""
 
     anchor: str
-    label_vote_count: int = Field(ge=1)
+    # Zero is a valid diagnostic vote count for an explicitly scored class.
+    # The assignment gate still requires ``min_label_vote_count`` (default 2)
+    # before an edge can become eligible.
+    label_vote_count: int = Field(ge=0)
     mean_confidence: float = Field(ge=0.0, le=1.0)
     max_confidence: float = Field(ge=0.0, le=1.0)
     proposal_display_name_zh: str = ""
@@ -88,6 +91,10 @@ class AutomaticAnchorCandidate(_AssignmentContract):
     candidate_id: str
     visual_instance_id: str
     observation_count: int = Field(ge=1)
+    # Multi-view classifiers may vote over a smaller semantic view set while
+    # ``observation_count`` remains the raw automatic track evidence count.
+    # Legacy candidates omit this and use observation_count as the denominator.
+    semantic_observation_count: int | None = Field(default=None, ge=1)
     display_name_zh: str
     power_state: PowerState = PowerState.UNKNOWN
     power_confidence: float | None = Field(default=None, ge=0.0, le=1.0)
@@ -122,11 +129,44 @@ class AutomaticAnchorCandidate(_AssignmentContract):
         ]
         if len(canonical) != len(set(canonical)):
             raise ValueError("anchor_hypotheses contains duplicate anchors")
+        semantic_count = self.semantic_observation_count or self.observation_count
         for hypothesis in self.anchor_hypotheses:
-            if hypothesis.label_vote_count > self.observation_count:
+            if hypothesis.label_vote_count > semantic_count:
                 raise ValueError(
-                    f"{hypothesis.anchor}: label_vote_count exceeds observation_count"
+                    f"{hypothesis.anchor}: label_vote_count exceeds "
+                    "semantic observation count"
                 )
+        return self
+
+
+class ExpectedAnchorContract(_AssignmentContract):
+    """Production semantic requirements for one requested anchor.
+
+    This is a product-side contract, not scorer truth.  It may reject a model
+    hypothesis but must never overwrite the model-observed hard fields.
+    """
+
+    anchor: str
+    support_type: SupportType
+    capacity_class: CapacityClass
+
+    @field_validator("anchor")
+    @classmethod
+    def _clean_anchor(cls, value: str) -> str:
+        cleaned = _clean_nonempty(value, field_name="anchor")
+        if not _canonical_anchor(cleaned):
+            raise ValueError("anchor has an empty canonical form")
+        return cleaned
+
+
+class ExpectedAnchorContractManifest(_AssignmentContract):
+    anchors: list[ExpectedAnchorContract] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _unique_anchors(self) -> "ExpectedAnchorContractManifest":
+        canonical = [_canonical_anchor(item.anchor) for item in self.anchors]
+        if len(canonical) != len(set(canonical)):
+            raise ValueError("anchor contract contains duplicate anchors")
         return self
 
 
@@ -177,6 +217,8 @@ class AnchorAssignmentEdge(_AssignmentContract):
     support_confidence: float | None = Field(default=None, ge=0.0, le=1.0)
     capacity_class: CapacityClass | None = None
     capacity_confidence: float | None = Field(default=None, ge=0.0, le=1.0)
+    required_support_type: SupportType | None = None
+    required_capacity_class: CapacityClass | None = None
     eligible: bool
     rejection_reasons: list[str] = Field(default_factory=list)
 
@@ -211,6 +253,9 @@ class AutomaticAnchorAssignmentResult(_AssignmentContract):
     config: AnchorAssignmentConfig
     status: GateStatus
     expected_anchor_labels: list[str]
+    expected_anchor_contracts: list[ExpectedAnchorContract] = Field(
+        default_factory=list
+    )
     input_hash: str
     total_score: float = Field(ge=0.0)
     runner_up_total_score: float | None = Field(default=None, ge=0.0)
@@ -333,10 +378,13 @@ def _score_hypothesis(
     hypothesis: AutomaticAnchorHypothesis,
     config: AnchorAssignmentConfig,
 ) -> tuple[float, AnchorScoreComponents]:
-    vote_share = hypothesis.label_vote_count / candidate.observation_count
+    semantic_count = (
+        candidate.semantic_observation_count or candidate.observation_count
+    )
+    vote_share = hypothesis.label_vote_count / semantic_count
     observation_support = min(
         1.0,
-        hypothesis.label_vote_count / config.support_saturation_observations,
+        candidate.observation_count / config.support_saturation_observations,
     )
     components = AnchorScoreComponents(
         mean_confidence=round(hypothesis.mean_confidence, 8),
@@ -360,6 +408,7 @@ def _edge_rejection_reasons(
     hypothesis: AutomaticAnchorHypothesis,
     components: AnchorScoreComponents,
     config: AnchorAssignmentConfig,
+    contract: ExpectedAnchorContract | None = None,
 ) -> list[str]:
     reasons: list[str] = []
     if candidate.observation_count < config.min_candidate_observations:
@@ -384,6 +433,18 @@ def _edge_rejection_reasons(
         or hypothesis.capacity_confidence < config.min_hard_field_confidence
     ):
         reasons.append("capacity_confidence_missing_or_below_threshold")
+    if (
+        contract is not None
+        and hypothesis.support_type is not None
+        and hypothesis.support_type is not contract.support_type
+    ):
+        reasons.append("support_type_contract_mismatch")
+    if (
+        contract is not None
+        and hypothesis.capacity_class is not None
+        and hypothesis.capacity_class is not contract.capacity_class
+    ):
+        reasons.append("capacity_class_contract_mismatch")
     if not candidate.evidence_refs:
         reasons.append("candidate_evidence_missing")
     return sorted(reasons)
@@ -455,6 +516,8 @@ def assign_automatic_anchors(
     expected_anchor_labels: Sequence[str],
     candidates: Sequence[AutomaticAnchorCandidate | Mapping[str, Any]],
     config: AnchorAssignmentConfig | None = None,
+    *,
+    anchor_contracts: Sequence[ExpectedAnchorContract | Mapping[str, Any]] | None = None,
 ) -> AutomaticAnchorAssignmentResult:
     """Globally assign expected anchors to distinct automatic visual instances."""
 
@@ -478,6 +541,32 @@ def assign_automatic_anchors(
         canonical: index for index, (canonical, _) in enumerate(expected_pairs)
     }
 
+    validated_contracts: list[ExpectedAnchorContract] = []
+    if anchor_contracts is not None:
+        validated_contracts = [
+            item
+            if isinstance(item, ExpectedAnchorContract)
+            else ExpectedAnchorContract.model_validate(item)
+            for item in anchor_contracts
+        ]
+        contract_keys = [
+            _canonical_anchor(contract.anchor) for contract in validated_contracts
+        ]
+        if len(contract_keys) != len(set(contract_keys)):
+            raise ValueError("anchor contracts contain duplicates")
+        missing = sorted(set(expected_index) - set(contract_keys))
+        extra = sorted(set(contract_keys) - set(expected_index))
+        if missing or extra:
+            raise ValueError(
+                "anchor contracts must exactly cover expected_anchor_labels: "
+                f"missing={missing}, extra={extra}"
+            )
+        validated_contracts.sort(key=lambda item: _canonical_anchor(item.anchor))
+    contract_by_anchor = {
+        _canonical_anchor(contract.anchor): contract
+        for contract in validated_contracts
+    }
+
     validated = [
         item
         if isinstance(item, AutomaticAnchorCandidate)
@@ -493,6 +582,9 @@ def assign_automatic_anchors(
         {
             "config": config.model_dump(mode="json"),
             "expected_anchor_labels": expected,
+            "expected_anchor_contracts": [
+                contract.model_dump(mode="json") for contract in validated_contracts
+            ],
             "candidates": [
                 candidate.model_dump(mode="json") for candidate in validated
             ],
@@ -509,12 +601,14 @@ def assign_automatic_anchors(
                 continue
             anchor_index = expected_index[canonical]
             anchor = expected[anchor_index]
+            contract = contract_by_anchor.get(canonical)
             score, components = _score_hypothesis(candidate, hypothesis, config)
             rejection_reasons = _edge_rejection_reasons(
                 candidate,
                 hypothesis,
                 components,
                 config,
+                contract,
             )
             diagnostic_edges.append(
                 AnchorAssignmentEdge(
@@ -527,6 +621,12 @@ def assign_automatic_anchors(
                     support_confidence=hypothesis.support_confidence,
                     capacity_class=hypothesis.capacity_class,
                     capacity_confidence=hypothesis.capacity_confidence,
+                    required_support_type=(
+                        contract.support_type if contract is not None else None
+                    ),
+                    required_capacity_class=(
+                        contract.capacity_class if contract is not None else None
+                    ),
                     eligible=not rejection_reasons,
                     rejection_reasons=rejection_reasons,
                 )
@@ -676,6 +776,9 @@ def assign_automatic_anchors(
         "config": config.model_dump(mode="json"),
         "status": status.value,
         "expected_anchor_labels": expected,
+        "expected_anchor_contracts": [
+            contract.model_dump(mode="json") for contract in validated_contracts
+        ],
         "input_hash": input_hash,
         "total_score": total_score,
         "runner_up_total_score": runner_up_total,
@@ -705,3 +808,16 @@ def load_automatic_anchor_candidates(
     if not isinstance(payload, list):
         raise ValueError(f"{source}: candidate root must be a JSON array")
     return [AutomaticAnchorCandidate.model_validate(item) for item in payload]
+
+
+def load_expected_anchor_contract_manifest(
+    path: str | Path,
+) -> ExpectedAnchorContractManifest:
+    """Load the strict production contract without consulting scorer truth."""
+
+    source = Path(path)
+    try:
+        payload = json.loads(source.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"{source}: invalid JSON: {exc.msg}") from exc
+    return ExpectedAnchorContractManifest.model_validate(payload)

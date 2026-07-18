@@ -125,3 +125,23 @@ def test_parser_rejects_missing_scores_and_anchor_list_is_deterministic():
         ["study_desk", "wall_shelf"],
     ) is None
     assert _expected_anchors(["wall_shelf,study_desk"]) == ["study_desk", "wall_shelf"]
+
+
+def test_parser_accepts_model_display_name_alias_without_relaxing_hard_fields():
+    parsed = parse_prediction(
+        json.dumps(
+            {
+                "anchor_scores": {"study_desk": 85, "other": 0},
+                "best_anchor": "study_desk",
+                "display_name": "学习桌",
+                "support_type": "surface",
+                "support_confidence": 90,
+                "capacity_class": "medium",
+                "capacity_confidence": 80,
+            }
+        ),
+        ["study_desk"],
+    )
+
+    assert parsed is not None
+    assert parsed["display_name_zh"] == "学习桌"

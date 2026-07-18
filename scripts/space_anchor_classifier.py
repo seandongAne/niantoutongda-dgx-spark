@@ -462,7 +462,11 @@ def parse_prediction(text: str, anchors: Sequence[str]) -> dict[str, Any] | None
     return {
         "anchor_scores": normalized_scores,
         "best_anchor": best_anchor,
-        "display_name_zh": str(payload.get("display_name_zh", "自动识别区域")).strip()[:24]
+        "display_name_zh": str(
+            payload.get("display_name_zh")
+            or payload.get("display_name")
+            or "自动识别区域"
+        ).strip()[:24]
         or "自动识别区域",
         "support_type": support_type,
         "support_confidence": support_confidence,

@@ -762,6 +762,10 @@ def _compile_kwargs(torch, inputs, args, *, mode: str, dryrun: str | bool) -> di
         kwargs["torch_executed_modules"] = list(args.torch_executed_modules)
     if mode == "fp16":
         kwargs["autocast_low_precision_type"] = torch.float16
+    if args.offload_module_to_cpu:
+        kwargs["offload_module_to_cpu"] = True
+    if args.workspace_size_gib > 0:
+        kwargs["workspace_size"] = int(args.workspace_size_gib * (1 << 30))
     return kwargs
 
 
@@ -915,6 +919,24 @@ def main() -> int:
         help=(
             "Exact exported module FQN to keep in PyTorch. Repeatable. The dry-run "
             "partition report remains the authority on whether the exclusion took effect."
+        ),
+    )
+    parser.add_argument(
+        "--offload-module-to-cpu",
+        action="store_true",
+        help=(
+            "Pass offload_module_to_cpu=True to torch_tensorrt.dynamo.compile to "
+            "reduce unified-memory pressure while the shared node keeps other "
+            "model services resident."
+        ),
+    )
+    parser.add_argument(
+        "--workspace-size-gib",
+        type=float,
+        default=0.0,
+        help=(
+            "Cap the TensorRT builder workspace (GiB); 0 keeps the compiler "
+            "default. Recorded in compile kwargs for provenance."
         ),
     )
     parser.add_argument(
@@ -1594,6 +1616,8 @@ def main() -> int:
         # be mistaken for a candidate speed/correctness result.
         if original_text_backbone is not None:
             model.model.text_backbone = original_text_backbone
+        if args.offload_module_to_cpu:
+            wrapper.cuda()
         with torch.inference_mode():
             eager_after_compile = _arrays(wrapper(*positional_inputs))
         eager_stability = _raw_diff(

@@ -4,6 +4,8 @@
 This command has no manual-region-manifest input.  It writes a candidate
 manifest and diagnostics on every valid run, but writes the solver-compatible
 ``regions.json`` only when the configured automatic coverage gate passes.
+``--shadow-only`` keeps a failed gate as a successful diagnostic stage so a
+separately configured, explicit manual fallback may continue downstream.
 """
 
 from __future__ import annotations
@@ -59,6 +61,14 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="report NOT_OBSERVED expected anchors without blocking the global gate",
     )
+    parser.add_argument(
+        "--shadow-only",
+        action="store_true",
+        help=(
+            "return success after writing diagnostics even when the automatic "
+            "gate fails; never creates regions.json on failure"
+        ),
+    )
     return parser
 
 
@@ -95,7 +105,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             sort_keys=True,
         )
     )
-    return 0 if result.gate_passed else 2
+    return 0 if result.gate_passed or args.shadow_only else 2
 
 
 if __name__ == "__main__":

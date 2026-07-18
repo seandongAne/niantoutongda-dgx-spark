@@ -306,4 +306,37 @@ def test_cli_accepts_only_auto_observation_input_and_writes_four_outputs(tmp_pat
         "metrics.json",
         "normalized.sha256",
     }
+
+
+def test_cli_shadow_mode_keeps_failed_gate_as_diagnostics_only(tmp_path):
+    observations_path = tmp_path / "auto-observations.jsonl"
+    observations_path.write_text(
+        json.dumps(_observation("bed", 1, [0.1, 0.1, 0.4, 0.4])) + "\n",
+        encoding="utf-8",
+    )
+    out_dir = tmp_path / "shadow"
+
+    code = space_task_main(
+        [
+            "--video-id",
+            "new_1",
+            "--observations",
+            str(observations_path),
+            "--out-dir",
+            str(out_dir),
+            "--min-regions",
+            "5",
+            "--shadow-only",
+        ]
+    )
+
+    assert code == 0
+    assert {path.name for path in out_dir.iterdir()} == {
+        "candidate_manifest.json",
+        "metrics.json",
+        "normalized.sha256",
+    }
+    metrics = json.loads((out_dir / "metrics.json").read_text(encoding="utf-8"))
+    assert metrics["gate_status"] == "NEEDS_USER"
+    assert metrics["region_gate_passed"] is False
     assert "--manifest" not in build_parser().format_help()

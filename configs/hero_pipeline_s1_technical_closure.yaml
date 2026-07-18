@@ -1,0 +1,69 @@
+# 英雄任务技术闭环：可信库存主链 + 自动空间影子门。
+#
+# 自动空间使用真实 new_1 视频生成并已拉回的观测；shadow_only 只把空间
+# 阶段本身视为已完成，不改变五目标 gate verdict。gate 未通过时不会生成
+# regions.json，下游明确使用人工区域 fixture。严格自动替换仍由
+# hero_pipeline_s1_final.yaml 承担，只有五区全部 AUTO_ACCEPTED 才会继续。
+run_dir: results/hero/s1-technical-closure
+trace_id: hero-s1-technical-closure
+python: .venv/bin/python
+
+stages:
+  inventory:
+    enabled: true
+    entities: results/hero_s1/reid-final/entities.jsonl
+    items: fixtures/hero_s1/items.json
+    anchor_review: fixtures/hero_s1/annotations/anchor_review.confirmed.json
+    max_clarifications: 4
+
+  space:
+    enabled: true
+    shadow_only: true
+    video_id: new_1
+    observations: results/hero_s1/space-auto/auto_observations.jsonl
+    min_regions: 5
+    min_observations: 2
+    min_confidence: 0.75
+    min_hard_field_confidence: 0.70
+    min_power_confidence: 0.70
+    min_field_consensus: 0.67
+    dedupe_iou: 0.35
+    expected_anchor:
+      - study_desk
+      - vanity
+      - wall_shelf
+      - chest_of_drawers
+      - display_cabinet
+
+  regions:
+    enabled: true
+    manifest: fixtures/hero_s1/regions.json
+
+  group:
+    enabled: true
+    trusted_inventory: true
+    closure: fixtures/hero_s1/technical_closure.json
+
+  layout:
+    enabled: true
+
+  taskcards:
+    enabled: true
+
+  risk:
+    enabled: true
+    closure: fixtures/hero_s1/technical_closure.json
+    facts: fixtures/hero_s1/risk_facts.pending.json
+
+  verify:
+    enabled: false
+
+  trace:
+    enabled: true
+    strict: false
+
+  report:
+    enabled: true
+
+  bundle:
+    enabled: true

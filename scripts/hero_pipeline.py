@@ -92,6 +92,7 @@ def build_stages(cfg: dict, py: str) -> dict[str, Stage]:
     stages: dict[str, Stage] = {}
     inventory_enabled = bool(sc("inventory").get("enabled"))
     space_enabled = bool(sc("space").get("enabled"))
+    space_shadow_only = bool(space_enabled and sc("space").get("shadow_only"))
     trusted_inventory_mode = bool(
         sc("group").get("enabled")
         and sc("group").get("trusted_inventory")
@@ -228,22 +229,29 @@ def build_stages(cfg: dict, py: str) -> dict[str, Stage]:
             argv += ["--expected-anchor", str(anchor)]
         if c.get("allow_partial_expected_coverage"):
             argv.append("--allow-partial-expected-coverage")
+        if space_shadow_only:
+            argv.append("--shadow-only")
+        outputs = [out_dir / "candidate_manifest.json"]
+        if not space_shadow_only:
+            outputs.append(out_dir / "regions.json")
+        outputs.extend(
+            [out_dir / "metrics.json", out_dir / "normalized.sha256"]
+        )
         stages["space"] = Stage(
             "space",
             "local",
             argv=argv,
             inputs=[observations],
-            outputs=[
-                out_dir / "candidate_manifest.json",
-                out_dir / "regions.json",
-                out_dir / "metrics.json",
-                out_dir / "normalized.sha256",
-            ],
+            outputs=outputs,
         )
 
     if sc("regions").get("enabled"):
         c = sc("regions")
-        src = run / "spatial/regions.json" if space_enabled else _p(c["manifest"])
+        src = (
+            run / "spatial/regions.json"
+            if space_enabled and not space_shadow_only
+            else _p(c["manifest"])
+        )
         out_dir = run / "regions"
         stages["regions"] = Stage(
             "regions", "local",

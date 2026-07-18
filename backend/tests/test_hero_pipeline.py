@@ -255,6 +255,20 @@ def test_build_stages_wires_trusted_inventory_auto_space_and_risk(tmp_path):
     assert str(manual_regions) not in regions.argv
     assert manual_regions not in regions.inputs
 
+    cfg["stages"]["space"]["shadow_only"] = True
+    shadow_stages = build_stages(cfg, "PYTHON")
+    shadow_space = shadow_stages["space"]
+    assert "--shadow-only" in shadow_space.argv
+    assert shadow_space.outputs == [
+        run / "spatial/candidate_manifest.json",
+        run / "spatial/metrics.json",
+        run / "spatial/normalized.sha256",
+    ]
+    shadow_regions = shadow_stages["regions"]
+    assert shadow_regions.inputs == [manual_regions]
+    assert str(manual_regions) in shadow_regions.argv
+    assert str(run / "spatial/regions.json") not in shadow_regions.argv
+
     group = stages["group"]
     assert group.argv[1] == str(PROJ / "scripts/trusted_group_task.py")
     assert group.inputs == [

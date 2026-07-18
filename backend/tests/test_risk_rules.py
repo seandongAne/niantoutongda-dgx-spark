@@ -17,7 +17,6 @@ from backend.tools.risks import (
 PROJ = Path(__file__).resolve().parent.parent.parent
 CLOSURE_PATH = PROJ / "fixtures/hero_s1/technical_closure.json"
 ITEMS_PATH = PROJ / "fixtures/hero_s1/items.json"
-REGIONS_PATH = PROJ / "fixtures/hero_s1/regions.json"
 
 
 def _fact(value: bool | None, confidence: float | None = 0.95, ref: str = "frame@00:01"):
@@ -60,14 +59,16 @@ def test_technical_closure_partitions_all_twenty_source_items_once():
 
 def test_technical_closure_freezes_gt_regions_and_pending_scale_slots():
     closure = json.loads(CLOSURE_PATH.read_text(encoding="utf-8"))
-    regions = json.loads(REGIONS_PATH.read_text(encoding="utf-8"))
-    known_region_ids = {entry["region_id"] for entry in regions["entries"]}
     ground_truth = closure["space_ground_truth"]
+    regions_path = PROJ / ground_truth["source_region_fixture"]
+    regions = json.loads(regions_path.read_text(encoding="utf-8"))
+    known_region_ids = {entry["region_id"] for entry in regions["entries"]}
 
     assert ground_truth["usage"] == "ground_truth_acceptance_only"
     assert ground_truth["must_not_be_used_as_auto_spatial_producer_input"] is True
     assert len(ground_truth["target_region_ids"]) == 5
-    assert set(ground_truth["target_region_ids"]) <= known_region_ids
+    assert len(regions["entries"]) == 5
+    assert set(ground_truth["target_region_ids"]) == known_region_ids
 
     slots = closure["scale_measurement_inputs"]
     assert len(slots) == 3

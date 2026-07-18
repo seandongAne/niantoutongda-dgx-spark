@@ -72,7 +72,7 @@
     "independent_items_are_valid_pack_items": true
   },
   "space_ground_truth": {
-    "source_region_fixture": "fixtures/hero_s1/regions.json",
+    "source_region_fixture": "fixtures/hero_s1/regions.target5.json",
     "usage": "ground_truth_acceptance_only",
     "must_not_be_used_as_auto_spatial_producer_input": true,
     "target_region_ids": [

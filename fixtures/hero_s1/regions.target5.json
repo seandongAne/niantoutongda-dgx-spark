@@ -1,0 +1,61 @@
+{
+  "video_id": "new_1",
+  "notes": "从用户确认的 new_1 人工区域清单冻结出的 5 个英雄目标区域；仅供验收真值与显式人工降级，禁止作为自动空间生产器输入。",
+  "entries": [
+    {
+      "region_id": "study_desk",
+      "anchor": "study_desk",
+      "display_name_zh": "书桌面",
+      "support_type": "surface",
+      "capacity_class": "medium",
+      "near_power": true,
+      "evidence_refs": [
+        "new_1.mp4@00:54"
+      ]
+    },
+    {
+      "region_id": "vanity_top",
+      "anchor": "vanity",
+      "display_name_zh": "花布面桌台面",
+      "support_type": "surface",
+      "capacity_class": "medium",
+      "near_power": true,
+      "evidence_refs": [
+        "new_1.mp4@01:10"
+      ]
+    },
+    {
+      "region_id": "wall_shelf",
+      "anchor": "wall_shelf",
+      "display_name_zh": "墙上木搁板",
+      "support_type": "shelf",
+      "capacity_class": "small",
+      "near_power": true,
+      "evidence_refs": [
+        "new_1.mp4@01:08"
+      ]
+    },
+    {
+      "region_id": "chest_top",
+      "anchor": "chest_of_drawers",
+      "display_name_zh": "红木斗柜台面",
+      "support_type": "surface",
+      "capacity_class": "medium",
+      "near_power": true,
+      "evidence_refs": [
+        "new_1.mp4@01:24"
+      ]
+    },
+    {
+      "region_id": "display_cabinet",
+      "anchor": "display_cabinet",
+      "display_name_zh": "玻璃展示柜隔层",
+      "support_type": "shelf",
+      "capacity_class": "small",
+      "near_power": false,
+      "evidence_refs": [
+        "new_1.mp4@01:34"
+      ]
+    }
+  ]
+}

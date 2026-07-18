@@ -170,6 +170,7 @@ class TaskCardItem(_HeroContract):
     entity_id: str
     display_name_zh: str
     hero_crop_ref: str = ""
+    quantity: int = Field(default=1, ge=1)
 
 
 class TaskCard(_HeroContract):

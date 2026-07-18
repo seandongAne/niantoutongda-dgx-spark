@@ -72,7 +72,11 @@ def _groups():
 
 
 DISPLAY = {
-    "e1": {"display_name_zh": "水壶", "hero_crop_ref": "crops/e1.jpg"},
+    "e1": {
+        "display_name_zh": "水壶",
+        "hero_crop_ref": "crops/e1.jpg",
+        "quantity": 2,
+    },
     "e3": {"display_name_zh": "台灯", "hero_crop_ref": "crops/e3.jpg"},
 }
 
@@ -177,6 +181,8 @@ def test_task_cards_from_layout():
     assert card.target_region_name_zh == "床头柜面"
     assert card.items[0].display_name_zh == "水壶"
     assert card.items[0].hero_crop_ref == "crops/e1.jpg"
+    assert card.items[0].quantity == 2
+    assert any("水壶 ×2 出现在「床头柜面」" in c for c in card.verification_checklist)
     assert any("台灯 出现在「床头柜面」" in c for c in card.verification_checklist)
     md = task_card_markdown(card)
     assert "睡前组合箱" in md and "- [ ]" in md

@@ -20,7 +20,7 @@ def build_task_cards(
     groups: list[HeroGroup],
     layout: LayoutResult,
     manifest: RegionManifest,
-    entity_display: dict[str, dict[str, str]],
+    entity_display: dict[str, dict[str, object]],
 ) -> list[TaskCard]:
     if layout.status != "PLAN_READY":
         raise ValueError(f"布局未就绪({layout.status}),不生成任务卡")
@@ -37,6 +37,7 @@ def build_task_cards(
                     "display_name_zh", eid
                 ),
                 hero_crop_ref=entity_display.get(eid, {}).get("hero_crop_ref", ""),
+                quantity=entity_display.get(eid, {}).get("quantity", 1),
             )
             for eid in sorted(group.entity_ids)
         ]
@@ -56,7 +57,12 @@ def build_task_cards(
                     else []
                 ),
                 verification_checklist=[
-                    f"{it.display_name_zh} 出现在「{region_name}」" for it in items
+                    (
+                        f"{it.display_name_zh} ×{it.quantity} 出现在「{region_name}」"
+                        if it.quantity > 1
+                        else f"{it.display_name_zh} 出现在「{region_name}」"
+                    )
+                    for it in items
                 ],
             )
         )
@@ -74,7 +80,10 @@ def task_card_markdown(card: TaskCard) -> str:
     for note in card.placement_notes:
         lines.append(f"- {note}")
     lines += ["", "| 物品 | 实体 |", "|---|---|"]
-    lines += [f"| {it.display_name_zh} | `{it.entity_id}` |" for it in card.items]
+    lines += [
+        f"| {it.display_name_zh}{f' ×{it.quantity}' if it.quantity > 1 else ''} | `{it.entity_id}` |"
+        for it in card.items
+    ]
     lines += ["", "验收清单:"]
     lines += [f"- [ ] {check}" for check in card.verification_checklist]
     return "\n".join(lines) + "\n"

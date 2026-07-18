@@ -71,26 +71,78 @@ def main() -> int:
     model = onnx.load(args.onnx)
     graph = model.graph
     initializer_names = {init.name for init in graph.initializer}
-    target_node = None
+    producer_of = {}
     for node in graph.node:
-        if TARGET_VALUE in node.output:
-            target_node = node
-            break
-    if target_node is None:
+        for out in node.output:
+            producer_of[out] = node
+
+    PASSTHROUGH_OPS = {
+        "Transpose",
+        "Reshape",
+        "Identity",
+        "Cast",
+        "Squeeze",
+        "Unsqueeze",
+        "Flatten",
+    }
+
+    def real_producer(value_name):
+        """Walk upstream through movement-only ops to the first computing node."""
+        chain = []
+        current = value_name
+        node = producer_of.get(current)
+        while node is not None and node.op_type in PASSTHROUGH_OPS:
+            chain.append({"op_type": node.op_type, "output": current})
+            current = node.input[0]
+            if current in initializer_names:
+                return None, current, chain
+            node = producer_of.get(current)
+        return node, current, chain
+
+    if TARGET_VALUE not in producer_of:
         raise RuntimeError(f"no node produces value {TARGET_VALUE!r}")
 
-    marked = []
+    level1_node, level1_output, level1_chain = real_producer(TARGET_VALUE)
+    if level1_node is None:
+        raise RuntimeError("walked into an initializer before any computing node")
+
+    marked = [TARGET_VALUE]
     skipped_initializers = []
-    for input_name in target_node.input:
-        if not input_name:
+    node_map = {}
+
+    def mark_node_inputs(node, depth):
+        entries = []
+        for input_name in node.input:
+            if not input_name:
+                continue
+            if input_name in initializer_names:
+                skipped_initializers.append(input_name)
+                continue
+            if input_name not in marked:
+                marked.append(input_name)
+            entries.append(input_name)
+        node_map[node.name or node.output[0]] = {
+            "op_type": node.op_type,
+            "depth": depth,
+            "output": node.output[0],
+            "traced_inputs": entries,
+        }
+        return entries
+
+    if level1_output not in marked:
+        marked.append(level1_output)
+    level1_inputs = mark_node_inputs(level1_node, 1)
+    for input_name in list(level1_inputs):
+        level2_node, level2_output, _ = real_producer(input_name)
+        if level2_node is None:
             continue
-        if input_name in initializer_names:
-            skipped_initializers.append(input_name)
-            continue
-        marked.append(input_name)
-    if not marked:
-        raise RuntimeError("all scatter-node inputs are initializers; nothing to mark")
-    marked.append(TARGET_VALUE)
+        if level2_output not in marked:
+            marked.append(level2_output)
+        mark_node_inputs(level2_node, 2)
+    if len(marked) > 16:
+        marked = marked[:16]
+
+    target_node = level1_node
 
     existing_outputs = [value.name for value in graph.output]
     for name in marked:
@@ -113,6 +165,8 @@ def main() -> int:
             "name": target_node.name,
             "inputs": list(target_node.input),
             "outputs": list(target_node.output),
+            "passthrough_chain_from_target_value": level1_chain,
+            "traced_nodes": node_map,
             "marked_values": marked,
             "skipped_initializer_inputs": skipped_initializers,
         },
@@ -265,36 +319,48 @@ def main() -> int:
             }
     result["ort_vs_trt"] = comparisons
 
-    node_inputs = [name for name in marked if name != TARGET_VALUE]
-    float_inputs = [
-        name for name in node_inputs if "max_abs_on_jointly_finite" in comparisons[name]
-    ]
-    dirty_inputs = [
-        name
-        for name in float_inputs
-        if (comparisons[name]["max_abs_on_jointly_finite"] or 0.0) > DIRTY_MAX_ABS
-    ]
-    unclean_inputs = [
-        name
-        for name in float_inputs
-        if (comparisons[name]["max_abs_on_jointly_finite"] or 0.0) > CLEAN_MAX_ABS
-    ]
+    def value_max(name):
+        return comparisons.get(name, {}).get("max_abs_on_jointly_finite")
+
     integer_mismatch = [
         name
-        for name in node_inputs
-        if "integer_equal" in comparisons[name] and not comparisons[name]["integer_equal"]
+        for name in marked
+        if "integer_equal" in comparisons.get(name, {})
+        and not comparisons[name]["integer_equal"]
     ]
-    output_max = comparisons[TARGET_VALUE].get("max_abs_on_jointly_finite") or 0.0
-    if dirty_inputs:
-        verdict = "UPSTREAM_OF_SCATTER_GUILTY:" + ",".join(dirty_inputs)
+    guilty_nodes = []
+    for label, info in node_map.items():
+        output_max = value_max(info["output"])
+        input_maxes = [value_max(n) for n in info["traced_inputs"]]
+        float_in = [m for m in input_maxes if m is not None]
+        if output_max is None or not float_in:
+            continue
+        if output_max > DIRTY_MAX_ABS and all(m <= CLEAN_MAX_ABS for m in float_in):
+            guilty_nodes.append(
+                {
+                    "node": label,
+                    "op_type": info["op_type"],
+                    "depth": info["depth"],
+                    "output_max_abs": output_max,
+                }
+            )
+    dirty_values = sorted(
+        (name for name in marked if (value_max(name) or 0.0) > DIRTY_MAX_ABS),
+        key=lambda name: -(value_max(name) or 0.0),
+    )
+    result["guilty_nodes"] = guilty_nodes
+    if guilty_nodes:
+        deepest = sorted(guilty_nodes, key=lambda g: -g["depth"])[0]
+        verdict = (
+            f"GUILTY_OP:{deepest['op_type']}@{deepest['node']}"
+            f"(depth={deepest['depth']},output_max_abs={deepest['output_max_abs']:.6g})"
+        )
     elif integer_mismatch:
-        verdict = "SCATTER_INDEX_PATH_MISMATCH:" + ",".join(integer_mismatch)
-    elif not unclean_inputs and output_max > DIRTY_MAX_ABS:
-        verdict = f"SLICE_SCATTER_OP_GUILTY(op={target_node.op_type},output_max_abs={output_max:.6g})"
-    elif not unclean_inputs and output_max <= CLEAN_MAX_ABS:
-        verdict = "NO_DIVERGENCE_REPRODUCED_AT_THIS_NODE"
+        verdict = "INDEX_PATH_MISMATCH:" + ",".join(integer_mismatch)
+    elif dirty_values:
+        verdict = "DIRTY_BEYOND_DEPTH2:" + ",".join(dirty_values)
     else:
-        verdict = "INCONCLUSIVE"
+        verdict = "NO_DIVERGENCE_REPRODUCED_AT_TRACED_NODES"
     result["verdict"] = verdict
     result["acceptance_boundary"] = (
         "Frozen two-image workload; instrumented engine blocks fusions, so no "
@@ -303,9 +369,12 @@ def main() -> int:
     )
 
     output_path.write_text(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
-    print(json.dumps({"verdict": verdict, "target_op": target_node.op_type,
-                      "inputs_max_abs": {n: comparisons[n].get("max_abs_on_jointly_finite") for n in float_inputs},
-                      "output_max_abs": output_max}, ensure_ascii=False, indent=2))
+    print(json.dumps({
+        "verdict": verdict,
+        "level1_op": target_node.op_type,
+        "marked_max_abs": {name: value_max(name) for name in marked},
+        "guilty_nodes": guilty_nodes,
+    }, ensure_ascii=False, indent=2))
     return 0
 
 

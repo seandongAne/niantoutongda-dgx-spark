@@ -758,6 +758,8 @@ def _compile_kwargs(torch, inputs, args, *, mode: str, dryrun: str | bool) -> di
         "dryrun": dryrun,
         "enable_autocast": mode == "fp16",
     }
+    if args.torch_executed_modules:
+        kwargs["torch_executed_modules"] = list(args.torch_executed_modules)
     if mode == "fp16":
         kwargs["autocast_low_precision_type"] = torch.float16
     return kwargs
@@ -795,6 +797,9 @@ def _run_partition_and_compile(
             "report_sha256": _sha256(report_path),
             "dryrun_seconds": dryrun_seconds,
             "min_block_size": args.min_block_size,
+            "requested_torch_executed_modules": list(
+                args.torch_executed_modules
+            ),
         }
     )
     if not partition["parsed"]:
@@ -902,6 +907,16 @@ def main() -> int:
     )
     parser.add_argument("--skip-fp16", action="store_true")
     parser.add_argument("--experimental-decompositions", action="store_true")
+    parser.add_argument(
+        "--torch-executed-module",
+        dest="torch_executed_modules",
+        action="append",
+        default=[],
+        help=(
+            "Exact exported module FQN to keep in PyTorch. Repeatable. The dry-run "
+            "partition report remains the authority on whether the exclusion took effect."
+        ),
+    )
     parser.add_argument("--code-commit")
     parser.add_argument(
         "--container-image",
@@ -919,6 +934,10 @@ def main() -> int:
         parser.error("text-threshold must be in [0, 1]")
     if min(args.fp32_rtol, args.fp32_atol, args.fp16_rtol, args.fp16_atol) < 0:
         parser.error("all numerical tolerances must be non-negative")
+    if any(not value.strip() for value in args.torch_executed_modules):
+        parser.error("torch-executed-module values must be non-empty")
+    if len(set(args.torch_executed_modules)) != len(args.torch_executed_modules):
+        parser.error("torch-executed-module values must be unique")
 
     output_path = Path(args.output)
     output_path.parent.mkdir(mode=0o755, parents=True, exist_ok=True)
@@ -948,6 +967,7 @@ def main() -> int:
             "export_rewrite_and_torch_export_always_require_same_process_raw": True,
             "raw_query_slot_report_always_recorded": True,
             "shape_dtype_and_nonfinite_safety_always_required": True,
+            "requested_torch_executed_modules": list(args.torch_executed_modules),
             "fp32_raw_tolerance": {"rtol": args.fp32_rtol, "atol": args.fp32_atol},
             "fp16_raw_tolerance": {"rtol": args.fp16_rtol, "atol": args.fp16_atol},
             "decision_tolerance": {

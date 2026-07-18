@@ -14,6 +14,7 @@ import argparse
 import hashlib
 import json
 import math
+import os
 import platform
 import resource
 import statistics
@@ -104,6 +105,8 @@ def main() -> int:
     args = parser.parse_args()
     if args.batch_size < 1 or args.warmup < 0 or args.runs < 1:
         parser.error("batch-size/runs must be positive and warmup non-negative")
+    if args.exporter == "dynamo":
+        os.environ["TRANSFORMERS_DISABLE_TORCH_CHECK"] = "1"
 
     import torch
     from PIL import Image
@@ -382,6 +385,9 @@ def main() -> int:
                 model_patch_within_tolerance
             ),
             "model_output_checks": compatibility_checks,
+            "transformers_torch_checks_disabled_for_dynamo": (
+                args.exporter == "dynamo"
+            ),
             "site_packages_modified": False,
         },
     }

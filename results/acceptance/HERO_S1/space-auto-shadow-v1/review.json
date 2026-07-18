@@ -1,0 +1,80 @@
+{
+  "schema_version": "1.0",
+  "review_id": "hero-s1-space-auto-shadow-v1",
+  "source_video_id": "new_1",
+  "review_method": "manual_representative_frame_inspection",
+  "adapter_normalized_hash": "7cd6704edcbf1d9e05ea13d16949007c8bc6c1a3c220769faaa21236fbd183f4",
+  "spatial_gate_normalized_hash": "42a1847e7ba82b01274e5c44e08ddb7a693fff461ca6353e4dc7b9f873b7c1d4",
+  "gate_status": "NEEDS_USER",
+  "gate_reasons": [
+    "min_regions_not_met:0/5",
+    "expected_anchors_not_auto_accepted:chest_of_drawers,display_cabinet,study_desk,vanity,wall_shelf"
+  ],
+  "representative_findings": [
+    {
+      "finding_id": "chest_false_positive_sofa",
+      "frame_ref": "kf_001170.jpg",
+      "frame_sha256": "2401a80556957919f28c4293c8e0ccce7960400174b10861423dee37a09a505a",
+      "candidate_track_id": "new_1_t122",
+      "predicted_anchor": "chest_of_drawers",
+      "mean_model_confidence": 0.742568,
+      "bbox": [
+        2.437276840209961,
+        461.5943298339844,
+        645.8590087890625,
+        1070.5228271484375
+      ],
+      "finding_code": "SEMANTIC_FALSE_POSITIVE",
+      "review_note_zh": "候选框主要覆盖左侧皮沙发座面，不是斗柜。"
+    },
+    {
+      "finding_id": "desk_vanity_same_object_conflict",
+      "frame_ref": "kf_002610.jpg",
+      "frame_sha256": "c02292fe3fac2ef85a2a723963289a85381b3434a67e6b1876ff7c9619698df0",
+      "candidates": [
+        {
+          "candidate_track_id": "new_1_t273",
+          "predicted_anchor": "study_desk",
+          "mean_model_confidence": 0.718784,
+          "bbox": [
+            1143.72900390625,
+            512.5169067382812,
+            1916.564453125,
+            1066.830078125
+          ]
+        },
+        {
+          "candidate_track_id": "new_1_t272",
+          "predicted_anchor": "vanity",
+          "mean_model_confidence": 0.818021,
+          "bbox": [
+            1145.9644775390625,
+            511.46026611328125,
+            1918.2911376953125,
+            1071.908935546875
+          ]
+        }
+      ],
+      "finding_code": "CROSS_CLASS_SAME_OBJECT_CONFLICT",
+      "review_note_zh": "书桌与梳妆台候选框近乎重合，实际落在同一书桌区域，不能同时作为两个目标区域。"
+    },
+    {
+      "finding_id": "wall_shelf_false_positive_display_cabinet",
+      "frame_ref": "kf_005160.jpg",
+      "frame_sha256": "b46b46faece91eb0366b177ec0b180b7a864c30afbfb4740f93511501618dc56",
+      "candidate_track_id": "new_1_t499",
+      "predicted_anchor": "wall_shelf",
+      "mean_model_confidence": 0.541659,
+      "bbox": [
+        1479.675048828125,
+        377.781982421875,
+        1875.981689453125,
+        725.6914672851562
+      ],
+      "finding_code": "SEMANTIC_FALSE_POSITIVE",
+      "review_note_zh": "候选框位于右侧展示柜区域，不是左侧墙面木搁板。"
+    }
+  ],
+  "conclusion_zh": "不得通过降低置信度门槛把这些候选投影为五个可信区域；保留自动候选证据并使用显式人工降级。",
+  "acceptance_boundary_zh": "本文件是自动空间影子门的失败样本复核，不是搬家后真实摆放照片验收。"
+}

@@ -3,6 +3,11 @@
 GT = `fixtures/hero_s1/annotations/anchor_review.confirmed.json`
 (20 锚点/364 确认轨,数据所有者人工目检,从未送云、未参与任何搜索)
 
+> 历史档案说明：下表是 2026-07-17 单工作点终局判卷，数字保持原样。
+> 2026-07-18 多视角闭环已将当前汇报口径更新为：**完整合并
+> `17/20`；多策略联合 R@1 `495/577 = 0.8579`**。当前结论见
+> `results/acceptance/HERO_S1/multiview-closure-attempt/README.md`。
+
 ## 校准迭代记档(§4 白名单,每项动用记档)
 
 | 白名单项 | 动用 | 结果 |

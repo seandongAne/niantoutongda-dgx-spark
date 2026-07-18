@@ -926,23 +926,24 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
         accepted_count = spatial_metrics.get("auto_accepted_count", "—")
         score = spatial_score_metrics.get("score", "—")
 
-        complete_restore = showcase_metrics.get("complete_restore", {})
-        strategy_coverage = showcase_metrics.get("multi_strategy_coverage", {})
+        complete_merge = showcase_metrics.get("complete_merge", {})
+        strategy_r1 = showcase_metrics.get("multi_strategy_recall_at_1", {})
         showcase_proof = ""
-        if isinstance(complete_restore, dict) and isinstance(strategy_coverage, dict):
-            complete_value = complete_restore.get("value")
-            complete_total = complete_restore.get("total")
-            coverage_percent = strategy_coverage.get("percent")
+        if isinstance(complete_merge, dict) and isinstance(strategy_r1, dict):
+            complete_value = complete_merge.get("value")
+            complete_total = complete_merge.get("total")
+            recall_value = strategy_r1.get("value")
             if (
                 isinstance(complete_value, int)
                 and isinstance(complete_total, int)
                 and 0 <= complete_value <= complete_total
-                and isinstance(coverage_percent, (int, float))
-                and 0 <= coverage_percent <= 100
+                and isinstance(recall_value, (int, float))
+                and 0 <= recall_value <= 1
             ):
                 showcase_proof = (
-                    f'<span><b>{esc(complete_value)}/{esc(complete_total)}</b> 跨视频完整复原</span>'
-                    f'<span><b>{esc(f"{coverage_percent:.2f}%")}</b> 多策略覆盖</span>'
+                    f'<span><b>{esc(complete_value)}/{esc(complete_total)}</b> 跨视频完整合并</span>'
+                    f'<span title="baseline、v2 与 v3 的正确命中并集">'
+                    f'<b>{esc(f"{recall_value:.4f}")}</b> 多策略联合 R@1</span>'
                 )
 
         visual_class = " judge-hero-with-visual" if room_visual or old_crop_strip else ""

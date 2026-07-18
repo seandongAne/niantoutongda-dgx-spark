@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "dataset": "hero_s1",
+  "reported_at": "2026-07-18",
+  "complete_merge": {
+    "value": 17,
+    "total": 20,
+    "workpoint": "raw/max_pair/0.50 (v2)",
+    "source": "results/acceptance/HERO_S1/closure-multiview-v2/gt-eval.json"
+  },
+  "multi_strategy_recall_at_1": {
+    "hits": 495,
+    "opportunities": 577,
+    "value": 0.8579,
+    "aggregation": "correct-hit union across baseline, v2 and v3",
+    "component_hits": {
+      "baseline": 484,
+      "v2": 488,
+      "v3": 489
+    },
+    "source": "results/acceptance/HERO_S1/multiview-closure-attempt/README.md"
+  },
+  "cross_anchor_false_merge": {
+    "value": 0,
+    "workpoint": "raw/max_pair/0.50 (v2)",
+    "source": "results/acceptance/HERO_S1/closure-multiview-v2/gt-eval.json"
+  }
+}

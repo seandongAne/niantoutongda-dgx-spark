@@ -1,16 +1,18 @@
 {
   "schema_version": "1.0",
-  "complete_restore": {
+  "complete_merge": {
     "value": 17,
     "total": 20,
-    "label_zh": "跨视频完整复原",
-    "source": "results/acceptance/HERO_S1/closure-multiview-v2/gt-eval.json"
+    "label_zh": "跨视频完整合并",
+    "source": "results/acceptance/HERO_S1/multiview-closure-attempt/final-metrics.json"
   },
-  "multi_strategy_coverage": {
+  "multi_strategy_recall_at_1": {
     "hits": 495,
     "opportunities": 577,
+    "value": 0.8579,
     "percent": 85.79,
-    "label_zh": "多策略覆盖",
-    "source": "results/acceptance/HERO_S1/multiview-closure-attempt/README.md"
+    "label_zh": "多策略联合 R@1",
+    "aggregation": "correct-hit union across baseline, v2 and v3",
+    "source": "results/acceptance/HERO_S1/multiview-closure-attempt/final-metrics.json"
   }
 }

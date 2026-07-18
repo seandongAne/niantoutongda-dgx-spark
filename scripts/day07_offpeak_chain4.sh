@@ -34,7 +34,18 @@ restore_vllm() {
 }
 trap restore_vllm EXIT
 
-echo "=== $(date -u +%FT%TZ) offpeak chain4(v11 only) start commit=$COMMIT vllm_id=$VLLM_ID ==="
+echo "=== $(date -u +%FT%TZ) offpeak chain4 start commit=$COMMIT vllm_id=$VLLM_ID ==="
+
+echo "=== $(date -u +%FT%TZ) stage B2: slice_scatter bisect v2 (typed outputs, vllm stays up) ==="
+"$PY" scripts/gdino_slice_scatter_bisect.py \
+  --onnx "$V10DIR/grounding_dino.onnx" \
+  --inputs "$V10DIR/sample_inputs.npz" \
+  --engine results/acceptance/SF1/trt-scatter-bisect-20260719-v2/scatter_bisect_fp32_notf32.engine \
+  --output results/acceptance/SF1/trt-scatter-bisect-20260719-v2/result.json \
+  --trtexec "$TRTEXEC" \
+  --code-commit "$COMMIT"
+echo "STAGEB2_EXIT=$?"
+free -h
 if [ -n "$VLLM_ID" ]; then
   docker stop "$VLLM_ID" >/dev/null && echo "VLLM_STOPPED"
 else

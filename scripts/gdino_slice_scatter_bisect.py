@@ -148,6 +148,25 @@ def main() -> int:
         output_path.write_text(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
         raise RuntimeError("instrumented graph is not bit-exact to the original in ORT")
 
+    # ORT tolerates untyped graph outputs; the TensorRT parser does not
+    # ("Unsupported ONNX data type: <UNKNOWN> (0)").  Backfill dtype/shape on the
+    # appended outputs from the ORT-produced arrays, then re-save for trtexec.
+    for value in graph.output:
+        if value.name in marked and value.type.tensor_type.elem_type == 0:
+            array = ort_values[value.name]
+            typed = onnx.helper.make_tensor_value_info(
+                value.name,
+                onnx.helper.np_dtype_to_tensor_dtype(array.dtype),
+                list(array.shape),
+            )
+            value.CopyFrom(typed)
+    onnx.save_model(model, str(instrumented_path), save_as_external_data=False)
+    result["instrumented_onnx"] = {
+        "path": str(instrumented_path),
+        "sha256": _sha256(instrumented_path),
+        "typed_outputs_backfilled": True,
+    }
+
     engine_path = Path(args.engine)
     if engine_path.exists():
         raise SystemExit(f"refusing to overwrite existing engine: {engine_path}")

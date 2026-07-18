@@ -4,7 +4,7 @@
 >
 > 当日主责：A1 formal 语音鲁棒性验收收口；英雄任务可信库存与自动空间技术闭环
 >
-> 状态：完成（可信库存主链已落盘；自动空间真机门保持 `NEEDS_USER`，独立视觉代理裁定 5/5 `PASS`）
+> 状态：完成（可信库存与全自动空间主链均已落盘；生产门与独立语义评分均 `PASS`）
 
 ## 今日目标
 
@@ -175,10 +175,10 @@
 - 词表扫描死词摘要人工裁决 → `fixtures/hero_s1/vocab.json`；transcript 人工
   听校；regions 与洗手间疑点队友确认；S5 vLLM 起服务后按
   `configs/hero_pipeline_s1.yaml` 发射 s1 主链。
-- 自动空间下一轮只使用现有视频和已固化失败样本，补跨类别排他/同物体冲突消解、
-  每目标最佳实例选择及置信度校准；严格五目标门通过前继续保留人工五区降级。
-- 接入已知参照物长度、门洞净宽和主要通道净宽 3 个尺度输入；真实摆放照片继续留到
-  最终验收阶段，不在技术影子门中伪造 presence/compliance。
+- 自动空间严格五目标门已经通过，下一阶段只做演示复跑、代表证据整理和错误注入验证；
+  人工五区不再进入生产主链，独立语义 scorer 继续只评分、不产区。
+- 精确面积、净高、承重、门洞和通道宽度不再作为比赛技术闭环输入；真实摆放照片继续
+  留作可选的最终物理执行复核，不在当前产物中伪造 presence/compliance。
 
 ## 增量 D5-3：素材疑点用户裁决（07-17）
 
@@ -344,3 +344,79 @@
   `scripts/deploy.sh` 已同步提交 `5e04659a9bede06bcaba44abd9d6ee67fa4dbda4`。
   远端只读回查得到 `hero_s1_technical_closure_v2 / 120.0 / DEFERRED /
   OPTIONAL_DEFERRED`，与本地范围合同一致。
+
+## 增量 D5-10：自动空间生产器替换人工五区（跨午夜）
+
+### 今日目标
+
+- 保持 20 件可信库存、3 个生活组合、5 个 placement 单元与最多 4 个澄清问题的
+  冻结范围不变，用现有 `new_1.mp4` 完成严格全自动五区生产，并让下游布局和任务卡
+  只消费自动投影区域与 20 条可信库存。
+- 生产侧使用自动 detector、独立目标裁剪和全局一对一分配；冻结语义 scorer 保持独立，
+  不向生产器提供 candidate、track、region ID，也不生成或改写 `regions.json`。
+- OOM 后不再启动 ComfyUI、Qwen 35B 或 ReID，只复用已落盘的小型 ReID 结果和
+  Spark 上现有 Nemotron 12B 视觉服务，先过安全与内存门再运行空间分类。
+
+### 关键证据或截图
+
+- OOM 恢复边界：ComfyUI 与 Qwen 35B 同时运行导致节点 OOM、ReID 挂起后及时重启。
+  后续 `scripts/spark_healthcheck.sh` 输出 `✅ SPARK CLEAN`；实时内存为 121 GiB 总量、
+  70 GiB available、0 swap，且无 ComfyUI、Qwen、ReID 或旧空间分类进程。本轮未重跑
+  ReID，避免再次争抢统一内存。
+- 自动候选生产：2278 条自动空间观测进入 168 个 track 的三视图分类，504/504 个
+  视图得到合法结果，失败 0；5 个低信息 track 保留诊断但业务票清零，最终得到 53 个
+  自动视觉实例。候选 normalized hash 为
+  `0ced8a84133c0862682dcea0dcd2905434dbf68d1241209a13ce16e6959518e2`。
+- 可信门没有把一次 VLM 判断按 detector 帧数伪造成多票：`semantic_observation_count`
+  只计 3 个独立目标裁剪，raw `observation_count` 只贡献 10% 有界持续支撑。小于两个
+  20,000 像素有效目标视图的候选只进入诊断；runner-up 排除同一物理实例的平行候选，
+  不再把同物体的 sibling 行制造成 0 margin。
+- 生产 anchor contract 独立冻结 anchor/support/capacity，只能拒绝模型字段，不能回填
+  或覆盖模型输出。严格分配得到 5/5、`gate_status=PASS`、`needs_user=0`、全局 margin
+  `0.06333333 ≥ 0.05`，assignment hash 为
+  `43958ebfedeb50afb344bf551a869da614d923bee72161d9530b78a0361a6777`，空间 normalized
+  hash 为 `37ace5cb7ea7cd5115660765a378f8a081634774c7a2b73994d03314e175d184`。
+- 五个自动目标为 `chest_of_drawers / display_cabinet / study_desk / vanity /
+  wall_shelf`，对应 support/capacity 为 `surface-medium / shelf-small /
+  surface-medium / surface-medium / shelf-small`。独立 scorer 得分 5/5，精确语义匹配
+  5、额外预测 0、support mismatch 0、capacity mismatch 0，normalized hash 为
+  `3f4f38e330acd671267c87aeef90e96e77baa1d91be52c3f5e73fb4cb991d980`；两项电源差异
+  仅作信息记录，不扩写为空房安全结论。
+- 正式运行 `results/hero/s1-auto-final-v1/` 完成 3306→20 投影、4/4 澄清封顶、3 个
+  生活组合、2 个技术装箱单元、5 个 placement 单元、`PLAN_READY` 且 conflicts=[]、
+  5 张 `REGION_PLANNED` 任务卡。任务卡与 placement 各自都是 20 个唯一 `hero_*`
+  实体，缺失 0、额外 0、重复 0。
+- 三条风险规则保持 `scope_status=DEFERRED / blocking=false`，状态均为 `NEEDS_USER`，
+  并保留“不构成安全认证”声明。四 Agent 主链回放 `PASS`、`main_chain.complete=1`；
+  bundle 收录 46 个阶段产物，逐项 SHA-256 复核全部通过。结果页为
+  `results/hero/s1-auto-final-v1/index.html`。
+- 实现链 commits：`c61204ee`（自动 VLM 分配）、`292c543a`（断点运行不误启 ReID）、
+  `7897cd69`（生产 contract）、`fe926bbf`（独立目标视图真票）、`c8d30026`（保守语义
+  碎片归并）、`8bf22b54`（低信息隔离与物理 runner-up）、`b604742d`（持续观测支撑，
+  禁止长时弱相似合并）、`0ce17bd7`（冻结正式主链 51 个文件）。最终全仓验证为
+  `290 passed in 6.27s`，`git diff --check` 通过。
+
+### 失败与教训
+
+- 35B 语言模型与 ComfyUI 不应和视觉/ReID 工作负载同驻无 swap 的 128 GB 统一内存。
+  模型调度必须先看 `free -h`，演示主链固定只保留所需服务；OOM 后先重启、自检和查
+  残留进程，不把“服务重新可连”当作证据未损坏。
+- 一版候选归并曾允许相隔 67 秒、DINO cosine≈0.63 的同语义轨合并。只读门审指出
+  两件同类家具也可能满足该条件；该版本虽已短暂部署但从未用于正式分类，随后删除
+  长时分支。最终使用原有的 10% 有界持续观测分量区分 35 条与 11 条支撑，两个视觉
+  实例仍保持独立，严格 runner-up 门照常生效。
+- 三次独立 VLM 结果都是 0.95，并不自动等于物理身份唯一。可靠性来自目标裁剪质量、
+  真票数、hard-field contract、全局一对一、物理实例 runner-up margin 和独立 scorer
+  的组合，不能靠单一置信度或降低门槛闭环。
+- 当前闭环证明的是相对区域语义、容量、库存白名单和任务生成；不证明精确尺寸、承重、
+  通行安全或真实摆放已经执行。搬后照片、儿童触及、绊倒与湿区关系继续按冻结范围
+  延期，家庭/从业者访谈与十秒可读测试不纳入比赛技术结论。
+
+### 明日计划
+
+- 用同一冻结配置做一次演示前内容寻址复跑，确认自动空间无需人工 region/anchor ID、
+  无需 ReID 重算即可重现 5/5、20/20 和 trace `PASS`。
+- 整理五个自动目标的三视图证据、严格 margin 和独立 scorer 页面，用于现场解释
+  “生产器—评分器”隔离；保留低信息失败样本作为 fail-closed 演示。
+- 演示环境不启动 ComfyUI 或 Qwen 35B；真实摆放照片仅在决定补做物理执行验收时采集，
+  不阻塞当前技术闭环。

@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import shlex
 import subprocess
 import sys
 import time
@@ -67,6 +68,8 @@ class Stage:
     inputs: list[Path] = field(default_factory=list)
     outputs: list[Path] = field(default_factory=list)
     code_dependencies: list[Path] = field(default_factory=list)
+    remote_sync_inputs: list[Path] = field(default_factory=list)
+    remote_pull_outputs: list[Path] = field(default_factory=list)
     always_run: bool = False
 
     @property
@@ -103,6 +106,20 @@ def _acceptance_photo_paths(manifest: Path, photo_root: Path) -> list[Path]:
         ref = Path(str(row["photo_ref"]))
         paths.append(ref if ref.is_absolute() else photo_root / ref)
     return paths
+
+
+def _project_relative(path: Path) -> Path:
+    """把本地项目文件映射为 spark:~/proj 下的同路径，拒绝越界。"""
+
+    try:
+        return path.resolve().relative_to(PROJ.resolve())
+    except ValueError as exc:
+        raise ValueError(f"Spark stage path must stay under project root: {path}") from exc
+
+
+def _remote_project_arg(path: Path) -> str:
+    relative = _project_relative(path)
+    return relative.as_posix() if relative.parts else "."
 
 
 def build_stages(
@@ -556,6 +573,9 @@ def build_stages(
 
     if sc("verify").get("enabled"):
         c = sc("verify")
+        execution = str(c.get("execution", "local"))
+        if execution not in {"local", "spark"}:
+            raise ValueError("verify.execution must be 'local' or 'spark'")
         photos = _p(c["photos"])
         photo_root = _p(c.get("photo_root", "."))
         photo_inputs = _acceptance_photo_paths(photos, photo_root)
@@ -570,18 +590,46 @@ def build_stages(
                 "--trace-out", str(out_dir / "messages.jsonl")]
         if c.get("worker_timeout_seconds") is not None:
             argv += ["--worker-timeout-seconds", str(c["worker_timeout_seconds"])]
+        outputs = [
+            out_dir / "requests.jsonl",
+            out_dir / "mem-results.jsonl",
+            out_dir / "space-results.jsonl",
+            out_dir / "messages.jsonl",
+            out_dir / "verdicts.json",
+            out_dir / "taskcards_verified.jsonl",
+            out_dir / "fanout-run.json",
+        ]
+        inputs = [cards, photos, trace_parent, *photo_inputs]
+        spark_cmd = ""
+        if execution == "spark":
+            remote_argv = [
+                "python",
+                "scripts/verify_task.py",
+                "--cards",
+                _remote_project_arg(cards),
+                "--photos",
+                _remote_project_arg(photos),
+                "--photo-root",
+                _remote_project_arg(photo_root),
+                "--out-dir",
+                _remote_project_arg(out_dir),
+                "--trace-parent",
+                _remote_project_arg(trace_parent),
+                "--trace-out",
+                _remote_project_arg(out_dir / "messages.jsonl"),
+            ]
+            if c.get("worker_timeout_seconds") is not None:
+                remote_argv += [
+                    "--worker-timeout-seconds",
+                    str(c["worker_timeout_seconds"]),
+                ]
+            spark_cmd = "source ~/venv/bin/activate && " + shlex.join(remote_argv)
         stages["verify"] = Stage(
-            "verify", "local",
-            argv=argv,
-            inputs=[cards, photos, trace_parent, *photo_inputs],
-            outputs=[
-                out_dir / "requests.jsonl",
-                out_dir / "mem-results.jsonl",
-                out_dir / "space-results.jsonl",
-                out_dir / "messages.jsonl",
-                out_dir / "verdicts.json",
-                out_dir / "taskcards_verified.jsonl",
-            ],
+            "verify", execution,
+            argv=argv if execution == "local" else [],
+            spark_cmd=spark_cmd,
+            inputs=inputs,
+            outputs=outputs,
             code_dependencies=[
                 PROJ / "scripts/verification_worker.py",
                 PROJ / "backend/schemas/core.py",
@@ -590,6 +638,8 @@ def build_stages(
                 PROJ / "backend/tools/verification/acceptance.py",
                 PROJ / "backend/tools/verification/verdict.py",
             ],
+            remote_sync_inputs=inputs if execution == "spark" else [],
+            remote_pull_outputs=outputs if execution == "spark" else [],
         )
 
     if sc("trace").get("enabled"):
@@ -764,6 +814,7 @@ def write_state(run: Path, stage: Stage, started: str) -> None:
 
 
 SSH_HUNG = 254  # 本地合成码:连接假死被超时斩断
+REMOTE_STAGE_TRANSFER_LIMIT = 50 * 1024 * 1024
 
 
 def ssh(
@@ -792,6 +843,67 @@ def ssh(
     return proc
 
 
+def _run_transfer(argv: list[str], *, label: str) -> None:
+    """跨境小文件传输失败重试一次；仍失败则拒绝继续。"""
+
+    proc: subprocess.CompletedProcess[str] | None = None
+    for attempt in (1, 2):
+        proc = subprocess.run(
+            argv,
+            cwd=PROJ,
+            capture_output=True,
+            text=True,
+        )
+        if proc.returncode == 0:
+            return
+        if attempt == 1:
+            print(f"  {label} 失败,重试一次…", file=sys.stderr)
+            time.sleep(1)
+    assert proc is not None
+    detail = proc.stderr.strip() or proc.stdout.strip()
+    raise RuntimeError(f"{label} 失败(已重试一次): {detail}")
+
+
+def sync_spark_stage_inputs(stage: Stage) -> None:
+    """把 Spark stage 的小体积、冻结输入同步到远端同路径。"""
+
+    if not stage.remote_sync_inputs:
+        return
+    relative_paths: list[str] = []
+    total_bytes = 0
+    seen: set[Path] = set()
+    for path in stage.remote_sync_inputs:
+        resolved = path.resolve()
+        if resolved in seen:
+            continue
+        seen.add(resolved)
+        if path.is_symlink() or not path.is_file():
+            raise ValueError(f"{stage.name}: remote input must be a regular file: {path}")
+        total_bytes += path.stat().st_size
+        relative_paths.append(_project_relative(path).as_posix())
+    if total_bytes > REMOTE_STAGE_TRANSFER_LIMIT:
+        raise ValueError(
+            f"{stage.name}: remote inputs total {total_bytes} bytes exceed "
+            f"{REMOTE_STAGE_TRANSFER_LIMIT} byte SSH limit"
+        )
+    _run_transfer(
+        ["rsync", "-az", "--relative", *relative_paths, "spark:~/proj/"],
+        label=f"{stage.name} 输入同步",
+    )
+
+
+def pull_spark_stage_outputs(stage: Stage) -> None:
+    """逐文件拉回声明产物，避免把 results/ 中无关大目录带回。"""
+
+    for path in stage.remote_pull_outputs:
+        relative = _project_relative(path).as_posix()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        _run_transfer(
+            ["rsync", "-az", f"spark:~/proj/{relative}", str(path.parent) + "/"],
+            label=f"{stage.name} 产物拉回:{relative}",
+        )
+
+
 def run_spark_stage(
     stage: Stage, poll_interval: int, timeout: int, adopt: bool = False
 ) -> None:
@@ -804,11 +916,20 @@ def run_spark_stage(
         # 直接轮询既有 done 标记。用于本地编排器重启后接上长任务。
         print(f"  收养模式:不重新发射,轮询 {done} …")
     else:
+        sync_spark_stage_inputs(stage)
+        for output in stage.remote_pull_outputs:
+            if output.exists():
+                if not output.is_file() and not output.is_symlink():
+                    raise ValueError(
+                        f"{stage.name}: refusing to replace non-file output: {output}"
+                    )
+                output.unlink()
         # setsid -f:长任务立即脱离 ssh 会话(过继 init),发射命令前台毫秒级返回。
         # 旧 nohup+& 形状下远端 shell 会陪跑整个长任务,发射连接被拖死(s1 首跑实锤)。
         launch = (
             f"cd ~/proj && rm -f {done} {log} && "
-            f'setsid -f bash -c "{stage.spark_cmd} && touch {done}" '
+            f'setsid -f bash -c "{stage.spark_cmd}; rc=\\$?; '
+            f"printf '%s\\n' \\$rc > {done}" + '" '
             f"> {log} 2>&1 < /dev/null && echo launched"
         )
         proc = ssh(launch, retry_255=False)
@@ -825,8 +946,23 @@ def run_spark_stage(
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         time.sleep(poll_interval)
-        check = ssh(f"test -f {done} && echo DONE || tail -c 300 {log}")
-        if "DONE" in check.stdout:
+        check = ssh(
+            f"if test -f {done}; then printf 'EXIT:'; cat {done}; "
+            f"else tail -c 300 {log}; fi"
+        )
+        exit_lines = [
+            line for line in check.stdout.splitlines() if line.startswith("EXIT:")
+        ]
+        if exit_lines:
+            raw_code = exit_lines[-1].partition(":")[2].strip()
+            returncode = int(raw_code or "0")  # 兼容旧版空 done marker
+            if returncode != 0:
+                failure = ssh(f"tail -c 2000 {log}")
+                detail = failure.stdout.strip() or failure.stderr.strip()
+                raise RuntimeError(
+                    f"{stage.name}: 远程任务退出码 {returncode}\n{detail}"
+                )
+            pull_spark_stage_outputs(stage)
             return
         note = check.stdout.strip() or check.stderr.strip()
         print(f"  [{stage.name}] 进行中: {note[-120:]}")

@@ -11,7 +11,15 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts.hero_pipeline import STAGE_ORDER, Stage, build_stages, write_bundle
+import scripts.hero_pipeline as hero_pipeline
+from scripts.hero_pipeline import (
+    STAGE_ORDER,
+    Stage,
+    build_stages,
+    run_spark_stage,
+    sync_spark_stage_inputs,
+    write_bundle,
+)
 
 PROJ = Path(__file__).resolve().parent.parent.parent
 CONFIG = PROJ / "configs/hero_pipeline_dev.yaml"
@@ -117,6 +125,111 @@ def test_write_bundle_ignores_state_from_disabled_stages(tmp_path):
     bundle = json.loads((run_dir / "bundle.json").read_text(encoding="utf-8"))
     assert {artifact["stage"] for artifact in bundle["artifacts"]} == {"regions"}
     assert "risk.json" not in (run_dir / "bundle.json").read_text(encoding="utf-8")
+
+
+def test_spark_stage_syncs_inputs_and_pulls_outputs_after_zero_exit(
+    tmp_path, monkeypatch
+):
+    output = tmp_path / "verify/messages.jsonl"
+    output.parent.mkdir(parents=True)
+    output.write_text("stale", encoding="utf-8")
+    stage = Stage(
+        "verify",
+        "spark",
+        spark_cmd="python scripts/verify_task.py",
+        remote_sync_inputs=[tmp_path / "input.json"],
+        remote_pull_outputs=[output],
+    )
+    calls: list[str] = []
+    synced: list[Stage] = []
+    pulled: list[Stage] = []
+
+    def fake_ssh(command, timeout=120, retry_255=True):
+        calls.append(command)
+        stdout = "EXIT:0\n" if command.startswith("if test -f") else "launched\n"
+        return subprocess.CompletedProcess(["ssh"], 0, stdout, "")
+
+    monkeypatch.setattr(hero_pipeline, "ssh", fake_ssh)
+    monkeypatch.setattr(hero_pipeline.time, "sleep", lambda _: None)
+    monkeypatch.setattr(
+        hero_pipeline, "sync_spark_stage_inputs", lambda item: synced.append(item)
+    )
+    monkeypatch.setattr(
+        hero_pipeline, "pull_spark_stage_outputs", lambda item: pulled.append(item)
+    )
+
+    run_spark_stage(stage, poll_interval=0, timeout=1)
+
+    assert synced == [stage]
+    assert pulled == [stage]
+    assert not output.exists()
+    assert "rc=\\$?" in calls[0]
+    assert "hero_verify.done" in calls[0]
+
+
+def test_spark_stage_propagates_remote_exit_and_never_pulls(tmp_path, monkeypatch):
+    stage = Stage(
+        "verify",
+        "spark",
+        spark_cmd="python scripts/verify_task.py",
+        remote_pull_outputs=[tmp_path / "messages.jsonl"],
+    )
+    pulled: list[Stage] = []
+
+    def fake_ssh(command, timeout=120, retry_255=True):
+        if command.startswith("if test -f"):
+            return subprocess.CompletedProcess(["ssh"], 0, "EXIT:7\n", "")
+        if command.startswith("tail -c 2000"):
+            return subprocess.CompletedProcess(["ssh"], 0, "worker failed", "")
+        return subprocess.CompletedProcess(["ssh"], 0, "launched\n", "")
+
+    monkeypatch.setattr(hero_pipeline, "ssh", fake_ssh)
+    monkeypatch.setattr(hero_pipeline.time, "sleep", lambda _: None)
+    monkeypatch.setattr(hero_pipeline, "sync_spark_stage_inputs", lambda _: None)
+    monkeypatch.setattr(
+        hero_pipeline, "pull_spark_stage_outputs", lambda item: pulled.append(item)
+    )
+
+    with pytest.raises(RuntimeError, match="远程任务退出码 7") as failure:
+        run_spark_stage(stage, poll_interval=0, timeout=1)
+
+    assert "worker failed" in str(failure.value)
+    assert pulled == []
+
+
+def test_spark_stage_input_sync_is_relative_bounded_and_deduplicated(
+    tmp_path, monkeypatch
+):
+    first = tmp_path / "inputs/cards.jsonl"
+    second = tmp_path / "fixtures/photo.jpg"
+    first.parent.mkdir(parents=True)
+    second.parent.mkdir(parents=True)
+    first.write_text("{}\n", encoding="utf-8")
+    second.write_bytes(b"jpeg")
+    stage = Stage(
+        "verify",
+        "spark",
+        remote_sync_inputs=[first, second, first],
+    )
+    commands: list[list[str]] = []
+
+    def fake_run(argv, **kwargs):
+        commands.append(argv)
+        return subprocess.CompletedProcess(argv, 0, "", "")
+
+    monkeypatch.setattr(hero_pipeline, "PROJ", tmp_path)
+    monkeypatch.setattr(hero_pipeline.subprocess, "run", fake_run)
+
+    sync_spark_stage_inputs(stage)
+
+    assert commands == [[
+        "rsync",
+        "-az",
+        "--relative",
+        "inputs/cards.jsonl",
+        "fixtures/photo.jpg",
+        "spark:~/proj/",
+    ]]
 
 
 def test_stale_stage_reruns_but_unchanged_output_spares_downstream(tmp_path):

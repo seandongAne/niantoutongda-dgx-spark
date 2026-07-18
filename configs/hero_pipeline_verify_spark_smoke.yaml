@@ -1,0 +1,22 @@
+# Spark-local 验收进程边界冒烟：只用于合成夹具，不是物理执行证据。
+# 先用 hero_pipeline_dev.yaml 生成 results/hero/dev-fixture/taskcards，随后运行：
+#   .venv/bin/python scripts/hero_pipeline.py \
+#     --config configs/hero_pipeline_verify_spark_smoke.yaml \
+#     --from-stage verify --until-stage trace --poll-interval 1
+run_dir: results/hero/dev-fixture
+trace_id: hero-dev-v1
+python: .venv/bin/python
+
+stages:
+  healthcheck:
+    enabled: true
+
+  verify:
+    enabled: true
+    execution: spark
+    worker_timeout_seconds: 30
+    photos: fixtures/hero_dev/acceptance.json
+
+  trace:
+    enabled: true
+    strict: true

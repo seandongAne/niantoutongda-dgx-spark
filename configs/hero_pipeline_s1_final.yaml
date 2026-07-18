@@ -165,6 +165,8 @@ stages:
 
   verify:
     enabled: false                                # 可选的搬后执行复核；不阻塞技术闭环
+    execution: spark                              # 启用后 EXEC/MEM/SPACE 均在赛方节点运行
+    worker_timeout_seconds: 60
     photos: fixtures/hero_s1/acceptance.json
 
   trace:

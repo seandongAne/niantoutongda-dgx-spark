@@ -38,6 +38,36 @@ def test_pipeline_tracks_worker_code_role_fragments_and_photo_bytes():
         "requests.jsonl",
         "mem-results.jsonl",
         "space-results.jsonl",
+        "fanout-run.json",
+    }
+
+
+def test_pipeline_can_run_verify_on_spark_with_exact_sync_and_pull_contract():
+    config_path = PROJ / "configs/hero_pipeline_dev.yaml"
+    config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    config["run_dir"] = "results/hero/spark-verify-contract-test"
+    config["stages"]["verify"]["execution"] = "spark"
+    config["stages"]["verify"]["worker_timeout_seconds"] = 17
+
+    stage = build_stages(config, sys.executable, config_path=config_path)["verify"]
+
+    assert stage.kind == "spark"
+    assert stage.argv == []
+    assert stage.spark_cmd.startswith(
+        "source ~/venv/bin/activate && python scripts/verify_task.py"
+    )
+    assert "--worker-timeout-seconds 17" in stage.spark_cmd
+    assert stage.remote_sync_inputs == stage.inputs
+    assert stage.remote_pull_outputs == stage.outputs
+    assert PROJ / "fixtures/hero_dev/acceptance/desk_after.ppm" in stage.inputs
+    assert {path.name for path in stage.remote_pull_outputs} == {
+        "requests.jsonl",
+        "mem-results.jsonl",
+        "space-results.jsonl",
+        "messages.jsonl",
+        "verdicts.json",
+        "taskcards_verified.jsonl",
+        "fanout-run.json",
     }
 
 

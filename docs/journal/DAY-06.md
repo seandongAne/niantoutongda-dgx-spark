@@ -18,6 +18,8 @@
   替换 D5 的视觉裁定生产路径,并复跑 3306→20、组合、布局、任务卡与审计主链。
 - 形成可供队友直接整合的参赛技术介绍,以正式主链与实测指标为事实底座,TensorRT
   保持部署测试态口径。
+- 对 Grounding DINO 建立冻结输入、PyTorch 基线、ONNX 独立 oracle 与 TensorRT
+  多精度对照,只在输出和检测决策等价门通过后接受性能收益。
 
 ## 关键证据或截图
 
@@ -300,6 +302,33 @@
   文件头校验,外部资源依赖计数为 0。自动化浏览器按安全策略禁止直接访问
   `file://`,未绕过限制,改用结构一致性和内嵌资产解码完成离线验证。
 
+### 增量 D6-14:Grounding DINO TensorRT 性能与等价门(夜间)
+
+- Spark 首连安全门为 `✅ SPARK CLEAN`;各次模型或 engine 加载前均复查统一内存,
+  可用量保持 69–70 GiB、swap 0。既有 Nemotron vLLM 服务保持运行且未被停止。
+  TensorRT 10.14.1.48 按 CUDA 13.0/aarch64 精确版本解包到用户目录,没有 sudo、
+  没有传输权重,环境验证记录已拉回本地。
+- 冻结负载为两张真实关键帧、batch 2、`pixel_values=[2,3,1333,750]`、文本长度
+  12 与四短语 prompt。PyTorch FP32 稳定基线经 5 次 warmup、30 次正式测量:
+  P50 `680.1 ms`、P95 `685.3 ms`、吞吐 `2.94 img/s`。TensorRT 全部使用独立
+  非默认 CUDA stream、10 次 warmup 和 100 次正式测量。
+- 三种 engine 均完成构建,但只形成**无效输出下的性能上界**:FP16 P50
+  `277.2 ms`、名义 `2.45×`;FP32/TF32 P50 `565.7 ms`、名义 `1.20×`;
+  dynamo opset 18 的纯 FP32 no-TF32 P50 `647.9 ms`、名义 `1.05×`。对应检测数
+  从 PyTorch `[5,5]` 分别变为 `[1,3]`、`[2,3]`、`[2,3]`,严格决策等价门
+  全部 FAIL。FP16 双方 NaN 均为 0,合法 `-inf` 文本 mask 的类型与位置完全一致;
+  失败来自有限 logits 与 boxes 的实质漂移。
+- legacy 与 dynamo 导出均保留冻结前置门。mask、EyeLike 等价改写、正弦位置编码
+  float scale 与导出期静态检查处理在进入 ONNX 前对模型输出逐元素 bit-exact,
+  site-packages 未修改;dynamo ONNX checker PASS,实际 opset 18。独立 ONNX Runtime
+  1.23.2 CPU 仍判不等价:最大有限 logits 偏差 `4.17`,最大 box 偏差 `0.984`。
+  因此当前问题至少包含 PyTorch→ONNX 图语义漂移,不能把 TensorRT 名义加速写成
+  已实现收益,也不能切换主链。
+- 小型证据已通过新增的 `pull_results.sh --files` 安全模式逐文件预检后拉回,未传输
+  920–952 MiB ONNX、475–952 MiB engine 或模型权重。结构化结论落在
+  `results/acceptance/SF1/trt-gdino-20260718-summary/`;复现工装关键提交包括
+  `d4cad3ea`、`3774a47f`、`144d37fd`、`141f0feb`、`b3c6fe49`。
+
 ## 失败与教训
 
 - AutoTune-v1 将澄清从 1379 降至 677,但完整合并仍为 14/20、R@1 仅 0.8083,
@@ -331,6 +360,11 @@
 - 参赛技术稿首版过长,技术台账感压过项目叙事,且 TensorRT 尚在并行测试时不宜提前写成
   完成态。先以 `dd98dfec`、`6f6ee2e7` 回退两次文档提交,再用实测事实重写短稿;参赛稿
   应让实现路径和结果自然形成亮点,状态口径必须晚于证据。
+- TensorRT 的速度数字不能脱离正确性门。纯 FP16 虽达到名义 2.45×,最终检测集合已经
+  改变;纯 FP32 no-TF32 仍失败,独立 ORT 也复现导出漂移。ONNX checker PASS 与导出前
+  改写 bit-exact 只能证明文件结构和改写边界,不能替代导出后 raw-output oracle。
+  动态图还受 TensorRT `EyeLike` 限制,本轮只覆盖固定 batch/分辨率/文本长度;TensorRT
+  context memory 与 PyTorch allocator 峰值口径不同,不据此声明显存优化。
 
 ## 明日计划
 
@@ -350,3 +384,6 @@
   曾被入侵的 `Developer` 账户。
 - TensorRT 并行实现形成引擎、输出一致性和吞吐证据后,只替换技术稿中的测试态一句并
   补入对应实测数字,保持正文篇幅与现有叙事结构不扩张。
+- Grounding DINO 主链继续保留 PyTorch。若继续 TensorRT,优先切为更小的隔离子图或
+  PyTorch 集成式编译路径,沿用同一冻结 raw-output、非有限值模式与检测决策门;只有
+  oracle 先 PASS 才重新测速度和内存,当前 2.45× 仅保留为探索上界。

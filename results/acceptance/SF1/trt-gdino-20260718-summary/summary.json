@@ -1,0 +1,123 @@
+{
+  "schema_version": "1.0",
+  "scope": "SF1-L2_TENSORRT_FEASIBILITY_ONLY",
+  "verdict": "DO_NOT_SWITCH_MAINLINE",
+  "safe_tensorrt_contribution_proven": false,
+  "reason": "All three TensorRT precision modes failed frozen output and detection-decision equivalence; ONNX Runtime independently reproduced export-level drift.",
+  "platform": {
+    "gpu": "NVIDIA GB10",
+    "machine": "aarch64",
+    "cuda": "13.0",
+    "torch": "2.13.0+cu130",
+    "transformers": "5.13.1",
+    "tensorrt": "10.14.1.48",
+    "onnx": "1.22.0",
+    "onnxruntime": "1.23.2"
+  },
+  "frozen_workload": {
+    "model": "IDEA-Research__grounding-dino-base",
+    "batch_size": 2,
+    "pixel_values_shape": [2, 3, 1333, 750],
+    "text_length": 12,
+    "prompt": "luggage. mini fridge. water bottle. desk.",
+    "output_shapes": {
+      "logits": [2, 900, 256],
+      "pred_boxes": [2, 900, 4]
+    }
+  },
+  "pytorch_baseline": {
+    "warmup": 5,
+    "runs": 30,
+    "p50_ms": 680.0725708007812,
+    "p95_ms": 685.2987609863281,
+    "mean_ms": 680.5513061523437,
+    "throughput_images_per_second": 2.938793860094794,
+    "peak_cuda_allocated_bytes": 3716447232
+  },
+  "tensorrt_candidates": {
+    "fp16_static_legacy": {
+      "warmup": 10,
+      "runs": 100,
+      "p50_ms": 277.2315368652344,
+      "p95_ms": 278.8744842529297,
+      "mean_ms": 276.9877490234375,
+      "throughput_images_per_second": 7.220535951684883,
+      "nominal_speedup_vs_pytorch_p50": 2.4530851666106543,
+      "nominal_latency_reduction_percent": 59.23500685540134,
+      "engine_size_bytes": 498401588,
+      "context_device_memory_bytes": 729304064,
+      "nonfinite_patterns_equal": true,
+      "nan_counts": {"pytorch": 0, "tensorrt": 0},
+      "max_finite_logits_abs_diff": 6.781562328338623,
+      "max_pred_boxes_abs_diff": 0.9981348514556885,
+      "pytorch_detection_counts": [5, 5],
+      "tensorrt_detection_counts": [1, 3],
+      "strict_decision_equivalent": false,
+      "status": "INVALID_OUTPUT"
+    },
+    "fp32_tf32_static_legacy": {
+      "warmup": 10,
+      "runs": 100,
+      "p50_ms": 565.6514282226562,
+      "p95_ms": 568.516278076172,
+      "mean_ms": 565.6858972167969,
+      "throughput_images_per_second": 3.535530954262959,
+      "nominal_speedup_vs_pytorch_p50": 1.2022820713768014,
+      "nominal_latency_reduction_percent": 16.824843037470956,
+      "engine_size_bytes": 966837196,
+      "context_device_memory_bytes": 1373292032,
+      "max_finite_logits_abs_diff": 6.283237457275391,
+      "max_pred_boxes_abs_diff": 0.9920895099639893,
+      "pytorch_detection_counts": [5, 5],
+      "tensorrt_detection_counts": [2, 3],
+      "strict_decision_equivalent": false,
+      "status": "INVALID_OUTPUT"
+    },
+    "fp32_no_tf32_static_dynamo": {
+      "warmup": 10,
+      "runs": 100,
+      "p50_ms": 647.9379577636719,
+      "p95_ms": 650.7040832519531,
+      "mean_ms": 647.8843200683593,
+      "throughput_images_per_second": 3.0869708342208018,
+      "nominal_speedup_vs_pytorch_p50": 1.0495952006701699,
+      "nominal_latency_reduction_percent": 4.725174108885331,
+      "engine_size_bytes": 998512868,
+      "context_device_memory_bytes": 1359868416,
+      "max_finite_logits_abs_diff": 5.897157669067383,
+      "max_pred_boxes_abs_diff": 0.9913886785507202,
+      "pytorch_detection_counts": [5, 5],
+      "tensorrt_detection_counts": [2, 3],
+      "strict_decision_equivalent": false,
+      "status": "INVALID_OUTPUT"
+    }
+  },
+  "independent_onnx_oracle": {
+    "candidate": "dynamo static opset 18",
+    "onnx_checker_pass": true,
+    "export_rewrites_bit_exact_before_export": true,
+    "onnxruntime_cpu_equivalent_at_atol_rtol_1e-4": false,
+    "max_finite_logits_abs_diff": 4.16653299331665,
+    "mean_finite_logits_abs_diff": 0.07176247239112854,
+    "max_pred_boxes_abs_diff": 0.9841399788856506,
+    "mean_pred_boxes_abs_diff": 0.01814037561416626,
+    "conclusion": "The current exported graph is not a valid deployment oracle; TensorRT timing is an upper-bound feasibility signal only."
+  },
+  "benchmark_boundaries": [
+    "Core model latency only; image preprocessing and detection postprocessing are excluded.",
+    "Static batch=2, image tensor 1333x750, and text length 12 only; dynamic shapes were not accepted.",
+    "A Nemotron vLLM service remained running; all compared GPU runs were sequential and used the same host state.",
+    "TensorRT context device memory and PyTorch peak allocator memory are not directly comparable, so no memory win is accepted.",
+    "No TensorRT engine was connected to the production inference path."
+  ],
+  "next_safe_experiment": "Compile a smaller isolated subgraph or use a PyTorch-integrated TensorRT path, then require the same frozen raw-output and detection-decision gates before measuring speedup.",
+  "evidence": [
+    "../trt-gdino-20260718-v3-masklower/baseline_manifest.json",
+    "../trt-gdino-20260718-v5-static/trt_benchmark_fp16_v3.json",
+    "../trt-gdino-20260718-v5-static/trt_benchmark_fp32_tf32.json",
+    "../trt-gdino-20260718-v10-dynamo-static/manifest.json",
+    "../trt-gdino-20260718-v10-dynamo-static/onnxruntime_check.json",
+    "../trt-gdino-20260718-v10-dynamo-static/trt_benchmark_fp32_notf32.json"
+  ],
+  "provenance_note": "The v10 remote manifest recorded requested opset 17 although the exporter retained actual opset 18; the actual value is confirmed by TensorRT parser evidence. Commit 141f0feb fixes future manifests to record requested and actual opsets separately."
+}

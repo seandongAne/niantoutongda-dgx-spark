@@ -1,0 +1,66 @@
+{
+  "comparisons": {
+    "logits": {
+      "candidate_shape": [
+        2,
+        900,
+        256
+      ],
+      "equivalent": false,
+      "finite_values_close": false,
+      "jointly_finite_count": 21600,
+      "max_abs_on_jointly_finite": 4.16653299331665,
+      "mean_abs_on_jointly_finite": 0.07176247239112854,
+      "nonfinite_pattern_equal": true,
+      "reference_shape": [
+        2,
+        900,
+        256
+      ]
+    },
+    "pred_boxes": {
+      "candidate_shape": [
+        2,
+        900,
+        4
+      ],
+      "equivalent": false,
+      "finite_values_close": false,
+      "jointly_finite_count": 7200,
+      "max_abs_on_jointly_finite": 0.9841399788856506,
+      "mean_abs_on_jointly_finite": 0.01814037561416626,
+      "nonfinite_pattern_equal": true,
+      "reference_shape": [
+        2,
+        900,
+        4
+      ]
+    }
+  },
+  "equivalent": false,
+  "onnx": {
+    "path": "/home/Developer/proj/results/acceptance/SF1/trt-gdino-20260718-v10-dynamo-static/grounding_dino.onnx",
+    "sha256": "aae91bfda8571d1bc24c3ed5f3dc4f8d68e3b111e3fbc0b7ec2d148f243864ee",
+    "size_bytes": 952947225
+  },
+  "onnxruntime": {
+    "mean_ms": 7780.593081959523,
+    "process_peak_rss_bytes": 6786117632,
+    "providers": [
+      "CPUExecutionProvider"
+    ],
+    "runs": 1,
+    "samples_ms": [
+      7780.593081959523
+    ],
+    "session_creation_seconds": 3.8437745629344136,
+    "version": "1.23.2",
+    "warmup": 0
+  },
+  "schema_version": "1.0",
+  "scope": "SF1-L2_ONNX_EXPORT_SEMANTICS_ONLY",
+  "tolerances": {
+    "atol": 0.0001,
+    "rtol": 0.0001
+  }
+}

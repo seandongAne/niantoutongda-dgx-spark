@@ -197,13 +197,28 @@ def main() -> int:
     for name in ("logits", "pred_boxes"):
         baseline_finite = np.isfinite(baseline_outputs[name])
         trt_finite = np.isfinite(trt_outputs[name])
+        baseline_nan = np.isnan(baseline_outputs[name])
+        trt_nan = np.isnan(trt_outputs[name])
+        baseline_posinf = np.isposinf(baseline_outputs[name])
+        trt_posinf = np.isposinf(trt_outputs[name])
+        baseline_neginf = np.isneginf(baseline_outputs[name])
+        trt_neginf = np.isneginf(trt_outputs[name])
         jointly_finite = baseline_finite & trt_finite
         delta = np.abs(
             baseline_outputs[name][jointly_finite] - trt_outputs[name][jointly_finite]
         )
         raw_diff[name] = {
-            "baseline_nonfinite_count": int((~baseline_finite).sum()),
-            "tensorrt_nonfinite_count": int((~trt_finite).sum()),
+            "baseline_nan_count": int(baseline_nan.sum()),
+            "baseline_posinf_count": int(baseline_posinf.sum()),
+            "baseline_neginf_count": int(baseline_neginf.sum()),
+            "tensorrt_nan_count": int(trt_nan.sum()),
+            "tensorrt_posinf_count": int(trt_posinf.sum()),
+            "tensorrt_neginf_count": int(trt_neginf.sum()),
+            "nonfinite_pattern_equal": bool(
+                np.array_equal(baseline_nan, trt_nan)
+                and np.array_equal(baseline_posinf, trt_posinf)
+                and np.array_equal(baseline_neginf, trt_neginf)
+            ),
             "jointly_finite_count": int(jointly_finite.sum()),
             "max_abs_on_jointly_finite": float(delta.max()) if delta.size else None,
             "mean_abs_on_jointly_finite": float(delta.mean()) if delta.size else None,
@@ -231,12 +246,12 @@ def main() -> int:
         args.text_threshold,
     )
     decision_diff = _decision_diff(torch_decisions, trt_decisions)
-    decision_diff["all_tensorrt_outputs_finite"] = all(
-        item["tensorrt_nonfinite_count"] == 0 for item in raw_diff.values()
+    decision_diff["nonfinite_patterns_equal"] = all(
+        item["nonfinite_pattern_equal"] for item in raw_diff.values()
     )
     decision_diff["strict_decision_equivalent_at_1e-3_and_half_px"] = (
         decision_diff["strict_decision_equivalent_at_1e-3_and_half_px"]
-        and decision_diff["all_tensorrt_outputs_finite"]
+        and decision_diff["nonfinite_patterns_equal"]
     )
 
     mean_ms = statistics.fmean(timings_ms)

@@ -20,6 +20,7 @@ non-zero exit status.
 from __future__ import annotations
 
 import argparse
+import gc
 import hashlib
 import inspect
 import json
@@ -1528,6 +1529,10 @@ def main() -> int:
             report_path=output_path.with_suffix(".fp32.partition.txt"),
             graph_path=output_path.with_suffix(".fp32.compiled_graph.txt"),
         )
+        # Release compile-time allocator caches before touching the engines again;
+        # the shared node keeps a 51 GiB vLLM service resident and v7 died OOM here.
+        gc.collect()
+        torch.cuda.empty_cache()
         fp32_record["runtime_profile"] = _profile_trt_events(
             torch, fp32_compiled, export_inputs
         )

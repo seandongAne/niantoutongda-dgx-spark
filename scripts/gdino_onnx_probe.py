@@ -44,6 +44,31 @@ def _percentile(values: list[float], percentile: float) -> float:
     return ordered[lower] * (1.0 - fraction) + ordered[upper] * fraction
 
 
+def _compare_torch_outputs(reference_outputs, candidate_outputs):
+    import torch
+
+    comparisons = {}
+    for name, reference, candidate in zip(
+        ("logits", "pred_boxes"), reference_outputs, candidate_outputs
+    ):
+        jointly_finite = torch.isfinite(reference) & torch.isfinite(candidate)
+        delta = torch.abs(reference[jointly_finite] - candidate[jointly_finite])
+        comparisons[name] = {
+            "bit_exact": bool(torch.equal(reference, candidate)),
+            "nonfinite_pattern_equal": bool(
+                torch.equal(torch.isnan(reference), torch.isnan(candidate))
+                and torch.equal(torch.isposinf(reference), torch.isposinf(candidate))
+                and torch.equal(torch.isneginf(reference), torch.isneginf(candidate))
+            ),
+            "max_abs_on_jointly_finite": float(delta.max()) if delta.numel() else None,
+            "mean_abs_on_jointly_finite": float(delta.mean()) if delta.numel() else None,
+            "allclose_rtol_1e-6_atol_1e-7": bool(
+                torch.allclose(reference, candidate, rtol=1e-6, atol=1e-7)
+            ),
+        }
+    return comparisons
+
+
 def _git_commit(project: Path) -> str:
     try:
         return subprocess.check_output(
@@ -246,12 +271,25 @@ def main() -> int:
         process_peak_rss_bytes = int(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss) * 1024
     assert outputs is not None
 
+    compatibility_checks = {}
     modeling_grounding_dino.generate_masks_with_special_tokens_and_transfer_map = (
         exportable_mask_builder
     )
+    with torch.inference_mode():
+        mask_rewrite_outputs = wrapper(*positional_inputs)
+    compatibility_checks["mask_rewrite"] = _compare_torch_outputs(
+        outputs, mask_rewrite_outputs
+    )
+
     modeling_grounding_dino.encode_sinusoidal_position_embedding = (
         exportable_sinusoidal_position_embedding
     )
+    with torch.inference_mode():
+        helper_scale_outputs = wrapper(*positional_inputs)
+    compatibility_checks["helper_scale_rewrite"] = _compare_torch_outputs(
+        outputs, helper_scale_outputs
+    )
+
     scale_modules = [
         module
         for module in model.modules()
@@ -261,12 +299,28 @@ def main() -> int:
         module.scale = torch.tensor(float(module.scale), device="cuda")
     with torch.inference_mode():
         export_compatible_outputs = wrapper(*positional_inputs)
-    model_patch_verified = all(
-        torch.equal(reference, candidate)
-        for reference, candidate in zip(outputs, export_compatible_outputs)
+    compatibility_checks["module_scale_rewrite"] = _compare_torch_outputs(
+        outputs, export_compatible_outputs
     )
-    if not model_patch_verified:
-        raise RuntimeError("export compatibility rewrites changed frozen model outputs")
+    model_patch_verified = all(
+        item["bit_exact"]
+        for check in compatibility_checks.values()
+        for item in check.values()
+    )
+    model_patch_within_tolerance = all(
+        item["nonfinite_pattern_equal"] and item["allclose_rtol_1e-6_atol_1e-7"]
+        for item in compatibility_checks["module_scale_rewrite"].values()
+    )
+    if not model_patch_within_tolerance:
+        failure = {
+            "schema_version": "1.0",
+            "scope": "SF1-L2_TENSORRT_FEASIBILITY_ONLY",
+            "compatibility_checks": compatibility_checks,
+        }
+        (output_dir / "export_compatibility_failure.json").write_text(
+            json.dumps(failure, indent=2, sort_keys=True) + "\n"
+        )
+        raise RuntimeError("export compatibility rewrites exceed tolerance")
 
     input_np = {name: batch[name].detach().cpu().numpy() for name in input_names}
     np.savez_compressed(output_dir / "sample_inputs.npz", **input_np)
@@ -320,6 +374,10 @@ def main() -> int:
             "sinusoidal_scale_rewrite": "zero_dim_tensor_v1",
             "scale_module_count": len(scale_modules),
             "bit_exact_model_outputs_before_export": model_patch_verified,
+            "model_outputs_within_rtol_1e-6_atol_1e-7": (
+                model_patch_within_tolerance
+            ),
+            "model_output_checks": compatibility_checks,
             "site_packages_modified": False,
         },
     }

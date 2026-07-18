@@ -114,6 +114,22 @@ def main() -> int:
             "artifact": config.projection.artifact or None,
             "sha256": config.projection.sha256 or None,
         },
+        "multiview": {
+            "enabled": config.multiview.enabled,
+            "artifact": config.multiview.artifact or None,
+            "sha256": config.multiview.sha256 or None,
+            "method": config.multiview.method,
+            "blend": config.multiview.blend,
+            "space": config.multiview.space,
+            "calibration": config.multiview.calibration,
+            "max_views_per_rep": config.multiview.max_views_per_rep,
+        },
+        "cycle": {
+            "enabled": config.cycle.enabled,
+            "rule": "one_round_three_video_dual_evidence_v1"
+            if config.cycle.enabled
+            else None,
+        },
         "vocab": {"path": str(vocab_path), "sha256": _sha256(vocab_path)},
         "constraints": {
             "path": str(constraints_path) if constraints_path else None,

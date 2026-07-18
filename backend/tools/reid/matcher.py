@@ -11,7 +11,7 @@ import hashlib
 import json
 import math
 from collections import Counter, defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from itertools import combinations
 from pathlib import Path
 from typing import Any
@@ -32,6 +32,7 @@ from backend.tools.reid.model import (
     Vocabulary,
     load_features,
 )
+from backend.tools.reid.multiview import quantile_calibrate, set_similarity
 from backend.tools.reid.stitch import stitch_features, tag_low_evidence
 
 
@@ -68,23 +69,37 @@ class PairScore:
     geometry: float
     total: float
     gate_reasons: tuple[str, ...] = ()
+    instance_base: float | None = None
+    instance_multiview_raw: float | None = None
+    instance_multiview_calibrated: float | None = None
 
     @property
     def viable(self) -> bool:
         return not self.gate_reasons
 
     def as_dict(self) -> dict[str, Any]:
+        components = {
+            "instance": round(self.instance, 8),
+            "semantic": round(self.semantic, 8),
+            "attribute": round(self.attribute, 8) if self.attribute is not None else None,
+            "context": round(self.context, 8),
+            "geometry": round(self.geometry, 8),
+        }
+        if self.instance_base is not None:
+            components.update(
+                {
+                    "instance_base": round(self.instance_base, 8),
+                    "instance_multiview_raw": round(self.instance_multiview_raw, 8),
+                    "instance_multiview_calibrated": round(
+                        self.instance_multiview_calibrated, 8
+                    ),
+                }
+            )
         return {
             "tracklet_a": self.a,
             "tracklet_b": self.b,
             "score": round(self.total, 8),
-            "components": {
-                "instance": round(self.instance, 8),
-                "semantic": round(self.semantic, 8),
-                "attribute": round(self.attribute, 8) if self.attribute is not None else None,
-                "context": round(self.context, 8),
-                "geometry": round(self.geometry, 8),
-            },
+            "components": components,
             "gate_reasons": list(self.gate_reasons),
         }
 
@@ -209,6 +224,57 @@ def score_pair(
     )
 
 
+def _rerank_recalled_scores(
+    recalled_scores: dict[tuple[str, str], PairScore],
+    feature_by_id: dict[str, TrackFeature],
+    config: ReIDConfig,
+) -> dict[tuple[str, str], PairScore]:
+    """只对已由 baseline 双向 Top-K 召回的边做多视角重排。"""
+
+    if not config.multiview.enabled:
+        return recalled_scores
+    raw_scores: dict[tuple[str, str], float] = {}
+    baseline_instance: dict[tuple[str, str], float] = {}
+    for key, score in recalled_scores.items():
+        a, b = feature_by_id[score.a], feature_by_id[score.b]
+        if not a.view_vectors or not b.view_vectors:
+            raise ValueError(f"multiview vectors missing for recalled pair {key}")
+        baseline_instance[key] = score.instance
+        raw_scores[key] = set_similarity(
+            a.view_vectors,
+            b.view_vectors,
+            method=config.multiview.method,
+            max_views=config.multiview.max_views_per_rep,
+        )
+    if config.multiview.calibration == "per_video_pair_quantile":
+        calibrated = quantile_calibrate(baseline_instance, raw_scores)
+    else:
+        calibrated = raw_scores
+
+    reranked: dict[tuple[str, str], PairScore] = {}
+    for key, score in recalled_scores.items():
+        instance = (
+            (1.0 - config.multiview.blend) * score.instance
+            + config.multiview.blend * calibrated[key]
+        )
+        effective_attribute_weight = (
+            config.weights.attribute if score.attribute is not None else 0.0
+        )
+        denominator = (
+            config.weights.total - config.weights.attribute + effective_attribute_weight
+        )
+        total = score.total + config.weights.instance * (instance - score.instance) / denominator
+        reranked[key] = replace(
+            score,
+            instance=max(0.0, min(1.0, instance)),
+            total=max(0.0, min(1.0, total)),
+            instance_base=score.instance,
+            instance_multiview_raw=raw_scores[key],
+            instance_multiview_calibrated=calibrated[key],
+        )
+    return reranked
+
+
 def _second_best_margin(chosen: PairScore, alternatives: list[PairScore]) -> float:
     other_scores = [score.total for score in alternatives if score.viable and score != chosen]
     return chosen.total - max(other_scores, default=0.0)
@@ -248,15 +314,50 @@ def _pairwise_assignments(
                 key=lambda score: (-score.total, score.a),
             )[: config.top_k]
 
-        recalled = {
-            _pair_key(score.a, score.b)
-            for rows in (left_ranked.values(), right_ranked.values())
-            for row in rows
-            for score in row
-        }
+        # Candidate recall is symmetric: a pair is in-scope when either endpoint
+        # ranks the other in its Top-K.  Keep the score object as well as the key
+        # so candidates.jsonl can expose the exact same recalled universe used by
+        # assignment (including right-only recalls), without duplicating mutual
+        # Top-K pairs.
+        recalled_scores: dict[tuple[str, str], PairScore] = {}
+        for ranked in list(left_ranked.values()) + list(right_ranked.values()):
+            for score in ranked:
+                recalled_scores.setdefault(_pair_key(score.a, score.b), score)
+        recalled = set(recalled_scores)
+        if config.multiview.enabled:
+            feature_by_id = {feature.tracklet_id: feature for feature in left + right}
+            recalled_scores = _rerank_recalled_scores(
+                recalled_scores, feature_by_id, config
+            )
+            # Margin 必须与部署的重排分一致；只在 multiview
+            # 启用时重建，disabled 保持历史字节级行为。
+            left_ranked = {
+                feature.tracklet_id: sorted(
+                    (
+                        score
+                        for score in recalled_scores.values()
+                        if score.a == feature.tracklet_id
+                    ),
+                    key=lambda score: (-score.total, score.b),
+                )
+                for feature in left
+            }
+            right_ranked = {
+                feature.tracklet_id: sorted(
+                    (
+                        score
+                        for score in recalled_scores.values()
+                        if score.b == feature.tracklet_id
+                    ),
+                    key=lambda score: (-score.total, score.a),
+                )
+                for feature in right
+            }
         matrix = [
             [
-                score.total if score.viable and _pair_key(score.a, score.b) in recalled else -math.inf
+                recalled_scores[_pair_key(score.a, score.b)].total
+                if score.viable and _pair_key(score.a, score.b) in recalled
+                else -math.inf
                 for score in row
             ]
             for row in score_rows
@@ -266,7 +367,8 @@ def _pairwise_assignments(
         for row_index, column in enumerate(assignment):
             if column is None or not math.isfinite(matrix[row_index][column]):
                 continue
-            chosen = score_rows[row_index][column]
+            base_chosen = score_rows[row_index][column]
+            chosen = recalled_scores[_pair_key(base_chosen.a, base_chosen.b)]
             assigned_pairs.add(_pair_key(chosen.a, chosen.b))
             margin = min(
                 _second_best_margin(chosen, left_ranked[chosen.a]),
@@ -299,21 +401,18 @@ def _pairwise_assignments(
             if best.total > config.thresholds.new and key not in assigned_pairs:
                 ambiguous.setdefault(key, (("GLOBAL_ASSIGNMENT_CONTENTION",), best.total))
 
-        for a, row in zip(left, score_rows):
-            recalled_for_left = {_pair_key(score.a, score.b) for score in left_ranked[a.tracklet_id]}
-            for score in row:
-                key = _pair_key(score.a, score.b)
-                if key not in recalled_for_left or key in assigned_pairs:
-                    continue
-                record = score.as_dict()
-                record.update(
-                    {
-                        "video_pair": [video_a, video_b],
-                        "assigned": False,
-                        "decision": "CANDIDATE",
-                    }
-                )
-                candidates_out.append(record)
+        for key, score in recalled_scores.items():
+            if key in assigned_pairs:
+                continue
+            record = score.as_dict()
+            record.update(
+                {
+                    "video_pair": [video_a, video_b],
+                    "assigned": False,
+                    "decision": "CANDIDATE",
+                }
+            )
+            candidates_out.append(record)
 
     accepted.sort(key=lambda score: (-score.total, score.a, score.b))
     candidates_out.sort(
@@ -367,6 +466,193 @@ def _can_union(
     if videos_a & videos_b:
         return False
     return not any(_pair_key(x, y) in constraints.different for x in members_a for y in members_b)
+
+
+def _cycle_complete_components(
+    union_find: _UnionFind,
+    feature_by_id: dict[str, TrackFeature],
+    constraints: IdentityConstraints,
+    candidates: list[dict[str, Any]],
+    config: ReIDConfig,
+) -> list[dict[str, Any]]:
+    """一轮三视频双证据闭环，不级联。
+
+    只把第三视频 singleton 接到已有两视频实体。两条 spoke
+    必须同时存在，且证据满足二者之一：
+
+    * 两条都是各自视频对 Hungarian assigned，且都高于 T_new；
+    * 恰一条 assigned，另一条 >= T_match 且是双向 top-1。
+
+    最后再要求 seed component 与 singleton 按两条 spoke 的
+    bottleneck 分互为最佳，抑制同类大扇出。
+    """
+
+    if not config.cycle.enabled:
+        return []
+
+    def identity_key(feature: TrackFeature) -> tuple[str, ...]:
+        """Fail closed when a broad category contains multiple canonical items."""
+
+        if feature.canonical_id:
+            return ("canonical", feature.canonical_id, feature.category_id or "")
+        if feature.category_id:
+            return ("category", feature.category_id)
+        return ("raw", feature.raw_label.strip().lower())
+
+    row_by_pair = {
+        _pair_key(str(row["tracklet_a"]), str(row["tracklet_b"])): row
+        for row in candidates
+    }
+    top_pair: dict[tuple[str, str], tuple[float, str, tuple[str, str]]] = {}
+    for key, row in row_by_pair.items():
+        a, b = str(row["tracklet_a"]), str(row["tracklet_b"])
+        va, vb = feature_by_id[a].video_id, feature_by_id[b].video_id
+        score = float(row["score"])
+        for source, partner, target_video in ((a, b, vb), (b, a, va)):
+            rank_key = (source, target_video)
+            candidate = (score, partner, key)
+            previous = top_pair.get(rank_key)
+            if previous is None or (-candidate[0], candidate[1]) < (
+                -previous[0], previous[1]
+            ):
+                top_pair[rank_key] = candidate
+
+    def bidirectional_top1(key: tuple[str, str]) -> bool:
+        row = row_by_pair[key]
+        a, b = str(row["tracklet_a"]), str(row["tracklet_b"])
+        va, vb = feature_by_id[a].video_id, feature_by_id[b].video_id
+        return top_pair.get((a, vb), (None, None, None))[2] == key and top_pair.get(
+            (b, va), (None, None, None)
+        )[2] == key
+
+    components: dict[str, list[str]] = defaultdict(list)
+    for tracklet_id in sorted(feature_by_id):
+        components[union_find.find(tracklet_id)].append(tracklet_id)
+    seeds = {
+        root: tuple(sorted(members))
+        for root, members in components.items()
+        if len(members) == 2
+        and len({feature_by_id[item].video_id for item in members}) == 2
+    }
+    singletons = {
+        members[0]
+        for members in components.values()
+        if len(members) == 1
+    }
+
+    proposals: list[dict[str, Any]] = []
+    for root, members in seeds.items():
+        member_videos = {feature_by_id[item].video_id for item in members}
+        member_labels = {identity_key(feature_by_id[item]) for item in members}
+        if len(member_labels) != 1:
+            continue
+        for singleton in sorted(singletons):
+            feature = feature_by_id[singleton]
+            if feature.video_id in member_videos:
+                continue
+            label = identity_key(feature)
+            if label not in member_labels:
+                continue
+            support = []
+            for member in members:
+                key = _pair_key(singleton, member)
+                row = row_by_pair.get(key)
+                if row is None:
+                    break
+                support.append(
+                    {
+                        "pair": key,
+                        "score": float(row["score"]),
+                        "assigned": bool(row["assigned"]),
+                        "bidirectional_top1": bidirectional_top1(key),
+                    }
+                )
+            if len(support) != 2:
+                continue
+            if not all(
+                item["score"] > config.thresholds.new for item in support
+            ):
+                continue
+            assigned_count = sum(item["assigned"] for item in support)
+            mode_a = assigned_count == 2 and all(
+                item["score"] > config.thresholds.new for item in support
+            )
+            unassigned = [item for item in support if not item["assigned"]]
+            mode_b = (
+                assigned_count == 1
+                and unassigned[0]["score"] >= config.thresholds.match
+                and unassigned[0]["bidirectional_top1"]
+            )
+            if not (mode_a or mode_b):
+                continue
+            scores = [item["score"] for item in support]
+            proposals.append(
+                {
+                    "root": root,
+                    "members": members,
+                    "singleton": singleton,
+                    "bottleneck": min(scores),
+                    "mean_score": sum(scores) / 2,
+                    "evidence_mode": "two_assigned" if mode_a else "assigned_plus_mutual_top1",
+                    "support": support,
+                }
+            )
+
+    def proposal_order(item: dict[str, Any]) -> tuple[Any, ...]:
+        return (
+            -item["bottleneck"],
+            -item["mean_score"],
+            -max(support["score"] for support in item["support"]),
+            item["root"],
+            item["singleton"],
+        )
+
+    best_for_seed: dict[str, dict[str, Any]] = {}
+    best_for_singleton: dict[str, dict[str, Any]] = {}
+    for proposal in sorted(proposals, key=proposal_order):
+        best_for_seed.setdefault(proposal["root"], proposal)
+        best_for_singleton.setdefault(proposal["singleton"], proposal)
+
+    closures: list[dict[str, Any]] = []
+    for proposal in sorted(proposals, key=proposal_order):
+        if best_for_seed[proposal["root"]] is not proposal:
+            continue
+        if best_for_singleton[proposal["singleton"]] is not proposal:
+            continue
+        singleton = proposal["singleton"]
+        members = proposal["members"]
+        if not _can_union(union_find, singleton, members[0], feature_by_id, constraints):
+            continue
+        strongest = sorted(
+            proposal["support"], key=lambda item: (-item["score"], item["pair"])
+        )[0]
+        partner = (
+            strongest["pair"][0]
+            if strongest["pair"][1] == singleton
+            else strongest["pair"][1]
+        )
+        union_find.union(singleton, partner)
+        closures.append(
+            {
+                "tracklet_a": strongest["pair"][0],
+                "tracklet_b": strongest["pair"][1],
+                "mode": "cycle_closure",
+                "score": round(proposal["mean_score"], 8),
+                "bottleneck": round(proposal["bottleneck"], 8),
+                "evidence_mode": proposal["evidence_mode"],
+                "support_pairs": [
+                    {
+                        "tracklet_a": item["pair"][0],
+                        "tracklet_b": item["pair"][1],
+                        "score": round(item["score"], 8),
+                        "assigned": item["assigned"],
+                        "bidirectional_top1": item["bidirectional_top1"],
+                    }
+                    for item in proposal["support"]
+                ],
+            }
+        )
+    return closures
 
 
 def _entity_id(members: list[str]) -> str:
@@ -439,6 +725,7 @@ def run_reid(
         embedding_dim=config.embedding_dim,
         attributes=attributes,
         projection=config.projection,
+        multiview=config.multiview,
     )
     if not original_features:
         raise ValueError("no embedded tracklets found")
@@ -510,6 +797,25 @@ def run_reid(
             )
         else:
             ambiguous.setdefault(key, (("GLOBAL_CLUSTER_CONFLICT",), score.total))
+
+    cycle_records = _cycle_complete_components(
+        union_find,
+        feature_by_id,
+        constraints,
+        candidates,
+        config,
+    )
+    for record in cycle_records:
+        key = _pair_key(record["tracklet_a"], record["tracklet_b"])
+        accepted_score_by_pair[key] = float(record["score"])
+        accepted_records.append(record)
+    if cycle_records:
+        # 闭环后已在同一实体内的边不再向人工发问。
+        ambiguous = {
+            pair: value
+            for pair, value in ambiguous.items()
+            if union_find.find(pair[0]) != union_find.find(pair[1])
+        }
 
     # 实体状态基于完整歧义集(诚实);澄清队列先摘低证据端点的对,再互选封顶。
     eligible = {
@@ -607,7 +913,11 @@ def run_reid(
             entity.identity_state == IdentityState.SUSPECTED_DUPLICATE for entity in entities
         ),
         "clarification_count": len(clarifications),
-        "automatic_link_count": sum(record["mode"] == "automatic" for record in accepted_records),
+        "automatic_link_count": sum(
+            record["mode"] in {"automatic", "cycle_closure"}
+            for record in accepted_records
+        ),
+        "cycle_closure_count": len(cycle_records),
         "user_same_link_count": sum(record["mode"] == "user_same" for record in accepted_records),
     }
     return ReIDRun(

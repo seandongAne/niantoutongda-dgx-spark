@@ -1,8 +1,8 @@
-"""S3 配置、词表与 v5 Tracklet 特征读取。
+"""S3 配置、词表与 Tracklet 特征读取。
 
-v5 只保存每条轨迹的 DINOv2 Top-3 均值向量和 raw detector label；属性、
-上下文与逐视角向量尚未生成。因此本模块显式保留缺失值，不能把 baseline
-包装成完整特征消融。
+baseline 保存每条轨迹的 DINOv2 Top-3 均值向量。可选的 multiview
+侧车产物另存逐 crop 向量，只在首轮均值向量 Top-K 召回后重排，避免
+改变 baseline 的候选召回边界。
 """
 
 from __future__ import annotations
@@ -13,10 +13,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from statistics import median
 
+import numpy as np
 import yaml
 
 from backend.pipeline.vocab import Vocabulary
 from backend.schemas.core import Observation, Tracklet
+from backend.tools.reid.multiview import ARTIFACT_FORMAT_VERSION
 from backend.tools.sf1.projection import NumpyProjectionHead
 
 
@@ -74,6 +76,31 @@ class ProjectionConfig:
 
 
 @dataclass(frozen=True)
+class MultiViewConfig:
+    """逐 crop 集合重排。
+
+    artifact 是 ``reid-multiview-embeddings-v1`` NPZ；候选仍由原均值向量 Top-K
+    决定，只对候选并集重算 instance 分，所以成本有界且可回放。
+    """
+
+    enabled: bool = False
+    artifact: str = ""
+    sha256: str = ""
+    method: str = "symmetric_top2"
+    blend: float = 1.0
+    space: str = "raw"  # raw / projected
+    calibration: str = "per_video_pair_quantile"
+    max_views_per_rep: int = 6
+
+
+@dataclass(frozen=True)
+class CycleConfig:
+    """两条独立边支撑的三视频组件闭环。"""
+
+    enabled: bool = False
+
+
+@dataclass(frozen=True)
 class ReIDConfig:
     version: str
     embedding_dim: int
@@ -84,6 +111,8 @@ class ReIDConfig:
     filter: FilterConfig = FilterConfig()
     clarify: ClarifyConfig = ClarifyConfig()
     projection: ProjectionConfig = ProjectionConfig()
+    multiview: MultiViewConfig = MultiViewConfig()
+    cycle: CycleConfig = CycleConfig()
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> "ReIDConfig":
@@ -100,6 +129,8 @@ class ReIDConfig:
             filter=FilterConfig(**raw.get("filter", {})),
             clarify=ClarifyConfig(**raw.get("clarify", {})),
             projection=ProjectionConfig(**raw.get("projection", {})),
+            multiview=MultiViewConfig(**raw.get("multiview", {})),
+            cycle=CycleConfig(**raw.get("cycle", {})),
         )
         config.validate()
         return config
@@ -130,6 +161,22 @@ class ReIDConfig:
             self.projection.artifact and self.projection.sha256
         ):
             raise ValueError("enabled projection requires artifact and sha256")
+        if self.multiview.enabled and not (
+            self.multiview.artifact and self.multiview.sha256
+        ):
+            raise ValueError("enabled multiview requires artifact and sha256")
+        if self.multiview.method not in {"symmetric_top2", "max_pair", "mean_chamfer"}:
+            raise ValueError("unsupported multiview.method")
+        if not 0 <= self.multiview.blend <= 1:
+            raise ValueError("multiview.blend must be in [0, 1]")
+        if self.multiview.space not in {"raw", "projected"}:
+            raise ValueError("multiview.space must be raw or projected")
+        if self.multiview.calibration not in {"none", "per_video_pair_quantile"}:
+            raise ValueError("unsupported multiview.calibration")
+        if self.multiview.max_views_per_rep < 2:
+            raise ValueError("multiview.max_views_per_rep must be >= 2")
+        if self.multiview.space == "projected" and not self.projection.enabled:
+            raise ValueError("projected multiview space requires projection.enabled")
 
 
 @dataclass(frozen=True)
@@ -143,6 +190,7 @@ class TrackFeature:
     aspect_ratio: float | None
     area: float | None
     timestamps_ms: tuple[int, ...] = ()  # 已链接观测的时间戳,升序;stitch 共现否决用
+    view_vectors: tuple[tuple[float, ...], ...] = ()
 
     @property
     def tracklet_id(self) -> str:
@@ -186,6 +234,68 @@ def _load_vector(ref: str, ingest_root: Path, expected_dim: int) -> tuple[float,
     return tuple(value / norm for value in values)
 
 
+def _load_multiview_vectors(
+    ref: str,
+    ingest_root: Path,
+    expected_dim: int,
+    *,
+    expected_sha256: str,
+) -> dict[str, tuple[tuple[float, ...], ...]]:
+    """读取逐视角侧车产物，并对 schema/维度/有限性/范数 fail closed。"""
+
+    artifact = _resolve_ref(ref, ingest_root)
+    from backend.tools.sf1.projection import sha256_file
+
+    actual_sha256 = sha256_file(artifact)
+    if actual_sha256 != expected_sha256:
+        raise ValueError(
+            f"multiview sha256 mismatch: expected {expected_sha256}, got {actual_sha256}"
+        )
+    grouped: dict[str, list[tuple[int, tuple[float, ...]]]] = {}
+    with np.load(artifact, allow_pickle=False) as data:
+        version = str(data["format_version"].item())
+        if version != ARTIFACT_FORMAT_VERSION:
+            raise ValueError(f"unsupported multiview format: {version}")
+        tracklet_ids = np.asarray(data["tracklet_ids"])
+        view_indices = np.asarray(data["view_index"])
+        vectors = np.asarray(data["vectors"])
+    if tracklet_ids.ndim != 1 or tracklet_ids.dtype.kind not in {"U", "S"}:
+        raise ValueError("multiview tracklet_ids must be a 1-D string array")
+    tracklet_ids = tracklet_ids.astype(str)
+    if any(not tracklet_id for tracklet_id in tracklet_ids):
+        raise ValueError("multiview tracklet_ids cannot contain empty values")
+    if view_indices.ndim != 1 or view_indices.dtype.kind not in {"i", "u"}:
+        raise ValueError("multiview view_index must be a 1-D integer array")
+    view_indices = view_indices.astype(np.int64, copy=False)
+    if vectors.dtype != np.float32:
+        raise ValueError(f"multiview vectors must be float32, got {vectors.dtype}")
+    if vectors.ndim != 2 or vectors.shape[1] != expected_dim:
+        raise ValueError(
+            f"multiview expects [N,{expected_dim}] vectors, got {tuple(vectors.shape)}"
+        )
+    if len(tracklet_ids) != len(view_indices) or len(tracklet_ids) != len(vectors):
+        raise ValueError("multiview arrays have inconsistent row counts")
+    if not np.isfinite(vectors).all():
+        raise ValueError("multiview vectors contain non-finite values")
+    norms = np.linalg.norm(vectors, axis=1)
+    if (norms < 1e-12).any():
+        raise ValueError("multiview vectors contain zero-norm rows")
+    if not np.allclose(norms, 1.0, rtol=1e-4, atol=1e-5):
+        raise ValueError("multiview vectors must be L2-normalized")
+    vectors = vectors / norms[:, None]
+    for tracklet_id, view_index, vector in zip(tracklet_ids, view_indices, vectors):
+        grouped.setdefault(str(tracklet_id), []).append(
+            (int(view_index), tuple(float(value) for value in vector))
+        )
+    result: dict[str, tuple[tuple[float, ...], ...]] = {}
+    for tracklet_id, rows in grouped.items():
+        indices = [index for index, _ in sorted(rows)]
+        if indices != list(range(len(indices))):
+            raise ValueError(f"multiview indices are not contiguous for {tracklet_id}")
+        result[tracklet_id] = tuple(vector for _, vector in sorted(rows))
+    return result
+
+
 # S5 属性接线:只有这些键参与 _attribute_score 比较(白名单,杜绝流水线元数据
 # 混入打分的 hero_scoring_version 一类事故);命名键(label_en/label_zh)只供展示。
 COMPARABLE_ATTRIBUTE_KEYS = (
@@ -225,6 +335,7 @@ def load_features(
     embedding_dim: int,
     attributes: dict[str, dict[str, str]] | None = None,
     projection: ProjectionConfig | None = None,
+    multiview: MultiViewConfig | None = None,
 ) -> list[TrackFeature]:
     """读取每个视频目录的 Tracklet、Observation 与嵌入，顺序确定。
 
@@ -237,6 +348,7 @@ def load_features(
         raise FileNotFoundError(f"ingest root not found: {root}")
 
     projection = projection or ProjectionConfig()
+    multiview = multiview or MultiViewConfig()
     projection_head = None
     if projection.enabled:
         artifact = _resolve_ref(projection.artifact, root)
@@ -247,6 +359,14 @@ def load_features(
             raise ValueError(
                 f"projection expects {projection_head.input_dim} dims, config has {embedding_dim}"
             )
+    view_vectors_by_tracklet: dict[str, tuple[tuple[float, ...], ...]] = {}
+    if multiview.enabled:
+        view_vectors_by_tracklet = _load_multiview_vectors(
+            multiview.artifact,
+            root,
+            embedding_dim,
+            expected_sha256=multiview.sha256,
+        )
     features: list[TrackFeature] = []
     for tracklet_path in sorted(root.glob("*/tracklets.jsonl")):
         observations = {
@@ -259,8 +379,21 @@ def load_features(
             if attributes and tracklet.tracklet_id in attributes:
                 tracklet.attributes.update(attributes[tracklet.tracklet_id])
             vector = _load_vector(tracklet.embedding_ref, root, embedding_dim)
+            view_vectors = view_vectors_by_tracklet.get(tracklet.tracklet_id, ())
+            if multiview.enabled and not view_vectors:
+                raise ValueError(f"multiview artifact missing tracklet {tracklet.tracklet_id}")
+            if multiview.enabled and len(view_vectors) != len(tracklet.prototype_refs):
+                raise ValueError(
+                    f"multiview view count mismatch for {tracklet.tracklet_id}: "
+                    f"expected {len(tracklet.prototype_refs)}, got {len(view_vectors)}"
+                )
             if projection_head is not None:
                 vector = tuple(float(value) for value in projection_head.apply(vector))
+                if multiview.enabled and multiview.space == "projected":
+                    projected_views = projection_head.apply(np.asarray(view_vectors, dtype=np.float32))
+                    view_vectors = tuple(
+                        tuple(float(value) for value in projected) for projected in projected_views
+                    )
             raw_label = str(tracklet.attributes.get("label", ""))
             vocab_match = vocab.match(raw_label)
             linked = [observations[ref] for ref in tracklet.observation_ids if ref in observations]
@@ -285,6 +418,7 @@ def load_features(
                     aspect_ratio=median(ratios) if ratios else None,
                     area=median(areas) if areas else None,
                     timestamps_ms=timestamps,
+                    view_vectors=view_vectors,
                 )
             )
     features.sort(key=lambda feature: feature.tracklet_id)

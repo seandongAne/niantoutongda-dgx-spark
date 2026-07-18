@@ -80,6 +80,14 @@ def _merge_cluster(members: list[TrackFeature]) -> TrackFeature:
     observation_ids: list[str] = []
     prototype_refs: list[str] = []
     timestamps: list[int] = []
+    # 逐视角按 rank 轮询组合：先取每个 fragment 的最佳视角，
+    # 再取次佳，避免长碎轨因 crop 数多支配代表集。
+    view_vectors: list[tuple[float, ...]] = []
+    max_view_count = max((len(feature.view_vectors) for feature in members), default=0)
+    for view_index in range(max_view_count):
+        for feature in members:
+            if view_index < len(feature.view_vectors):
+                view_vectors.append(feature.view_vectors[view_index])
     for feature in ordered_by_hero:
         prototype_refs.extend(r for r in feature.tracklet.prototype_refs if r not in prototype_refs)
     for feature in members:
@@ -115,6 +123,7 @@ def _merge_cluster(members: list[TrackFeature]) -> TrackFeature:
         aspect_ratio=aspect,
         area=area,
         timestamps_ms=tuple(sorted(timestamps)),
+        view_vectors=tuple(view_vectors),
     )
 
 

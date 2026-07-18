@@ -30,6 +30,38 @@ class Dinov2Embedder:
         cls = cls / cls.norm().clamp_min(1e-12)
         return [float(v) for v in cls.cpu()]
 
+    def embed_many(
+        self, image_paths: list[str], *, batch_size: int = 32
+    ) -> list[list[float]]:
+        """按输入顺序批量嵌入图片，并保持与 :meth:`embed` 相同的归一化语义。"""
+
+        if batch_size <= 0:
+            raise ValueError("batch_size must be positive")
+        if not image_paths:
+            return []
+
+        from PIL import Image
+
+        vectors: list[list[float]] = []
+        for start in range(0, len(image_paths), batch_size):
+            images = []
+            try:
+                for image_path in image_paths[start : start + batch_size]:
+                    with Image.open(image_path) as source:
+                        images.append(source.convert("RGB"))
+                inputs = self.processor(images=images, return_tensors="pt").to(
+                    self.device
+                )
+                with self._torch.no_grad():
+                    outputs = self.model(**inputs)
+                cls = outputs.last_hidden_state[:, 0]
+                cls = cls / cls.norm(dim=1, keepdim=True).clamp_min(1e-12)
+                vectors.extend(cls.cpu().tolist())
+            finally:
+                for image in images:
+                    image.close()
+        return vectors
+
     @staticmethod
     def cosine(a: list[float], b: list[float]) -> float:
         return float(sum(x * y for x, y in zip(a, b)))

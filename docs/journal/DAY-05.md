@@ -4,7 +4,7 @@
 >
 > 当日主责：A1 formal 语音鲁棒性验收收口；英雄任务可信库存与自动空间技术闭环
 >
-> 状态：完成（可信库存主链已落盘；自动空间真机影子门为 `NEEDS_USER`，显式人工降级）
+> 状态：完成（可信库存主链已落盘；自动空间真机门保持 `NEEDS_USER`，独立视觉代理裁定 5/5 `PASS`）
 
 ## 今日目标
 
@@ -16,7 +16,7 @@
   建立 3306→20 的可审计可信库存投影，用最多 4 条投影级问题替换 677 条 raw
   澄清队列，并限制箱单、布局和任务卡只消费这 20 条库存。
 - 使用现有 `new_1.mp4` 启动自动空间生产器和五目标 fail-closed 影子门；不新增
-  视频需求，未通过时保留候选、指标、哈希和代表失败帧，再走显式人工降级。
+  视频需求，未通过时保留候选、指标、哈希和代表失败帧，再走独立视觉代理裁定。
 
 ## 关键证据或截图
 
@@ -281,3 +281,41 @@
 - 当夜另修:旁白解析器适配真实 A1 句式(全角逗号/这是前缀/同段目标+搭子,096dcb7,
   25/25 五要素齐)→GROUP 瓶颈移至实体歧义(3437 实体淹没名字空间,结构解=锚点
   认定);anchor_gt_eval 门限参数化;确认页 crops/ 硬链接修复(4332 张)。
+
+## 增量 D5-8：视觉代理接管区域裁定，人工 fixture 退出技术闭环（深夜）
+
+- 现有 `new_1.mp4` 足以目视定出冻结的 5 个目标区域，无需队友补视频。四张代表帧
+  固化于 `results/acceptance/HERO_S1/space-visual-adjudication-v1/`，分别覆盖书桌、
+  花布台面与墙搁板、红木斗柜、玻璃展示柜；源视频 SHA-256 为
+  `fb7004841507c10fc95b283c190db0d887d232c281cb5a5400ad88943a2b84fe`。
+- 自动观测中的真轨迹已回接到冻结 region/anchor：`t273→study_desk`、
+  `t356→vanity_top/vanity`、`t369→wall_shelf`、`t415→chest_top/
+  chest_of_drawers`、`t529→display_cabinet`。除书桌外，四条真轨迹此前因跨类别
+  置信度冲突落为 `auto_unknown_*`；视觉裁定只做独立 overlay，不修改自动候选
+  的 `NEEDS_USER`，也不把任何条目冒充为 `AUTO_ACCEPTED`。
+- 新增 fail-closed `space_review` 阶段：review 同时绑定自动空间 normalized hash、
+  源视频 hash、candidate ID、track ID、项目内证据帧、帧 SHA-256 与 bbox；未知
+  candidate/track、重复 region/instance、证据帧缺失或 hash 不符、`auto_*` 输出 ID、
+  已知电源状态无证据等情况均拒绝投影，失败时删除陈旧 `regions.json`。
+- 自动门保留 170 个候选、0 个 `AUTO_ACCEPTED`、0 个自动投影，normalized hash 更新为
+  `8b4616b04f1ca1697f45652ac3cf3b4dec8256683f2fefd96678dce514067baa`；视觉门得到
+  5 个 `VISUALLY_ADJUDICATED`、0 个待处理、5 个投影区域并 `PASS`，normalized hash
+  为 `d7bfea852368bb965b3286cb8cad180f98a36dfe2748750322ed3f8ba991ee88`。
+- 电源证据从布尔猜测收紧为三态：墙搁板和花布台面因同帧直接看到插座排，记为
+  `NEAR`；书桌、斗柜、展示柜保留 `UNKNOWN`，兼容 `RegionManifest` 中保守投影为
+  `near_power=false`，同时在 review、metrics 与 notes 中显式保留 UNKNOWN 来源。
+- `regions.source` 改为显式 `auto | visual_adjudication | fixture`。技术闭环只读
+  `spatial_review/regions.json`，不再消费 `fixtures/hero_s1/regions.target5.json`；
+  严格全自动配置仍只读自动产物，自动门失败时不会静默回退。流水线同时补入 backend
+  代码依赖哈希和阶段执行前动态 freshness 复核，阻断“上游本轮改写、下游沿用旧计划
+  skip”的陈旧产物路径。
+- 全链复跑得到 `PLAN_READY`、5 个 placement 指派、5 张任务卡和 20/20 唯一可信
+  物品覆盖；bundle 增至 35 个阶段产物，逐项 SHA-256 校验全部通过，自动 candidate
+  输出 hash 与视觉 review 输入 hash 一致。结果页并列展示“自动接受 0”和“视觉接受
+  5”，不合并口径。
+- 仍不可由当前单目视频可靠证明的边界为精确可用面积、净高、承重、门洞净宽和主要
+  通道净宽。书桌上的 A2 网格垫仅是候选尺度参照，实物标准尺寸未确认；真实摆放后的
+  验收照片继续延后到最终验收，不在本轮生成结论。
+- Commits：`a2611731`（视觉裁定合同、证据、流水线与测试）、`67a1de0e`（完整运行
+  产物）。最终全仓验证为 `221 passed in 6.82s`，内容寻址续跑复验仅重建 bundle，
+  `git diff --check` 通过。

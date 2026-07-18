@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 from pydantic import ValidationError
 
@@ -10,6 +12,8 @@ from backend.schemas.hero_bundle import (
     AcceptanceManifest,
     AcceptancePhoto,
 )
+
+PROJ = Path(__file__).resolve().parent.parent.parent
 
 
 def _photo() -> AcceptancePhoto:
@@ -67,3 +71,27 @@ def test_explicit_scope_round_trips_through_json():
     assert restored == manifest
     assert restored.includes_card("card-01")
     assert not restored.includes_card("card-02")
+
+
+def test_hero_template_selects_current_representative_card_and_fails_closed():
+    manifest = AcceptanceManifest.model_validate_json(
+        (PROJ / "fixtures/hero_s1/acceptance.template.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+    assert manifest.selected_card_ids == ["card-02"]
+    assert len(manifest.photos) == 1
+    photo = manifest.photos[0]
+    assert photo.photo_ref == "local-data/hero_s1/acceptance/study_desk_after.jpg"
+    assert photo.region_id == "auto_study_desk_01"
+    assert {match.entity_id for match in photo.matches} == {
+        "hero_book",
+        "hero_marker_set",
+        "hero_pen",
+        "hero_pencil_sharpener",
+        "hero_scissors",
+        "hero_set_square",
+        "hero_utility_knife",
+    }
+    assert all(not match.present for match in photo.matches)

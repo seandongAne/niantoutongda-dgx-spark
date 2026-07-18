@@ -1,14 +1,18 @@
 {
+  "selected_card_ids": ["card-02"],
   "photos": [
     {
-      "photo_ref": "local-data/hero_s1/acceptance/chest_top_after.jpg",
-      "region_id": "chest_top",
+      "photo_ref": "local-data/hero_s1/acceptance/study_desk_after.jpg",
+      "region_id": "auto_study_desk_01",
       "match_source": "manual",
       "matches": [
-        {"entity_id": "entity_07b63114b8a4", "present": false},
-        {"entity_id": "entity_31fe1e1340f1", "present": false},
-        {"entity_id": "entity_63855de17cfe", "present": false},
-        {"entity_id": "entity_81bfd78cd410", "present": false}
+        {"entity_id": "hero_book", "present": false},
+        {"entity_id": "hero_marker_set", "present": false},
+        {"entity_id": "hero_pen", "present": false},
+        {"entity_id": "hero_pencil_sharpener", "present": false},
+        {"entity_id": "hero_scissors", "present": false},
+        {"entity_id": "hero_set_square", "present": false},
+        {"entity_id": "hero_utility_knife", "present": false}
       ]
     }
   ],

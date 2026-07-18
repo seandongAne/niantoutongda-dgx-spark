@@ -14,14 +14,20 @@ from backend.tools.solver.region_adapter import (
 )
 
 # 旁白去向关键词 → 区域锚点(Region.anchor 词域)
-DEFAULT_ANCHOR_HINTS: dict[str, str] = {
-    "床头": "bed",
-    "床": "bed",
-    "书桌": "desk",
-    "桌": "desk",
-    "柜": "closet",
-    "架": "shelf",
-    "角落": "corner",
+DEFAULT_ANCHOR_HINTS: dict[str, tuple[str, ...]] = {
+    "床头": ("bed",),
+    "床": ("bed",),
+    # 同一生活语义兼容旧人工 manifest 与自动空间生产器的词域。
+    "书桌": ("desk", "study_desk"),
+    "梳妆台": ("vanity",),
+    "墙上搁板": ("wall_shelf",),
+    "置物架": ("shelf", "wall_shelf"),
+    "展示柜": ("display_cabinet",),
+    "斗柜": ("chest_of_drawers",),
+    "桌": ("desk", "study_desk"),
+    "柜": ("closet", "chest_of_drawers", "display_cabinet"),
+    "架": ("shelf", "wall_shelf"),
+    "角落": ("corner",),
 }
 
 NARRATION_HINT_SCORE = 10
@@ -43,7 +49,7 @@ def build_layout_problem(
     *,
     requires_power_group_ids: frozenset[str] = frozenset(),
     allowed_support: frozenset[str] = DEFAULT_ALLOWED_SUPPORT,
-    anchor_hints: dict[str, str] | None = None,
+    anchor_hints: dict[str, str | tuple[str, ...]] | None = None,
     capacity_units: dict[str, int] | None = None,
     template_scores: dict[tuple[str, str], int] | None = None,
 ) -> LayoutProblem:
@@ -66,8 +72,11 @@ def build_layout_problem(
             continue
         wanted_anchors = {
             anchor
-            for keyword, anchor in sorted(hints.items())
+            for keyword, configured in sorted(hints.items())
             if keyword in g.target_region_hint
+            for anchor in (
+                (configured,) if isinstance(configured, str) else configured
+            )
         }
         for region_id in sorted(entries):
             e = entries[region_id]

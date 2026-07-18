@@ -109,6 +109,63 @@ def test_assemble_and_solve_hero_fixture():
     assert result.assignments["g03"] == "closet_shelf"
 
 
+def test_auto_spatial_anchor_aliases_score_all_five_frozen_targets():
+    manifest = RegionManifest.model_validate(
+        {
+            "video_id": "new_1",
+            "entries": [
+                {
+                    "region_id": f"auto_{anchor}",
+                    "anchor": anchor,
+                    "display_name_zh": name,
+                    "support_type": support,
+                    "capacity_class": "large",
+                    "evidence_refs": [f"new_1@{index}ms"],
+                }
+                for index, (anchor, name, support) in enumerate(
+                    [
+                        ("study_desk", "学习桌面", "surface"),
+                        ("display_cabinet", "展示柜层板", "shelf"),
+                        ("vanity", "梳妆台面", "surface"),
+                        ("wall_shelf", "墙面置物架", "shelf"),
+                        ("chest_of_drawers", "斗柜台面", "surface"),
+                    ]
+                )
+            ],
+        }
+    )
+    groups = [
+        HeroGroup(
+            group_id=f"auto-g{index}",
+            name_zh=f"自动组合{index}",
+            entity_ids=[f"hero-{index}"],
+            dominant_source=EvidenceSource.CONFIRMATION,
+            member_evidence=[
+                GroupEvidence(
+                    entity_id=f"hero-{index}",
+                    source=EvidenceSource.CONFIRMATION,
+                    detail="technical closure",
+                )
+            ],
+            target_region_hint=hint,
+        )
+        for index, hint in enumerate(
+            ["书桌", "展示柜", "梳妆台", "墙上搁板", "斗柜"], start=1
+        )
+    ]
+
+    problem = build_layout_problem(groups, manifest)
+
+    expected = [
+        "auto_study_desk",
+        "auto_display_cabinet",
+        "auto_vanity",
+        "auto_wall_shelf",
+        "auto_chest_of_drawers",
+    ]
+    assert [problem.scores[(group.group_id, region_id)] for group, region_id in zip(groups, expected, strict=True)] == [10] * 5
+
+
 def test_task_cards_from_layout():
     manifest = RegionManifest.model_validate(MANIFEST)
     groups = _groups()

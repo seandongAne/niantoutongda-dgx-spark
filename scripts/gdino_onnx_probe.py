@@ -18,6 +18,7 @@ import resource
 import statistics
 import subprocess
 import time
+import traceback
 from pathlib import Path
 
 import numpy as np
@@ -67,6 +68,7 @@ def main() -> int:
     parser.add_argument("--warmup", type=int, default=5)
     parser.add_argument("--runs", type=int, default=20)
     parser.add_argument("--opset", type=int, default=17)
+    parser.add_argument("--exporter", choices=("dynamo", "legacy"), default="dynamo")
     parser.add_argument("--code-commit")
     args = parser.parse_args()
     if args.batch_size < 1 or args.warmup < 0 or args.runs < 1:
@@ -167,38 +169,8 @@ def main() -> int:
         pred_boxes=outputs[1].detach().float().cpu().numpy(),
     )
 
-    onnx_path = output_dir / "grounding_dino.onnx"
-    dynamic_axes = {
-        "pixel_values": {0: "batch", 2: "height", 3: "width"},
-        "input_ids": {0: "batch", 1: "text_length"},
-        "token_type_ids": {0: "batch", 1: "text_length"},
-        "attention_mask": {0: "batch", 1: "text_length"},
-        "pixel_mask": {0: "batch", 1: "height", 2: "width"},
-        "logits": {0: "batch", 2: "text_length"},
-        "pred_boxes": {0: "batch"},
-    }
-    export_started = time.perf_counter()
-    with torch.inference_mode():
-        torch.onnx.export(
-            wrapper,
-            positional_inputs,
-            onnx_path,
-            input_names=input_names,
-            output_names=["logits", "pred_boxes"],
-            dynamic_axes=dynamic_axes,
-            opset_version=args.opset,
-            do_constant_folding=True,
-            dynamo=False,
-        )
-    export_seconds = time.perf_counter() - export_started
-
-    import onnx
-
-    graph = onnx.load(str(onnx_path), load_external_data=False)
-    onnx.checker.check_model(graph)
-
     project = Path(__file__).resolve().parent.parent
-    manifest = {
+    baseline_manifest = {
         "schema_version": "1.0",
         "scope": "SF1-L2_TENSORRT_FEASIBILITY_ONLY",
         "created_at_unix": int(time.time()),
@@ -235,11 +207,71 @@ def main() -> int:
             "process_peak_rss_bytes": process_peak_rss_bytes,
             "samples_ms": timings_ms,
         },
+    }
+    (output_dir / "baseline_manifest.json").write_text(
+        json.dumps(baseline_manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    )
+
+    onnx_path = output_dir / "grounding_dino.onnx"
+    dynamic_axes = {
+        "pixel_values": {0: "batch", 2: "height", 3: "width"},
+        "input_ids": {0: "batch", 1: "text_length"},
+        "token_type_ids": {0: "batch", 1: "text_length"},
+        "attention_mask": {0: "batch", 1: "text_length"},
+        "pixel_mask": {0: "batch", 1: "height", 2: "width"},
+        "logits": {0: "batch", 2: "text_length"},
+        "pred_boxes": {0: "batch"},
+    }
+    export_started = time.perf_counter()
+    try:
+        export_options = {
+            "input_names": input_names,
+            "output_names": ["logits", "pred_boxes"],
+            "opset_version": args.opset,
+            "do_constant_folding": True,
+            "external_data": False,
+            "dynamo": args.exporter == "dynamo",
+        }
+        if args.exporter == "legacy":
+            export_options["dynamic_axes"] = dynamic_axes
+        with torch.inference_mode():
+            torch.onnx.export(
+                wrapper,
+                positional_inputs,
+                onnx_path,
+                **export_options,
+            )
+    except Exception as exc:
+        failure = {
+            "schema_version": "1.0",
+            "scope": "SF1-L2_TENSORRT_FEASIBILITY_ONLY",
+            "exporter": args.exporter,
+            "opset": args.opset,
+            "exception_type": type(exc).__name__,
+            "exception": str(exc),
+            "traceback": traceback.format_exc(),
+            "elapsed_seconds": time.perf_counter() - export_started,
+        }
+        (output_dir / "export_failure.json").write_text(
+            json.dumps(failure, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+        )
+        raise
+    export_seconds = time.perf_counter() - export_started
+
+    import onnx
+
+    graph = onnx.load(str(onnx_path), load_external_data=False)
+    onnx.checker.check_model(graph)
+
+    manifest = {
+        **baseline_manifest,
         "onnx": {
             "path": str(onnx_path),
             "sha256": _sha256(onnx_path),
             "size_bytes": onnx_path.stat().st_size,
             "opset": args.opset,
+            "exporter": args.exporter,
+            "dynamic_shapes": args.exporter == "legacy",
             "export_seconds": export_seconds,
             "checker_pass": True,
         },

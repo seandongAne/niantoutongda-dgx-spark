@@ -1,0 +1,253 @@
+{
+  "schema_version": "1.0",
+  "review_id": "hero-s1-space-codex-v1",
+  "source_video_id": "new_1",
+  "source_video_sha256": "fb7004841507c10fc95b283c190db0d887d232c281cb5a5400ad88943a2b84fe",
+  "source_spatial_normalized_hash": "8b4616b04f1ca1697f45652ac3cf3b4dec8256683f2fefd96678dce514067baa",
+  "reviewer_kind": "AGENT_VISUAL",
+  "reviewer_id": "codex-visual-agent",
+  "authorization_ref": "thread-user-authorization: visual agent adjudicates manual vision and region/anchor IDs first",
+  "expected_anchor_labels": [
+    "study_desk",
+    "vanity",
+    "wall_shelf",
+    "chest_of_drawers",
+    "display_cabinet"
+  ],
+  "decisions": [
+    {
+      "schema_version": "1.0",
+      "decision_id": "visual-study-desk-01",
+      "source_candidate_region_ids": [
+        "auto_study_desk_01"
+      ],
+      "source_track_ids": [
+        "new_1_t273"
+      ],
+      "operation": "KEEP_LABEL",
+      "status": "VISUALLY_ADJUDICATED",
+      "output_region_id": "study_desk",
+      "anchor": "study_desk",
+      "display_name_zh": "书桌面",
+      "support_type": "surface",
+      "capacity_class": "medium",
+      "power_state": "UNKNOWN",
+      "visual_instance_id": "new_1-study-desk-01",
+      "evidence": [
+        {
+          "schema_version": "1.0",
+          "video_id": "new_1",
+          "timestamp_ms": 54144,
+          "frame_ref": "results/acceptance/HERO_S1/space-visual-adjudication-v1/frames/kf_003240.jpg",
+          "frame_sha256": "49ef72d643521b5882abd3f45e6ac24033b0fb35dfa2e8085328b673752af2c3",
+          "bbox": [
+            121.128731,
+            356.512848,
+            1694.28479,
+            1076.427979
+          ]
+        }
+      ],
+      "power_evidence": [],
+      "reason_codes": [
+        "ANCHOR_VISIBLE_IN_REPRESENTATIVE_FRAME",
+        "TRACK_INSTANCE_CONFIRMED",
+        "POWER_OUTLET_ENDPOINT_NOT_VISIBLE"
+      ],
+      "note_zh": "完整书桌面清晰可见；A2 网格垫未作为冻结尺度。插座端点不可见，电源状态保持 UNKNOWN。"
+    },
+    {
+      "schema_version": "1.0",
+      "decision_id": "visual-vanity-top-01",
+      "source_candidate_region_ids": [
+        "auto_unknown_60"
+      ],
+      "source_track_ids": [
+        "new_1_t356"
+      ],
+      "operation": "RELABEL",
+      "status": "VISUALLY_ADJUDICATED",
+      "output_region_id": "vanity_top",
+      "anchor": "vanity",
+      "display_name_zh": "花布面桌台面",
+      "support_type": "surface",
+      "capacity_class": "medium",
+      "power_state": "NEAR",
+      "visual_instance_id": "new_1-floral-covered-surface-01",
+      "evidence": [
+        {
+          "schema_version": "1.0",
+          "video_id": "new_1",
+          "timestamp_ms": 71190,
+          "frame_ref": "results/acceptance/HERO_S1/space-visual-adjudication-v1/frames/kf_004260.jpg",
+          "frame_sha256": "b3dfc27a60cd5064efe6a48af52827b5a7b081818ebd01c9d6e9199e17eb3a18",
+          "bbox": [
+            301.282379,
+            818.542419,
+            1909.042725,
+            1076.973145
+          ]
+        }
+      ],
+      "power_evidence": [
+        {
+          "schema_version": "1.0",
+          "video_id": "new_1",
+          "timestamp_ms": 71190,
+          "frame_ref": "results/acceptance/HERO_S1/space-visual-adjudication-v1/frames/kf_004260.jpg",
+          "frame_sha256": "b3dfc27a60cd5064efe6a48af52827b5a7b081818ebd01c9d6e9199e17eb3a18",
+          "bbox": [
+            775.0,
+            545.0,
+            1450.0,
+            655.0
+          ]
+        }
+      ],
+      "reason_codes": [
+        "UNKNOWN_CANDIDATE_RELABELLED_FROM_TRACK",
+        "FLORAL_COVERED_SURFACE_VISIBLE",
+        "OUTLET_ROW_VISIBLE_IN_SAME_FRAME"
+      ],
+      "note_zh": "花布覆盖长台面的区域身份清晰；vanity 家具语义沿用冻结目标。插座排和已连接线缆在同帧直接可见。"
+    },
+    {
+      "schema_version": "1.0",
+      "decision_id": "visual-wall-shelf-01",
+      "source_candidate_region_ids": [
+        "auto_unknown_79"
+      ],
+      "source_track_ids": [
+        "new_1_t369"
+      ],
+      "operation": "RELABEL",
+      "status": "VISUALLY_ADJUDICATED",
+      "output_region_id": "wall_shelf",
+      "anchor": "wall_shelf",
+      "display_name_zh": "墙上木搁板",
+      "support_type": "shelf",
+      "capacity_class": "small",
+      "power_state": "NEAR",
+      "visual_instance_id": "new_1-wall-shelf-01",
+      "evidence": [
+        {
+          "schema_version": "1.0",
+          "video_id": "new_1",
+          "timestamp_ms": 71190,
+          "frame_ref": "results/acceptance/HERO_S1/space-visual-adjudication-v1/frames/kf_004260.jpg",
+          "frame_sha256": "b3dfc27a60cd5064efe6a48af52827b5a7b081818ebd01c9d6e9199e17eb3a18",
+          "bbox": [
+            690.8172,
+            320.918671,
+            1622.894531,
+            393.454437
+          ]
+        }
+      ],
+      "power_evidence": [
+        {
+          "schema_version": "1.0",
+          "video_id": "new_1",
+          "timestamp_ms": 71190,
+          "frame_ref": "results/acceptance/HERO_S1/space-visual-adjudication-v1/frames/kf_004260.jpg",
+          "frame_sha256": "b3dfc27a60cd5064efe6a48af52827b5a7b081818ebd01c9d6e9199e17eb3a18",
+          "bbox": [
+            775.0,
+            545.0,
+            1450.0,
+            655.0
+          ]
+        }
+      ],
+      "reason_codes": [
+        "UNKNOWN_CANDIDATE_RELABELLED_FROM_TRACK",
+        "WOODEN_SHELF_BODY_VISIBLE",
+        "GEOMETRICALLY_SEPARATE_FROM_VANITY_SURFACE",
+        "OUTLET_ROW_VISIBLE_BELOW_IN_SAME_FRAME"
+      ],
+      "note_zh": "t369 精确覆盖木搁板本体；未采用主要框住展示盒的 t370。与花布台面同帧且几何分离。"
+    },
+    {
+      "schema_version": "1.0",
+      "decision_id": "visual-chest-top-01",
+      "source_candidate_region_ids": [
+        "auto_unknown_98"
+      ],
+      "source_track_ids": [
+        "new_1_t415"
+      ],
+      "operation": "RELABEL",
+      "status": "VISUALLY_ADJUDICATED",
+      "output_region_id": "chest_top",
+      "anchor": "chest_of_drawers",
+      "display_name_zh": "红木斗柜台面",
+      "support_type": "surface",
+      "capacity_class": "medium",
+      "power_state": "UNKNOWN",
+      "visual_instance_id": "new_1-chest-of-drawers-01",
+      "evidence": [
+        {
+          "schema_version": "1.0",
+          "video_id": "new_1",
+          "timestamp_ms": 84224,
+          "frame_ref": "results/acceptance/HERO_S1/space-visual-adjudication-v1/frames/kf_005040.jpg",
+          "frame_sha256": "168aab9113dcb1e64090586af7e3c982393e2073d7f3c682c849efb7ab41280a",
+          "bbox": [
+            816.841064,
+            187.18718,
+            1571.335327,
+            1077.410522
+          ]
+        }
+      ],
+      "power_evidence": [],
+      "reason_codes": [
+        "UNKNOWN_CANDIDATE_RELABELLED_FROM_TRACK",
+        "CHEST_BODY_AND_TOP_VISIBLE",
+        "POWER_OUTLET_ENDPOINT_NOT_VISIBLE"
+      ],
+      "note_zh": "红木斗柜及台面清晰可见。咖啡机与线缆不能证明插座距离，电源状态保持 UNKNOWN。"
+    },
+    {
+      "schema_version": "1.0",
+      "decision_id": "visual-display-cabinet-01",
+      "source_candidate_region_ids": [
+        "auto_unknown_102"
+      ],
+      "source_track_ids": [
+        "new_1_t529"
+      ],
+      "operation": "RELABEL",
+      "status": "VISUALLY_ADJUDICATED",
+      "output_region_id": "display_cabinet",
+      "anchor": "display_cabinet",
+      "display_name_zh": "玻璃展示柜隔层",
+      "support_type": "shelf",
+      "capacity_class": "small",
+      "power_state": "UNKNOWN",
+      "visual_instance_id": "new_1-display-cabinet-01",
+      "evidence": [
+        {
+          "schema_version": "1.0",
+          "video_id": "new_1",
+          "timestamp_ms": 94251,
+          "frame_ref": "results/acceptance/HERO_S1/space-visual-adjudication-v1/frames/kf_005640.jpg",
+          "frame_sha256": "452033549566a85c9bc85d2ff437c0479b7df5c827f8b940f355000c275cb5aa",
+          "bbox": [
+            1035.288696,
+            295.375336,
+            1649.769897,
+            840.758057
+          ]
+        }
+      ],
+      "power_evidence": [],
+      "reason_codes": [
+        "UNKNOWN_CANDIDATE_RELABELLED_FROM_TRACK",
+        "RIBBED_GLASS_CABINET_VISIBLE",
+        "POWER_OUTLET_NOT_OBSERVED"
+      ],
+      "note_zh": "竖纹玻璃门柜和内部隔层可见；未看到插座不能证明 NOT_NEAR，电源状态保持 UNKNOWN。"
+    }
+  ]
+}

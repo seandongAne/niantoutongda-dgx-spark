@@ -102,8 +102,8 @@ stages:
 
   regions:
     enabled: true
-    # space.enabled=true 时主链强制改读 run/spatial/regions.json；本项只供
-    # 显式关闭 auto space 后的降级跑，绝不作为自动生产器输入。
+    source: auto
+    # 严格自动链只读 run/spatial/regions.json；不会回退到人工 fixture。
     manifest: fixtures/hero_s1/regions.target5.json
 
   group:

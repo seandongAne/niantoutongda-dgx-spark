@@ -1,9 +1,9 @@
-# 英雄任务技术闭环：可信库存主链 + 自动空间影子门。
+# 英雄任务技术闭环：可信库存主链 + 自动空间影子门 + 视觉裁定层。
 #
-# 自动空间使用真实 new_1 视频生成并已拉回的观测；shadow_only 只把空间
-# 阶段本身视为已完成，不改变五目标 gate verdict。gate 未通过时不会生成
-# regions.json，下游明确使用人工区域 fixture。严格自动替换仍由
-# hero_pipeline_s1_final.yaml 承担，只有五区全部 AUTO_ACCEPTED 才会继续。
+# 自动空间使用真实 new_1 视频生成并已拉回的观测；shadow_only 保留其
+# NEEDS_USER / 0 AUTO_ACCEPTED 原结论。独立 space_review 以帧 SHA、候选 ID、
+# track ID 和视觉几何裁定五个冻结目标，下游显式读取 VISUALLY_ADJUDICATED
+# 产物。严格自动替换仍由 hero_pipeline_s1_final.yaml 承担。
 run_dir: results/hero/s1-technical-closure
 trace_id: hero-s1-technical-closure
 python: .venv/bin/python
@@ -35,9 +35,18 @@ stages:
       - chest_of_drawers
       - display_cabinet
 
+  space_review:
+    enabled: true
+    review: fixtures/hero_s1/annotations/space_visual_adjudication.codex-v1.json
+    evidence_frames:
+      - results/acceptance/HERO_S1/space-visual-adjudication-v1/frames/kf_003240.jpg
+      - results/acceptance/HERO_S1/space-visual-adjudication-v1/frames/kf_004260.jpg
+      - results/acceptance/HERO_S1/space-visual-adjudication-v1/frames/kf_005040.jpg
+      - results/acceptance/HERO_S1/space-visual-adjudication-v1/frames/kf_005640.jpg
+
   regions:
     enabled: true
-    manifest: fixtures/hero_s1/regions.target5.json
+    source: visual_adjudication
 
   group:
     enabled: true

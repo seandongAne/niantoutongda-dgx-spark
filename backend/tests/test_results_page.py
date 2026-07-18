@@ -147,6 +147,19 @@ def _write_completion_summaries(run_dir: Path) -> None:
         },
     )
     _write_json(
+        run_dir / "spatial_review/metrics.json",
+        {
+            "gate_status": "PASS",
+            "decision_count": 5,
+            "visually_adjudicated_count": 5,
+            "projected_region_count": 5,
+            "needs_user_count": 0,
+            "power_state_counts": {"NEAR": 2, "UNKNOWN": 3},
+            "gate_reasons": [],
+            "giant_audit": "DO_NOT_RENDER_SPATIAL_REVIEW_AUDIT" * 100,
+        },
+    )
+    _write_json(
         run_dir / "risk/assessments.json",
         {
             "assessments": [
@@ -199,12 +212,15 @@ def test_results_page_renders_completion_summaries_and_escapes_all_text(tmp_path
     assert '<h2 id="trusted-inventory">可信库存' in page
     assert '<h2 id="boxlist">箱单' in page
     assert '<h2 id="automatic-space">自动空间' in page
+    assert '<h2 id="visual-space-review">视觉代理裁定' in page
     assert '<h2 id="risk-reminders">风险提醒' in page
     assert "3306" in page and "→" in page and "20" in page
     assert "3306 → 20" in page
     assert "上限 4" in page
     assert "placement 单元" in page and "物品覆盖" in page and "20/20" in page
     assert "候选区域" in page and "已投影" in page and "PASS" in page
+    assert "视觉接受" in page and "来源不会计入 AUTO_ACCEPTED" in page
+    assert "NEAR 2" in page and "UNKNOWN 3" in page
     assert "儿童可触及锐器" in page
     assert "通道绊倒风险" in page
     assert "潮湿区域用电" in page
@@ -232,6 +248,7 @@ def test_results_page_renders_completion_summaries_and_escapes_all_text(tmp_path
         "DO_NOT_RENDER_INVENTORY_AUDIT",
         "DO_NOT_RENDER_BOXLIST_AUDIT",
         "DO_NOT_RENDER_SPATIAL_AUDIT",
+        "DO_NOT_RENDER_SPATIAL_REVIEW_AUDIT",
         "DO_NOT_RENDER_RISK_EVIDENCE",
     ):
         assert marker not in page

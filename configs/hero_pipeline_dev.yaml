@@ -27,6 +27,7 @@ stages:
 
   regions:
     enabled: true
+    source: fixture
     manifest: fixtures/hero_dev/regions.json
 
   group:

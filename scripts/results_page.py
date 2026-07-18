@@ -203,6 +203,12 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
     spatial_metrics = (
         load_json(spatial_metrics_path, {}) if spatial_metrics_path.exists() else None
     )
+    spatial_review_metrics_path = run_dir / "spatial_review/metrics.json"
+    spatial_review_metrics = (
+        load_json(spatial_review_metrics_path, {})
+        if spatial_review_metrics_path.exists()
+        else None
+    )
 
     risk_assessments_path = run_dir / "risk/assessments.json"
     risk_metrics_path = run_dir / "risk/metrics.json"
@@ -544,6 +550,45 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
             f'</div>{reason_html}</div>'
         )
 
+    spatial_review_sec = ""
+    if isinstance(spatial_review_metrics, dict):
+        review_gate = spatial_review_metrics.get("gate_status", "NEEDS_USER")
+        review_kind = "success" if review_gate == "PASS" else "warning"
+        review_reasons = spatial_review_metrics.get("gate_reasons", [])
+        review_reasons = review_reasons if isinstance(review_reasons, list) else []
+        power_counts = spatial_review_metrics.get("power_state_counts", {})
+        power_counts = power_counts if isinstance(power_counts, dict) else {}
+        power_html = (
+            '<div class="dim">电源证据：'
+            f'NEAR {esc(power_counts.get("NEAR", 0))} / '
+            f'UNKNOWN {esc(power_counts.get("UNKNOWN", 0))} / '
+            f'NOT_NEAR {esc(power_counts.get("NOT_NEAR", 0))}</div>'
+            if power_counts
+            else ""
+        )
+        review_reason_html = (
+            '<div class="dim">裁定门原因：'
+            f'{esc("; ".join(str(item) for item in review_reasons[:4]))}</div>'
+            if review_reasons
+            else '<div class="dim">五个冻结目标均有逐帧视觉证据；来源不会计入 AUTO_ACCEPTED。</div>'
+        )
+        spatial_review_sec = (
+            '<h2 id="visual-space-review">视觉代理裁定 '
+            '<span class="note">独立覆盖层：保留候选、轨迹、帧 SHA 与裁定来源</span></h2>'
+            '<div class="panel"><div class="panel-head"><h3>视觉裁定门</h3>'
+            f'{chip(str(review_gate), review_kind)}</div>'
+            '<div class="summary-grid compact">'
+            '<div class="summary-card"><div class="summary-k">裁定条目</div>'
+            f'<div class="summary-v">{esc(spatial_review_metrics.get("decision_count", "—"))}</div></div>'
+            '<div class="summary-card"><div class="summary-k">视觉接受</div>'
+            f'<div class="summary-v">{esc(spatial_review_metrics.get("visually_adjudicated_count", "—"))}</div></div>'
+            '<div class="summary-card"><div class="summary-k">已投影</div>'
+            f'<div class="summary-v">{esc(spatial_review_metrics.get("projected_region_count", "—"))}</div></div>'
+            '<div class="summary-card"><div class="summary-k">待处理</div>'
+            f'<div class="summary-v">{esc(spatial_review_metrics.get("needs_user_count", "—"))}</div></div>'
+            f'</div>{review_reason_html}{power_html}</div>'
+        )
+
     risk_sec = ""
     if isinstance(risk_assessments, dict) and isinstance(risk_metrics, dict):
         assessment_rows = risk_assessments.get("assessments", [])
@@ -587,13 +632,19 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
             f'<div class="disclaimer">⚠ {esc(disclaimer)}</div></div>'
         )
 
-    completion_sections = inventory_sec + boxlist_sec + spatial_sec + risk_sec
+    completion_sections = (
+        inventory_sec + boxlist_sec + spatial_sec + spatial_review_sec + risk_sec
+    )
     optional_nav = "".join(
         link
         for section, link in (
             (inventory_sec, '<a href="#trusted-inventory">可信库存</a>'),
             (boxlist_sec, '<a href="#boxlist">箱单</a>'),
             (spatial_sec, '<a href="#automatic-space">自动空间</a>'),
+            (
+                spatial_review_sec,
+                '<a href="#visual-space-review">视觉裁定</a>',
+            ),
             (risk_sec, '<a href="#risk-reminders">风险提醒</a>'),
         )
         if section

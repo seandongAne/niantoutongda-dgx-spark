@@ -84,6 +84,7 @@ stages:
 
   regions:
     enabled: true
+    source: fixture
     manifest: fixtures/hero_s1/regions.json       # TODO 素材日:对照 new_1 登记
 
   group:

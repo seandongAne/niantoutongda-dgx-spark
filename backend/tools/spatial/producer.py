@@ -244,6 +244,7 @@ class SpatialCandidate(_SpatialContract):
     first_timestamp_ms: int | None = Field(default=None, ge=0)
     last_timestamp_ms: int | None = Field(default=None, ge=0)
     representative_bbox: tuple[float, float, float, float] | None = None
+    source_track_ids: list[str] = Field(default_factory=list)
     evidence_refs: list[str] = Field(default_factory=list)
     power_evidence_refs: list[str] = Field(default_factory=list)
     model_versions: list[str] = Field(default_factory=list)
@@ -563,6 +564,13 @@ def _aggregate_cluster(
         first_timestamp_ms=min(timestamps),
         last_timestamp_ms=max(timestamps),
         representative_bbox=_representative_bbox(observations),
+        source_track_ids=sorted(
+            {
+                observation.region_track_id
+                for observation in observations
+                if observation.region_track_id
+            }
+        ),
         evidence_refs=sorted(evidence),
         power_evidence_refs=power_refs,
         model_versions=sorted(

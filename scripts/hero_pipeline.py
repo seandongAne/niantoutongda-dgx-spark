@@ -44,6 +44,7 @@ STAGE_ORDER = [
     "naming",
     "narration",
     "space",
+    "space_review",
     "regions",
     "group",
     "layout",
@@ -64,6 +65,7 @@ class Stage:
     spark_cmd: str = ""
     inputs: list[Path] = field(default_factory=list)
     outputs: list[Path] = field(default_factory=list)
+    code_dependencies: list[Path] = field(default_factory=list)
     always_run: bool = False
 
     @property
@@ -72,8 +74,11 @@ class Stage:
 
     @property
     def code_paths(self) -> list[Path]:
-        """阶段脚本本身也是续跑判据的一部分;backend 模块改动请用 --from-stage。"""
-        return [Path(a) for a in self.argv if a.endswith(".py") and Path(a).exists()]
+        """阶段脚本与显式 backend 依赖均进入内容寻址续跑判据。"""
+        argv_paths = [
+            Path(a) for a in self.argv if a.endswith(".py") and Path(a).exists()
+        ]
+        return sorted({*argv_paths, *self.code_dependencies}, key=str)
 
 
 def _p(value: str) -> Path:
@@ -95,6 +100,7 @@ def build_stages(
     inventory_enabled = bool(sc("inventory").get("enabled"))
     space_enabled = bool(sc("space").get("enabled"))
     space_shadow_only = bool(space_enabled and sc("space").get("shadow_only"))
+    space_review_enabled = bool(sc("space_review").get("enabled"))
     trusted_inventory_mode = bool(
         sc("group").get("enabled")
         and sc("group").get("trusted_inventory")
@@ -245,15 +251,71 @@ def build_stages(
             argv=argv,
             inputs=[observations],
             outputs=outputs,
+            code_dependencies=[PROJ / "backend/tools/spatial/producer.py"],
+        )
+
+    if space_review_enabled:
+        if not space_enabled:
+            raise ValueError("space_review requires the automatic space stage")
+        c = sc("space_review")
+        review = _p(c["review"])
+        evidence_frames = [_p(path) for path in c.get("evidence_frames", [])]
+        out_dir = run / "spatial_review"
+        source_candidates = run / "spatial/candidate_manifest.json"
+        source_hash = run / "spatial/normalized.sha256"
+        stages["space_review"] = Stage(
+            "space_review",
+            "local",
+            argv=[
+                py,
+                str(PROJ / "scripts/space_adjudication_task.py"),
+                "--candidates",
+                str(source_candidates),
+                "--source-hash",
+                str(source_hash),
+                "--review",
+                str(review),
+                "--out-dir",
+                str(out_dir),
+            ],
+            inputs=[source_candidates, source_hash, review, *evidence_frames],
+            outputs=[
+                out_dir / "adjudication_manifest.json",
+                out_dir / "regions.json",
+                out_dir / "metrics.json",
+                out_dir / "normalized.sha256",
+            ],
+            code_dependencies=[PROJ / "backend/tools/spatial/adjudication.py"],
         )
 
     if sc("regions").get("enabled"):
         c = sc("regions")
-        src = (
-            run / "spatial/regions.json"
-            if space_enabled and not space_shadow_only
-            else _p(c["manifest"])
-        )
+        source = c.get("source")
+        if source is None:
+            # Backward-compatible default for old development fixtures. Hero
+            # production configs set this explicitly so an automatic failure
+            # can never silently fall through to a fixture.
+            source = "auto" if space_enabled and not space_shadow_only else "fixture"
+        if source == "auto":
+            if not space_enabled or space_shadow_only:
+                raise ValueError(
+                    "regions.source=auto requires non-shadow automatic space"
+                )
+            src = run / "spatial/regions.json"
+        elif source == "visual_adjudication":
+            if not space_review_enabled:
+                raise ValueError(
+                    "regions.source=visual_adjudication requires space_review"
+                )
+            src = run / "spatial_review/regions.json"
+        elif source == "fixture":
+            if not c.get("manifest"):
+                raise ValueError("regions.source=fixture requires manifest")
+            src = _p(c["manifest"])
+        else:
+            raise ValueError(
+                "regions.source must be auto, visual_adjudication, or fixture"
+            )
         out_dir = run / "regions"
         stages["regions"] = Stage(
             "regions", "local",
@@ -485,6 +547,8 @@ def build_stages(
             inputs.append(run / "group/boxlist.json")
         if space_enabled:
             inputs.append(run / "spatial/metrics.json")
+        if space_review_enabled:
+            inputs.append(run / "spatial_review/metrics.json")
         if sc("risk").get("enabled"):
             inputs.append(run / "risk/metrics.json")
         if sc("verify").get("enabled"):
@@ -731,7 +795,13 @@ def main() -> int:
             print(f"[{action:4}] {stage.name:<12} ({stage.kind}) {cmd[:100]}")
         return 0
 
-    for stage, action in plan:
+    for stage, planned_action in plan:
+        # 上游在本次运行中重写了产物时，计划阶段的 skip 可能已经过期。
+        # 执行到每一阶段前重新做一次内容寻址判断；若上游重跑但字节未变，
+        # 该阶段仍会保持 skip，保留“产物不变则下游不陪跑”的语义。
+        action = planned_action
+        if action == "skip" and not is_fresh(run, stage):
+            action = "run"
         if action == "skip":
             print(f"[skip] {stage.name}(输入未变,产物在盘)")
             continue

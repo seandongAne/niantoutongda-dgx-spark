@@ -8,6 +8,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 from scripts.hero_pipeline import STAGE_ORDER, build_stages
 
 PROJ = Path(__file__).resolve().parent.parent.parent
@@ -139,6 +141,7 @@ def test_build_stages_wires_trusted_inventory_auto_space_and_risk(tmp_path):
             },
             "regions": {
                 "enabled": True,
+                "source": "auto",
                 "manifest": str(manual_regions),
             },
             "group": {
@@ -256,6 +259,12 @@ def test_build_stages_wires_trusted_inventory_auto_space_and_risk(tmp_path):
     assert manual_regions not in regions.inputs
 
     cfg["stages"]["space"]["shadow_only"] = True
+    with pytest.raises(
+        ValueError, match="regions.source=auto requires non-shadow automatic space"
+    ):
+        build_stages(cfg, "PYTHON")
+
+    cfg["stages"]["regions"]["source"] = "fixture"
     shadow_stages = build_stages(cfg, "PYTHON")
     shadow_space = shadow_stages["space"]
     assert "--shadow-only" in shadow_space.argv
@@ -330,3 +339,69 @@ def test_build_stages_wires_trusted_inventory_auto_space_and_risk(tmp_path):
         run / "risk/metrics.json",
     ):
         assert expected in report_inputs
+
+
+def test_build_stages_wires_visual_space_adjudication_as_explicit_source(tmp_path):
+    run = tmp_path / "run"
+    observations = tmp_path / "observations.jsonl"
+    review = tmp_path / "visual-review.json"
+    frame = tmp_path / "frame.jpg"
+    cfg = {
+        "run_dir": str(run),
+        "stages": {
+            "space": {
+                "enabled": True,
+                "shadow_only": True,
+                "video_id": "new_1",
+                "observations": str(observations),
+            },
+            "space_review": {
+                "enabled": True,
+                "review": str(review),
+                "evidence_frames": [str(frame)],
+            },
+            "regions": {
+                "enabled": True,
+                "source": "visual_adjudication",
+            },
+            "report": {"enabled": True},
+            "bundle": {"enabled": False},
+        },
+    }
+
+    stages = build_stages(cfg, "PYTHON")
+
+    assert [name for name in STAGE_ORDER if name in stages] == [
+        "space", "space_review", "regions", "report"
+    ]
+    adjudication = stages["space_review"]
+    assert adjudication.inputs == [
+        run / "spatial/candidate_manifest.json",
+        run / "spatial/normalized.sha256",
+        review,
+        frame,
+    ]
+    assert adjudication.outputs == [
+        run / "spatial_review/adjudication_manifest.json",
+        run / "spatial_review/regions.json",
+        run / "spatial_review/metrics.json",
+        run / "spatial_review/normalized.sha256",
+    ]
+    assert stages["regions"].inputs == [run / "spatial_review/regions.json"]
+    assert run / "spatial_review/metrics.json" in stages["report"].inputs
+
+
+def test_visual_space_source_requires_review_stage(tmp_path):
+    cfg = {
+        "run_dir": str(tmp_path / "run"),
+        "stages": {
+            "regions": {
+                "enabled": True,
+                "source": "visual_adjudication",
+            },
+            "bundle": {"enabled": False},
+        },
+    }
+
+    with pytest.raises(ValueError, match="requires space_review"):
+        build_stages(cfg, "PYTHON")

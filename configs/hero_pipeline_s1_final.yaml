@@ -1,15 +1,16 @@
-# 英雄主链 · 最终工作点跑(AutoTune-v1 终选 m0.82-g0.00-o5 + SF1auto 投影)。
+# 英雄主链 · 技术闭环最终跑。
 #
 # 用法:
 #   .venv/bin/python scripts/hero_pipeline.py --config configs/hero_pipeline_s1_final.yaml
 #
-# 与 s1(W1)跑的差异:
-#   - reid 换 configs/reid_hero_s1_final.yaml,产物落 results/hero_s1/reid-final;
-#   - ingest / attributes 关闭:输入(视频/词表/ingest 产物)与 s1-w1 跑完全一致,
-#     spark 上 results/hero_s1/ingest 与 results/s5/attributes_hero_s1.jsonl 在盘且
-#     本地已拉回,重跑只烧时间(attributes 还要求 vLLM 服务在线);
-#   - 马克杯轻确认回填:reid-final 实体 ID 落定后写 fixtures/hero_s1/confirmations.json,
-#     再 --from-stage group 续跑(见 group 段注释)。
+# 数据边界:
+#   - 3306 个 raw ReID 实体只进入 inventory 审计层；下游只消费 20 个
+#     data-owner-confirmed 的稳定 hero_<canonical_id> 实体。
+#   - 3 个生活组合与 2 个技术装箱单元覆盖全部 20 项，layout/taskcards 消费
+#     placement_groups.jsonl，不再读取 raw 实体或 677 条原始澄清。
+#   - space_observe 从现有 new_1.mp4 自动产观测；space 五区门通过后才生成
+#     RegionManifest。regions.manifest 仅保留显式人工降级入口，自动路径不会读取它。
+#   - 真实摆放照片验收到最终验收阶段再开启；本配置不伪造 presence/compliance。
 run_dir: results/hero/s1-final
 trace_id: hero-s1-final
 python: .venv/bin/python
@@ -35,6 +36,27 @@ stages:
       --attributes results/s5/attributes_hero_s1.jsonl
       --out results/hero_s1/reid-final
 
+  space_observe:
+    enabled: true
+    # 104 秒现有新家视频；家具/插座为独立开放词汇，不含人工 region/anchor ID。
+    # ingest 中间帧与裁剪留在 Spark local-data，不经 SSH 回传；仅拉小型 JSON 产物。
+    spark_cmd: >-
+      source ~/venv/bin/activate && cd ~/proj &&
+      python scripts/ingest_task.py
+      --out local-data/hero_s1/space-ingest
+      --config-version hero-s1-space-v1
+      --vocab fixtures/hero_s1/space_vocab.json
+      --box-threshold 0.25
+      --tile-box-threshold 0.22
+      --frame-batch-size 2
+      --no-stationary-tiles
+      --videos new_1=local-data/hero_s1/new_1.mp4 &&
+      python scripts/space_observation_adapter.py
+      --ingest-dir local-data/hero_s1/space-ingest/new_1
+      --vocab fixtures/hero_s1/space_vocab.json
+      --out-dir results/hero_s1/space-auto
+      --video-id new_1
+
   pull:
     enabled: true
     cmd: [scripts/pull_results.sh]
@@ -43,35 +65,63 @@ stages:
       - results/hero_s1/reid-final/clarifications.jsonl
       - results/hero_s1/reid-final/metrics.json
       - results/s5/attributes_hero_s1.jsonl
+      - results/hero_s1/space-auto/auto_observations.jsonl
+      - results/hero_s1/space-auto/metrics.json
+      - results/hero_s1/space-auto/hashes.json
 
-  naming:
+  inventory:
     enabled: true
     entities: results/hero_s1/reid-final/entities.jsonl
-    attributes: results/s5/attributes_hero_s1.jsonl
-    clarifications: results/hero_s1/reid-final/clarifications.jsonl
-    tracklets_dir: results/hero_s1/ingest
+    items: fixtures/hero_s1/items.json
+    anchor_review: fixtures/hero_s1/annotations/anchor_review.confirmed.json
+    max_clarifications: 4
+
+  naming:
+    enabled: false   # inventory/display.jsonl 是唯一命名与实体白名单
 
   narration:
+    enabled: false   # 组合已由 data owner 最终确认并冻结在 technical_closure
+
+  space:
     enabled: true
-    transcript: fixtures/hero_s1/transcript.txt
-    audio_ref: local-data/hero_s1/narration.wav
+    video_id: new_1
+    observations: results/hero_s1/space-auto/auto_observations.jsonl
+    min_regions: 5
+    min_observations: 2
+    min_confidence: 0.75
+    min_hard_field_confidence: 0.70
+    min_power_confidence: 0.70
+    min_field_consensus: 0.67
+    dedupe_iou: 0.35
+    expected_anchor:
+      - study_desk
+      - vanity
+      - wall_shelf
+      - chest_of_drawers
+      - display_cabinet
 
   regions:
     enabled: true
+    # space.enabled=true 时主链强制改读 run/spatial/regions.json；本项只供
+    # 显式关闭 auto space 后的降级跑，绝不作为自动生产器输入。
     manifest: fixtures/hero_s1/regions.json
 
   group:
     enabled: true
-    config_version: group-v1
-    # 马克杯轻确认(2026-07-17 用户裁决):"杯子"组 = 马克杯+水壶+咖啡罐。
-    # 实体 ID 在 reid-final 首跑后目验定点(三 hero crop 均已人工核图)。
-    confirmations: fixtures/hero_s1/confirmations.json
+    trusted_inventory: true
+    closure: fixtures/hero_s1/technical_closure.json
 
   layout:
     enabled: true
 
   taskcards:
     enabled: true
+
+  risk:
+    enabled: true
+    closure: fixtures/hero_s1/technical_closure.json
+    # 当前无现场风险事实；三条规则将显式输出 NEEDS_USER，而非伪造“安全”。
+    facts: fixtures/hero_s1/risk_facts.pending.json
 
   verify:
     enabled: false                                # 验收照片到手后翻 true

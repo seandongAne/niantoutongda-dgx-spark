@@ -31,6 +31,44 @@ def test_dev_a_vocab_layers_and_aliases():
     assert vocab.match("lamp") == VocabMatch(None, None)  # night/table lamp 间仍有歧义
 
 
+def test_transcriber_reconciles_detector_vlm_and_multilingual_labels():
+    vocab = load_vocabulary(VOCAB_PATH)
+
+    exact = vocab.transcribe("smart speaker", "夜灯")
+    assert exact.match == VocabMatch("night_light", "lamp")
+    assert exact.confidence == 1.0
+    assert exact.status == "mapped"
+    assert len(exact.evidence) == 2
+
+    display_only = vocab.transcribe("夜灯")
+    assert display_only.match == VocabMatch("night_light", "lamp")
+    assert display_only.confidence == 0.95
+
+    compound = vocab.transcribe("detected smart speaker cylinder lamp")
+    assert compound.match == VocabMatch("night_light", "lamp")
+    assert compound.confidence == 0.8
+
+
+def test_transcriber_fails_closed_on_cross_source_conflict():
+    vocab = load_vocabulary(VOCAB_PATH)
+
+    result = vocab.transcribe("smart speaker", "table lamp")
+
+    assert result.match == VocabMatch(None, None)
+    assert result.confidence == 0.0
+    assert result.status == "conflict"
+
+    ambiguous_compound = vocab.transcribe(
+        "smart speaker", "smart speaker table lamp"
+    )
+    assert ambiguous_compound.match == VocabMatch(None, None)
+    assert ambiguous_compound.status == "conflict"
+    assert any(
+        item.startswith("ambiguous_compound_alias:")
+        for item in ambiguous_compound.evidence
+    )
+
+
 def test_compiler_separates_aliases_and_confusable_concepts():
     compiled = load_vocabulary(VOCAB_PATH).compile()
 

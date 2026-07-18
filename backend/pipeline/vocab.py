@@ -27,6 +27,12 @@ def normalize_label(value: str) -> str:
     return " ".join(re.sub(r"[^a-z0-9]+", " ", value.lower()).split())
 
 
+def normalize_display_label(value: str) -> str:
+    """Normalize multilingual display text without deleting CJK characters."""
+
+    return " ".join(re.sub(r"[\W_]+", " ", value.casefold(), flags=re.UNICODE).split())
+
+
 @dataclass(frozen=True)
 class VocabularyEntry:
     canonical_id: str
@@ -41,6 +47,21 @@ class VocabularyEntry:
 class VocabMatch:
     canonical_id: str | None
     category_id: str | None
+
+
+@dataclass(frozen=True)
+class VocabTranscription:
+    """Auditable reconciliation of detector and VLM label candidates."""
+
+    canonical_id: str | None
+    category_id: str | None
+    confidence: float
+    status: str
+    evidence: tuple[str, ...] = ()
+
+    @property
+    def match(self) -> VocabMatch:
+        return VocabMatch(self.canonical_id, self.category_id)
 
 
 @dataclass(frozen=True)
@@ -98,11 +119,15 @@ class Vocabulary:
 
         canonical_ids: set[str] = set()
         aliases: dict[str, VocabMatch] = {}
+        display_aliases: dict[str, set[VocabMatch]] = {}
         for entry in entries:
             if entry.canonical_id in canonical_ids:
                 raise ValueError(f"duplicate canonical_id in vocab: {entry.canonical_id}")
             canonical_ids.add(entry.canonical_id)
             match = VocabMatch(entry.canonical_id, entry.category_id)
+            display = normalize_display_label(entry.display_label_zh)
+            if display:
+                display_aliases.setdefault(display, set()).add(match)
             for prompt in entry.detection_prompts:
                 alias = normalize_label(prompt)
                 previous = aliases.get(alias)
@@ -119,6 +144,9 @@ class Vocabulary:
                 raise ValueError(f"canonical_id collides with a detection prompt: {entry.canonical_id}")
             aliases[key] = match
         self._aliases: Mapping[str, VocabMatch] = MappingProxyType(aliases)
+        self._display_aliases: Mapping[str, frozenset[VocabMatch]] = MappingProxyType(
+            {key: frozenset(value) for key, value in display_aliases.items()}
+        )
 
     @classmethod
     def from_json(cls, path: str | Path) -> "Vocabulary":
@@ -132,18 +160,100 @@ class Vocabulary:
         if exact is not None:
             return exact
 
+        hits = self._compound_matches(label)
+        if len(hits) == 1:
+            return next(iter(hits))
+        return VocabMatch(canonical_id=None, category_id=None)
+
+    def _compound_matches(self, normalized_label: str) -> frozenset[VocabMatch]:
+        if not normalized_label:
+            return frozenset()
         hits = {
             match
             for alias, match in self._aliases.items()
             if alias
             and (
-                re.search(rf"(?:^| ){re.escape(alias)}(?: |$)", label)
-                or re.search(rf"(?:^| ){re.escape(label)}(?: |$)", alias)
+                re.search(rf"(?:^| ){re.escape(alias)}(?: |$)", normalized_label)
+                or re.search(rf"(?:^| ){re.escape(normalized_label)}(?: |$)", alias)
             )
         }
-        if len(hits) == 1:
-            return next(iter(hits))
-        return VocabMatch(canonical_id=None, category_id=None)
+        return frozenset(hits)
+
+    def transcribe(self, *raw_labels: str | None) -> VocabTranscription:
+        """Reconcile detector/VLM names into one schema identity.
+
+        Exact detector aliases and canonical IDs are strongest.  Exact
+        multilingual display labels are accepted as schema evidence, while the
+        historical unique compound-label matcher remains a lower-confidence
+        fallback.  Conflicting candidates fail closed instead of silently
+        choosing one side.
+        """
+
+        candidates: dict[VocabMatch, tuple[float, list[str]]] = {}
+        ambiguous_evidence: list[str] = []
+        for raw in raw_labels:
+            if not isinstance(raw, str) or not raw.strip():
+                continue
+            value = raw.strip()
+            english = normalize_label(value)
+            display = normalize_display_label(value)
+            exact = self._aliases.get(english) if english else None
+            confidence = 1.0
+            source = "exact_alias"
+            if exact is None and display:
+                display_hits = self._display_aliases.get(display, frozenset())
+                if len(display_hits) == 1:
+                    exact = next(iter(display_hits))
+                    confidence = 0.95
+                    source = "exact_display_label"
+                elif len(display_hits) > 1:
+                    ambiguous_evidence.append(f"ambiguous_display_label:{value}")
+            if exact is None and english:
+                compound_hits = self._compound_matches(english)
+                if len(compound_hits) == 1:
+                    exact = next(iter(compound_hits))
+                    confidence = 0.80
+                    source = "unique_compound_alias"
+                elif len(compound_hits) > 1:
+                    ambiguous_evidence.append(f"ambiguous_compound_alias:{value}")
+            if exact is None:
+                continue
+            best, evidence = candidates.setdefault(exact, (confidence, []))
+            evidence.append(f"{source}:{value}")
+            candidates[exact] = (max(best, confidence), evidence)
+
+        if ambiguous_evidence:
+            evidence = tuple(
+                ambiguous_evidence
+                + [
+                    item
+                    for _, (_, items) in sorted(
+                        candidates.items(),
+                        key=lambda row: (row[0].category_id or "", row[0].canonical_id or ""),
+                    )
+                    for item in items
+                ]
+            )
+            return VocabTranscription(None, None, 0.0, "conflict", evidence)
+        if not candidates:
+            return VocabTranscription(None, None, 0.0, "unmapped")
+        if len(candidates) > 1:
+            evidence = tuple(
+                item
+                for _, (_, items) in sorted(
+                    candidates.items(), key=lambda row: (row[0].category_id or "", row[0].canonical_id or "")
+                )
+                for item in items
+            )
+            return VocabTranscription(None, None, 0.0, "conflict", evidence)
+        match, (confidence, evidence) = next(iter(candidates.items()))
+        return VocabTranscription(
+            match.canonical_id,
+            match.category_id,
+            confidence,
+            "mapped",
+            tuple(evidence),
+        )
 
     def compile(self, batch_size: int | None = None) -> CompiledPrompts:
         return compile_prompt_batches(self, batch_size=batch_size)

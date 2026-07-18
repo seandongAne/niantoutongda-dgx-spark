@@ -42,7 +42,8 @@ from backend.tools.spatial import (  # noqa: E402
 )
 
 CLASSIFIER_SCHEMA_VERSION = "1.0"
-CLASSIFIER_VERSION = "space-anchor-nemotron-v5"
+CLASSIFIER_VERSION = "space-anchor-nemotron-v6"
+MAIN_MAX_TOKENS = 700
 ANCHOR_CANDIDATES_FILENAME = "anchor_candidates.json"
 METRICS_FILENAME = "metrics.json"
 HASHES_FILENAME = "hashes.json"
@@ -479,7 +480,11 @@ class Client:
             image_bytes,
             prompt=self.prompt,
             schema=self.schema,
-            max_tokens=220,
+            # Nemotron sometimes expands the five scores into five nested
+            # objects.  The observed shape needs roughly 400 tokens; 220 cut
+            # valid JSON before the closing brace and looked like a parser
+            # failure.  Short compliant JSON still stops normally.
+            max_tokens=MAIN_MAX_TOKENS,
         )
 
     def chat_hard_fields(self, image_bytes: bytes) -> str:
@@ -843,7 +848,7 @@ def classify_one(
                         break
                 if prediction is None:
                     # Semantic classification succeeded, but the model ignored
-                    # both independent hard-field prompts.  Preserve the track
+                    # both hard-field attempts.  Preserve the track
                     # as an auditable candidate with UNKNOWN/zero hard fields;
                     # the assignment layer will reject every edge from it.
                     # This separates batch transport/parser failure from the

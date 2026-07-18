@@ -7,6 +7,8 @@ from PIL import Image
 
 from backend.tools.spatial import SpatialObservation
 from scripts.space_anchor_classifier import (
+    MAIN_MAX_TOKENS,
+    Client,
     TrackEvidence,
     _candidate_from_prediction,
     _expected_anchors,
@@ -60,6 +62,21 @@ def test_parallel_category_tracks_share_automatic_visual_instance():
 
     assert instances["t-a"] == instances["t-b"]
     assert instances["t-c"] != instances["t-a"]
+
+
+def test_main_vlm_budget_covers_observed_nested_response(monkeypatch):
+    client = Client("http://local", "nemotron-test", ["study_desk"], True)
+    captured = {}
+
+    def fake_chat(image_bytes, *, prompt, schema, max_tokens):
+        captured["max_tokens"] = max_tokens
+        return "{}"
+
+    monkeypatch.setattr(client, "_chat", fake_chat)
+    client.chat(b"image")
+
+    assert MAIN_MAX_TOKENS >= 500
+    assert captured["max_tokens"] == MAIN_MAX_TOKENS
 
 
 def test_contact_sheet_uses_automatic_frame_and_crop(tmp_path, monkeypatch):

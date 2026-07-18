@@ -23,6 +23,7 @@ from scripts.space_anchor_classifier import (
     parse_prediction,
     parse_anchor_prediction,
     parse_hard_field_prediction,
+    quarantine_low_information_prediction,
     semantic_visual_instance_ids,
 )
 
@@ -34,9 +35,10 @@ def _observation(
     *,
     timestamp: int = 0,
     anchor: str = "automatic_proposal",
+    video: str = "new",
 ) -> SpatialObservation:
     return SpatialObservation(
-        video_id="new",
+        video_id=video,
         timestamp_ms=timestamp,
         frame_ref=frame,
         bbox=bbox,
@@ -212,6 +214,123 @@ def test_semantic_consensus_merges_part_and_whole_tracks():
     assert instances["t-a"] == instances["t-b"]
 
 
+def test_strong_semantic_consensus_can_merge_long_gap_fragments():
+    grouped = {
+        "t-a": [
+            _observation("t-a", "a.jpg", (0, 0, 200, 100), timestamp=0),
+        ],
+        "t-b": [
+            _observation("t-b", "b.jpg", (0, 0, 200, 100), timestamp=67_000),
+        ],
+    }
+    prediction = {
+        "anchor_scores": {"chest_of_drawers": 95, "other": 5},
+        "anchor_max_scores": {"chest_of_drawers": 95, "other": 5},
+        "anchor_vote_counts": {"chest_of_drawers": 3, "other": 0},
+        "best_anchor": "chest_of_drawers",
+        "display_name_zh": "红棕色多抽屉柜",
+        "support_type": "surface",
+        "support_confidence": 90,
+        "capacity_class": "medium",
+        "capacity_confidence": 85,
+        "view_count": 3,
+    }
+    candidates = [
+        _candidate_from_prediction(
+            TrackEvidence(
+                track_id=track_id,
+                observations=tuple(grouped[track_id]),
+                prototype_refs=(),
+                hero_ref=None,
+                visual_instance_id=f"initial-{track_id}",
+            ),
+            prediction,
+            contact_ref=f"{track_id}.jpg",
+            contact_sha256="a" * 64,
+            model="nemotron-test",
+        )
+        for track_id in grouped
+    ]
+    embeddings = {
+        "t-a": TrackEmbedding(model="dino", vector=(1.0, 0.0)),
+        "t-b": TrackEmbedding(model="dino", vector=(0.6341, 0.7733)),
+    }
+
+    instances = semantic_visual_instance_ids(
+        grouped,
+        candidates,
+        {"t-a": "initial-a", "t-b": "initial-b"},
+        embeddings=embeddings,
+    )
+
+    assert instances["t-a"] == instances["t-b"]
+
+
+def test_long_gap_semantic_merge_requires_same_video_and_unanimous_votes():
+    def run(*, right_video: str, chest_votes: int) -> dict[str, str]:
+        grouped = {
+            "t-a": [
+                _observation("t-a", "a.jpg", (0, 0, 200, 100), timestamp=0),
+            ],
+            "t-b": [
+                _observation(
+                    "t-b",
+                    "b.jpg",
+                    (0, 0, 200, 100),
+                    timestamp=67_000,
+                    video=right_video,
+                ),
+            ],
+        }
+        prediction = {
+            "anchor_scores": {"chest_of_drawers": 90, "other": 10},
+            "anchor_max_scores": {"chest_of_drawers": 95, "other": 10},
+            "anchor_vote_counts": {
+                "chest_of_drawers": chest_votes,
+                "other": 3 - chest_votes,
+            },
+            "best_anchor": "chest_of_drawers",
+            "display_name_zh": "红棕色多抽屉柜",
+            "support_type": "surface",
+            "support_confidence": 90,
+            "capacity_class": "medium",
+            "capacity_confidence": 85,
+            "view_count": 3,
+        }
+        candidates = [
+            _candidate_from_prediction(
+                TrackEvidence(
+                    track_id=track_id,
+                    observations=tuple(grouped[track_id]),
+                    prototype_refs=(),
+                    hero_ref=None,
+                    visual_instance_id=f"initial-{track_id}",
+                ),
+                prediction,
+                contact_ref=f"{track_id}.jpg",
+                contact_sha256="b" * 64,
+                model="nemotron-test",
+            )
+            for track_id in grouped
+        ]
+        embeddings = {
+            track_id: TrackEmbedding(model="dino", vector=(1.0, 0.0))
+            for track_id in grouped
+        }
+        return semantic_visual_instance_ids(
+            grouped,
+            candidates,
+            {"t-a": "initial-a", "t-b": "initial-b"},
+            embeddings=embeddings,
+        )
+
+    cross_video = run(right_video="different", chest_votes=3)
+    split_vote = run(right_video="new", chest_votes=2)
+
+    assert cross_video["t-a"] != cross_video["t-b"]
+    assert split_vote["t-a"] != split_vote["t-b"]
+
+
 def test_main_vlm_budget_covers_observed_nested_response(monkeypatch):
     client = Client(
         "http://local",
@@ -333,8 +452,29 @@ def test_classification_views_are_independent_target_crops(tmp_path, monkeypatch
     views = build_classification_views(evidence)
 
     assert len(views) == 3
-    assert [Path(ref).name for _, ref in views] == refs
-    assert all(encoded.startswith(b"\xff\xd8") for encoded, _ in views)
+    assert [Path(ref).name for _, ref, _ in views] == refs
+    assert all(encoded.startswith(b"\xff\xd8") for encoded, _, _ in views)
+    assert all(target_pixels > 0 for _, _, target_pixels in views)
+
+
+def test_classification_fallback_reports_target_not_context_pixels(
+    tmp_path, monkeypatch
+):
+    frame = tmp_path / "kf_000010.jpg"
+    Image.new("RGB", (320, 180), (230, 230, 230)).save(frame)
+    monkeypatch.setattr("scripts.space_anchor_classifier.PROJ", tmp_path)
+    evidence = TrackEvidence(
+        track_id="t-a",
+        observations=(_observation("t-a", frame.name, (80, 40, 240, 150)),),
+        prototype_refs=(),
+        hero_ref=None,
+        visual_instance_id="auto_visual_x",
+    )
+
+    views = build_classification_views(evidence)
+
+    assert len(views) == 1
+    assert views[0][2] == 160 * 110
 
 
 def test_view_aggregation_uses_real_best_anchor_votes():
@@ -434,6 +574,29 @@ def test_thin_shelf_geometry_calibrates_one_narrow_support_to_small():
     assert projected["capacity_class"] == "small"
     assert projected["capacity_confidence"] == 85
     assert calibrations[0]["median_bbox_aspect_ratio"] == 10.0
+
+
+def test_low_information_quarantine_preserves_candidate_but_removes_votes():
+    prediction = {
+        "anchor_scores": {"vanity": 95, "wall_shelf": 0, "other": 0},
+        "anchor_max_scores": {"vanity": 95, "wall_shelf": 0, "other": 0},
+        "anchor_vote_counts": {"vanity": 3, "wall_shelf": 0, "other": 0},
+        "best_anchor": "vanity",
+        "display_name_zh": "数码钢琴",
+        "support_type": "surface",
+        "support_confidence": 95,
+        "capacity_class": "medium",
+        "capacity_confidence": 85,
+        "view_count": 3,
+    }
+
+    quarantined = quarantine_low_information_prediction(prediction)
+
+    assert quarantined["best_anchor"] == "other"
+    assert quarantined["anchor_vote_counts"]["vanity"] == 0
+    assert quarantined["anchor_scores"]["vanity"] == 0
+    assert quarantined["support_type"] == "unknown"
+    assert quarantined["capacity_class"] == "unknown"
 
 
 def test_strict_prediction_parser_and_candidate_projection():
@@ -687,3 +850,72 @@ def test_unresolved_hard_fields_are_preserved_but_assignment_ineligible(
     assert hypothesis.support_confidence == 0
     assert hypothesis.capacity_class is None
     assert hypothesis.capacity_confidence == 0
+
+
+def test_low_information_views_remain_diagnostic_but_cannot_be_assigned(
+    tmp_path, monkeypatch
+):
+    frame = tmp_path / "kf_000001.jpg"
+    tiny_a = tmp_path / "crop_000002.jpg"
+    tiny_b = tmp_path / "crop_000003.jpg"
+    Image.new("RGB", (320, 180), (230, 230, 230)).save(frame)
+    Image.new("RGB", (100, 100), (220, 220, 220)).save(tiny_a)
+    Image.new("RGB", (100, 100), (210, 210, 210)).save(tiny_b)
+    monkeypatch.setattr("scripts.space_anchor_classifier.PROJ", tmp_path)
+    raw = json.dumps(
+        {
+            "anchor_scores": {"vanity": 95, "other": 5},
+            "best_anchor": "vanity",
+            "display_name_zh": "数码钢琴",
+            "support_type": "surface",
+            "support_confidence": 95,
+            "capacity_class": "medium",
+            "capacity_confidence": 85,
+        }
+    )
+
+    class FakeClient:
+        anchors = ["vanity"]
+        model = "nemotron-test"
+        schema = {"type": "object"}
+        prompt = "classify the central target"
+        guided = True
+
+        def chat(self, image_bytes):
+            return raw
+
+        def chat_hard_fields(self, image_bytes):
+            raise AssertionError("hard-field repair should not run")
+
+    evidence = TrackEvidence(
+        track_id="t-small",
+        observations=(_observation("t-small", frame.name, (10, 10, 200, 150)),),
+        prototype_refs=(tiny_a.name, tiny_b.name),
+        hero_ref=None,
+        visual_instance_id="auto_visual_small",
+    )
+    candidate, diagnostic = classify_one(
+        FakeClient(),
+        evidence,
+        out_dir=tmp_path / "out",
+        evidence_dir=tmp_path / "evidence",
+        cache={},
+        cache_path=tmp_path / "cache.jsonl",
+        cache_lock=__import__("threading").Lock(),
+    )
+
+    assert candidate is not None
+    assert diagnostic["status"] == "LOW_INFORMATION_VIEWS"
+    assert diagnostic["valid_view_count"] == 3
+    assert diagnostic["informative_view_count"] == 1
+    assert diagnostic["raw_aggregate_prediction"]["best_anchor"] == "vanity"
+    assert [item["target_pixel_area"] for item in diagnostic["views"]] == [
+        10_000,
+        10_000,
+        26_600,
+    ]
+    hypothesis = candidate.anchor_hypotheses[0]
+    assert hypothesis.label_vote_count == 0
+    assert hypothesis.mean_confidence == 0
+    assert hypothesis.support_type is None
+    assert hypothesis.capacity_class is None

@@ -329,12 +329,15 @@ def _solve(
     edges: Sequence[_Edge],
     *,
     anchor_count: int,
-    excluded_edge: tuple[str, str] | None = None,
+    excluded_physical_edge: tuple[str, str] | None = None,
 ) -> _Solution:
     empty = _Solution(selected=(None,) * anchor_count, score_units=0)
     by_instance: dict[str, list[_Edge]] = {}
     for edge in edges:
-        if excluded_edge is not None and edge.key == excluded_edge:
+        if excluded_physical_edge is not None and (
+            edge.visual_instance_id,
+            edge.anchor,
+        ) == excluded_physical_edge:
             continue
         by_instance.setdefault(edge.visual_instance_id, []).append(edge)
 
@@ -660,7 +663,7 @@ def assign_automatic_anchors(
             alternative = _solve(
                 eligible_edges,
                 anchor_count=len(expected),
-                excluded_edge=edge.key,
+                excluded_physical_edge=(edge.visual_instance_id, edge.anchor),
             )
             alternate_by_edge[edge.key] = (
                 alternative if alternative.mask == complete_mask else None

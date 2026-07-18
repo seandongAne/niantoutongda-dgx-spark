@@ -142,6 +142,26 @@ def test_visual_instance_is_a_one_to_one_resource_across_parallel_candidates():
     assert result.runner_up_margin == 0.10
 
 
+def test_runner_up_excludes_same_physical_instance_siblings():
+    candidates = [
+        _candidate("candidate-a1", "same-instance", {"anchor_a": 0.90}),
+        _candidate("candidate-a2", "same-instance", {"anchor_a": 0.90}),
+        _candidate("candidate-b", "distinct-instance", {"anchor_a": 0.80}),
+    ]
+
+    result = assign_automatic_anchors(
+        ["anchor_a"],
+        candidates,
+        _score_only_config(min_margin=0.05),
+    )
+
+    assert result.gate_passed
+    assert result.assignments[0].candidate_id == "candidate-a1"
+    assert result.assignments[0].local_runner_up_candidate_id == "candidate-b"
+    assert result.assignments[0].runner_up_margin == 0.10
+    assert result.runner_up_margin == 0.10
+
+
 def test_equal_score_tie_is_deterministic_but_fails_margin_gate():
     candidates = [
         _candidate("candidate-z", "instance-z", {"anchor_a": 0.80}),

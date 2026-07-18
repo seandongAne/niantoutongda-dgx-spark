@@ -48,6 +48,10 @@ THIN_SHELF_CALIBRATION_VERSION = "thin-shelf-geometry-v1"
 MAIN_MAX_TOKENS = 700
 MAX_CLASSIFICATION_VIEWS = 3
 MIN_VALID_CLASSIFICATION_VIEWS = 2
+MIN_TARGET_VIEW_PIXELS = 20_000
+LONG_GAP_SEMANTIC_MAX_MS = 120_000
+LONG_GAP_SEMANTIC_MIN_COSINE = 0.60
+LONG_GAP_SEMANTIC_MIN_CONFIDENCE = 0.85
 ANCHOR_CANDIDATES_FILENAME = "anchor_candidates.json"
 METRICS_FILENAME = "metrics.json"
 HASHES_FILENAME = "hashes.json"
@@ -525,6 +529,7 @@ def semantic_visual_instance_ids(
             union.union(members[0], track_id)
 
     dominant: dict[str, tuple[str, str, str]] = {}
+    strong_consensus: set[str] = set()
     for candidate in candidates:
         if len(candidate.source_track_ids) != 1:
             continue
@@ -553,15 +558,23 @@ def semantic_visual_instance_ids(
             winner.support_type.value,
             winner.capacity_class.value,
         )
+        if (
+            winner.label_vote_count == candidate.semantic_observation_count
+            and winner.mean_confidence >= LONG_GAP_SEMANTIC_MIN_CONFIDENCE
+        ):
+            strong_consensus.add(track_id)
 
     frame_boxes: dict[str, dict[str, tuple[float, float, float, float]]] = {}
     rows: dict[str, list[SpatialObservation]] = {}
+    videos: dict[str, str] = {}
     for track_id in track_ids:
         track_rows = sorted(
             (item for item in grouped[track_id] if item.bbox is not None),
             key=lambda item: (item.timestamp_ms, item.frame_ref),
         )
         rows[track_id] = track_rows
+        video_values = {item.video_id for item in track_rows}
+        videos[track_id] = next(iter(video_values)) if len(video_values) == 1 else ""
         frame_boxes[track_id] = {
             item.frame_ref: item.bbox for item in track_rows if item.bbox is not None
         }
@@ -572,7 +585,12 @@ def semantic_visual_instance_ids(
         if left not in dominant:
             continue
         for right in track_ids[left_index + 1 :]:
-            if right not in dominant or dominant[left] != dominant[right]:
+            if (
+                right not in dominant
+                or dominant[left] != dominant[right]
+                or not videos[left]
+                or videos[left] != videos[right]
+            ):
                 continue
             shared = sorted(set(frame_boxes[left]) & set(frame_boxes[right]))
             if shared:
@@ -613,10 +631,16 @@ def semantic_visual_instance_ids(
                 gap = left_start - right_end
             else:
                 continue
-            if gap > max_gap_ms:
-                continue
             cosine = _embedding_cosine(embeddings.get(left), embeddings.get(right))
-            if cosine is not None and cosine >= 0.50:
+            if cosine is not None and (
+                (gap <= max_gap_ms and cosine >= 0.50)
+                or (
+                    gap <= LONG_GAP_SEMANTIC_MAX_MS
+                    and left in strong_consensus
+                    and right in strong_consensus
+                    and cosine >= LONG_GAP_SEMANTIC_MIN_COSINE
+                )
+            ):
                 semantic_edges.append((1, -cosine, left, right))
 
     def can_union(left: str, right: str) -> bool:
@@ -776,7 +800,7 @@ def build_contact_sheet(evidence: TrackEvidence) -> tuple[bytes, list[str]]:
 
 def build_classification_views(
     evidence: TrackEvidence,
-) -> list[tuple[bytes, str]]:
+) -> list[tuple[bytes, str, int]]:
     """Return up to three independent, target-only automatic crop views.
 
     Prototype crops are preferred because they contain the tracked proposal
@@ -785,7 +809,7 @@ def build_classification_views(
     prototype frames.
     """
 
-    views: list[tuple[bytes, str]] = []
+    views: list[tuple[bytes, str, int]] = []
     seen_refs: set[str] = set()
     for ref in evidence.prototype_refs:
         path = _resolve_path(ref)
@@ -793,10 +817,11 @@ def build_classification_views(
         if normalized in seen_refs or not path.exists():
             continue
         with Image.open(path) as opened:
+            target_pixels = opened.width * opened.height
             target = _letterbox(opened.convert("RGB"), (768, 768))
         buffer = io.BytesIO()
         target.save(buffer, format="JPEG", quality=92, optimize=True)
-        views.append((buffer.getvalue(), normalized))
+        views.append((buffer.getvalue(), normalized, target_pixels))
         seen_refs.add(normalized)
         if len(views) == MAX_CLASSIFICATION_VIEWS:
             return views
@@ -811,10 +836,12 @@ def build_classification_views(
             grounded = _context_crop_with_target(
                 opened.convert("RGB"), representative.bbox
             )
+        x1, y1, x2, y2 = representative.bbox
+        target_pixels = max(0, round(x2 - x1)) * max(0, round(y2 - y1))
         grounded = _letterbox(grounded, (768, 768))
         buffer = io.BytesIO()
         grounded.save(buffer, format="JPEG", quality=92, optimize=True)
-        views.append((buffer.getvalue(), normalized))
+        views.append((buffer.getvalue(), normalized, target_pixels))
     return views[:MAX_CLASSIFICATION_VIEWS]
 
 
@@ -1360,6 +1387,36 @@ def calibrate_prediction_geometry(
     return projected, calibrations
 
 
+def quarantine_low_information_prediction(
+    prediction: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Keep a diagnostic candidate while making every semantic edge ineligible."""
+
+    quarantined = dict(prediction)
+    score_keys = sorted(prediction["anchor_scores"])
+    quarantined["anchor_scores"] = {
+        key: 100 if key == "other" else 0 for key in score_keys
+    }
+    quarantined["anchor_max_scores"] = {
+        key: 100 if key == "other" else 0 for key in score_keys
+    }
+    quarantined["anchor_vote_counts"] = {
+        key: int(prediction["view_count"]) if key == "other" else 0
+        for key in score_keys
+    }
+    quarantined.update(
+        {
+            "best_anchor": "other",
+            "display_name_zh": "低信息自动候选",
+            "support_type": "unknown",
+            "support_confidence": 0,
+            "capacity_class": "unknown",
+            "capacity_confidence": 0,
+        }
+    )
+    return quarantined
+
+
 def _candidate_from_prediction(
     evidence: TrackEvidence,
     prediction: Mapping[str, Any],
@@ -1585,9 +1642,10 @@ def classify_one(
     contact_path.write_bytes(contact_bytes)
     view_rows: list[dict[str, Any]] = []
     predictions: list[dict[str, Any]] = []
+    informative_predictions: list[dict[str, Any]] = []
     view_evidence: list[tuple[str, str]] = []
     all_raw_responses: list[str] = []
-    for view_index, (image_bytes, source_ref) in enumerate(
+    for view_index, (image_bytes, source_ref, target_pixel_area) in enumerate(
         build_classification_views(evidence), 1
     ):
         view_path = evidence_dir / f"{evidence.track_id}.view-{view_index}.jpg"
@@ -1610,6 +1668,8 @@ def classify_one(
             {
                 "view_index": view_index,
                 "source_ref": source_ref,
+                "target_pixel_area": target_pixel_area,
+                "information_eligible": target_pixel_area >= MIN_TARGET_VIEW_PIXELS,
                 "evidence_ref": relative_view_ref,
                 "sha256": image_sha,
                 "cache_hit": cache_hit,
@@ -1625,13 +1685,27 @@ def classify_one(
             all_raw_responses.extend(raw_responses)
         if prediction is not None:
             predictions.append(prediction)
+            if target_pixel_area >= MIN_TARGET_VIEW_PIXELS:
+                informative_predictions.append(prediction)
             view_evidence.append((relative_view_ref, image_sha))
 
-    prediction = (
+    raw_aggregate_prediction = (
         aggregate_view_predictions(predictions, client.anchors)
         if len(predictions) >= MIN_VALID_CLASSIFICATION_VIEWS
         else None
     )
+    informative_view_count = len(informative_predictions)
+    prediction = (
+        aggregate_view_predictions(informative_predictions, client.anchors)
+        if informative_view_count >= MIN_VALID_CLASSIFICATION_VIEWS
+        else raw_aggregate_prediction
+    )
+    low_information = bool(
+        raw_aggregate_prediction is not None
+        and informative_view_count < MIN_VALID_CLASSIFICATION_VIEWS
+    )
+    if low_information and prediction is not None:
+        prediction = quarantine_low_information_prediction(prediction)
     hard_fields_unresolved = bool(
         prediction is not None
         and (
@@ -1651,15 +1725,21 @@ def classify_one(
         "source_refs": contact_sources,
         "requested_view_count": len(view_rows),
         "valid_view_count": len(predictions),
+        "informative_view_count": informative_view_count,
+        "minimum_target_view_pixels": MIN_TARGET_VIEW_PIXELS,
         "cache_hit": bool(view_rows) and all(item["cache_hit"] for item in view_rows),
         "views": view_rows,
         "status": (
-            "HARD_FIELDS_UNRESOLVED"
+            "LOW_INFORMATION_VIEWS"
+            if low_information
+            else "HARD_FIELDS_UNRESOLVED"
             if hard_fields_unresolved
             else "OK" if prediction is not None else "CLASSIFICATION_FAILED"
         ),
         "prediction": prediction,
     }
+    if low_information:
+        diagnostic["raw_aggregate_prediction"] = raw_aggregate_prediction
     if (prediction is None or hard_fields_unresolved) and all_raw_responses:
         diagnostic["response_excerpts"] = [
             item[-2000:] for item in all_raw_responses
@@ -1808,6 +1888,9 @@ def run_classifier(
     hard_field_unresolved = sum(
         item["status"] == "HARD_FIELDS_UNRESOLVED" for item in diagnostics
     )
+    low_information_tracks = sum(
+        item["status"] == "LOW_INFORMATION_VIEWS" for item in diagnostics
+    )
     requested_view_count = sum(
         int(item.get("requested_view_count", 0)) for item in diagnostics
     )
@@ -1855,6 +1938,8 @@ def run_classifier(
             hard_field_unresolved / len(evidence_rows) if evidence_rows else 1.0,
             8,
         ),
+        "low_information_track_count": low_information_tracks,
+        "minimum_target_view_pixels": MIN_TARGET_VIEW_PIXELS,
         "classification_vote_source": "INDEPENDENT_TARGET_CROPS",
         "minimum_valid_views_per_track": MIN_VALID_CLASSIFICATION_VIEWS,
         "maximum_views_per_track": MAX_CLASSIFICATION_VIEWS,

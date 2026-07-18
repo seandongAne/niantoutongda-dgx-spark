@@ -1,0 +1,110 @@
+{
+  "batch_size": 2,
+  "code_commit": "48df5f61",
+  "created_at_unix": 1784369335,
+  "export_compatibility": {
+    "bit_exact_on_frozen_inputs": true,
+    "site_packages_modified": false,
+    "special_token_mask_rewrite": "broadcast_amax_amin_v1"
+  },
+  "images": [
+    "/home/Developer/proj/local-data/ingest_a_v6/v1/keyframes/kf_000165.jpg",
+    "/home/Developer/proj/local-data/ingest_a_v6/v4/keyframes/kf_000165.jpg"
+  ],
+  "inputs": {
+    "attention_mask": {
+      "dtype": "torch.int64",
+      "shape": [
+        2,
+        12
+      ]
+    },
+    "input_ids": {
+      "dtype": "torch.int64",
+      "shape": [
+        2,
+        12
+      ]
+    },
+    "pixel_mask": {
+      "dtype": "torch.int64",
+      "shape": [
+        2,
+        1333,
+        750
+      ]
+    },
+    "pixel_values": {
+      "dtype": "torch.float32",
+      "shape": [
+        2,
+        3,
+        1333,
+        750
+      ]
+    },
+    "token_type_ids": {
+      "dtype": "torch.int64",
+      "shape": [
+        2,
+        12
+      ]
+    }
+  },
+  "model_dir": "/home/Developer/models/IDEA-Research__grounding-dino-base",
+  "onnx": {
+    "checker_pass": true,
+    "dynamic_shapes": false,
+    "export_seconds": 12.636961728101596,
+    "exporter": "legacy",
+    "opset": 17,
+    "path": "/home/Developer/proj/results/acceptance/SF1/trt-gdino-20260718-v5-static/grounding_dino.onnx",
+    "sha256": "50f7b973866027e8908d25166088c7520ed5a23159c94a1f0901060699623b8f",
+    "size_bytes": 964302030
+  },
+  "outputs": {
+    "logits": [
+      2,
+      900,
+      256
+    ],
+    "pred_boxes": [
+      2,
+      900,
+      4
+    ]
+  },
+  "platform": {
+    "cuda": "13.0",
+    "gpu": "NVIDIA GB10",
+    "machine": "aarch64",
+    "python": "3.12.3",
+    "torch": "2.13.0+cu130"
+  },
+  "prompt": "luggage. mini fridge. water bottle. desk.",
+  "pytorch_core": {
+    "mean_ms": 1212.5318603515625,
+    "p50_ms": 1212.5318603515625,
+    "p95_ms": 1212.5318603515625,
+    "peak_memory_bytes": 3707257856,
+    "process_peak_rss_bytes": 2208542720,
+    "runs": 1,
+    "samples_ms": [
+      1212.5318603515625
+    ],
+    "throughput_images_per_second": 1.6494411944112697,
+    "warmup": 0
+  },
+  "schema_version": "1.0",
+  "scope": "SF1-L2_TENSORRT_FEASIBILITY_ONLY",
+  "target_sizes": [
+    [
+      1920,
+      1080
+    ],
+    [
+      1920,
+      1080
+    ]
+  ]
+}

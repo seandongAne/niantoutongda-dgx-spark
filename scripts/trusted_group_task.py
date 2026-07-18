@@ -14,6 +14,12 @@ PROJ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJ))
 
 from backend.tools.trusted_downstream import build_trusted_downstream  # noqa: E402
+from backend.schemas.core import AgentHandoff, AgentRole  # noqa: E402
+from backend.tools.trace import (  # noqa: E402
+    finalize_message,
+    require_handoff,
+    write_fragment,
+)
 
 
 def _sha256(data: bytes) -> str:
@@ -104,7 +110,13 @@ def main() -> int:
     ap.add_argument("--inventory", required=True, type=Path)
     ap.add_argument("--display", required=True, type=Path)
     ap.add_argument("--out-dir", required=True, type=Path)
+    ap.add_argument("--trace-id")
+    ap.add_argument("--trace-parent", type=Path)
+    ap.add_argument("--trace-out", type=Path)
     args = ap.parse_args()
+    trace_args = (args.trace_id, args.trace_parent, args.trace_out)
+    if any(trace_args) and not all(trace_args):
+        ap.error("--trace-id, --trace-parent and --trace-out must be provided together")
 
     closure, closure_raw = _read_json(args.closure)
     inventory, inventory_raw = _read_jsonl(args.inventory)
@@ -120,10 +132,45 @@ def main() -> int:
         },
     )
 
+    handoff = None
+    if args.trace_out:
+        parent = require_handoff(args.trace_parent, "ENTITIES_READY")
+        placement_groups = [
+            json.loads(line)
+            for line in payloads["placement_groups.jsonl"].decode("utf-8").splitlines()
+            if line
+        ]
+        handoff = finalize_message(
+            AgentHandoff(
+                message_id=f"{args.trace_id}-groups-ready",
+                correlation_id=parent.correlation_id,
+                causation_id=parent.message_id,
+                producer=AgentRole.GROUP,
+                target=AgentRole.SPACE,
+                action="GROUPS_READY",
+                item_ids=[group["group_id"] for group in placement_groups],
+                artifact_refs=[
+                    str(args.out_dir / "groups.jsonl"),
+                    str(args.out_dir / "life_groups.jsonl"),
+                    str(args.out_dir / "placement_groups.jsonl"),
+                    str(args.out_dir / "independent_pack_items.jsonl"),
+                    str(args.out_dir / "boxlist.json"),
+                    str(args.out_dir / "metrics.json"),
+                ],
+                summary={
+                    "life_groups": 3,
+                    "placement_groups": 5,
+                    "trusted_entities": 20,
+                },
+            )
+        )
+
     # 全部合同校验和内存构建通过后才落盘，错误输入不留下半套可信产物。
     args.out_dir.mkdir(parents=True, exist_ok=True)
     for name, content in payloads.items():
         (args.out_dir / name).write_bytes(content)
+    if handoff is not None:
+        write_fragment(args.trace_out, [handoff])
     print(
         json.dumps(
             {

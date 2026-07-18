@@ -8,7 +8,15 @@ from pathlib import Path
 
 import pytest
 
+from backend.schemas.core import AgentHandoff, AgentRole
 from backend.schemas.hero_bundle import HeroGroup
+from backend.tools.trace import (
+    finalize_message,
+    load_trace,
+    require_handoff,
+    validate_trace,
+    write_fragment,
+)
 
 
 PROJ = Path(__file__).resolve().parent.parent.parent
@@ -66,9 +74,16 @@ def _fixture_inputs(tmp_path: Path) -> tuple[Path, Path, list[str]]:
     return inventory_path, display_path, canonical_ids
 
 
-def _run(inventory: Path, display: Path, out: Path):
-    return subprocess.run(
-        [
+def _run(
+    inventory: Path,
+    display: Path,
+    out: Path,
+    *,
+    trace_id: str | None = None,
+    trace_parent: Path | None = None,
+    trace_out: Path | None = None,
+):
+    argv = [
             sys.executable,
             str(SCRIPT),
             "--closure",
@@ -79,7 +94,15 @@ def _run(inventory: Path, display: Path, out: Path):
             str(display),
             "--out-dir",
             str(out),
-        ],
+        ]
+    if trace_id is not None:
+        argv += ["--trace-id", trace_id]
+    if trace_parent is not None:
+        argv += ["--trace-parent", str(trace_parent)]
+    if trace_out is not None:
+        argv += ["--trace-out", str(trace_out)]
+    return subprocess.run(
+        argv,
         cwd=PROJ,
         capture_output=True,
         text=True,
@@ -215,6 +238,93 @@ def test_outputs_and_hashes_are_byte_deterministic(tmp_path):
     assert metrics["placement_grouped_item_count"] == 20
     assert metrics["independent_item_count"] == 5
     assert metrics["covered_canonical_item_count"] == 20
+
+
+def test_inventory_to_group_trace_validates_and_business_bytes_stay_identical(tmp_path):
+    inventory, display, _ = _fixture_inputs(tmp_path)
+    plain_out = tmp_path / "plain"
+    traced_out = tmp_path / "traced"
+    assert _run(inventory, display, plain_out).returncode == 0
+
+    inventory_trace = tmp_path / "inventory-trace.jsonl"
+    trusted_entity_ids = sorted(
+        row.get("projected_entity_id") or row["entity"]["entity_id"]
+        for row in _read_jsonl(inventory)
+    )
+    parent = finalize_message(
+        AgentHandoff(
+            message_id="hero-trusted-entities-ready",
+            correlation_id="hero-trusted",
+            producer=AgentRole.MEM,
+            target=AgentRole.GROUP,
+            action="ENTITIES_READY",
+            item_ids=trusted_entity_ids,
+            artifact_refs=[str(inventory)],
+            summary={"trusted_inventory": 20},
+        )
+    )
+    write_fragment(inventory_trace, [parent])
+    group_trace = tmp_path / "group-trace.jsonl"
+    proc = _run(
+        inventory,
+        display,
+        traced_out,
+        trace_id="hero-trusted",
+        trace_parent=inventory_trace,
+        trace_out=group_trace,
+    )
+    assert proc.returncode == 0, proc.stderr
+
+    handoff = require_handoff(group_trace, "GROUPS_READY")
+    assert handoff.producer == AgentRole.GROUP
+    assert handoff.target == AgentRole.SPACE
+    assert handoff.causation_id == parent.message_id
+    assert handoff.correlation_id == parent.correlation_id
+    assert handoff.item_ids == [
+        "study_stationery",
+        "cups_and_drinks",
+        "toiletries_and_care",
+        "technical_toys_pack",
+        "technical_snacks_pack",
+    ]
+    assert handoff.artifact_refs == [
+        str(traced_out / "groups.jsonl"),
+        str(traced_out / "life_groups.jsonl"),
+        str(traced_out / "placement_groups.jsonl"),
+        str(traced_out / "independent_pack_items.jsonl"),
+        str(traced_out / "boxlist.json"),
+        str(traced_out / "metrics.json"),
+    ]
+    assert handoff.summary == {
+        "life_groups": 3,
+        "placement_groups": 5,
+        "trusted_entities": 20,
+    }
+    report = validate_trace(load_trace(inventory_trace) + load_trace(group_trace))
+    assert report["status"] == "PASS"
+    assert report["producer_counts"] == {"GROUP": 1, "MEM": 1}
+
+    # trace 参数只增加旁路 fragment，原五项业务产物及 metrics 均逐字节不变。
+    for name in (
+        "groups.jsonl",
+        "life_groups.jsonl",
+        "placement_groups.jsonl",
+        "independent_pack_items.jsonl",
+        "boxlist.json",
+        "metrics.json",
+    ):
+        assert (plain_out / name).read_bytes() == (traced_out / name).read_bytes()
+
+
+def test_trace_arguments_are_all_or_none(tmp_path):
+    inventory, display, _ = _fixture_inputs(tmp_path)
+    proc = _run(inventory, display, tmp_path / "out", trace_id="incomplete")
+    assert proc.returncode != 0
+    assert (
+        "--trace-id, --trace-parent and --trace-out must be provided together"
+        in proc.stderr
+    )
+    assert not (tmp_path / "out").exists()
 
 
 @pytest.mark.parametrize("mutation", ["duplicate", "missing", "extra", "ineligible"])

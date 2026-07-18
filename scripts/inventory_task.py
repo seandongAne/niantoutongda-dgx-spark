@@ -11,10 +11,12 @@ from pathlib import Path
 PROJ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJ))
 
+from backend.schemas.core import AgentHandoff, AgentRole  # noqa: E402
 from backend.tools.inventory import (  # noqa: E402
     project_inventory_files,
     write_inventory_projection,
 )
+from backend.tools.trace import finalize_message, write_fragment  # noqa: E402
 
 
 def main() -> int:
@@ -36,7 +38,11 @@ def main() -> int:
     )
     parser.add_argument("--out-dir", required=True, type=Path)
     parser.add_argument("--max-clarifications", type=int, default=4)
+    parser.add_argument("--trace-id")
+    parser.add_argument("--trace-out", type=Path)
     args = parser.parse_args()
+    if bool(args.trace_id) != bool(args.trace_out):
+        parser.error("--trace-id and --trace-out must be provided together")
 
     projection = project_inventory_files(
         entities_path=args.entities,
@@ -45,6 +51,35 @@ def main() -> int:
         max_clarifications=args.max_clarifications,
     )
     write_inventory_projection(projection, args.out_dir)
+    if args.trace_out:
+        message = finalize_message(
+            AgentHandoff(
+                message_id=f"{args.trace_id}-entities-ready",
+                correlation_id=args.trace_id,
+                producer=AgentRole.MEM,
+                target=AgentRole.GROUP,
+                action="ENTITIES_READY",
+                item_ids=[row["entity_id"] for row in projection.trusted_entities],
+                artifact_refs=[
+                    str(args.out_dir / "inventory.jsonl"),
+                    str(args.out_dir / "trusted_entities.jsonl"),
+                    str(args.out_dir / "display.jsonl"),
+                    str(args.out_dir / "clarifications.jsonl"),
+                    str(args.out_dir / "metrics.json"),
+                ],
+                summary={
+                    "raw_entities": projection.metrics["raw_entity_count"],
+                    "trusted_inventory": projection.metrics[
+                        "trusted_inventory_count"
+                    ],
+                    "clarifications": len(projection.clarifications),
+                    "raw_unresolved": projection.metrics[
+                        "raw_link_unresolved_count"
+                    ],
+                },
+            )
+        )
+        write_fragment(args.trace_out, [message])
     print(
         json.dumps(
             {

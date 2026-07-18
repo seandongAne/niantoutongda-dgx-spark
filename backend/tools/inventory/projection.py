@@ -121,6 +121,7 @@ def _validate_and_join(
 
     item_by_canonical = _unique_index(items, "canonical_id", "items")
     anchor_by_category = _unique_index(anchors, "category_id", "anchor review")
+    _unique_index(anchors, "anchor_id", "anchor review")
     if set(item_by_canonical) != set(anchor_by_category):
         missing_anchor = sorted(set(item_by_canonical) - set(anchor_by_category))
         missing_item = sorted(set(anchor_by_category) - set(item_by_canonical))
@@ -137,12 +138,18 @@ def _validate_and_join(
         confirmed = anchor.get("confirmed_tracklet_ids_by_video")
         if not isinstance(confirmed, dict):
             raise ValueError(f"{anchor_id} has no confirmed tracklet mapping")
+        anchor_tracklets: set[str] = set()
         for video_id, tracklet_ids in confirmed.items():
             if not isinstance(video_id, str) or not isinstance(tracklet_ids, list):
                 raise ValueError(f"{anchor_id} has malformed confirmed tracklets")
             for tracklet_id in tracklet_ids:
                 if not isinstance(tracklet_id, str) or not tracklet_id:
                     raise ValueError(f"{anchor_id} contains an invalid tracklet id")
+                if tracklet_id in anchor_tracklets:
+                    raise ValueError(
+                        f"{anchor_id} repeats confirmed tracklet {tracklet_id}"
+                    )
+                anchor_tracklets.add(tracklet_id)
                 previous = tracklet_owner.get(tracklet_id)
                 if previous is not None and previous != anchor_id:
                     raise ValueError(
@@ -150,6 +157,8 @@ def _validate_and_join(
                         f"{previous} and {anchor_id}"
                     )
                 tracklet_owner[tracklet_id] = anchor_id
+        if not anchor_tracklets:
+            raise ValueError(f"{anchor_id} has no data-owner-confirmed tracklets")
 
     joined = [
         (item, anchor_by_category[item["canonical_id"]]) for item in items

@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 from backend.schemas.core import ObjectEntity
+from backend.tools.trace import load_trace, require_handoff, validate_trace
 from backend.tools.inventory import (
     build_inventory_projection,
     project_inventory_files,
@@ -229,3 +230,106 @@ def test_inventory_cli_writes_all_audit_artifacts(tmp_path: Path):
         "manifest.json",
         "hashes.json",
     }
+
+
+def test_inventory_cli_trace_is_valid_and_does_not_change_projection_bytes(
+    tmp_path: Path,
+):
+    paths = _write_inputs(tmp_path)
+    plain_dir = tmp_path / "plain"
+    traced_dir = tmp_path / "traced"
+    trace_path = tmp_path / "trace" / "inventory.jsonl"
+    common = [
+        sys.executable,
+        "scripts/inventory_task.py",
+        "--entities",
+        str(paths["entities_path"]),
+        "--items",
+        str(paths["items_path"]),
+        "--anchor-review",
+        str(paths["anchor_review_path"]),
+    ]
+    subprocess.run(
+        [*common, "--out-dir", str(plain_dir)],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(
+        [
+            *common,
+            "--out-dir",
+            str(traced_dir),
+            "--trace-id",
+            "hero-inventory-test",
+            "--trace-out",
+            str(trace_path),
+        ],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    for name in (
+        "inventory.jsonl",
+        "trusted_entities.jsonl",
+        "display.jsonl",
+        "clarifications.jsonl",
+        "metrics.json",
+        "manifest.json",
+        "hashes.json",
+    ):
+        assert (plain_dir / name).read_bytes() == (traced_dir / name).read_bytes()
+
+    handoff = require_handoff(trace_path, "ENTITIES_READY")
+    expected_ids = [
+        f"hero_{row['canonical_id']}"
+        for row in _synthetic_inputs()[1]["items"]
+    ]
+    assert handoff.item_ids == expected_ids
+    assert len(handoff.item_ids) == 20
+    assert handoff.summary == {
+        "raw_entities": 20,
+        "trusted_inventory": 20,
+        "clarifications": 0,
+        "raw_unresolved": 0,
+    }
+    assert handoff.artifact_refs == [
+        str(traced_dir / "inventory.jsonl"),
+        str(traced_dir / "trusted_entities.jsonl"),
+        str(traced_dir / "display.jsonl"),
+        str(traced_dir / "clarifications.jsonl"),
+        str(traced_dir / "metrics.json"),
+    ]
+    report = validate_trace(load_trace(trace_path))
+    assert report["status"] == "PASS"
+    assert report["message_count"] == 1
+    assert report["clarifications"]["requests"] == 0
+
+
+def test_inventory_cli_requires_trace_arguments_as_a_pair(tmp_path: Path):
+    paths = _write_inputs(tmp_path)
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/inventory_task.py",
+            "--entities",
+            str(paths["entities_path"]),
+            "--items",
+            str(paths["items_path"]),
+            "--anchor-review",
+            str(paths["anchor_review_path"]),
+            "--out-dir",
+            str(tmp_path / "out"),
+            "--trace-id",
+            "missing-trace-out",
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert completed.returncode == 2
+    assert "--trace-id and --trace-out must be provided together" in completed.stderr

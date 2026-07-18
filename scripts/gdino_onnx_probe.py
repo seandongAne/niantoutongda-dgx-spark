@@ -69,6 +69,11 @@ def main() -> int:
     parser.add_argument("--runs", type=int, default=20)
     parser.add_argument("--opset", type=int, default=17)
     parser.add_argument("--exporter", choices=("dynamo", "legacy"), default="dynamo")
+    parser.add_argument(
+        "--static-shapes",
+        action="store_true",
+        help="Export the frozen benchmark shapes without dynamic axes for TensorRT.",
+    )
     parser.add_argument("--code-commit")
     args = parser.parse_args()
     if args.batch_size < 1 or args.warmup < 0 or args.runs < 1:
@@ -296,7 +301,7 @@ def main() -> int:
             "external_data": False,
             "dynamo": args.exporter == "dynamo",
         }
-        if args.exporter == "legacy":
+        if args.exporter == "legacy" and not args.static_shapes:
             export_options["dynamic_axes"] = dynamic_axes
         with torch.inference_mode():
             torch.onnx.export(
@@ -335,7 +340,7 @@ def main() -> int:
             "size_bytes": onnx_path.stat().st_size,
             "opset": args.opset,
             "exporter": args.exporter,
-            "dynamic_shapes": args.exporter == "legacy",
+            "dynamic_shapes": args.exporter == "legacy" and not args.static_shapes,
             "export_seconds": export_seconds,
             "checker_pass": True,
         },

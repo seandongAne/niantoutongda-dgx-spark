@@ -37,11 +37,14 @@
       "subject_ids": []
     }
   ],
-  "closure_id": "hero_s1_technical_closure_v1",
+  "blocking": false,
+  "closure_id": "hero_s1_technical_closure_v2",
+  "defer_reason_zh": "儿童触及、通道绊倒和湿区关系不能由当前空房视频可靠推导；规则引擎保留为已实现能力，但不作为本轮比赛技术闭环门。",
   "rule_order": [
     "CHILD_SHARP_TOOL_REACH",
     "TRIP_HAZARD_IN_PATH",
     "POWER_IN_WET_ZONE"
   ],
-  "schema_version": "1.0"
+  "schema_version": "1.0",
+  "scope_status": "DEFERRED"
 }

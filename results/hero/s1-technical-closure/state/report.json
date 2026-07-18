@@ -1,27 +1,28 @@
 {
   "cmd": ".venv/bin/python /Users/seandong/Documents/DGX Spark Thing/scripts/results_page.py --run-dir /Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure --config /Users/seandong/Documents/DGX Spark Thing/configs/hero_pipeline_s1_technical_closure.yaml",
   "code": {
-    "/Users/seandong/Documents/DGX Spark Thing/scripts/results_page.py": "78a351f8a3e1b65eeb2c1a9c98ce76e05b151d5b383f142da66973d531bb9a02"
+    "/Users/seandong/Documents/DGX Spark Thing/scripts/results_page.py": "06a6d4bfd9e4a78b8f6d0fbd774f2e1177139e53c8264f97bc53e7f5559793ad"
   },
-  "finished_at": "2026-07-18T02:48:17+00:00",
+  "finished_at": "2026-07-18T03:24:27+00:00",
   "inputs": {
-    "/Users/seandong/Documents/DGX Spark Thing/configs/hero_pipeline_s1_technical_closure.yaml": "fc3ed39e150a97764ff6f35c07a1f7070c5ca2adf49883e1395313324477fe92",
+    "/Users/seandong/Documents/DGX Spark Thing/configs/hero_pipeline_s1_technical_closure.yaml": "aba6632ff90ff7daa80718edcf7fa6d4cdcde0489f8368b72f1322ec3510e5c5",
+    "/Users/seandong/Documents/DGX Spark Thing/fixtures/hero_s1/technical_closure.json": "b818fa771470e8186a977794442b8de1dc70b5d560b094307bf76c670b4f11df",
     "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/audit/replay-report.json": "3bbf0cafa71a27232407028b541395f110d5d09a090be705df12bd52ce554a09",
-    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/group/boxlist.json": "49cf4135c8671a00161ebe453e0221d32a09bfe35db6cfc0afa0dadfbcd34fae",
-    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/group/placement_groups.jsonl": "9b87db0931c7d3e005d24d809da3c2aaaeb48d39aa9d2b2332a73b723fe934b6",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/group/boxlist.json": "b4df63cf543d06e57a467c025402ae70b81f8a0abd6563aa4f4158e0dc26dde6",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/group/placement_groups.jsonl": "9f3b5c04c1093442a7c970d8530492f3c1f8024ed73240bacffe41414abe69ff",
     "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/inventory/display.jsonl": "bf4af337fd92b3a8eac66d8f9b637d746a92ad2a8348027b1807128340e51fb3",
     "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/inventory/metrics.json": "702ffa3215590a40e0f5903300138b5a7469f8a2017af187fc9a6e38ac98c0b9",
     "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/layout/layout.json": "cc01880e7a4fa2c3eca6fdf0d125ccf710143e0d572bd88681f27cf58a27f730",
     "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/regions/regions.json": "f2cdc02530c3dd111016ef39fc1a73b82241cb2430f85f365caed734cbd0ef80",
-    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/risk/metrics.json": "153e803fb4461d72da7836c7f64d453dbfb244a5da9ea9b3f2ce7300a2e086a9",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/risk/metrics.json": "a450ad1c04512615f27fe43f75a515e884f18d6275a0a609975e7523b816045d",
     "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/spatial/metrics.json": "99cebeedd8af982d53689f29e7b05a4080e2e0459be195855e04dc379465434d",
     "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/spatial_review/metrics.json": "7d1cc4d089c3b7a7668a5460180ea3303479c992b0f182639b266a5ddd57df5f",
     "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/taskcards/taskcards.jsonl": "a59b1368a46118e8ab7d2ace30f9438d4b37151f3c1837e54a53a674352be263"
   },
   "outputs": {
-    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/index.html": "164dc0c2a7c6ac4b6fbaae4960cae9ca433aeed79899a12deba5d3a955ebdc5a"
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/index.html": "b1843038c6e7df7ce746ca8da85ba8ba2de679e7eafbaa340f1999477989557b"
   },
   "stage": "report",
-  "started_at": "2026-07-18T02:48:17+00:00",
+  "started_at": "2026-07-18T03:24:27+00:00",
   "status": "done"
 }

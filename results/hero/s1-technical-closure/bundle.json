@@ -1,9 +1,9 @@
 {
   "schema_version": "1.0",
   "bundle_id": "s1-technical-closure",
-  "created_at": "2026-07-18T02:49:30+00:00",
+  "created_at": "2026-07-18T03:25:22+00:00",
   "config_refs": {
-    "hero_pipeline_s1_technical_closure.yaml": "fc3ed39e150a97764ff6f35c07a1f7070c5ca2adf49883e1395313324477fe92"
+    "hero_pipeline_s1_technical_closure.yaml": "aba6632ff90ff7daa80718edcf7fa6d4cdcde0489f8368b72f1322ec3510e5c5"
   },
   "artifacts": [
     {
@@ -112,13 +112,13 @@
       "schema_version": "1.0",
       "stage": "group",
       "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/group/boxlist.json",
-      "sha256": "49cf4135c8671a00161ebe453e0221d32a09bfe35db6cfc0afa0dadfbcd34fae"
+      "sha256": "b4df63cf543d06e57a467c025402ae70b81f8a0abd6563aa4f4158e0dc26dde6"
     },
     {
       "schema_version": "1.0",
       "stage": "group",
       "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/group/groups.jsonl",
-      "sha256": "02eb6db7821962d49988741ea3688f3f03dd0c4f92d264171f52d95610f5c473"
+      "sha256": "aed98fb3bf9015efbf2d0711935539a71ac7b21f8b77f3d7762c844e3d41e97f"
     },
     {
       "schema_version": "1.0",
@@ -136,13 +136,13 @@
       "schema_version": "1.0",
       "stage": "group",
       "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/group/metrics.json",
-      "sha256": "54241668d7a74f0ace11e348a15bc32b8e01b0311f4b88a4949740b814453e5f"
+      "sha256": "c1a52386c138473551e8a6ce39cf385fd631ad5247c0c96b9cd2bedc94272413"
     },
     {
       "schema_version": "1.0",
       "stage": "group",
       "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/group/placement_groups.jsonl",
-      "sha256": "9b87db0931c7d3e005d24d809da3c2aaaeb48d39aa9d2b2332a73b723fe934b6"
+      "sha256": "9f3b5c04c1093442a7c970d8530492f3c1f8024ed73240bacffe41414abe69ff"
     },
     {
       "schema_version": "1.0",
@@ -190,13 +190,13 @@
       "schema_version": "1.0",
       "stage": "risk",
       "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/risk/assessments.json",
-      "sha256": "2abd2a009d1b5d2eac85c83bc704be08b1d09a6f5fc928119bb69c70e6c3cd83"
+      "sha256": "9f51368b722f7bf64b4ce16f964fe69c07f09cb232cc04c6274b64fd4eab3190"
     },
     {
       "schema_version": "1.0",
       "stage": "risk",
       "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/risk/metrics.json",
-      "sha256": "153e803fb4461d72da7836c7f64d453dbfb244a5da9ea9b3f2ce7300a2e086a9"
+      "sha256": "a450ad1c04512615f27fe43f75a515e884f18d6275a0a609975e7523b816045d"
     },
     {
       "schema_version": "1.0",
@@ -214,7 +214,7 @@
       "schema_version": "1.0",
       "stage": "report",
       "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/index.html",
-      "sha256": "164dc0c2a7c6ac4b6fbaae4960cae9ca433aeed79899a12deba5d3a955ebdc5a"
+      "sha256": "b1843038c6e7df7ce746ca8da85ba8ba2de679e7eafbaa340f1999477989557b"
     }
   ],
   "notes": ""

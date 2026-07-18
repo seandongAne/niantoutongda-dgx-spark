@@ -248,6 +248,12 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
     spatial_metrics = (
         load_json(spatial_metrics_path, {}) if spatial_metrics_path.exists() else None
     )
+    spatial_score_metrics_path = run_dir / "spatial_score/metrics.json"
+    spatial_score_metrics = (
+        load_json(spatial_score_metrics_path, {})
+        if spatial_score_metrics_path.exists()
+        else None
+    )
     spatial_review_metrics_path = run_dir / "spatial_review/metrics.json"
     spatial_review_metrics = (
         load_json(spatial_review_metrics_path, {})
@@ -579,7 +585,7 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
         )
         spatial_sec = (
             '<h2 id="automatic-space">自动空间 '
-            '<span class="note">自动观测跨帧去重后，可信候选才投影至布局区域</span></h2>'
+            '<span class="note">Nemotron 视觉假设经全局一对一门后，才投影至布局区域</span></h2>'
             '<div class="panel"><div class="panel-head"><h3>空间生产门</h3>'
             f'{chip(str(gate_status), gate_kind)}</div>'
             '<div class="summary-grid compact">'
@@ -593,6 +599,36 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
             f'<div class="summary-v small">{esc(spatial_metrics.get("needs_user_count", "—"))} / '
             f'{esc(spatial_metrics.get("not_observed_count", "—"))}</div></div>'
             f'</div>{reason_html}</div>'
+        )
+
+    spatial_score_sec = ""
+    if isinstance(spatial_score_metrics, dict):
+        score_passed = spatial_score_metrics.get("acceptance_passed") is True
+        score_reasons = spatial_score_metrics.get("gate_reasons", [])
+        score_reasons = score_reasons if isinstance(score_reasons, list) else []
+        score_reason_html = (
+            '<div class="dim">评分门原因：'
+            f'{esc("; ".join(str(item) for item in score_reasons[:4]))}</div>'
+            if score_reasons
+            else '<div class="dim">五类 anchor、support 与相对容量均匹配；零额外预测。</div>'
+        )
+        spatial_score_sec = (
+            '<h2 id="automatic-space-score">独立空间评分 '
+            '<span class="note">语义真值不含 prediction/track/region ID，只评分且不产出 regions</span></h2>'
+            '<div class="panel"><div class="panel-head"><h3>冻结语义门</h3>'
+            f'{chip("PASS" if score_passed else "FAIL", "success" if score_passed else "danger")}</div>'
+            '<div class="summary-grid compact">'
+            '<div class="summary-card"><div class="summary-k">精确语义分</div>'
+            f'<div class="summary-v">{esc(spatial_score_metrics.get("score", "—"))}</div></div>'
+            '<div class="summary-card"><div class="summary-k">匹配 anchor</div>'
+            f'<div class="summary-v">{esc(spatial_score_metrics.get("matched_anchor_count", "—"))}</div></div>'
+            '<div class="summary-card"><div class="summary-k">额外预测</div>'
+            f'<div class="summary-v">{esc(spatial_score_metrics.get("extra_prediction_count", "—"))}</div></div>'
+            '<div class="summary-card"><div class="summary-k">support / 容量不符</div>'
+            f'<div class="summary-v small">{esc(spatial_score_metrics.get("support_type_mismatch_count", "—"))} / '
+            f'{esc(spatial_score_metrics.get("capacity_class_mismatch_count", "—"))}</div></div>'
+            f'</div>{score_reason_html}'
+            '<div class="dim">电源差异仅作信息记录，不作为空房视频的安全结论。</div></div>'
         )
 
     spatial_review_sec = ""
@@ -728,6 +764,7 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
         + inventory_sec
         + boxlist_sec
         + spatial_sec
+        + spatial_score_sec
         + spatial_review_sec
         + risk_sec
     )
@@ -738,6 +775,10 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
             (inventory_sec, '<a href="#trusted-inventory">可信库存</a>'),
             (boxlist_sec, '<a href="#boxlist">箱单</a>'),
             (spatial_sec, '<a href="#automatic-space">自动空间</a>'),
+            (
+                spatial_score_sec,
+                '<a href="#automatic-space-score">空间评分</a>',
+            ),
             (
                 spatial_review_sec,
                 '<a href="#visual-space-review">视觉裁定</a>',

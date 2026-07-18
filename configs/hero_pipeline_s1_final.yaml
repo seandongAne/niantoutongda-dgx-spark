@@ -8,8 +8,9 @@
 #     data-owner-confirmed 的稳定 hero_<canonical_id> 实体。
 #   - 3 个生活组合与 2 个技术装箱单元覆盖全部 20 项，layout/taskcards 消费
 #     placement_groups.jsonl，不再读取 raw 实体或 677 条原始澄清。
-#   - space_observe 从现有 new_1.mp4 自动产观测；space 五区门通过后才生成
-#     RegionManifest。regions.manifest 仅保留显式人工降级入口，自动路径不会读取它。
+#   - space_observe 从现有 new_1.mp4 自动产观测，并由 Spark-local Nemotron VLM
+#     生成通用 anchor 假设；space 以全局一对一门选出恰好五区后才生成
+#     RegionManifest。人工视觉只在独立 scorer 真值侧出现，不进入生产器。
 #   - 真实摆放照片只用于可选的物理执行复核，不是本轮技术闭环门；本配置不伪造
 #     presence/compliance。
 run_dir: results/hero/s1-final
@@ -56,10 +57,24 @@ stages:
       --ingest-dir local-data/hero_s1/space-ingest/new_1
       --vocab fixtures/hero_s1/space_vocab.json
       --out-dir results/hero_s1/space-auto
-      --video-id new_1
+      --video-id new_1 &&
+      curl -fsS http://127.0.0.1:8000/v1/models >/dev/null &&
+      python scripts/space_anchor_classifier.py
+      --observations results/hero_s1/space-auto/auto_observations.jsonl
+      --ingest-dir local-data/hero_s1/space-ingest/new_1
+      --out-dir results/hero_s1/space-anchor
+      --evidence-dir local-data/hero_s1/space-anchor-evidence
+      --expected-anchor study_desk
+      --expected-anchor vanity
+      --expected-anchor wall_shelf
+      --expected-anchor chest_of_drawers
+      --expected-anchor display_cabinet
+      --concurrency 8
 
   pull:
     enabled: true
+    # space_observe 每次重跑后必须拉取同一批新产物，禁止沿用旧本地观测。
+    always_run: true
     cmd: [scripts/pull_results.sh]
     local_outputs:
       - results/hero_s1/reid-final/entities.jsonl
@@ -69,6 +84,9 @@ stages:
       - results/hero_s1/space-auto/auto_observations.jsonl
       - results/hero_s1/space-auto/metrics.json
       - results/hero_s1/space-auto/hashes.json
+      - results/hero_s1/space-anchor/anchor_candidates.json
+      - results/hero_s1/space-anchor/metrics.json
+      - results/hero_s1/space-anchor/hashes.json
 
   inventory:
     enabled: true
@@ -87,6 +105,9 @@ stages:
     enabled: true
     video_id: new_1
     observations: results/hero_s1/space-auto/auto_observations.jsonl
+    observation_hashes: results/hero_s1/space-auto/hashes.json
+    anchor_candidates: results/hero_s1/space-anchor/anchor_candidates.json
+    anchor_hashes: results/hero_s1/space-anchor/hashes.json
     min_regions: 5
     min_observations: 2
     min_confidence: 0.75
@@ -94,6 +115,10 @@ stages:
     min_power_confidence: 0.70
     min_field_consensus: 0.67
     dedupe_iou: 0.35
+    min_anchor_vote_share: 0.60
+    min_vlm_mean_confidence: 0.50
+    min_assignment_score: 0.70
+    min_assignment_margin: 0.05
     expected_anchor:
       - study_desk
       - vanity
@@ -101,11 +126,16 @@ stages:
       - chest_of_drawers
       - display_cabinet
 
+  space_score:
+    enabled: true
+    # 语义真值无 candidate/track/region ID；只评分，永不生成或改写 regions。
+    truth: fixtures/hero_s1/space_truth.semantic-v1.json
+    required_expected_anchor_count: 5
+
   regions:
     enabled: true
     source: auto
-    # 严格自动链只读 run/spatial/regions.json；不会回退到人工 fixture。
-    manifest: fixtures/hero_s1/regions.target5.json
+    # 严格自动链只读 run/spatial/regions.json；配置层禁止同时出现 manifest。
 
   group:
     enabled: true

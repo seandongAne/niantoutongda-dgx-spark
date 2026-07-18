@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts.hero_pipeline import STAGE_ORDER, build_stages
 
@@ -142,7 +143,6 @@ def test_build_stages_wires_trusted_inventory_auto_space_and_risk(tmp_path):
             "regions": {
                 "enabled": True,
                 "source": "auto",
-                "manifest": str(manual_regions),
             },
             "group": {
                 "enabled": True,
@@ -265,6 +265,7 @@ def test_build_stages_wires_trusted_inventory_auto_space_and_risk(tmp_path):
         build_stages(cfg, "PYTHON")
 
     cfg["stages"]["regions"]["source"] = "fixture"
+    cfg["stages"]["regions"]["manifest"] = str(manual_regions)
     shadow_stages = build_stages(cfg, "PYTHON")
     shadow_space = shadow_stages["space"]
     assert "--shadow-only" in shadow_space.argv
@@ -406,3 +407,97 @@ def test_visual_space_source_requires_review_stage(tmp_path):
 
     with pytest.raises(ValueError, match="requires space_review"):
         build_stages(cfg, "PYTHON")
+
+
+def test_space_score_is_independent_sidecar_and_never_produces_regions(tmp_path):
+    run = tmp_path / "run"
+    observations = tmp_path / "observations.jsonl"
+    truth = tmp_path / "semantic-truth.json"
+    cfg = {
+        "run_dir": str(run),
+        "stages": {
+            "space": {
+                "enabled": True,
+                "video_id": "new_1",
+                "observations": str(observations),
+                "expected_anchor": ["a", "b", "c", "d", "e"],
+            },
+            "space_score": {
+                "enabled": True,
+                "truth": str(truth),
+                "required_expected_anchor_count": 5,
+            },
+            "regions": {"enabled": True, "source": "auto"},
+            "bundle": {"enabled": False},
+        },
+    }
+
+    stages = build_stages(cfg, "PYTHON")
+
+    assert [name for name in STAGE_ORDER if name in stages] == [
+        "space",
+        "space_score",
+        "regions",
+    ]
+    score = stages["space_score"]
+    assert score.inputs == [run / "spatial/regions.json", truth]
+    assert score.outputs == [
+        run / "spatial_score/score_manifest.json",
+        run / "spatial_score/metrics.json",
+        run / "spatial_score/normalized.sha256",
+    ]
+    assert all(path.name != "regions.json" for path in score.outputs)
+    assert stages["regions"].inputs == [run / "spatial/regions.json"]
+    assert not any("spatial_score" in str(path) for path in stages["regions"].inputs)
+
+
+def test_auto_region_source_forbids_parallel_manual_manifest(tmp_path):
+    cfg = {
+        "run_dir": str(tmp_path / "run"),
+        "stages": {
+            "space": {
+                "enabled": True,
+                "video_id": "new_1",
+                "observations": str(tmp_path / "observations.jsonl"),
+            },
+            "regions": {
+                "enabled": True,
+                "source": "auto",
+                "manifest": str(tmp_path / "manual.json"),
+            },
+            "bundle": {"enabled": False},
+        },
+    }
+
+    with pytest.raises(ValueError, match="source=auto forbids manifest"):
+        build_stages(cfg, "PYTHON")
+
+
+def test_final_config_is_strict_auto_with_fresh_pull_and_semantic_score():
+    config_path = PROJ / "configs/hero_pipeline_s1_final.yaml"
+    cfg = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    stages = build_stages(cfg, ".venv/bin/python", config_path=config_path)
+
+    space = stages["space"]
+    regions = stages["regions"]
+    score = stages["space_score"]
+    assert "--shadow-only" not in space.argv
+    assert "--anchor-candidates" in space.argv
+    assert "--anchor-hashes" in space.argv
+    assert "--observation-hashes" in space.argv
+    run_path = Path(cfg["run_dir"])
+    expected_spatial = PROJ / run_path / "spatial/regions.json"
+    assert regions.inputs == [expected_spatial]
+    assert score.inputs[0] == expected_spatial
+    assert all(path.name != "regions.json" for path in score.outputs)
+    assert stages["pull"].always_run is True
+    assert "space_review" not in stages
+    forbidden = (
+        "space_visual_adjudication",
+        "regions.target5",
+        "spatial_review/regions.json",
+    )
+    production_text = "\n".join(
+        [*space.argv, *map(str, regions.inputs), *regions.argv]
+    )
+    assert not any(value in production_text for value in forbidden)

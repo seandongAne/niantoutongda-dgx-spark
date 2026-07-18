@@ -6,6 +6,7 @@ from pydantic import ValidationError
 from scripts.space_task import build_parser, main as space_task_main
 
 from backend.tools.spatial import (
+    AnchorAssignmentConfig,
     CandidateStatus,
     CoverageStatus,
     GateStatus,
@@ -13,6 +14,7 @@ from backend.tools.spatial import (
     SpatialObservation,
     SpatialProducerConfig,
     load_observations_jsonl,
+    produce_assigned_spatial_regions,
     produce_spatial_regions,
     write_spatial_outputs,
 )
@@ -71,6 +73,132 @@ def _five_region_observations() -> list[dict]:
             ]
         )
     return observations
+
+
+def _automatic_candidate(
+    candidate_id: str,
+    track_id: str,
+    anchor: str,
+    *,
+    support: str = "surface",
+    capacity: str = "medium",
+    confidence: float = 0.90,
+) -> dict:
+    return {
+        "candidate_id": candidate_id,
+        "visual_instance_id": f"visual-{candidate_id}",
+        "observation_count": 2,
+        "display_name_zh": anchor,
+        "power_state": "UNKNOWN",
+        "evidence_refs": [f"auto-vlm:{candidate_id}"],
+        "source_track_ids": [track_id],
+        "model_versions": ["nemotron-test-v1"],
+        "anchor_hypotheses": [
+            {
+                "anchor": anchor,
+                "label_vote_count": 2,
+                "mean_confidence": confidence,
+                "max_confidence": confidence,
+                "proposal_display_name_zh": anchor,
+                "support_type": support,
+                "support_confidence": 0.90,
+                "capacity_class": capacity,
+                "capacity_confidence": 0.90,
+            }
+        ],
+    }
+
+
+def test_vlm_global_assignment_projects_exactly_expected_anchors_and_rejects_extra():
+    anchors = ["desk", "vanity", "wall_shelf", "chest", "display_cabinet"]
+    support_by_anchor = {
+        "desk": "surface",
+        "vanity": "surface",
+        "wall_shelf": "shelf",
+        "chest": "surface",
+        "display_cabinet": "shelf",
+    }
+    capacity_by_anchor = {
+        "desk": "medium",
+        "vanity": "medium",
+        "wall_shelf": "small",
+        "chest": "medium",
+        "display_cabinet": "small",
+    }
+    observations: list[dict] = []
+    candidates: list[dict] = []
+    for index, anchor in enumerate(anchors):
+        track_id = f"auto-track-{index}"
+        observations.extend(
+            [
+                _observation(
+                    anchor,
+                    index * 2 + 1,
+                    [index * 20, 0, index * 20 + 10, 10],
+                    region_track_id=track_id,
+                ),
+                _observation(
+                    anchor,
+                    index * 2 + 2,
+                    [index * 20 + 1, 0, index * 20 + 11, 10],
+                    region_track_id=track_id,
+                ),
+            ]
+        )
+        candidates.append(
+            _automatic_candidate(
+                f"candidate-{index}",
+                track_id,
+                anchor,
+                support=support_by_anchor[anchor],
+                capacity=capacity_by_anchor[anchor],
+            )
+        )
+    observations.extend(
+        [
+            _observation(
+                "other",
+                20,
+                [200, 0, 210, 10],
+                region_track_id="auto-track-extra",
+            ),
+            _observation(
+                "other",
+                21,
+                [201, 0, 211, 10],
+                region_track_id="auto-track-extra",
+            ),
+        ]
+    )
+    candidates.append(
+        _automatic_candidate(
+            "candidate-extra",
+            "auto-track-extra",
+            "unrequested_anchor",
+            confidence=0.99,
+        )
+    )
+
+    result, assignment = produce_assigned_spatial_regions(
+        "new_1",
+        observations,
+        candidates,
+        SpatialProducerConfig(min_regions=5, expected_anchor_labels=anchors),
+        AnchorAssignmentConfig(),
+    )
+
+    assert assignment.gate_passed
+    assert result.gate_passed
+    assert result.metrics.auto_accepted_count == 5
+    assert result.metrics.projected_region_count == 5
+    assert result.metrics.needs_user_count == 0
+    assert result.metrics.candidate_count == 6
+    assert result.region_manifest is not None
+    assert {entry.anchor for entry in result.region_manifest.entries} == set(anchors)
+    statuses = [item.status for item in result.candidate_manifest.candidates]
+    assert statuses.count(CandidateStatus.AUTO_ACCEPTED) == 5
+    assert statuses.count(CandidateStatus.NOT_SELECTED) == 1
+    assert result.candidate_manifest.assignment_normalized_hash == assignment.normalized_hash
 
 
 def test_stable_cross_frame_dedup_and_region_manifest_projection():

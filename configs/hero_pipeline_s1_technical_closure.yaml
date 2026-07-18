@@ -1,9 +1,8 @@
-# 英雄任务技术闭环：可信库存主链 + 自动空间影子门 + 视觉裁定层。
+# 英雄任务技术闭环：可信库存主链 + 自动 VLM 空间生产 + 独立语义评分。
 #
-# 自动空间使用真实 new_1 视频生成并已拉回的观测；shadow_only 保留其
-# NEEDS_USER / 0 AUTO_ACCEPTED 原结论。独立 space_review 以帧 SHA、候选 ID、
-# track ID 和视觉几何裁定五个冻结目标，下游显式读取 VISUALLY_ADJUDICATED
-# 产物。严格自动替换仍由 hero_pipeline_s1_final.yaml 承担。
+# 自动空间读取从真实 new_1 视频生成并已拉回的观测与 Spark-local VLM
+# 假设，全局一对一选择恰好五个不同视觉实例。冻结视觉信息只存在于不含
+# prediction ID 的 scorer 真值中；下游始终读取 automatic regions。
 run_dir: results/hero/s1-technical-closure
 trace_id: hero-s1-technical-closure
 python: .venv/bin/python
@@ -18,9 +17,11 @@ stages:
 
   space:
     enabled: true
-    shadow_only: true
     video_id: new_1
     observations: results/hero_s1/space-auto/auto_observations.jsonl
+    observation_hashes: results/hero_s1/space-auto/hashes.json
+    anchor_candidates: results/hero_s1/space-anchor/anchor_candidates.json
+    anchor_hashes: results/hero_s1/space-anchor/hashes.json
     min_regions: 5
     min_observations: 2
     min_confidence: 0.75
@@ -28,6 +29,10 @@ stages:
     min_power_confidence: 0.70
     min_field_consensus: 0.67
     dedupe_iou: 0.35
+    min_anchor_vote_share: 0.60
+    min_vlm_mean_confidence: 0.50
+    min_assignment_score: 0.70
+    min_assignment_margin: 0.05
     expected_anchor:
       - study_desk
       - vanity
@@ -35,18 +40,14 @@ stages:
       - chest_of_drawers
       - display_cabinet
 
-  space_review:
+  space_score:
     enabled: true
-    review: fixtures/hero_s1/annotations/space_visual_adjudication.codex-v1.json
-    evidence_frames:
-      - results/acceptance/HERO_S1/space-visual-adjudication-v1/frames/kf_003240.jpg
-      - results/acceptance/HERO_S1/space-visual-adjudication-v1/frames/kf_004260.jpg
-      - results/acceptance/HERO_S1/space-visual-adjudication-v1/frames/kf_005040.jpg
-      - results/acceptance/HERO_S1/space-visual-adjudication-v1/frames/kf_005640.jpg
+    truth: fixtures/hero_s1/space_truth.semantic-v1.json
+    required_expected_anchor_count: 5
 
   regions:
     enabled: true
-    source: visual_adjudication
+    source: auto
 
   group:
     enabled: true

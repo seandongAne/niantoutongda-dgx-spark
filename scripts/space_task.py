@@ -11,6 +11,7 @@ separately configured, explicit manual fallback may continue downstream.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -20,11 +21,16 @@ PROJ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJ))
 
 from backend.tools.spatial import (  # noqa: E402
+    AnchorAssignmentConfig,
     SpatialProducerConfig,
+    load_automatic_anchor_candidates,
     load_observations_jsonl,
+    produce_assigned_spatial_regions,
     produce_spatial_regions,
     write_spatial_outputs,
 )
+
+ASSIGNMENT_FILENAME = "assignment.json"
 
 
 def _expected_anchors(values: Sequence[str]) -> list[str]:
@@ -36,11 +42,50 @@ def _expected_anchors(values: Sequence[str]) -> list[str]:
     ]
 
 
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1 << 20), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _verify_hashed_input(path: Path, hashes_path: Path, output_name: str) -> None:
+    try:
+        payload = json.loads(hashes_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"{hashes_path}: invalid JSON: {exc.msg}") from exc
+    expected = (payload.get("outputs") or {}).get(output_name)
+    if not isinstance(expected, str) or len(expected) != 64:
+        raise ValueError(f"{hashes_path}: missing output hash for {output_name}")
+    actual = _sha256_file(path)
+    if actual != expected:
+        raise ValueError(
+            f"{path}: sha256 mismatch against {hashes_path}; "
+            f"expected={expected}, actual={actual}"
+        )
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--video-id", required=True, help="new-home video identifier")
     parser.add_argument(
         "--observations", required=True, type=Path, help="automatic observation JSONL"
+    )
+    parser.add_argument(
+        "--observation-hashes",
+        type=Path,
+        help="adapter hashes.json used to authenticate auto_observations.jsonl",
+    )
+    parser.add_argument(
+        "--anchor-candidates",
+        type=Path,
+        help="Spark-local VLM automatic candidate array; enables global assignment mode",
+    )
+    parser.add_argument(
+        "--anchor-hashes",
+        type=Path,
+        help="classifier hashes.json used to authenticate anchor_candidates.json",
     )
     parser.add_argument("--out-dir", required=True, type=Path)
     parser.add_argument("--min-regions", type=int, default=5)
@@ -50,6 +95,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--min-power-confidence", type=float, default=0.70)
     parser.add_argument("--min-field-consensus", type=float, default=0.67)
     parser.add_argument("--dedupe-iou", type=float, default=0.35)
+    parser.add_argument("--min-anchor-vote-share", type=float, default=0.60)
+    parser.add_argument("--min-vlm-mean-confidence", type=float, default=0.50)
+    parser.add_argument("--min-assignment-score", type=float, default=0.70)
+    parser.add_argument("--min-assignment-margin", type=float, default=0.05)
     parser.add_argument(
         "--expected-anchor",
         action="append",
@@ -86,9 +135,51 @@ def main(argv: Sequence[str] | None = None) -> int:
         expected_anchor_labels=_expected_anchors(args.expected_anchor),
         require_expected_coverage=not args.allow_partial_expected_coverage,
     )
+    if args.observation_hashes is not None:
+        _verify_hashed_input(
+            args.observations,
+            args.observation_hashes,
+            "auto_observations.jsonl",
+        )
     observations = load_observations_jsonl(args.observations, video_id=args.video_id)
-    result = produce_spatial_regions(args.video_id, observations, config)
+    assignment = None
+    if args.anchor_candidates is not None:
+        if not config.expected_anchor_labels:
+            parser.error("--anchor-candidates requires at least one --expected-anchor")
+        if args.anchor_hashes is not None:
+            _verify_hashed_input(
+                args.anchor_candidates,
+                args.anchor_hashes,
+                "anchor_candidates.json",
+            )
+        candidates = load_automatic_anchor_candidates(args.anchor_candidates)
+        result, assignment = produce_assigned_spatial_regions(
+            args.video_id,
+            observations,
+            candidates,
+            config,
+            AnchorAssignmentConfig(
+                min_candidate_observations=args.min_observations,
+                min_label_vote_count=2,
+                min_label_vote_share=args.min_anchor_vote_share,
+                min_mean_confidence=args.min_vlm_mean_confidence,
+                min_hard_field_confidence=args.min_hard_field_confidence,
+                min_power_confidence=args.min_power_confidence,
+                min_assignment_score=args.min_assignment_score,
+                min_runner_up_margin=args.min_assignment_margin,
+            ),
+        )
+    else:
+        if args.anchor_hashes is not None:
+            parser.error("--anchor-hashes requires --anchor-candidates")
+        result = produce_spatial_regions(args.video_id, observations, config)
     outputs = write_spatial_outputs(result, args.out_dir)
+    if assignment is not None:
+        assignment_path = args.out_dir / ASSIGNMENT_FILENAME
+        assignment_path.write_text(
+            assignment.model_dump_json(indent=2) + "\n", encoding="utf-8"
+        )
+        outputs["assignment"] = str(assignment_path)
     print(
         json.dumps(
             {
@@ -99,6 +190,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "auto_accepted": result.metrics.auto_accepted_count,
                 "projected_regions": result.metrics.projected_region_count,
                 "normalized_hash": result.normalized_hash,
+                "assignment_hash": (
+                    assignment.normalized_hash if assignment is not None else None
+                ),
                 "outputs": outputs,
             },
             ensure_ascii=False,

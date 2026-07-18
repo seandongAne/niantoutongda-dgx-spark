@@ -44,6 +44,7 @@ STAGE_ORDER = [
     "naming",
     "narration",
     "space",
+    "space_score",
     "space_review",
     "regions",
     "group",
@@ -100,6 +101,7 @@ def build_stages(
     inventory_enabled = bool(sc("inventory").get("enabled"))
     space_enabled = bool(sc("space").get("enabled"))
     space_shadow_only = bool(space_enabled and sc("space").get("shadow_only"))
+    space_score_enabled = bool(sc("space_score").get("enabled"))
     space_review_enabled = bool(sc("space_review").get("enabled"))
     trusted_inventory_mode = bool(
         sc("group").get("enabled")
@@ -122,10 +124,12 @@ def build_stages(
             )
 
     if sc("pull").get("enabled"):
+        c = sc("pull")
         stages["pull"] = Stage(
             "pull", "local",
-            argv=[str(_p(a)) if i == 0 else a for i, a in enumerate(sc("pull")["cmd"])],
-            outputs=[_p(o) for o in sc("pull").get("local_outputs", [])],
+            argv=[str(_p(a)) if i == 0 else a for i, a in enumerate(c["cmd"])],
+            outputs=[_p(o) for o in c.get("local_outputs", [])],
+            always_run=bool(c.get("always_run")),
         )
 
     if inventory_enabled:
@@ -218,6 +222,16 @@ def build_stages(
             "--out-dir",
             str(out_dir),
         ]
+        inputs = [observations]
+        for key, flag in (
+            ("observation_hashes", "--observation-hashes"),
+            ("anchor_candidates", "--anchor-candidates"),
+            ("anchor_hashes", "--anchor-hashes"),
+        ):
+            if c.get(key):
+                path = _p(c[key])
+                argv += [flag, str(path)]
+                inputs.append(path)
         for keys, flag in (
             (("min_regions", "min"), "--min-regions"),
             (("min_observations", "min_observations_per_region"), "--min-observations"),
@@ -226,6 +240,10 @@ def build_stages(
             (("min_power_confidence",), "--min-power-confidence"),
             (("min_field_consensus",), "--min-field-consensus"),
             (("dedupe_iou", "dedupe_iou_threshold"), "--dedupe-iou"),
+            (("min_anchor_vote_share",), "--min-anchor-vote-share"),
+            (("min_vlm_mean_confidence",), "--min-vlm-mean-confidence"),
+            (("min_assignment_score",), "--min-assignment-score"),
+            (("min_assignment_margin",), "--min-assignment-margin"),
         ):
             value = next((c[key] for key in keys if key in c), None)
             if value is not None:
@@ -240,6 +258,8 @@ def build_stages(
         if space_shadow_only:
             argv.append("--shadow-only")
         outputs = [out_dir / "candidate_manifest.json"]
+        if c.get("anchor_candidates"):
+            outputs.append(out_dir / "assignment.json")
         if not space_shadow_only:
             outputs.append(out_dir / "regions.json")
         outputs.extend(
@@ -249,9 +269,43 @@ def build_stages(
             "space",
             "local",
             argv=argv,
-            inputs=[observations],
+            inputs=inputs,
             outputs=outputs,
-            code_dependencies=[PROJ / "backend/tools/spatial/producer.py"],
+            code_dependencies=[
+                PROJ / "backend/tools/spatial/producer.py",
+                PROJ / "backend/tools/spatial/assignment.py",
+            ],
+        )
+
+    if space_score_enabled:
+        if not space_enabled or space_shadow_only:
+            raise ValueError("space_score requires non-shadow automatic space")
+        c = sc("space_score")
+        truth = _p(c["truth"])
+        source_regions = run / "spatial/regions.json"
+        out_dir = run / "spatial_score"
+        stages["space_score"] = Stage(
+            "space_score",
+            "local",
+            argv=[
+                py,
+                str(PROJ / "scripts/space_score_task.py"),
+                "--regions",
+                str(source_regions),
+                "--truth",
+                str(truth),
+                "--out-dir",
+                str(out_dir),
+                "--expected-count",
+                str(c.get("required_expected_anchor_count", 5)),
+            ],
+            inputs=[source_regions, truth],
+            outputs=[
+                out_dir / "score_manifest.json",
+                out_dir / "metrics.json",
+                out_dir / "normalized.sha256",
+            ],
+            code_dependencies=[PROJ / "backend/tools/spatial/scoring.py"],
         )
 
     if space_review_enabled:
@@ -300,6 +354,10 @@ def build_stages(
             if not space_enabled or space_shadow_only:
                 raise ValueError(
                     "regions.source=auto requires non-shadow automatic space"
+                )
+            if c.get("manifest"):
+                raise ValueError(
+                    "regions.source=auto forbids manifest; automatic regions have one source"
                 )
             src = run / "spatial/regions.json"
         elif source == "visual_adjudication":
@@ -550,6 +608,8 @@ def build_stages(
                 inputs.append(_p(closure_ref))
         if space_enabled:
             inputs.append(run / "spatial/metrics.json")
+        if space_score_enabled:
+            inputs.append(run / "spatial_score/metrics.json")
         if space_review_enabled:
             inputs.append(run / "spatial_review/metrics.json")
         if sc("risk").get("enabled"):

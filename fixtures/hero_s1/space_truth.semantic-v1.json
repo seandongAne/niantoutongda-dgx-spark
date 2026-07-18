@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0",
+  "entries": [
+    {
+      "schema_version": "1.0",
+      "anchor": "study_desk",
+      "support_type": "surface",
+      "capacity_class": "medium",
+      "near_power": null
+    },
+    {
+      "schema_version": "1.0",
+      "anchor": "vanity",
+      "support_type": "surface",
+      "capacity_class": "medium",
+      "near_power": true
+    },
+    {
+      "schema_version": "1.0",
+      "anchor": "wall_shelf",
+      "support_type": "shelf",
+      "capacity_class": "small",
+      "near_power": true
+    },
+    {
+      "schema_version": "1.0",
+      "anchor": "chest_of_drawers",
+      "support_type": "surface",
+      "capacity_class": "medium",
+      "near_power": null
+    },
+    {
+      "schema_version": "1.0",
+      "anchor": "display_cabinet",
+      "support_type": "shelf",
+      "capacity_class": "small",
+      "near_power": null
+    }
+  ]
+}

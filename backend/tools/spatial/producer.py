@@ -59,6 +59,7 @@ class CoverageStatus(str, Enum):
 class CandidateStatus(str, Enum):
     AUTO_ACCEPTED = "AUTO_ACCEPTED"
     NEEDS_USER = "NEEDS_USER"
+    NOT_SELECTED = "NOT_SELECTED"
 
 
 class GateStatus(str, Enum):
@@ -253,11 +254,21 @@ class SpatialCandidate(_SpatialContract):
 
 class SpatialCandidateManifest(_SpatialContract):
     video_id: str
-    source_kind: Literal["AUTO_OBSERVATION_JSONL"] = "AUTO_OBSERVATION_JSONL"
+    source_kind: Literal[
+        "AUTO_OBSERVATION_JSONL", "AUTO_VLM_GLOBAL_ASSIGNMENT"
+    ] = "AUTO_OBSERVATION_JSONL"
     config: SpatialProducerConfig
     status: GateStatus
     gate_reasons: list[str] = Field(default_factory=list)
+    assignment_normalized_hash: str | None = None
     candidates: list[SpatialCandidate] = Field(default_factory=list)
+
+    @field_validator("assignment_normalized_hash")
+    @classmethod
+    def _valid_assignment_hash(cls, value: str | None) -> str | None:
+        if value is not None and not re.fullmatch(r"[0-9a-f]{64}", value):
+            raise ValueError("assignment_normalized_hash must be lowercase sha256")
+        return value
 
 
 class SpatialMetrics(_SpatialContract):
@@ -816,6 +827,295 @@ def produce_spatial_regions(
         region_manifest=region_manifest,
         metrics=metrics,
         normalized_hash=digest,
+    )
+
+
+def produce_assigned_spatial_regions(
+    video_id: str,
+    observations: Iterable[SpatialObservation | Mapping[str, Any]],
+    anchor_candidates: Sequence[Mapping[str, Any] | Any],
+    config: SpatialProducerConfig,
+    assignment_config: Any = None,
+) -> tuple[SpatialProductionResult, Any]:
+    """Project a strict automatic VLM assignment to the downstream region contract.
+
+    The VLM candidate file is produced from automatic tracks only.  This function
+    verifies that every candidate is backed by the supplied observation stream,
+    runs the global one-to-one assignment, marks non-selected proposals as
+    ``NOT_SELECTED`` (never as user questions), and emits exactly the assigned
+    expected anchors only when the global gate passes.
+
+    Imports are local to avoid a module cycle: ``assignment`` reuses the shared
+    ``GateStatus`` and ``PowerState`` contracts defined above.
+    """
+
+    from backend.tools.spatial.assignment import (  # noqa: PLC0415
+        AnchorAssignmentConfig,
+        AutomaticAnchorCandidate,
+        assign_automatic_anchors,
+    )
+
+    video_id = video_id.strip()
+    if not video_id:
+        raise ValueError("video_id must be non-empty")
+    if not config.expected_anchor_labels:
+        raise ValueError("assigned spatial production requires expected anchors")
+    assignment_config = assignment_config or AnchorAssignmentConfig()
+    validated_observations: list[SpatialObservation] = []
+    observations_by_track: dict[str, list[SpatialObservation]] = defaultdict(list)
+    for index, raw in enumerate(observations, 1):
+        observation = (
+            raw
+            if isinstance(raw, SpatialObservation)
+            else SpatialObservation.model_validate(raw)
+        )
+        if observation.video_id is not None and observation.video_id != video_id:
+            raise ValueError(
+                f"observation {index} video_id {observation.video_id!r} "
+                f"does not match {video_id!r}"
+            )
+        if not observation.region_track_id:
+            raise ValueError(
+                f"observation {index} has no automatic region_track_id"
+            )
+        validated_observations.append(observation)
+        observations_by_track[observation.region_track_id].append(observation)
+
+    validated_candidates = [
+        item
+        if isinstance(item, AutomaticAnchorCandidate)
+        else AutomaticAnchorCandidate.model_validate(item)
+        for item in anchor_candidates
+    ]
+    for candidate in validated_candidates:
+        if not candidate.source_track_ids:
+            raise ValueError(f"{candidate.candidate_id}: source_track_ids is required")
+        unknown_tracks = sorted(set(candidate.source_track_ids) - set(observations_by_track))
+        if unknown_tracks:
+            raise ValueError(
+                f"{candidate.candidate_id}: unknown automatic tracks {unknown_tracks}"
+            )
+        backed_count = sum(
+            len(observations_by_track[track_id])
+            for track_id in candidate.source_track_ids
+        )
+        if backed_count != candidate.observation_count:
+            raise ValueError(
+                f"{candidate.candidate_id}: observation_count {candidate.observation_count} "
+                f"does not match automatic evidence {backed_count}"
+            )
+
+    assignment = assign_automatic_anchors(
+        config.expected_anchor_labels,
+        validated_candidates,
+        assignment_config,
+    )
+    gate_reasons = list(assignment.gate_reasons)
+    if len(config.expected_anchor_labels) != config.min_regions:
+        gate_reasons.append(
+            "expected_anchor_count_must_equal_min_regions:"
+            f"{len(config.expected_anchor_labels)}/{config.min_regions}"
+        )
+    assignment_anchor_keys = [_canonical_anchor(item.anchor) for item in assignment.assignments]
+    assignment_instance_ids = [item.visual_instance_id for item in assignment.assignments]
+    if len(assignment_anchor_keys) != len(set(assignment_anchor_keys)):
+        gate_reasons.append("duplicate_assigned_anchor")
+    if len(assignment_instance_ids) != len(set(assignment_instance_ids)):
+        gate_reasons.append("duplicate_assigned_visual_instance")
+    if len(assignment.assignments) != len(config.expected_anchor_labels):
+        gate_reasons.append(
+            "assigned_region_count_mismatch:"
+            f"{len(assignment.assignments)}/{len(config.expected_anchor_labels)}"
+        )
+    gate_reasons = sorted(set(gate_reasons))
+    gate_status = GateStatus.NEEDS_USER if gate_reasons else GateStatus.PASS
+
+    selected_by_candidate = {
+        item.candidate_id: item for item in assignment.assignments
+    }
+    edge_rejections: dict[str, set[str]] = defaultdict(set)
+    for edge in assignment.edges:
+        edge_rejections[edge.candidate_id].update(edge.rejection_reasons)
+
+    spatial_candidates: list[SpatialCandidate] = []
+    for candidate in sorted(validated_candidates, key=lambda item: item.candidate_id):
+        selected = selected_by_candidate.get(candidate.candidate_id)
+        source_observations = sorted(
+            (
+                observation
+                for track_id in candidate.source_track_ids
+                for observation in observations_by_track[track_id]
+            ),
+            key=_observation_sort_key,
+        )
+        timestamps = [item.timestamp_ms for item in source_observations]
+        representative_bbox = _representative_bbox(source_observations)
+        if selected is not None:
+            status = (
+                CandidateStatus.AUTO_ACCEPTED
+                if gate_status is GateStatus.PASS
+                else CandidateStatus.NEEDS_USER
+            )
+            reasons = list(selected.warnings)
+            if gate_status is GateStatus.NEEDS_USER:
+                reasons.extend(gate_reasons)
+            anchor = selected.anchor
+            display_name = selected.display_name_zh
+            support = selected.support_type
+            capacity = selected.capacity_class
+            power_state = selected.power_state
+            confidence = selected.score
+            region_id = f"auto_{_anchor_slug(anchor)}_01"
+        else:
+            top = max(
+                candidate.anchor_hypotheses,
+                key=lambda item: (
+                    item.mean_confidence,
+                    item.max_confidence,
+                    _canonical_anchor(item.anchor),
+                ),
+            )
+            status = CandidateStatus.NOT_SELECTED
+            reasons = ["not_selected_by_global_one_to_one_assignment"]
+            reasons.extend(edge_rejections.get(candidate.candidate_id, set()))
+            anchor = top.anchor
+            display_name = top.proposal_display_name_zh or candidate.display_name_zh
+            support = top.support_type
+            capacity = top.capacity_class
+            power_state = candidate.power_state
+            confidence = top.mean_confidence
+            rejected_digest = hashlib.sha256(
+                candidate.candidate_id.encode("utf-8")
+            ).hexdigest()[:12]
+            region_id = f"auto_rejected_{rejected_digest}"
+        spatial_candidates.append(
+            SpatialCandidate(
+                region_id=region_id,
+                anchor=anchor,
+                display_name_zh=display_name,
+                support_type=support,
+                capacity_class=capacity,
+                power_state=power_state,
+                coverage_status=CoverageStatus.OBSERVED,
+                status=status,
+                model_confidence=confidence,
+                observation_count=candidate.observation_count,
+                first_timestamp_ms=min(timestamps),
+                last_timestamp_ms=max(timestamps),
+                representative_bbox=representative_bbox,
+                source_track_ids=sorted(candidate.source_track_ids),
+                evidence_refs=sorted(candidate.evidence_refs),
+                power_evidence_refs=(
+                    sorted(candidate.power_evidence_refs)
+                    if power_state is PowerState.NEAR
+                    else []
+                ),
+                model_versions=sorted(candidate.model_versions),
+                decision_reasons=sorted(set(reasons)),
+            )
+        )
+
+    assigned_anchor_keys = {
+        _canonical_anchor(item.anchor) for item in assignment.assignments
+    }
+    missing_expected = [
+        anchor
+        for anchor in config.expected_anchor_labels
+        if _canonical_anchor(anchor) not in assigned_anchor_keys
+    ]
+    for anchor in missing_expected:
+        spatial_candidates.append(
+            SpatialCandidate(
+                region_id=f"auto_{_anchor_slug(anchor)}_not_observed",
+                anchor=anchor,
+                display_name_zh=anchor,
+                coverage_status=CoverageStatus.NOT_OBSERVED,
+                status=CandidateStatus.NEEDS_USER,
+                model_confidence=0.0,
+                observation_count=0,
+                decision_reasons=["expected_anchor_not_assigned"],
+            )
+        )
+    spatial_candidates.sort(key=lambda item: item.region_id)
+
+    candidate_manifest = SpatialCandidateManifest(
+        video_id=video_id,
+        source_kind="AUTO_VLM_GLOBAL_ASSIGNMENT",
+        config=config,
+        status=gate_status,
+        gate_reasons=gate_reasons,
+        assignment_normalized_hash=assignment.normalized_hash,
+        candidates=spatial_candidates,
+    )
+
+    region_manifest: RegionManifest | None = None
+    accepted = [
+        item
+        for item in spatial_candidates
+        if item.status is CandidateStatus.AUTO_ACCEPTED
+    ]
+    if gate_status is GateStatus.PASS:
+        region_manifest = RegionManifest(
+            video_id=video_id,
+            entries=[
+                RegionEntry(
+                    region_id=item.region_id,
+                    anchor=item.anchor or "",
+                    display_name_zh=item.display_name_zh,
+                    support_type=item.support_type,
+                    capacity_class=item.capacity_class,
+                    near_power=item.power_state is PowerState.NEAR,
+                    evidence_refs=sorted(
+                        set(item.evidence_refs + item.power_evidence_refs)
+                    ),
+                )
+                for item in sorted(accepted, key=lambda item: item.region_id)
+            ],
+            notes=(
+                "AUTO_PRODUCED from Spark-local VLM global one-to-one assignment; "
+                f"assignment_sha256={assignment.normalized_hash}; UNKNOWN power is "
+                "projected as near_power=false."
+            ),
+        )
+
+    not_observed = sum(
+        item.coverage_status is CoverageStatus.NOT_OBSERVED
+        for item in spatial_candidates
+    )
+    expected_count = len(config.expected_anchor_labels)
+    power_counts = Counter(item.power_state.value for item in spatial_candidates)
+    metrics = SpatialMetrics(
+        video_id=video_id,
+        observation_count=len(validated_observations),
+        candidate_count=len(validated_candidates),
+        observed_candidate_count=len(validated_candidates),
+        not_observed_count=not_observed,
+        auto_accepted_count=len(accepted),
+        needs_user_count=sum(
+            item.status is CandidateStatus.NEEDS_USER for item in spatial_candidates
+        ),
+        projected_region_count=len(accepted) if region_manifest is not None else 0,
+        min_regions_required=config.min_regions,
+        region_gate_passed=region_manifest is not None,
+        expected_anchor_count=expected_count,
+        observed_expected_anchor_count=expected_count - len(missing_expected),
+        expected_coverage_rate=round(
+            (expected_count - len(missing_expected)) / expected_count, 6
+        ),
+        power_state_counts=dict(sorted(power_counts.items())),
+        gate_status=gate_status,
+        gate_reasons=gate_reasons,
+    )
+    digest = _normalized_hash(candidate_manifest, region_manifest, metrics)
+    metrics = metrics.model_copy(update={"normalized_hash": digest})
+    return (
+        SpatialProductionResult(
+            candidate_manifest=candidate_manifest,
+            region_manifest=region_manifest,
+            metrics=metrics,
+            normalized_hash=digest,
+        ),
+        assignment,
     )
 
 

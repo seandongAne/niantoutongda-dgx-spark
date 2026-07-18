@@ -340,3 +340,7 @@
   SHA-256 校验无不一致；二次续跑除 always-run bundle 外全部命中内容寻址跳过。
 - 全仓测试为 `230 passed in 8.03s`，`git diff --check` 通过。Commits：
   `44c0afef`（范围合同、风险展示、配置、验收门与测试）、`6cc42a44`（复跑产物）。
+- 部署前安全门输出 `✅ SPARK CLEAN`（load=0.01，8888→8072 / 9000→9072 未暴露）；
+  `scripts/deploy.sh` 已同步提交 `5e04659a9bede06bcaba44abd9d6ee67fa4dbda4`。
+  远端只读回查得到 `hero_s1_technical_closure_v2 / 120.0 / DEFERRED /
+  OPTIONAL_DEFERRED`，与本地范围合同一致。

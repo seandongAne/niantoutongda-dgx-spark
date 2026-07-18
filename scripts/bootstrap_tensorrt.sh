@@ -54,9 +54,15 @@ TRTEXEC="$(find "$TRT_ROOT" -type f -name trtexec -print -quit)"
 [ -n "$TRTEXEC" ] || { echo "TRTEXEC_NOT_FOUND under $TRT_ROOT" >&2; exit 3; }
 
 TRT_LIB="$TRT_ROOT/usr/lib/aarch64-linux-gnu"
-TRT_PYTHON="$TRT_ROOT/usr/lib/python3/dist-packages"
+TRT_PYTHON=""
+for candidate in "$TRT_ROOT"/usr/lib/python*/dist-packages; do
+  if [ -d "$candidate/tensorrt" ]; then
+    TRT_PYTHON="$candidate"
+    break
+  fi
+done
 [ -d "$TRT_LIB" ] || { echo "TRT_LIB_NOT_FOUND: $TRT_LIB" >&2; exit 3; }
-[ -d "$TRT_PYTHON" ] || { echo "TRT_PYTHON_NOT_FOUND: $TRT_PYTHON" >&2; exit 3; }
+[ -n "$TRT_PYTHON" ] || { echo "TRT_PYTHON_NOT_FOUND under $TRT_ROOT" >&2; exit 3; }
 
 LD_LIBRARY_PATH="$TRT_LIB${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
   "$TRTEXEC" --version

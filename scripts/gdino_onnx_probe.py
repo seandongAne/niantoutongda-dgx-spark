@@ -451,6 +451,9 @@ def main() -> int:
 
     graph = onnx.load(str(onnx_path), load_external_data=False)
     onnx.checker.check_model(graph)
+    actual_opset_imports = {
+        item.domain or "ai.onnx": item.version for item in graph.opset_import
+    }
 
     manifest = {
         **baseline_manifest,
@@ -458,7 +461,9 @@ def main() -> int:
             "path": str(onnx_path),
             "sha256": _sha256(onnx_path),
             "size_bytes": onnx_path.stat().st_size,
-            "opset": args.opset,
+            "requested_opset": args.opset,
+            "opset": actual_opset_imports.get("ai.onnx"),
+            "opset_imports": actual_opset_imports,
             "exporter": args.exporter,
             "dynamic_shapes": args.exporter == "legacy" and not args.static_shapes,
             "export_seconds": export_seconds,

@@ -923,6 +923,17 @@ def main() -> int:
         ),
     )
     parser.add_argument(
+        "--skip-runtime-profile",
+        action="store_true",
+        help=(
+            "Skip torch.profiler-based TRT event capture. The profiler wraps the "
+            "compiled module's FIRST execution in CUPTI activity capture, which "
+            "reproducibly exhausted unified memory on GB10 (v7/v9/v10, exit 137) "
+            "regardless of headroom; the capture is corroborating evidence, not "
+            "a gate."
+        ),
+    )
+    parser.add_argument(
         "--offload-module-to-cpu",
         action="store_true",
         help=(
@@ -1533,9 +1544,15 @@ def main() -> int:
         # the shared node keeps a 51 GiB vLLM service resident and v7 died OOM here.
         gc.collect()
         torch.cuda.empty_cache()
-        fp32_record["runtime_profile"] = _profile_trt_events(
-            torch, fp32_compiled, export_inputs
-        )
+        if args.skip_runtime_profile:
+            fp32_record["runtime_profile"] = {
+                "available": False,
+                "skipped_by_flag": True,
+            }
+        else:
+            fp32_record["runtime_profile"] = _profile_trt_events(
+                torch, fp32_compiled, export_inputs
+            )
         fp32_metrics, fp32_outputs = _benchmark(
             torch,
             fp32_compiled,
@@ -1653,9 +1670,15 @@ def main() -> int:
                 report_path=output_path.with_suffix(".fp16.partition.txt"),
                 graph_path=output_path.with_suffix(".fp16.compiled_graph.txt"),
             )
-            fp16_record["runtime_profile"] = _profile_trt_events(
-                torch, fp16_compiled, export_inputs
-            )
+            if args.skip_runtime_profile:
+                fp16_record["runtime_profile"] = {
+                    "available": False,
+                    "skipped_by_flag": True,
+                }
+            else:
+                fp16_record["runtime_profile"] = _profile_trt_events(
+                    torch, fp16_compiled, export_inputs
+                )
             fp16_metrics, fp16_outputs = _benchmark(
                 torch,
                 fp16_compiled,

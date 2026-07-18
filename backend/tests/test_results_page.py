@@ -202,6 +202,45 @@ def _write_completion_summaries(run_dir: Path) -> None:
     )
 
 
+def _write_deferred_risk_scope(run_dir: Path, defer_reason: str) -> dict:
+    rule_reasons = {
+        "CHILD_SHARP_TOOL_REACH": "MISSING_EVIDENCE:child_present",
+        "TRIP_HAZARD_IN_PATH": "MISSING_EVIDENCE:trip_hazard_present",
+        "POWER_IN_WET_ZONE": "MISSING_EVIDENCE:powered_item_present",
+    }
+    assessments = {
+        "scope_status": "DEFERRED",
+        "blocking": False,
+        "defer_reason_zh": defer_reason,
+        "assessments": [
+            {
+                "rule_id": rule_id,
+                "status": "NEEDS_USER",
+                "confidence": 0.0,
+                "reason_codes": [reason],
+            }
+            for rule_id, reason in rule_reasons.items()
+        ],
+    }
+    _write_json(run_dir / "risk/assessments.json", assessments)
+    _write_json(
+        run_dir / "risk/metrics.json",
+        {
+            "scope_status": "DEFERRED",
+            "blocking": False,
+            "defer_reason_zh": defer_reason,
+            "rule_count": 3,
+            "status_counts": {
+                "TRIGGERED": 0,
+                "NEEDS_USER": 3,
+                "NOT_APPLICABLE": 0,
+            },
+            "disclaimer_zh": "仅为辅助风险提醒，不构成安全认证。",
+        },
+    )
+    return assessments
+
+
 def test_results_page_renders_completion_summaries_and_escapes_all_text(tmp_path):
     run_dir = tmp_path / "run"
     run_dir.mkdir()
@@ -252,6 +291,80 @@ def test_results_page_renders_completion_summaries_and_escapes_all_text(tmp_path
         "DO_NOT_RENDER_RISK_EVIDENCE",
     ):
         assert marker not in page
+
+
+def test_results_page_marks_deferred_risk_diagnostics_non_blocking(tmp_path):
+    run_dir = tmp_path / "deferred-risk"
+    run_dir.mkdir()
+    _write_completion_summaries(run_dir)
+    defer_reason = "现场关系难以从空房视频确认；<script>not-current</script>"
+    assessments = _write_deferred_risk_scope(run_dir, defer_reason)
+
+    page = build_page(run_dir)
+
+    assert "已延期" in page
+    assert "非阻塞" in page
+    assert "诊断缺证据（已延期） 3" in page
+    assert "待人工确认" not in page
+    assert "MISSING_EVIDENCE:child_present" in page
+    assert "MISSING_EVIDENCE:trip_hazard_present" in page
+    assert "MISSING_EVIDENCE:powered_item_present" in page
+    assert defer_reason not in page
+    assert "现场关系难以从空房视频确认；&lt;script&gt;not-current&lt;/script&gt;" in page
+    assert [item["status"] for item in assessments["assessments"]] == [
+        "NEEDS_USER",
+        "NEEDS_USER",
+        "NEEDS_USER",
+    ]
+
+
+def test_results_page_renders_machine_readable_competition_scope(tmp_path):
+    run_dir = tmp_path / "scope"
+    run_dir.mkdir()
+    closure = tmp_path / "closure.json"
+    _write_json(
+        closure,
+        {
+            "geometry_policy": {
+                "reference_assumption": {
+                    "value_cm": "<120>",
+                    "status": "ASSUMED_PRIOR",
+                },
+                "non_required_metrics": [
+                    "exact_surface_area",
+                    "clear_height",
+                    "load_capacity",
+                    "doorway_clear_width",
+                    "walk_path_clear_width",
+                ],
+            },
+            "post_placement_verification_contract": {
+                "purpose_zh": "只证明物理执行<script>bad</script>",
+            },
+        },
+    )
+    config = tmp_path / "config.yaml"
+    config.write_text(
+        json.dumps(
+            {
+                "stages": {
+                    "group": {"closure": str(closure)},
+                    "risk": {"closure": str(closure)},
+                }
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
+    page = build_page(run_dir, config)
+
+    assert 'id="competition-scope"' in page
+    assert "相对容量" in page and "ASSUMED_PRIOR" in page
+    assert "精确面积、净高、承重、门洞净宽、通道净宽" in page
+    assert "可选延期" in page and "只证明物理执行" in page
+    assert "&lt;120&gt;" in page
+    assert "<script>bad</script>" not in page
 
 
 def test_results_page_without_new_artifacts_keeps_legacy_sections(tmp_path):

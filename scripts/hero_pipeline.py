@@ -545,6 +545,9 @@ def build_stages(
             inputs.append(run / "inventory/metrics.json")
         if trusted_inventory_mode:
             inputs.append(run / "group/boxlist.json")
+            closure_ref = sc("group").get("closure")
+            if closure_ref:
+                inputs.append(_p(closure_ref))
         if space_enabled:
             inputs.append(run / "spatial/metrics.json")
         if space_review_enabled:

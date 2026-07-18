@@ -10,7 +10,8 @@
 #     placement_groups.jsonl，不再读取 raw 实体或 677 条原始澄清。
 #   - space_observe 从现有 new_1.mp4 自动产观测；space 五区门通过后才生成
 #     RegionManifest。regions.manifest 仅保留显式人工降级入口，自动路径不会读取它。
-#   - 真实摆放照片验收到最终验收阶段再开启；本配置不伪造 presence/compliance。
+#   - 真实摆放照片只用于可选的物理执行复核，不是本轮技术闭环门；本配置不伪造
+#     presence/compliance。
 run_dir: results/hero/s1-final
 trace_id: hero-s1-final
 python: .venv/bin/python
@@ -120,16 +121,16 @@ stages:
   risk:
     enabled: true
     closure: fixtures/hero_s1/technical_closure.json
-    # 当前无现场风险事实；三条规则将显式输出 NEEDS_USER，而非伪造“安全”。
+    # 规则引擎照常产生诊断事实；scope=DEFERRED/non-blocking，不据空房视频宣称安全。
     facts: fixtures/hero_s1/risk_facts.pending.json
 
   verify:
-    enabled: false                                # 验收照片到手后翻 true
+    enabled: false                                # 可选的搬后执行复核；不阻塞技术闭环
     photos: fixtures/hero_s1/acceptance.json
 
   trace:
     enabled: true
-    # verify 开启后的最终判分跑再把 strict 翻 true。
+    # 仅在选择补做物理执行复核时，把 verify 与 strict 一起开启。
     strict: false
 
   report:

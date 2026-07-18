@@ -57,7 +57,7 @@ def test_technical_closure_partitions_all_twenty_source_items_once():
     ]
 
 
-def test_technical_closure_freezes_gt_regions_and_pending_scale_slots():
+def test_technical_closure_freezes_gt_regions_and_scope_dispositions():
     closure = json.loads(CLOSURE_PATH.read_text(encoding="utf-8"))
     ground_truth = closure["space_ground_truth"]
     regions_path = PROJ / ground_truth["source_region_fixture"]
@@ -70,13 +70,45 @@ def test_technical_closure_freezes_gt_regions_and_pending_scale_slots():
     assert len(regions["entries"]) == 5
     assert set(ground_truth["target_region_ids"]) == known_region_ids
 
-    slots = closure["scale_measurement_inputs"]
-    assert len(slots) == 3
-    assert len({slot["slot_id"] for slot in slots}) == 3
-    assert all(slot["status"] == "pending" for slot in slots)
-    assert all(slot["value_cm"] is None for slot in slots)
+    assert closure["schema_version"] == "1.1"
+    assert closure["closure_id"] == "hero_s1_technical_closure_v2"
+
+    geometry = closure["geometry_policy"]
+    assert geometry["scope_status"] == "ACCEPTED_ASSUMPTION"
+    assert geometry["blocking"] is False
+    assert geometry["mode"] == "RELATIVE_VISUAL_CAPACITY"
+    assert geometry["relative_area_sufficient"] is True
+    assert geometry["capacity_source"] == "RegionEntry.capacity_class"
+    assumption = geometry["reference_assumption"]
+    assert assumption == {
+        "region_id": "study_desk",
+        "dimension": "height",
+        "value_cm": 120.0,
+        "status": "ASSUMED_PRIOR",
+        "source": "USER_SCOPE_DECISION_2026-07-17",
+        "is_measurement": False,
+        "usage": "VISUAL_SCALE_CONTEXT_ONLY",
+    }
+    assert set(geometry["non_required_metrics"]) == {
+        "exact_surface_area",
+        "clear_height",
+        "load_capacity",
+        "doorway_clear_width",
+        "walk_path_clear_width",
+    }
+
+    post_placement = closure["post_placement_verification_contract"]
+    assert post_placement["scope_status"] == "OPTIONAL_DEFERRED"
+    assert post_placement["blocking"] is False
+    assert post_placement["current_evidence_status"] == "NOT_COLLECTED"
+    assert post_placement["required_for_claims"] == [
+        "PHYSICAL_EXECUTION_VERIFIED"
+    ]
 
     risk_contract = closure["risk_contract"]
+    assert risk_contract["scope_status"] == "DEFERRED"
+    assert risk_contract["blocking"] is False
+    assert "当前空房视频" in risk_contract["defer_reason_zh"]
     assert risk_contract["min_evidence_confidence"] == DEFAULT_MIN_EVIDENCE_CONFIDENCE
     assert risk_contract["disclaimer_zh"] == RISK_DISCLAIMER_ZH
     assert {

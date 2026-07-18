@@ -20,6 +20,8 @@ import os
 import sys
 from pathlib import Path
 
+import yaml
+
 PROJ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJ))
 
@@ -56,9 +58,22 @@ RISK_STATUS_LABEL = {
     "NOT_APPLICABLE": ("当前条件不成立", "neutral"),
 }
 
+DEFERRED_RISK_STATUS_LABEL = {
+    **RISK_STATUS_LABEL,
+    "NEEDS_USER": ("诊断缺证据（已延期）", "neutral"),
+}
+
 DEFAULT_RISK_DISCLAIMER_ZH = (
     "仅为辅助风险提醒，不构成安全认证，也不能替代现场人员或专业人员复核。"
 )
+
+GEOMETRY_METRIC_LABEL = {
+    "exact_surface_area": "精确面积",
+    "clear_height": "净高",
+    "load_capacity": "承重",
+    "doorway_clear_width": "门洞净宽",
+    "walk_path_clear_width": "通道净宽",
+}
 
 
 def load_jsonl(path: Path) -> list[dict]:
@@ -73,6 +88,35 @@ def load_jsonl(path: Path) -> list[dict]:
 
 def load_json(path: Path, default):
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else default
+
+
+def load_scope_contract(config_path: Path | None) -> dict:
+    """从当前配置解析同一份技术 closure；无 closure 的旧配置保持兼容。"""
+    if config_path is None or not config_path.exists():
+        return {}
+    config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    if not isinstance(config, dict):
+        return {}
+    stages = config.get("stages")
+    if not isinstance(stages, dict):
+        return {}
+    closure_refs = {
+        stage.get("closure")
+        for name in ("group", "risk")
+        if isinstance((stage := stages.get(name)), dict) and stage.get("closure")
+    }
+    if not closure_refs:
+        return {}
+    if len(closure_refs) != 1:
+        raise ValueError("group/risk must reference the same technical closure")
+    raw_ref = next(iter(closure_refs))
+    closure_path = Path(raw_ref)
+    if not closure_path.is_absolute():
+        closure_path = PROJ / closure_path
+    closure = load_json(closure_path, {})
+    if not isinstance(closure, dict):
+        raise ValueError("technical closure root must be an object")
+    return closure
 
 
 def _sha256_file(path: Path) -> str:
@@ -142,6 +186,7 @@ def img_tag(run_dir: Path, ref: str, cls: str = "hero") -> str:
 
 
 def build_page(run_dir: Path, config_path: Path | None = None) -> str:
+    scope_contract = load_scope_contract(config_path)
     trusted_display_path = run_dir / "inventory/display.jsonl"
     trusted_inventory_mode = trusted_display_path.exists()
     display_path = (
@@ -589,8 +634,46 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
             f'</div>{review_reason_html}{power_html}</div>'
         )
 
+    scope_sec = ""
+    geometry_policy = scope_contract.get("geometry_policy")
+    post_placement = scope_contract.get("post_placement_verification_contract")
+    if isinstance(geometry_policy, dict) and isinstance(post_placement, dict):
+        assumption = geometry_policy.get("reference_assumption", {})
+        assumption = assumption if isinstance(assumption, dict) else {}
+        non_required = geometry_policy.get("non_required_metrics", [])
+        non_required = non_required if isinstance(non_required, list) else []
+        metric_labels = "、".join(
+            GEOMETRY_METRIC_LABEL.get(str(metric), str(metric))
+            for metric in non_required
+        )
+        scope_sec = (
+            '<h2 id="competition-scope">比赛技术闭环口径 '
+            '<span class="note">假设、非必需项和可选验收均显式入合同</span></h2>'
+            '<div class="panel"><div class="summary-grid compact">'
+            '<div class="summary-card"><div class="summary-k">空间估计</div>'
+            '<div class="summary-v">相对容量</div>'
+            f'<div class="dim">书桌高 {esc(assumption.get("value_cm", "—"))} cm · '
+            f'{esc(assumption.get("status", "—"))}，不是实测</div></div>'
+            '<div class="summary-card"><div class="summary-k">精确测量</div>'
+            '<div class="summary-v">非必需</div>'
+            f'<div class="dim">{esc(metric_labels or "—")} · 非阻塞</div></div>'
+            '<div class="summary-card"><div class="summary-k">搬后执行复核</div>'
+            '<div class="summary-v">可选延期</div>'
+            f'<div class="dim">{esc(post_placement.get("purpose_zh", ""))}</div></div>'
+            '</div></div>'
+        )
+
     risk_sec = ""
     if isinstance(risk_assessments, dict) and isinstance(risk_metrics, dict):
+        risk_scope_deferred = (
+            risk_metrics.get("scope_status") == "DEFERRED"
+            and risk_metrics.get("blocking") is False
+            and risk_assessments.get("scope_status") == "DEFERRED"
+            and risk_assessments.get("blocking") is False
+        )
+        risk_status_labels = (
+            DEFERRED_RISK_STATUS_LABEL if risk_scope_deferred else RISK_STATUS_LABEL
+        )
         assessment_rows = risk_assessments.get("assessments", [])
         assessment_rows = assessment_rows if isinstance(assessment_rows, list) else []
         risk_rows = []
@@ -599,7 +682,7 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
                 continue
             rule_id = str(assessment.get("rule_id", "未知规则"))
             status_value = str(assessment.get("status", "NEEDS_USER"))
-            status_label = RISK_STATUS_LABEL.get(
+            status_label = risk_status_labels.get(
                 status_value, (status_value, "neutral")
             )
             reasons = assessment.get("reason_codes", [])
@@ -614,18 +697,26 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
         status_counts = status_counts if isinstance(status_counts, dict) else {}
         status_chips = "".join(
             chip(
-                f"{RISK_STATUS_LABEL[status][0]} {status_counts.get(status, 0)}",
-                RISK_STATUS_LABEL[status][1],
+                f"{risk_status_labels[status][0]} {status_counts.get(status, 0)}",
+                risk_status_labels[status][1],
             )
             for status in ("TRIGGERED", "NEEDS_USER", "NOT_APPLICABLE")
         )
+        scope_html = ""
+        if risk_scope_deferred:
+            defer_reason = str(risk_metrics.get("defer_reason_zh", ""))
+            scope_html = (
+                '<div class="panel-head"><h3>执行范围</h3>'
+                f'{chip("已延期", "neutral")}{chip("非阻塞", "success")}</div>'
+                f'<div class="dim">{esc(defer_reason)}</div>'
+            )
         disclaimer = risk_metrics.get(
             "disclaimer_zh", DEFAULT_RISK_DISCLAIMER_ZH
         )
         risk_sec = (
             '<h2 id="risk-reminders">风险提醒 '
             '<span class="note">固定三条规则，只消费有引用的显式事实</span></h2>'
-            '<div class="panel"><div class="panel-head"><h3>三条规则状态</h3>'
+            f'<div class="panel">{scope_html}<div class="panel-head"><h3>三条规则状态</h3>'
             f'{status_chips}</div><table><thead><tr><th>规则</th><th>状态</th>'
             '<th>置信度</th><th>原因码</th></tr></thead>'
             f'<tbody>{"".join(risk_rows)}</tbody></table>'
@@ -633,11 +724,17 @@ def build_page(run_dir: Path, config_path: Path | None = None) -> str:
         )
 
     completion_sections = (
-        inventory_sec + boxlist_sec + spatial_sec + spatial_review_sec + risk_sec
+        scope_sec
+        + inventory_sec
+        + boxlist_sec
+        + spatial_sec
+        + spatial_review_sec
+        + risk_sec
     )
     optional_nav = "".join(
         link
         for section, link in (
+            (scope_sec, '<a href="#competition-scope">比赛口径</a>'),
             (inventory_sec, '<a href="#trusted-inventory">可信库存</a>'),
             (boxlist_sec, '<a href="#boxlist">箱单</a>'),
             (spatial_sec, '<a href="#automatic-space">自动空间</a>'),

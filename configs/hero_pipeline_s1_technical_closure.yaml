@@ -62,10 +62,11 @@ stages:
   risk:
     enabled: true
     closure: fixtures/hero_s1/technical_closure.json
+    # 规则实现保留并输出诊断；当前范围为 DEFERRED/non-blocking。
     facts: fixtures/hero_s1/risk_facts.pending.json
 
   verify:
-    enabled: false
+    enabled: false  # 可选的搬后执行复核；不阻塞库存→空间→布局→任务卡技术闭环
 
   trace:
     enabled: true

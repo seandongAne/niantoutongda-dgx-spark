@@ -1,7 +1,14 @@
-# 验收照片指引 · hero-s1 终判分跑(G7b)
+# 验收照片指引 · hero-s1 可选搬后执行复核
 
-> 目标:至少 1 张任务卡走完 presence ∧ compliance → VERIFIED 全消息链(预注册门 G7b)。
+> 目标（可选）:为至少 1 张任务卡补充搬后外部证据，走完
+> presence ∧ compliance → VERIFIED 全消息链。G7b 已于 2026-07-17 从本轮比赛
+> 主门撤出；没有照片不阻塞库存、空间、布局和任务卡技术闭环。
 > 拍摄人:队友(新家现场)。填表与发射:任何人,照片到手后一键。
+
+照片只回答“任务卡是否真的在物理世界执行”。当前确定性执行器不会直接解析图片
+像素，而是消费与 `photo_ref` 绑定的人工 `present` 和 `region_id` 事实，再检查物品
+出现与区域声明是否同时成立。因此照片与如实填表缺一不可；未执行本步骤时不得声称
+真实房间已经复原或 `PHYSICAL_EXECUTION_VERIFIED`。
 
 ## 1. 摆放与拍摄
 
@@ -30,4 +37,4 @@
 .venv/bin/python scripts/hero_pipeline.py --config configs/hero_pipeline_s1_final.yaml --from-stage verify
 ```
 
-预期:verify 产出三结局之一(VERIFIED / FAILED / NEEDS_USER),trace 严格模式要求验收消息族闭合;成果页 `results/hero/s1-final/index.html` 验收复核区块更新;G7a(一键复跑 hash 入 bundle)与 G7b 同跑取证。
+预期:verify 产出三结局之一(VERIFIED / FAILED / NEEDS_USER),trace 严格模式要求验收消息族闭合;成果页 `results/hero/s1-final/index.html` 验收复核区块更新。该结果只扩展物理执行证据，不改变既有技术闭环结论。

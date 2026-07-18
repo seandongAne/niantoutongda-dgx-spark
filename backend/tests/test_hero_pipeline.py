@@ -335,6 +335,7 @@ def test_build_stages_wires_trusted_inventory_auto_space_and_risk(tmp_path):
         run / "group/placement_groups.jsonl",
         inventory_dir / "metrics.json",
         run / "group/boxlist.json",
+        closure,
         run / "spatial/metrics.json",
         run / "risk/metrics.json",
     ):

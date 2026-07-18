@@ -1,6 +1,6 @@
 {
-  "schema_version": "1.0",
-  "closure_id": "hero_s1_technical_closure_v1",
+  "schema_version": "1.1",
+  "closure_id": "hero_s1_technical_closure_v2",
   "source_item_fixture": "fixtures/hero_s1/items.json",
   "canonical_item_ids": [
     "water_bottle",
@@ -84,6 +84,9 @@
     ]
   },
   "risk_contract": {
+    "scope_status": "DEFERRED",
+    "blocking": false,
+    "defer_reason_zh": "儿童触及、通道绊倒和湿区关系不能由当前空房视频可靠推导；规则引擎保留为已实现能力，但不作为本轮比赛技术闭环门。",
     "min_evidence_confidence": 0.8,
     "disclaimer_zh": "仅为辅助风险提醒，不构成安全认证，也不能替代现场人员或专业人员复核。",
     "rules": [
@@ -115,27 +118,43 @@
       }
     ]
   },
-  "scale_measurement_inputs": [
-    {
-      "slot_id": "known_reference_length_cm",
-      "label_zh": "已知参照物长度",
-      "status": "pending",
-      "value_cm": null,
-      "evidence_refs": []
+  "geometry_policy": {
+    "scope_status": "ACCEPTED_ASSUMPTION",
+    "blocking": false,
+    "mode": "RELATIVE_VISUAL_CAPACITY",
+    "relative_area_sufficient": true,
+    "capacity_source": "RegionEntry.capacity_class",
+    "reference_assumption": {
+      "region_id": "study_desk",
+      "dimension": "height",
+      "value_cm": 120.0,
+      "status": "ASSUMED_PRIOR",
+      "source": "USER_SCOPE_DECISION_2026-07-17",
+      "is_measurement": false,
+      "usage": "VISUAL_SCALE_CONTEXT_ONLY"
     },
-    {
-      "slot_id": "doorway_clear_width_cm",
-      "label_zh": "门洞净宽",
-      "status": "pending",
-      "value_cm": null,
-      "evidence_refs": []
-    },
-    {
-      "slot_id": "walk_path_clear_width_cm",
-      "label_zh": "主要通道净宽",
-      "status": "pending",
-      "value_cm": null,
-      "evidence_refs": []
-    }
-  ]
+    "non_required_metrics": [
+      "exact_surface_area",
+      "clear_height",
+      "load_capacity",
+      "doorway_clear_width",
+      "walk_path_clear_width"
+    ],
+    "claim_boundary_zh": "相对容量与区域关系足以支持本轮五区布局；120 cm 只是假设参照，不支持精确尺寸、承重、通行或安全结论。"
+  },
+  "post_placement_verification_contract": {
+    "scope_status": "OPTIONAL_DEFERRED",
+    "blocking": false,
+    "current_evidence_status": "NOT_COLLECTED",
+    "purpose_zh": "证明任务卡已在真实房间被执行，并核对物品出现与目标区域声明。",
+    "required_for_claims": [
+      "PHYSICAL_EXECUTION_VERIFIED"
+    ],
+    "not_required_for_claims": [
+      "TRUSTED_INVENTORY_READY",
+      "RELATIVE_SPACE_UNDERSTOOD",
+      "LAYOUT_PLAN_READY",
+      "TASKCARDS_READY"
+    ]
+  }
 }

@@ -13,7 +13,7 @@
 #   4. 对照 new_1.mp4 登记区域 → fixtures/hero_s1/regions.json(每区域必须带画面证据)
 #   5. S5 前提:spark 上 vLLM/NVFP4 服务已起(docs/NEMOTRON_SPARK_SERVING.md);
 #      attributes 阶段带 curl 探活守卫,服务没起会快速失败而不是空跑。
-#   6. 验收照片 + 匹配勾选 → fixtures/hero_s1/acceptance.json 后把 verify 翻 true。
+#   6. 可选：若需证明真实摆放执行，再补验收照片与匹配勾选并开启 verify。
 #   7. SF1 训练完成后用 sf1_wire_reid.py 从冻结 W1/W2 生成派生配置，只把
 #      reid.spark_cmd 的 --config 换成该文件；原预注册工作点不改写。
 run_dir: results/hero/s1-w1
@@ -100,13 +100,13 @@ stages:
     enabled: true
 
   verify:
-    enabled: false                                # TODO 验收照片到手后翻 true
+    enabled: false                                # 可选的搬后执行复核；不是技术闭环门
     photos: fixtures/hero_s1/acceptance.json
 
   trace:
     enabled: true
-    # 素材刚接入且 verify 尚未开启时，只强制四 Agent 主链闭合；最终判分跑
-    # 将 verify 打开并把 strict 改为 true，要求二选一与用户裁决也全部闭合。
+    # 默认只强制四 Agent 技术主链闭合；若选择补做物理执行复核，再同时开启
+    # verify 与 strict，要求验收消息族和用户裁决闭合。
     strict: false
 
   report:

@@ -42,7 +42,9 @@ def _read_json(path: Path) -> tuple[Any, bytes]:
     return json.loads(raw.decode("utf-8")), raw
 
 
-def _closure_contract(closure: object) -> tuple[str, list[str], float, str]:
+def _closure_contract(
+    closure: object,
+) -> tuple[str, list[str], float, str, str, bool, str]:
     if not isinstance(closure, dict):
         raise ValueError("closure root must be an object")
     closure_id = closure.get("closure_id")
@@ -83,7 +85,38 @@ def _closure_contract(closure: object) -> tuple[str, list[str], float, str]:
     disclaimer = contract.get("disclaimer_zh")
     if disclaimer != RISK_DISCLAIMER_ZH:
         raise ValueError("risk disclaimer drift between closure and evaluator")
-    return closure_id, rule_order, threshold, disclaimer
+
+    scope_status = contract.get("scope_status")
+    if scope_status not in {"ACTIVE", "DEFERRED"}:
+        raise ValueError("risk_contract.scope_status must be ACTIVE or DEFERRED")
+    blocking = contract.get("blocking")
+    if not isinstance(blocking, bool):
+        raise ValueError("risk_contract.blocking must be boolean")
+    defer_reason = contract.get("defer_reason_zh")
+    if not isinstance(defer_reason, str):
+        raise ValueError("risk_contract.defer_reason_zh must be a string")
+    if defer_reason != defer_reason.strip():
+        raise ValueError(
+            "risk_contract.defer_reason_zh must not have surrounding whitespace"
+        )
+    if scope_status == "DEFERRED":
+        if blocking:
+            raise ValueError("deferred risk scope cannot be blocking")
+        if not defer_reason:
+            raise ValueError(
+                "deferred risk scope requires a non-empty defer_reason_zh"
+            )
+    elif defer_reason:
+        raise ValueError("active risk scope must not have defer_reason_zh")
+    return (
+        closure_id,
+        rule_order,
+        threshold,
+        disclaimer,
+        scope_status,
+        blocking,
+        defer_reason,
+    )
 
 
 def _facts_by_rule(facts_payload: object, allowed_rules: set[str]) -> dict[str, dict]:
@@ -127,7 +160,15 @@ def build_outputs(
     closure_sha256: str,
     facts_sha256: str,
 ) -> tuple[bytes, bytes]:
-    closure_id, rule_order, threshold, disclaimer = _closure_contract(closure)
+    (
+        closure_id,
+        rule_order,
+        threshold,
+        disclaimer,
+        scope_status,
+        blocking,
+        defer_reason,
+    ) = _closure_contract(closure)
     by_rule = _facts_by_rule(facts_payload, set(rule_order))
 
     assessments = []
@@ -145,6 +186,9 @@ def build_outputs(
     assessments_payload = {
         "schema_version": "1.0",
         "closure_id": closure_id,
+        "scope_status": scope_status,
+        "blocking": blocking,
+        "defer_reason_zh": defer_reason,
         "rule_order": rule_order,
         "assessments": assessments,
     }
@@ -156,6 +200,9 @@ def build_outputs(
     metrics_payload = {
         "schema_version": "1.0",
         "closure_id": closure_id,
+        "scope_status": scope_status,
+        "blocking": blocking,
+        "defer_reason_zh": defer_reason,
         "rule_count": len(rule_order),
         "rule_order": rule_order,
         "status_counts": counts,

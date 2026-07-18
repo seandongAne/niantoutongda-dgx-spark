@@ -1,0 +1,26 @@
+{
+  "cmd": ".venv/bin/python /Users/seandong/Documents/DGX Spark Thing/scripts/space_adjudication_task.py --candidates /Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/spatial/candidate_manifest.json --source-hash /Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/spatial/normalized.sha256 --review /Users/seandong/Documents/DGX Spark Thing/fixtures/hero_s1/annotations/space_visual_adjudication.codex-v1.json --out-dir /Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/spatial_review",
+  "code": {
+    "/Users/seandong/Documents/DGX Spark Thing/backend/tools/spatial/adjudication.py": "d82af35a52ca2f4c04b5b261b1a09d664fd756b76d7d8397dc324764bca96fc6",
+    "/Users/seandong/Documents/DGX Spark Thing/scripts/space_adjudication_task.py": "0ee4bbdd1f6bed452c137d82eaa79a0526f04e4a05926455dce9a9165049a2a5"
+  },
+  "finished_at": "2026-07-18T02:48:16+00:00",
+  "inputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/fixtures/hero_s1/annotations/space_visual_adjudication.codex-v1.json": "ad125b56aa5aedc91a8da745716b5e758e17257cf9614222a14bb2f38a0e07d0",
+    "/Users/seandong/Documents/DGX Spark Thing/results/acceptance/HERO_S1/space-visual-adjudication-v1/frames/kf_003240.jpg": "49ef72d643521b5882abd3f45e6ac24033b0fb35dfa2e8085328b673752af2c3",
+    "/Users/seandong/Documents/DGX Spark Thing/results/acceptance/HERO_S1/space-visual-adjudication-v1/frames/kf_004260.jpg": "b3dfc27a60cd5064efe6a48af52827b5a7b081818ebd01c9d6e9199e17eb3a18",
+    "/Users/seandong/Documents/DGX Spark Thing/results/acceptance/HERO_S1/space-visual-adjudication-v1/frames/kf_005040.jpg": "168aab9113dcb1e64090586af7e3c982393e2073d7f3c682c849efb7ab41280a",
+    "/Users/seandong/Documents/DGX Spark Thing/results/acceptance/HERO_S1/space-visual-adjudication-v1/frames/kf_005640.jpg": "452033549566a85c9bc85d2ff437c0479b7df5c827f8b940f355000c275cb5aa",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/spatial/candidate_manifest.json": "ec56eecb53d4d38188dd17228efcb2a002a0f38633d4fb076eb1ff42d71aa804",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/spatial/normalized.sha256": "b628b688ae510294f24a6f9b8ae89b9c192b14a5180fd22eb27375e58229f8d9"
+  },
+  "outputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/spatial_review/adjudication_manifest.json": "b92e1ab3c66ce26a0bd2189f5cfb7faf49a9831b3278202766bbfd4068546dc6",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/spatial_review/metrics.json": "7d1cc4d089c3b7a7668a5460180ea3303479c992b0f182639b266a5ddd57df5f",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/spatial_review/normalized.sha256": "d6032dfeb4d5972b7849044838911508acebb4b5b4859e8414945d007e50aef8",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/spatial_review/regions.json": "6a1fe5da29295c357db3c8ae9033b9a94f95884e87a5975507849c6e2818fff2"
+  },
+  "stage": "space_review",
+  "started_at": "2026-07-18T02:48:16+00:00",
+  "status": "done"
+}

@@ -1,74 +1,74 @@
 {
-  "schema_version": "1.0",
-  "video_id": "new_1",
   "entries": [
     {
-      "schema_version": "1.0",
-      "region_id": "chest_top",
       "anchor": "chest_of_drawers",
-      "display_name_zh": "红木斗柜台面",
-      "support_type": "surface",
       "capacity_class": "medium",
-      "near_power": false,
+      "display_name_zh": "红木斗柜台面",
       "evidence_refs": [
         "agent_review:hero-s1-space-codex-v1/visual-chest-top-01",
         "visual:new_1@84224ms#results/acceptance/HERO_S1/space-visual-adjudication-v1/frames/kf_005040.jpg@sha256:168aab9113dcb1e64090586af7e3c982393e2073d7f3c682c849efb7ab41280a"
-      ]
+      ],
+      "near_power": false,
+      "region_id": "chest_top",
+      "schema_version": "1.0",
+      "support_type": "surface"
     },
     {
-      "schema_version": "1.0",
-      "region_id": "display_cabinet",
       "anchor": "display_cabinet",
-      "display_name_zh": "玻璃展示柜隔层",
-      "support_type": "shelf",
       "capacity_class": "small",
-      "near_power": false,
+      "display_name_zh": "玻璃展示柜隔层",
       "evidence_refs": [
         "agent_review:hero-s1-space-codex-v1/visual-display-cabinet-01",
         "visual:new_1@94251ms#results/acceptance/HERO_S1/space-visual-adjudication-v1/frames/kf_005640.jpg@sha256:452033549566a85c9bc85d2ff437c0479b7df5c827f8b940f355000c275cb5aa"
-      ]
+      ],
+      "near_power": false,
+      "region_id": "display_cabinet",
+      "schema_version": "1.0",
+      "support_type": "shelf"
     },
     {
-      "schema_version": "1.0",
-      "region_id": "study_desk",
       "anchor": "study_desk",
-      "display_name_zh": "书桌面",
-      "support_type": "surface",
       "capacity_class": "medium",
-      "near_power": false,
+      "display_name_zh": "书桌面",
       "evidence_refs": [
         "agent_review:hero-s1-space-codex-v1/visual-study-desk-01",
         "visual:new_1@54144ms#results/acceptance/HERO_S1/space-visual-adjudication-v1/frames/kf_003240.jpg@sha256:49ef72d643521b5882abd3f45e6ac24033b0fb35dfa2e8085328b673752af2c3"
-      ]
+      ],
+      "near_power": false,
+      "region_id": "study_desk",
+      "schema_version": "1.0",
+      "support_type": "surface"
     },
     {
-      "schema_version": "1.0",
-      "region_id": "vanity_top",
       "anchor": "vanity",
-      "display_name_zh": "花布面桌台面",
-      "support_type": "surface",
       "capacity_class": "medium",
-      "near_power": true,
+      "display_name_zh": "花布面桌台面",
       "evidence_refs": [
         "agent_review:hero-s1-space-codex-v1/visual-vanity-top-01",
         "visual-power:new_1@71190ms#results/acceptance/HERO_S1/space-visual-adjudication-v1/frames/kf_004260.jpg@sha256:b3dfc27a60cd5064efe6a48af52827b5a7b081818ebd01c9d6e9199e17eb3a18",
         "visual:new_1@71190ms#results/acceptance/HERO_S1/space-visual-adjudication-v1/frames/kf_004260.jpg@sha256:b3dfc27a60cd5064efe6a48af52827b5a7b081818ebd01c9d6e9199e17eb3a18"
-      ]
+      ],
+      "near_power": true,
+      "region_id": "vanity_top",
+      "schema_version": "1.0",
+      "support_type": "surface"
     },
     {
-      "schema_version": "1.0",
-      "region_id": "wall_shelf",
       "anchor": "wall_shelf",
-      "display_name_zh": "墙上木搁板",
-      "support_type": "shelf",
       "capacity_class": "small",
-      "near_power": true,
+      "display_name_zh": "墙上木搁板",
       "evidence_refs": [
         "agent_review:hero-s1-space-codex-v1/visual-wall-shelf-01",
         "visual-power:new_1@71190ms#results/acceptance/HERO_S1/space-visual-adjudication-v1/frames/kf_004260.jpg@sha256:b3dfc27a60cd5064efe6a48af52827b5a7b081818ebd01c9d6e9199e17eb3a18",
         "visual:new_1@71190ms#results/acceptance/HERO_S1/space-visual-adjudication-v1/frames/kf_004260.jpg@sha256:b3dfc27a60cd5064efe6a48af52827b5a7b081818ebd01c9d6e9199e17eb3a18"
-      ]
+      ],
+      "near_power": true,
+      "region_id": "wall_shelf",
+      "schema_version": "1.0",
+      "support_type": "shelf"
     }
   ],
-  "notes": "VISUALLY_ADJUDICATED overlay; review=hero-s1-space-codex-v1; source spatial normalized hash=8b4616b04f1ca1697f45652ac3cf3b4dec8256683f2fefd96678dce514067baa; UNKNOWN power projected near_power=false for:chest_top,display_cabinet,study_desk"
+  "notes": "VISUALLY_ADJUDICATED overlay; review=hero-s1-space-codex-v1; source spatial normalized hash=8b4616b04f1ca1697f45652ac3cf3b4dec8256683f2fefd96678dce514067baa; UNKNOWN power projected near_power=false for:chest_top,display_cabinet,study_desk",
+  "schema_version": "1.0",
+  "video_id": "new_1"
 }

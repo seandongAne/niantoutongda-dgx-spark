@@ -1,0 +1,21 @@
+{
+  "accepted_expected_anchor_count": 5,
+  "decision_count": 5,
+  "expected_anchor_count": 5,
+  "gate_reasons": [],
+  "gate_status": "PASS",
+  "needs_user_count": 0,
+  "normalized_hash": "d7bfea852368bb965b3286cb8cad180f98a36dfe2748750322ed3f8ba991ee88",
+  "power_state_counts": {
+    "NEAR": 2,
+    "UNKNOWN": 3
+  },
+  "projected_region_count": 5,
+  "rejected_count": 0,
+  "review_id": "hero-s1-space-codex-v1",
+  "schema_version": "1.0",
+  "source_spatial_normalized_hash": "8b4616b04f1ca1697f45652ac3cf3b4dec8256683f2fefd96678dce514067baa",
+  "source_video_id": "new_1",
+  "source_video_sha256": "fb7004841507c10fc95b283c190db0d887d232c281cb5a5400ad88943a2b84fe",
+  "visually_adjudicated_count": 5
+}

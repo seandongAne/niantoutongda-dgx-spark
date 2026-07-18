@@ -46,6 +46,9 @@
         1694.471313,
         1071.905273
       ],
+      "source_track_ids": [
+        "new_1_t122"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t122_f002130.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t122_f002190.jpg",
@@ -192,6 +195,7 @@
       "first_timestamp_ms": null,
       "last_timestamp_ms": null,
       "representative_bbox": null,
+      "source_track_ids": [],
       "evidence_refs": [],
       "power_evidence_refs": [],
       "model_versions": [],
@@ -218,6 +222,9 @@
         499.79126,
         1707.480347,
         1076.225952
+      ],
+      "source_track_ids": [
+        "new_1_t273"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t273_f003330.jpg",
@@ -339,6 +346,9 @@
         269.748688,
         772.735535
       ],
+      "source_track_ids": [
+        "new_1_t155"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t155_f001620.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t155_f001650.jpg",
@@ -436,6 +446,9 @@
         302.013794,
         261.136932
       ],
+      "source_track_ids": [
+        "new_1_t446"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t446_f004950.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t446_f004980.jpg",
@@ -489,6 +502,9 @@
         305.697327,
         770.125061
       ],
+      "source_track_ids": [
+        "new_1_t228"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t228_f002280.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t228_f002310.jpg",
@@ -532,6 +548,9 @@
         473.997742,
         316.837479,
         585.463379
+      ],
+      "source_track_ids": [
+        "new_1_t493"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t493_f005160.jpg",
@@ -588,6 +607,9 @@
         352.734772,
         144.448608
       ],
+      "source_track_ids": [
+        "new_1_t310"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t310_f003060.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t310_f003120.jpg",
@@ -628,6 +650,9 @@
         1.41162,
         354.38974,
         505.609741
+      ],
+      "source_track_ids": [
+        "new_1_t230"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t230_f002310.jpg",
@@ -674,6 +699,9 @@
         366.812408,
         569.887451
       ],
+      "source_track_ids": [
+        "new_1_t494"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t494_f005160.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t494_f005190.jpg",
@@ -718,6 +746,9 @@
         9.072314,
         410.777039,
         602.094055
+      ],
+      "source_track_ids": [
+        "new_1_t296"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t296_f002820.jpg",
@@ -796,6 +827,9 @@
         429.949127,
         1074.09436
       ],
+      "source_track_ids": [
+        "new_1_t535"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t535_f005580.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t535_f005610.jpg",
@@ -868,6 +902,9 @@
         443.106689,
         392.665924
       ],
+      "source_track_ids": [
+        "new_1_t172"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t172_f001620.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t172_f001650.jpg",
@@ -916,6 +953,9 @@
         1452.114014,
         524.351685
       ],
+      "source_track_ids": [
+        "new_1_t009"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t009_f000000.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t009_f000030.jpg",
@@ -955,6 +995,9 @@
         258.548859,
         1703.298706,
         748.519745
+      ],
+      "source_track_ids": [
+        "new_1_t457"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t457_f005850.jpg",
@@ -1058,6 +1101,9 @@
         1684.42804,
         813.828125
       ],
+      "source_track_ids": [
+        "new_1_t529"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t529_f005610.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t529_f005670.jpg",
@@ -1104,6 +1150,9 @@
         1594.675171,
         1075.431396
       ],
+      "source_track_ids": [
+        "new_1_t079"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t079_f000720.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t079_f000750.jpg",
@@ -1149,6 +1198,9 @@
         3.307743,
         1547.468384,
         1038.363647
+      ],
+      "source_track_ids": [
+        "new_1_t075"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t075_f001110.jpg",
@@ -1222,6 +1274,9 @@
         1437.886108,
         1076.697937
       ],
+      "source_track_ids": [
+        "new_1_t109"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t109_f000960.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t109_f000990.jpg",
@@ -1258,6 +1313,9 @@
         401.823761,
         1617.878845,
         1074.830994
+      ],
+      "source_track_ids": [
+        "new_1_t080"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t080_f000750.jpg",
@@ -1305,6 +1363,9 @@
         1918.79126,
         1077.389954
       ],
+      "source_track_ids": [
+        "new_1_t380"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t380_f004050.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t380_f004080.jpg",
@@ -1342,6 +1403,9 @@
         380.385361,
         1513.773926,
         570.713104
+      ],
+      "source_track_ids": [
+        "new_1_t150"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t150_f001470.jpg",
@@ -1388,6 +1452,9 @@
         319.862839,
         1880.870544,
         391.337555
+      ],
+      "source_track_ids": [
+        "new_1_t373"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t373_f004170.jpg",
@@ -1448,6 +1515,9 @@
         484.393616,
         1078.813965
       ],
+      "source_track_ids": [
+        "new_1_t003"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t003_f000000.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t003_f000030.jpg",
@@ -1498,6 +1568,9 @@
         1883.589233,
         385.937836
       ],
+      "source_track_ids": [
+        "new_1_t397"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t397_f004140.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t397_f004170.jpg",
@@ -1535,6 +1608,9 @@
         496.5056,
         1629.443726,
         948.111267
+      ],
+      "source_track_ids": [
+        "new_1_t007"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t007_f000150.jpg",
@@ -1587,6 +1663,9 @@
         1628.387695,
         948.385162
       ],
+      "source_track_ids": [
+        "new_1_t005"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t005_f000060.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t005_f000090.jpg",
@@ -1633,6 +1712,9 @@
         495.153549,
         1627.981323,
         943.00415
+      ],
+      "source_track_ids": [
+        "new_1_t010"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t010_f000090.jpg",
@@ -1681,6 +1763,9 @@
         1627.73175,
         945.741455
       ],
+      "source_track_ids": [
+        "new_1_t008"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t008_f000060.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t008_f000090.jpg",
@@ -1728,6 +1813,9 @@
         1814.111633,
         1075.273804
       ],
+      "source_track_ids": [
+        "new_1_t371"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t371_f004050.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t371_f004080.jpg",
@@ -1774,6 +1862,9 @@
         1570.108215,
         539.02359
       ],
+      "source_track_ids": [
+        "new_1_t259"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t259_f002550.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t259_f002580.jpg",
@@ -1810,6 +1901,9 @@
         374.098419,
         1556.654785,
         580.364868
+      ],
+      "source_track_ids": [
+        "new_1_t161"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t161_f001470.jpg",
@@ -1850,6 +1944,9 @@
         2.771628,
         1895.755127,
         1075.592346
+      ],
+      "source_track_ids": [
+        "new_1_t343"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t343_f003900.jpg",
@@ -1913,6 +2010,9 @@
         1917.31604,
         852.423645
       ],
+      "source_track_ids": [
+        "new_1_t131"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t131_f001230.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t131_f001290.jpg",
@@ -1956,6 +2056,9 @@
         21.927831,
         552.393829,
         598.209625
+      ],
+      "source_track_ids": [
+        "new_1_t282"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t282_f002880.jpg",
@@ -2052,6 +2155,9 @@
         1786.115723,
         1074.766479
       ],
+      "source_track_ids": [
+        "new_1_t029"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t029_f000330.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t029_f000360.jpg",
@@ -2125,6 +2231,9 @@
         1904.954224,
         956.460632
       ],
+      "source_track_ids": [
+        "new_1_t519"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t519_f005580.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t519_f005700.jpg",
@@ -2174,6 +2283,9 @@
         1627.065796,
         550.247467
       ],
+      "source_track_ids": [
+        "new_1_t056"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t056_f000480.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t056_f000510.jpg",
@@ -2217,6 +2329,9 @@
         1913.646851,
         433.641312
       ],
+      "source_track_ids": [
+        "new_1_t383"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t383_f004080.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t383_f004110.jpg",
@@ -2258,6 +2373,9 @@
         494.083954,
         1912.494751,
         1076.500122
+      ],
+      "source_track_ids": [
+        "new_1_t021"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t021_f000900.jpg",
@@ -2363,6 +2481,9 @@
         492.237488,
         1910.203735,
         1075.049561
+      ],
+      "source_track_ids": [
+        "new_1_t024"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t024_f000750.jpg",
@@ -2472,6 +2593,9 @@
         452.762451,
         1913.811218,
         1076.74469
+      ],
+      "source_track_ids": [
+        "new_1_t026"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t026_f000780.jpg",
@@ -2588,6 +2712,9 @@
         1633.345825,
         208.734047
       ],
+      "source_track_ids": [
+        "new_1_t214"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t214_f002070.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t214_f002100.jpg",
@@ -2624,6 +2751,9 @@
         509.555618,
         1917.860291,
         874.376587
+      ],
+      "source_track_ids": [
+        "new_1_t262"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t262_f002580.jpg",
@@ -2666,6 +2796,9 @@
         377.956696,
         1907.375183,
         1076.778137
+      ],
+      "source_track_ids": [
+        "new_1_t092"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t092_f000750.jpg",
@@ -2721,6 +2854,9 @@
         580.800598,
         179.733055
       ],
+      "source_track_ids": [
+        "new_1_t284"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t284_f002670.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t284_f002700.jpg",
@@ -2757,6 +2893,9 @@
         334.789001,
         1732.898682,
         558.868042
+      ],
+      "source_track_ids": [
+        "new_1_t166"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t166_f001620.jpg",
@@ -2809,6 +2948,9 @@
         325.416321,
         1735.221802,
         557.04425
+      ],
+      "source_track_ids": [
+        "new_1_t165"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t165_f001620.jpg",
@@ -2870,6 +3012,9 @@
         1916.953369,
         888.673218
       ],
+      "source_track_ids": [
+        "new_1_t261"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t261_f002550.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t261_f002580.jpg",
@@ -2909,6 +3054,9 @@
         0.722233,
         1916.555664,
         1077.084717
+      ],
+      "source_track_ids": [
+        "new_1_t345"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t345_f003750.jpg",
@@ -2958,6 +3106,9 @@
         1915.218872,
         1076.539062
       ],
+      "source_track_ids": [
+        "new_1_t063"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t063_f000570.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t063_f000600.jpg",
@@ -3001,6 +3152,9 @@
         413.843689,
         1915.747803,
         1074.802612
+      ],
+      "source_track_ids": [
+        "new_1_t062"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t062_f000750.jpg",
@@ -3082,6 +3236,9 @@
         1663.980652,
         457.588593
       ],
+      "source_track_ids": [
+        "new_1_t012"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t012_f000240.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t012_f000270.jpg",
@@ -3148,6 +3305,9 @@
         1757.855347,
         492.335449
       ],
+      "source_track_ids": [
+        "new_1_t174"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t174_f001890.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t174_f001980.jpg",
@@ -3211,6 +3371,9 @@
         258.584747,
         1762.345459,
         492.58902
+      ],
+      "source_track_ids": [
+        "new_1_t169"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t169_f001890.jpg",
@@ -3288,6 +3451,9 @@
         1819.258057,
         536.410583
       ],
+      "source_track_ids": [
+        "new_1_t245"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t245_f002490.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t245_f002520.jpg",
@@ -3328,6 +3494,9 @@
         701.727844,
         206.686577
       ],
+      "source_track_ids": [
+        "new_1_t334"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t334_f003570.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t334_f003600.jpg",
@@ -3364,6 +3533,9 @@
         483.371246,
         1911.870972,
         1069.938354
+      ],
+      "source_track_ids": [
+        "new_1_t064"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t064_f000780.jpg",
@@ -3421,6 +3593,9 @@
         1911.600952,
         1075.05957
       ],
+      "source_track_ids": [
+        "new_1_t106"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t106_f000930.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t106_f000960.jpg",
@@ -3469,6 +3644,9 @@
         1860.014709,
         455.66217
       ],
+      "source_track_ids": [
+        "new_1_t102"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t102_f000870.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t102_f000900.jpg",
@@ -3510,6 +3688,9 @@
         193.011841,
         1782.392456,
         403.691895
+      ],
+      "source_track_ids": [
+        "new_1_t107"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t107_f001020.jpg",
@@ -3563,6 +3744,9 @@
         1778.174072,
         674.28479
       ],
+      "source_track_ids": [
+        "new_1_t193"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t193_f001770.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t193_f001890.jpg",
@@ -3604,6 +3788,9 @@
         199.233841,
         1835.926758,
         468.694336
+      ],
+      "source_track_ids": [
+        "new_1_t200"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t200_f001950.jpg",
@@ -3652,6 +3839,9 @@
         434.180206,
         1915.01123,
         1071.78894
+      ],
+      "source_track_ids": [
+        "new_1_t077"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t077_f000690.jpg",
@@ -3709,6 +3899,9 @@
         1873.754456,
         754.865479
       ],
+      "source_track_ids": [
+        "new_1_t160"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t160_f001470.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t160_f001530.jpg",
@@ -3746,6 +3939,9 @@
         1915.682739,
         697.698608
       ],
+      "source_track_ids": [
+        "new_1_t158"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t158_f001470.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t158_f001500.jpg",
@@ -3782,6 +3978,9 @@
         471.141891,
         1845.366821,
         748.167786
+      ],
+      "source_track_ids": [
+        "new_1_t194"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t194_f001800.jpg",
@@ -3824,6 +4023,9 @@
         198.064018,
         703.431213,
         289.638214
+      ],
+      "source_track_ids": [
+        "new_1_t440"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t440_f004890.jpg",
@@ -3872,6 +4074,9 @@
         1915.510254,
         1072.736206
       ],
+      "source_track_ids": [
+        "new_1_t364"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t364_f003900.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t364_f003930.jpg",
@@ -3911,6 +4116,9 @@
         415.92366,
         1916.32959,
         1072.247375
+      ],
+      "source_track_ids": [
+        "new_1_t098"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t098_f000840.jpg",
@@ -3953,6 +4161,9 @@
         459.447754,
         1917.726929,
         1072.705566
+      ],
+      "source_track_ids": [
+        "new_1_t460"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t460_f005010.jpg",
@@ -3997,6 +4208,9 @@
         329.950333,
         1843.260071,
         562.138702
+      ],
+      "source_track_ids": [
+        "new_1_t177"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t177_f001620.jpg",
@@ -4043,6 +4257,9 @@
         485.320923,
         1917.483826,
         1075.872864
+      ],
+      "source_track_ids": [
+        "new_1_t458"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t458_f005010.jpg",
@@ -4094,6 +4311,9 @@
         1911.726624,
         1025.132751
       ],
+      "source_track_ids": [
+        "new_1_t123"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t123_f001170.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t123_f001200.jpg",
@@ -4136,6 +4356,9 @@
         1786.419312,
         160.873398
       ],
+      "source_track_ids": [
+        "new_1_t222"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t222_f002160.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t222_f002190.jpg",
@@ -4173,6 +4396,9 @@
         326.336334,
         1859.822632,
         403.405243
+      ],
+      "source_track_ids": [
+        "new_1_t112"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t112_f001050.jpg",
@@ -4221,6 +4447,9 @@
         432.155273,
         1917.489136,
         893.586182
+      ],
+      "source_track_ids": [
+        "new_1_t452"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t452_f005100.jpg",
@@ -4302,6 +4531,9 @@
         1917.244019,
         926.887115
       ],
+      "source_track_ids": [
+        "new_1_t495"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t495_f005160.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t495_f005190.jpg",
@@ -4347,6 +4579,9 @@
         0.40238,
         785.935455,
         1076.811707
+      ],
+      "source_track_ids": [
+        "new_1_t339"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t339_f003600.jpg",
@@ -4426,6 +4661,9 @@
         1911.507446,
         791.044006
       ],
+      "source_track_ids": [
+        "new_1_t159"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t159_f001470.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t159_f001500.jpg",
@@ -4476,6 +4714,9 @@
         1901.675537,
         447.216949
       ],
+      "source_track_ids": [
+        "new_1_t206"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t206_f001980.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t206_f002010.jpg",
@@ -4522,6 +4763,9 @@
         1915.528809,
         372.709473
       ],
+      "source_track_ids": [
+        "new_1_t516"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t516_f005430.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t516_f005460.jpg",
@@ -4566,6 +4810,9 @@
         1911.299316,
         382.303162
       ],
+      "source_track_ids": [
+        "new_1_t117"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t117_f001110.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t117_f001140.jpg",
@@ -4605,6 +4852,9 @@
         139.317795,
         1915.848877,
         1073.44458
+      ],
+      "source_track_ids": [
+        "new_1_t453"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t453_f004950.jpg",
@@ -4646,6 +4896,9 @@
         1913.072021,
         430.896667
       ],
+      "source_track_ids": [
+        "new_1_t210"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t210_f002040.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t210_f002070.jpg",
@@ -4685,6 +4938,9 @@
         197.927704,
         800.10553,
         278.346527
+      ],
+      "source_track_ids": [
+        "new_1_t447"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t447_f004920.jpg",
@@ -4727,6 +4983,9 @@
         807.550842,
         323.716248
       ],
+      "source_track_ids": [
+        "new_1_t448"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t448_f004920.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t448_f004950.jpg",
@@ -4767,6 +5026,9 @@
         1.04545,
         518.324768,
         478.716736
+      ],
+      "source_track_ids": [
+        "new_1_t324"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t324_f003420.jpg",
@@ -4815,6 +5077,9 @@
         751.087219,
         571.871643,
         983.803772
+      ],
+      "source_track_ids": [
+        "new_1_t018"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t018_f000420.jpg",
@@ -4891,6 +5156,9 @@
         742.929504,
         584.652344,
         977.647339
+      ],
+      "source_track_ids": [
+        "new_1_t016"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t016_f000420.jpg",
@@ -4970,6 +5238,9 @@
         628.726746,
         1016.494324
       ],
+      "source_track_ids": [
+        "new_1_t039"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t039_f000240.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t039_f000270.jpg",
@@ -5011,6 +5282,9 @@
         640.733215,
         933.412964,
         1076.325439
+      ],
+      "source_track_ids": [
+        "new_1_t336"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t336_f003570.jpg",
@@ -5064,6 +5338,9 @@
         629.687927,
         1068.710815
       ],
+      "source_track_ids": [
+        "new_1_t019"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t019_f000000.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t019_f000030.jpg",
@@ -5112,6 +5389,9 @@
         640.873352,
         1038.966827
       ],
+      "source_track_ids": [
+        "new_1_t035"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t035_f000150.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t035_f000240.jpg",
@@ -5148,6 +5428,9 @@
         203.237915,
         943.207397,
         248.181763
+      ],
+      "source_track_ids": [
+        "new_1_t441"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t441_f004890.jpg",
@@ -5189,6 +5472,9 @@
         205.98436,
         746.440369,
         580.771179
+      ],
+      "source_track_ids": [
+        "new_1_t252"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t252_f002970.jpg",
@@ -5279,6 +5565,9 @@
         676.905396,
         581.815186
       ],
+      "source_track_ids": [
+        "new_1_t292"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t292_f003030.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t292_f003060.jpg",
@@ -5329,6 +5618,9 @@
         212.357513,
         808.905182,
         579.183228
+      ],
+      "source_track_ids": [
+        "new_1_t277"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t277_f002970.jpg",
@@ -5397,6 +5689,9 @@
         1137.336609,
         468.059769
       ],
+      "source_track_ids": [
+        "new_1_t144"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t144_f001440.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t144_f001500.jpg",
@@ -5447,6 +5742,9 @@
         773.523376,
         564.534546
       ],
+      "source_track_ids": [
+        "new_1_t130"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t130_f001230.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t130_f001260.jpg",
@@ -5483,6 +5781,9 @@
         213.897141,
         859.437927,
         564.762329
+      ],
+      "source_track_ids": [
+        "new_1_t251"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t251_f002970.jpg",
@@ -5561,6 +5862,9 @@
         1276.639038,
         233.713379
       ],
+      "source_track_ids": [
+        "new_1_t192"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t192_f001770.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t192_f001890.jpg",
@@ -5609,6 +5913,9 @@
         1448.790771,
         850.639435
       ],
+      "source_track_ids": [
+        "new_1_t332"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t332_f003540.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t332_f003630.jpg",
@@ -5650,6 +5957,9 @@
         561.527435,
         954.242157,
         807.369324
+      ],
+      "source_track_ids": [
+        "new_1_t001"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t001_f001350.jpg",
@@ -5784,6 +6094,9 @@
         554.168213,
         973.394958,
         807.37616
+      ],
+      "source_track_ids": [
+        "new_1_t006"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t006_f001350.jpg",
@@ -5945,6 +6258,9 @@
         1185.139038,
         736.442108
       ],
+      "source_track_ids": [
+        "new_1_t562"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t562_f006000.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t562_f006030.jpg",
@@ -5995,6 +6311,9 @@
         899.647766,
         561.634033
       ],
+      "source_track_ids": [
+        "new_1_t128"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t128_f001230.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t128_f001260.jpg",
@@ -6038,6 +6357,9 @@
         -0.154769,
         1281.719971,
         1076.259521
+      ],
+      "source_track_ids": [
+        "new_1_t342"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t342_f003840.jpg",
@@ -6117,6 +6439,9 @@
         1756.805237,
         1082.700928
       ],
+      "source_track_ids": [
+        "new_1_t299"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t299_f002910.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t299_f002940.jpg",
@@ -6153,6 +6478,9 @@
         478.328766,
         1701.965576,
         1075.095703
+      ],
+      "source_track_ids": [
+        "new_1_t295"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t295_f003330.jpg",
@@ -6255,6 +6583,9 @@
         1754.824463,
         898.499115
       ],
+      "source_track_ids": [
+        "new_1_t320"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t320_f003360.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t320_f003390.jpg",
@@ -6313,6 +6644,9 @@
         1909.773071,
         1073.932739
       ],
+      "source_track_ids": [
+        "new_1_t543"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t543_f005940.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t543_f005970.jpg",
@@ -6370,6 +6704,9 @@
         0.512506,
         1917.548767,
         1076.552856
+      ],
+      "source_track_ids": [
+        "new_1_t363"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t363_f004290.jpg",
@@ -6445,6 +6782,9 @@
         232.591843,
         1552.656006,
         1076.195068
+      ],
+      "source_track_ids": [
+        "new_1_t442"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t442_f004980.jpg",
@@ -6566,6 +6906,9 @@
         1759.118286,
         104.690544
       ],
+      "source_track_ids": [
+        "new_1_t235"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t235_f002400.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t235_f002430.jpg",
@@ -6605,6 +6948,9 @@
         135.031601,
         1339.263672,
         180.819336
+      ],
+      "source_track_ids": [
+        "new_1_t429"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t429_f004770.jpg",
@@ -6646,6 +6992,9 @@
         216.02623,
         1557.739258,
         1075.958862
+      ],
+      "source_track_ids": [
+        "new_1_t430"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t430_f004980.jpg",
@@ -6777,6 +7126,9 @@
         1823.808777,
         1071.18042
       ],
+      "source_track_ids": [
+        "new_1_t143"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t143_f002130.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t143_f002190.jpg",
@@ -6899,6 +7251,9 @@
         1442.65686,
         1067.755981
       ],
+      "source_track_ids": [
+        "new_1_t184"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t184_f002100.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t184_f002130.jpg",
@@ -6991,6 +7346,9 @@
         1517.735107,
         750.550293
       ],
+      "source_track_ids": [
+        "new_1_t515"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t515_f005850.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t515_f005940.jpg",
@@ -7079,6 +7437,9 @@
         1715.393311,
         1076.933228
       ],
+      "source_track_ids": [
+        "new_1_t416"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t416_f004770.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t416_f004800.jpg",
@@ -7151,6 +7512,9 @@
         1670.144653,
         824.408997
       ],
+      "source_track_ids": [
+        "new_1_t425"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t425_f004560.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t425_f004620.jpg",
@@ -7204,6 +7568,9 @@
         1510.870117,
         1070.098328
       ],
+      "source_track_ids": [
+        "new_1_t223"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t223_f002160.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t223_f002250.jpg",
@@ -7250,6 +7617,9 @@
         1544.551392,
         1077.256714
       ],
+      "source_track_ids": [
+        "new_1_t362"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t362_f003900.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t362_f003930.jpg",
@@ -7289,6 +7659,9 @@
         169.674988,
         1408.138306,
         213.471909
+      ],
+      "source_track_ids": [
+        "new_1_t424"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t424_f004560.jpg",
@@ -7342,6 +7715,9 @@
         751.062408,
         1440.093262,
         1063.687561
+      ],
+      "source_track_ids": [
+        "new_1_t142"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t142_f002070.jpg",
@@ -7461,6 +7837,9 @@
         1456.700195,
         297.830597
       ],
+      "source_track_ids": [
+        "new_1_t387"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t387_f004230.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t387_f004290.jpg",
@@ -7554,6 +7933,9 @@
         1434.394653,
         291.889923
       ],
+      "source_track_ids": [
+        "new_1_t423"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t423_f004560.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t423_f004590.jpg",
@@ -7598,6 +7980,9 @@
         733.547089,
         1793.849487,
         1075.345032
+      ],
+      "source_track_ids": [
+        "new_1_t356"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t356_f004740.jpg",
@@ -7722,6 +8107,9 @@
         1828.508972,
         1073.66571
       ],
+      "source_track_ids": [
+        "new_1_t418"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t418_f004410.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t418_f004440.jpg",
@@ -7763,6 +8151,9 @@
         629.807251,
         1544.034851,
         943.743591
+      ],
+      "source_track_ids": [
+        "new_1_t220"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t220_f002250.jpg",
@@ -7810,6 +8201,9 @@
         1551.951965,
         1075.016724
       ],
+      "source_track_ids": [
+        "new_1_t227"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t227_f002220.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t227_f002250.jpg",
@@ -7846,6 +8240,9 @@
         720.309448,
         1804.974243,
         1075.871216
+      ],
+      "source_track_ids": [
+        "new_1_t359"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t359_f004770.jpg",
@@ -7968,6 +8365,9 @@
         1917.580078,
         1076.247253
       ],
+      "source_track_ids": [
+        "new_1_t419"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t419_f004410.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t419_f004440.jpg",
@@ -8014,6 +8414,9 @@
         31.434544,
         1233.642578,
         270.454437
+      ],
+      "source_track_ids": [
+        "new_1_t388"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t388_f004110.jpg",
@@ -8124,6 +8527,9 @@
         1518.390869,
         368.660049
       ],
+      "source_track_ids": [
+        "new_1_t412"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t412_f004350.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t412_f004380.jpg",
@@ -8179,6 +8585,9 @@
         1526.178528,
         314.2715
       ],
+      "source_track_ids": [
+        "new_1_t422"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t422_f004470.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t422_f004500.jpg",
@@ -8216,6 +8625,9 @@
         48.790787,
         1530.832275,
         373.374359
+      ],
+      "source_track_ids": [
+        "new_1_t378"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t378_f004170.jpg",
@@ -8282,6 +8694,9 @@
         1226.273865,
         578.604889
       ],
+      "source_track_ids": [
+        "new_1_t138"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t138_f001320.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t138_f001350.jpg",
@@ -8327,6 +8742,9 @@
         711.817993,
         1865.89209,
         1078.670166
+      ],
+      "source_track_ids": [
+        "new_1_t554"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t554_f006060.jpg",
@@ -8384,6 +8802,9 @@
         1233.072388,
         533.64032
       ],
+      "source_track_ids": [
+        "new_1_t263"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t263_f002550.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t263_f002580.jpg",
@@ -8431,6 +8852,9 @@
         319.386292,
         1606.684326,
         427.635132
+      ],
+      "source_track_ids": [
+        "new_1_t384"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t384_f004170.jpg",
@@ -8490,6 +8914,9 @@
         774.310608,
         1899.603271,
         1076.250427
+      ],
+      "source_track_ids": [
+        "new_1_t365"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t365_f004770.jpg",
@@ -8589,6 +9016,9 @@
         1331.401733,
         349.575806
       ],
+      "source_track_ids": [
+        "new_1_t370"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t370_f004110.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t370_f004140.jpg",
@@ -8666,6 +9096,9 @@
         1239.474731,
         388.470642
       ],
+      "source_track_ids": [
+        "new_1_t094"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t094_f000780.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t094_f000810.jpg",
@@ -8705,6 +9138,9 @@
         311.823883,
         1628.819458,
         383.690399
+      ],
+      "source_track_ids": [
+        "new_1_t379"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t379_f004260.jpg",
@@ -8754,6 +9190,9 @@
         664.904175,
         1911.003418,
         1075.817871
+      ],
+      "source_track_ids": [
+        "new_1_t542"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t542_f006060.jpg",
@@ -8827,6 +9266,9 @@
         308.619507,
         1622.894531,
         380.285522
+      ],
+      "source_track_ids": [
+        "new_1_t369"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t369_f004260.jpg",
@@ -8904,6 +9346,9 @@
         674.417664,
         1911.470093,
         1076.264526
+      ],
+      "source_track_ids": [
+        "new_1_t533"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t533_f006060.jpg",
@@ -8983,6 +9428,9 @@
         178.22377,
         1668.006836,
         1077.786377
+      ],
+      "source_track_ids": [
+        "new_1_t426"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t426_f004980.jpg",
@@ -9116,6 +9564,9 @@
         1488.411743,
         952.883423
       ],
+      "source_track_ids": [
+        "new_1_t188"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t188_f001800.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t188_f001830.jpg",
@@ -9159,6 +9610,9 @@
         322.947632,
         1670.343994,
         435.059143
+      ],
+      "source_track_ids": [
+        "new_1_t394"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t394_f004170.jpg",
@@ -9212,6 +9666,9 @@
         823.437561,
         1488.468994,
         1045.371826
+      ],
+      "source_track_ids": [
+        "new_1_t148"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t148_f001800.jpg",
@@ -9281,6 +9738,9 @@
         1796.964111,
         1077.937866
       ],
+      "source_track_ids": [
+        "new_1_t502"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t502_f005400.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t502_f005430.jpg",
@@ -9337,6 +9797,9 @@
         1292.560425,
         1070.070801
       ],
+      "source_track_ids": [
+        "new_1_t070"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t070_f000570.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t070_f000630.jpg",
@@ -9380,6 +9843,9 @@
         107.362602,
         1378.611328,
         902.159241
+      ],
+      "source_track_ids": [
+        "new_1_t014"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t014_f000570.jpg",
@@ -9461,6 +9927,9 @@
         1382.70575,
         899.924255
       ],
+      "source_track_ids": [
+        "new_1_t015"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t015_f000570.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t015_f000600.jpg",
@@ -9534,6 +10003,9 @@
         116.811531,
         1389.021729,
         904.3573
+      ],
+      "source_track_ids": [
+        "new_1_t028"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t028_f000570.jpg",
@@ -9619,6 +10091,9 @@
         1331.451843,
         329.930847
       ],
+      "source_track_ids": [
+        "new_1_t196"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t196_f001860.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t196_f001890.jpg",
@@ -9655,6 +10130,9 @@
         243.518196,
         1934.857727,
         1065.000305
+      ],
+      "source_track_ids": [
+        "new_1_t421"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t421_f004440.jpg",
@@ -9693,6 +10171,9 @@
         250.712898,
         1672.152588,
         754.153961
+      ],
+      "source_track_ids": [
+        "new_1_t499"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t499_f005850.jpg",
@@ -9796,6 +10277,9 @@
         1412.751038,
         533.122772
       ],
+      "source_track_ids": [
+        "new_1_t040"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t040_f000240.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t040_f000270.jpg",
@@ -9832,6 +10316,9 @@
         401.927032,
         1451.65332,
         1076.651184
+      ],
+      "source_track_ids": [
+        "new_1_t069"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t069_f000900.jpg",
@@ -9891,6 +10378,9 @@
         1422.124329,
         538.294861
       ],
+      "source_track_ids": [
+        "new_1_t267"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t267_f002580.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t267_f002610.jpg",
@@ -9927,6 +10417,9 @@
         152.167221,
         1419.087646,
         708.542358
+      ],
+      "source_track_ids": [
+        "new_1_t025"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t025_f000060.jpg",
@@ -9979,6 +10472,9 @@
         445.232147,
         1435.092285,
         1075.430176
+      ],
+      "source_track_ids": [
+        "new_1_t061"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t061_f000810.jpg",
@@ -10055,6 +10551,9 @@
         219.016052,
         1838.193481,
         1075.82605
+      ],
+      "source_track_ids": [
+        "new_1_t415"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t415_f005940.jpg",
@@ -10194,6 +10693,9 @@
         1811.425842,
         431.487198
       ],
+      "source_track_ids": [
+        "new_1_t382"
+      ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t382_f004170.jpg",
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t382_f004200.jpg",
@@ -10248,6 +10750,9 @@
         500.184875,
         1706.944214,
         1076.262939
+      ],
+      "source_track_ids": [
+        "new_1_t272"
       ],
       "evidence_refs": [
         "crop:local-data/hero_s1/space-ingest/new_1/evidence/new_1_t272_f003330.jpg",
@@ -10363,6 +10868,7 @@
       "first_timestamp_ms": null,
       "last_timestamp_ms": null,
       "representative_bbox": null,
+      "source_track_ids": [],
       "evidence_refs": [],
       "power_evidence_refs": [],
       "model_versions": [],

@@ -1,17 +1,17 @@
 {
-  "cmd": ".venv/bin/python /Users/seandong/Documents/DGX Spark Thing/scripts/regions_task.py --manifest /Users/seandong/Documents/DGX Spark Thing/fixtures/hero_s1/regions.target5.json --out-dir /Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/regions",
+  "cmd": ".venv/bin/python /Users/seandong/Documents/DGX Spark Thing/scripts/regions_task.py --manifest /Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/spatial_review/regions.json --out-dir /Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/regions",
   "code": {
     "/Users/seandong/Documents/DGX Spark Thing/scripts/regions_task.py": "02a743a83b3e323957f043dd13962e405911c3211a627a136386d52e45a67b45"
   },
-  "finished_at": "2026-07-18T02:16:18+00:00",
+  "finished_at": "2026-07-18T02:48:16+00:00",
   "inputs": {
-    "/Users/seandong/Documents/DGX Spark Thing/fixtures/hero_s1/regions.target5.json": "65034f2ab104b0a64855f39c8a556af69475abb26ecc7137ff5091e9c3d218d5"
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/spatial_review/regions.json": "6a1fe5da29295c357db3c8ae9033b9a94f95884e87a5975507849c6e2818fff2"
   },
   "outputs": {
-    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/regions/regions.json": "f35cd99e29f99768dab4d61441efb6b1812f04bebd64b11135ab832619ed13dd",
-    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/regions/regions_core.jsonl": "ef3a0fee782f5a84d49484a0e2b00ca3e1f63873a1651efeebdd3d682aaf5274"
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/regions/regions.json": "f2cdc02530c3dd111016ef39fc1a73b82241cb2430f85f365caed734cbd0ef80",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/regions/regions_core.jsonl": "a7224aa16a859f9c4ad20047927e55a30c7b933e637fe22e27ef7cbb78b6058a"
   },
   "stage": "regions",
-  "started_at": "2026-07-18T02:16:18+00:00",
+  "started_at": "2026-07-18T02:48:16+00:00",
   "status": "done"
 }

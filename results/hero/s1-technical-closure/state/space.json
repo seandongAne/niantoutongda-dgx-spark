@@ -1,18 +1,19 @@
 {
   "cmd": ".venv/bin/python /Users/seandong/Documents/DGX Spark Thing/scripts/space_task.py --video-id new_1 --observations /Users/seandong/Documents/DGX Spark Thing/results/hero_s1/space-auto/auto_observations.jsonl --out-dir /Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/spatial --min-regions 5 --min-observations 2 --min-confidence 0.75 --min-hard-field-confidence 0.7 --min-power-confidence 0.7 --min-field-consensus 0.67 --dedupe-iou 0.35 --expected-anchor study_desk --expected-anchor vanity --expected-anchor wall_shelf --expected-anchor chest_of_drawers --expected-anchor display_cabinet --shadow-only",
   "code": {
+    "/Users/seandong/Documents/DGX Spark Thing/backend/tools/spatial/producer.py": "20a955114a8d608d47a98121124f370b84dd8a687963ff66b910727ddfeb2436",
     "/Users/seandong/Documents/DGX Spark Thing/scripts/space_task.py": "343232811578d243c32c90e636d18fd5ea4f39bfa38e1b1f074d188a626cb7c2"
   },
-  "finished_at": "2026-07-18T02:16:18+00:00",
+  "finished_at": "2026-07-18T02:48:16+00:00",
   "inputs": {
     "/Users/seandong/Documents/DGX Spark Thing/results/hero_s1/space-auto/auto_observations.jsonl": "f1c8eb81f72e3472a7b2d44bbe69d9c76ab4bb0a5d0727ce3a2c7f843fcb6842"
   },
   "outputs": {
-    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/spatial/candidate_manifest.json": "92ce35a33c3ff536a728b1205522ecda8cd3bcf6a80cfb8c498c28caf8073932",
-    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/spatial/metrics.json": "8b074a6a844da9a606de3df204f45d9bd27738e473357e3ccffca8c6cdca4db8",
-    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/spatial/normalized.sha256": "df3b06128c4789dd51332e46550fa74efa4c3a9cb7d2de86e5af53b8e2ddadfb"
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/spatial/candidate_manifest.json": "ec56eecb53d4d38188dd17228efcb2a002a0f38633d4fb076eb1ff42d71aa804",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/spatial/metrics.json": "99cebeedd8af982d53689f29e7b05a4080e2e0459be195855e04dc379465434d",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/spatial/normalized.sha256": "b628b688ae510294f24a6f9b8ae89b9c192b14a5180fd22eb27375e58229f8d9"
   },
   "stage": "space",
-  "started_at": "2026-07-18T02:16:18+00:00",
+  "started_at": "2026-07-18T02:48:15+00:00",
   "status": "done"
 }

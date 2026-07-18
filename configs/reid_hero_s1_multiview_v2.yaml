@@ -1,0 +1,53 @@
+version: reid-hero-s1-closure-multiview-v2
+created_at: '2026-07-18'
+owner: 物品记忆 Agent
+reason: >-
+  在 cycle-v1 完整合并工作点上启用候选集内逐视角重排。工作点由不读取冻结
+  anchor GT 的代理扫描冻结：raw + max_pair + blend 0.50 在 18 个组合中通过
+  diff-P95 与 pseudo R@5 安全门，并在合格组合中取得最高 pseudo R@1；最终
+  HERO 指标只用于验收，不再据其回调参数。
+applies_to_dataset: hero_s1
+frozen: true
+embedding_dim: 768
+top_k: 5
+weights:
+  instance: 0.65
+  semantic: 0.15
+  attribute: 0.15
+  context: 0.0
+  geometry: 0.05
+thresholds:
+  match: 0.82
+  new: 0.7
+  margin: 0.0
+  min_quality: 0.28
+stitch:
+  enabled: true
+  min_cosine: 0.85
+  max_gap_ms: 0
+filter:
+  min_observations: 5
+clarify:
+  max_partners_per_tracklet: 2
+projection:
+  enabled: true
+  artifact: results/sf1/hero_s1_autotune_v1/projection.npz
+  sha256: 79a74f135acad1f43ac25d391a01becdbac1dc8b219430a4a14c6ddaf6da02e4
+multiview:
+  enabled: true
+  artifact: results/hero_s1/multiview-dinov2-v1/views.npz
+  sha256: 6c48978bf14e5a0a9f63885c4d848f8e56101471f2652efb5665adb7c7a9a00b
+  method: max_pair
+  blend: 0.5
+  space: raw
+  calibration: per_video_pair_quantile
+  max_views_per_rep: 6
+cycle:
+  enabled: true
+derived_from:
+  base_config: configs/reid_hero_s1_cycle_v1.yaml
+  base_sha256: 329858c8ca95f4bc35536a64e590962e1478ad9086a3790089b80be141790ee4
+  multiview_manifest: results/hero_s1/multiview-dinov2-v1/manifest.json
+  multiview_manifest_sha256: a33963614fe0afa573ab0ca869f1b18c080a83a4e4cf2f6a14dc8605d25f702d
+  proxy_selection: results/hero_s1/multiview-dinov2-v1/proxy-sweep.json
+  proxy_selection_sha256: 39a0db0d905d8c4c6f3b8c14bf8f6b0ac63ecbe9aa8f5bd2c4c699a805ae8d75

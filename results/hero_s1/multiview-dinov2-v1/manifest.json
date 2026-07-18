@@ -1,0 +1,37 @@
+{
+  "artifact": {
+    "embedding_dim": 768,
+    "path": "views.npz",
+    "sha256": "6c48978bf14e5a0a9f63885c4d848f8e56101471f2652efb5665adb7c7a9a00b",
+    "tracklet_count": 4629,
+    "vector_dtype": "float32",
+    "view_count": 12232,
+    "view_index_base": 0
+  },
+  "created_at": "2026-07-18T09:21:08.586336+00:00",
+  "format_version": "reid-multiview-embeddings-v1",
+  "inputs_sha256": "e033308d7ea603d9fdafbcebf846f39a614fb9bb9c765bebae3540e681308e32",
+  "missing_prototype_count": 0,
+  "missing_prototypes": [],
+  "model_version": "dinov2-base@/home/Developer/models/facebook__dinov2-base",
+  "source_files": [
+    {
+      "path": "old_1/tracklets.jsonl",
+      "prototype_ref_count": 3568,
+      "sha256": "eb1bc1b6ff6bdc34afb3bf6a02100655cb79e6800a7b175d56a8b1dc037f921d",
+      "tracklet_count": 1345
+    },
+    {
+      "path": "old_2/tracklets.jsonl",
+      "prototype_ref_count": 3819,
+      "sha256": "88efe939707fd588c07f680ceb63b1f6220d797c16ec5093b9e997cd670f997b",
+      "tracklet_count": 1445
+    },
+    {
+      "path": "old_3/tracklets.jsonl",
+      "prototype_ref_count": 4845,
+      "sha256": "7239cf3e2e303644f30abe08791862f113f7446aa0cebf07d74718f7ff76aabb",
+      "tracklet_count": 1839
+    }
+  ]
+}

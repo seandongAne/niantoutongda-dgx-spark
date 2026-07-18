@@ -1,0 +1,52 @@
+version: reid-hero-s1-closure-multiview-r1-v3
+created_at: '2026-07-18'
+owner: 物品记忆 Agent
+reason: >-
+  R@1 定向的第二冻结候选。该工作点在首次 HERO 验收前已存在于同一份 18 组合
+  代理网格，是唯一把 pseudo R@1 从 0.449198 提高到 0.454545 的组合；tutor
+  diff-P95 增量 0.000223 仍低于 0.005 安全门，但 pseudo R@5 有退化，故与
+  安全优先的 v2 分开留档。只更换集合打分公式，不扩大 baseline Top-5 召回。
+applies_to_dataset: hero_s1
+frozen: true
+embedding_dim: 768
+top_k: 5
+weights:
+  instance: 0.65
+  semantic: 0.15
+  attribute: 0.15
+  context: 0.0
+  geometry: 0.05
+thresholds:
+  match: 0.82
+  new: 0.7
+  margin: 0.0
+  min_quality: 0.28
+stitch:
+  enabled: true
+  min_cosine: 0.85
+  max_gap_ms: 0
+filter:
+  min_observations: 5
+clarify:
+  max_partners_per_tracklet: 2
+projection:
+  enabled: true
+  artifact: results/sf1/hero_s1_autotune_v1/projection.npz
+  sha256: 79a74f135acad1f43ac25d391a01becdbac1dc8b219430a4a14c6ddaf6da02e4
+multiview:
+  enabled: true
+  artifact: results/hero_s1/multiview-dinov2-v1/views.npz
+  sha256: 6c48978bf14e5a0a9f63885c4d848f8e56101471f2652efb5665adb7c7a9a00b
+  method: symmetric_top2
+  blend: 0.5
+  space: raw
+  calibration: per_video_pair_quantile
+  max_views_per_rep: 6
+cycle:
+  enabled: true
+derived_from:
+  base_config: configs/reid_hero_s1_multiview_v2.yaml
+  base_sha256: 9881332d8d91f0472a83f7e249d31ff33ce904f259b7f60352a07877b8a980a6
+  changed_field: multiview.method
+  proxy_selection: results/hero_s1/multiview-dinov2-v1/proxy-sweep.json
+  proxy_selection_sha256: 39a0db0d905d8c4c6f3b8c14bf8f6b0ac63ecbe9aa8f5bd2c4c699a805ae8d75

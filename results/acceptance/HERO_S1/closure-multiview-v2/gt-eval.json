@@ -1,0 +1,804 @@
+{
+  "reports": [
+    {
+      "clarification_buckets": {
+        "anchor_vs_unknown": 12,
+        "cross_anchor": 0,
+        "no_anchor": 505,
+        "same_anchor": 74
+      },
+      "complete_anchors": [
+        "anchor_01",
+        "anchor_02",
+        "anchor_03",
+        "anchor_05",
+        "anchor_07",
+        "anchor_08",
+        "anchor_09",
+        "anchor_10",
+        "anchor_11",
+        "anchor_12",
+        "anchor_13",
+        "anchor_14",
+        "anchor_15",
+        "anchor_16",
+        "anchor_18",
+        "anchor_19",
+        "anchor_20"
+      ],
+      "config_version": "reid-hero-s1-closure-multiview-v2",
+      "cross_anchor_clarifications": [],
+      "false_merge_entities": [],
+      "gate": {
+        "complete_merge": {
+          "min": 16,
+          "pass": true,
+          "value": 17
+        },
+        "hard_negative_groups": {
+          "of": 0,
+          "pass": true,
+          "value": 0
+        },
+        "high_confidence_false_merge": {
+          "max": 0,
+          "pass": true,
+          "value": 0
+        },
+        "recall_at_1": {
+          "hits": 488,
+          "min": 0.86,
+          "opportunities": 577,
+          "pass": false,
+          "value": 0.8458
+        }
+      },
+      "hard_negative": {},
+      "incomplete_anchors": {
+        "anchor_04": {
+          "best_pure_entity_covers": [
+            "old_2",
+            "old_3"
+          ],
+          "needed_videos": [
+            "old_1",
+            "old_2",
+            "old_3"
+          ]
+        },
+        "anchor_06": {
+          "best_pure_entity_covers": [
+            "old_2",
+            "old_3"
+          ],
+          "needed_videos": [
+            "old_1",
+            "old_2",
+            "old_3"
+          ]
+        },
+        "anchor_17": {
+          "best_pure_entity_covers": [
+            "old_1",
+            "old_2"
+          ],
+          "needed_videos": [
+            "old_1",
+            "old_2",
+            "old_3"
+          ]
+        }
+      },
+      "recall_at_1_per_anchor": {
+        "anchor_01": {
+          "hits": 7,
+          "opportunities": 7
+        },
+        "anchor_02": {
+          "hits": 8,
+          "opportunities": 10
+        },
+        "anchor_03": {
+          "hits": 3,
+          "opportunities": 4
+        },
+        "anchor_04": {
+          "hits": 10,
+          "opportunities": 16
+        },
+        "anchor_05": {
+          "hits": 17,
+          "opportunities": 24
+        },
+        "anchor_06": {
+          "hits": 24,
+          "opportunities": 38
+        },
+        "anchor_07": {
+          "hits": 52,
+          "opportunities": 54
+        },
+        "anchor_08": {
+          "hits": 133,
+          "opportunities": 156
+        },
+        "anchor_09": {
+          "hits": 21,
+          "opportunities": 22
+        },
+        "anchor_10": {
+          "hits": 11,
+          "opportunities": 12
+        },
+        "anchor_11": {
+          "hits": 17,
+          "opportunities": 18
+        },
+        "anchor_12": {
+          "hits": 15,
+          "opportunities": 22
+        },
+        "anchor_13": {
+          "hits": 27,
+          "opportunities": 28
+        },
+        "anchor_14": {
+          "hits": 19,
+          "opportunities": 20
+        },
+        "anchor_15": {
+          "hits": 13,
+          "opportunities": 16
+        },
+        "anchor_16": {
+          "hits": 20,
+          "opportunities": 24
+        },
+        "anchor_17": {
+          "hits": 10,
+          "opportunities": 14
+        },
+        "anchor_18": {
+          "hits": 34,
+          "opportunities": 40
+        },
+        "anchor_19": {
+          "hits": 18,
+          "opportunities": 22
+        },
+        "anchor_20": {
+          "hits": 29,
+          "opportunities": 30
+        }
+      },
+      "recall_misses": [
+        {
+          "anchor": "anchor_02",
+          "from": "old_1_t2352",
+          "to_video": "old_3",
+          "top1": "old_3_t5180",
+          "top1_score": 0.9402
+        },
+        {
+          "anchor": "anchor_02",
+          "from": "old_2_t5086",
+          "to_video": "old_3",
+          "top1": "old_3_t5180",
+          "top1_score": 0.8544
+        },
+        {
+          "anchor": "anchor_03",
+          "from": "old_1_t897",
+          "to_video": "old_2",
+          "top1": "old_2_t955",
+          "top1_score": 0.5517
+        },
+        {
+          "anchor": "anchor_04",
+          "from": "old_1_t3059",
+          "to_video": "old_2",
+          "top1": "old_2_t1684",
+          "top1_score": 0.6624
+        },
+        {
+          "anchor": "anchor_04",
+          "from": "old_1_t3059",
+          "to_video": "old_3",
+          "top1": "old_3_t2462",
+          "top1_score": 0.6799
+        },
+        {
+          "anchor": "anchor_04",
+          "from": "old_2_t3457",
+          "to_video": "old_1",
+          "top1": "old_1_t1035",
+          "top1_score": 0.5795
+        },
+        {
+          "anchor": "anchor_04",
+          "from": "old_2_t3457",
+          "to_video": "old_3",
+          "top1": "old_3_t2483",
+          "top1_score": 0.7515
+        },
+        {
+          "anchor": "anchor_04",
+          "from": "old_2_t3419",
+          "to_video": "old_1",
+          "top1": "old_1_t1035",
+          "top1_score": 0.5438
+        },
+        {
+          "anchor": "anchor_04",
+          "from": "old_2_t3419",
+          "to_video": "old_3",
+          "top1": "old_3_t2483",
+          "top1_score": 0.7287
+        },
+        {
+          "anchor": "anchor_05",
+          "from": "old_2_t1682",
+          "to_video": "old_1",
+          "top1": "old_1_t3132",
+          "top1_score": 0.7923
+        },
+        {
+          "anchor": "anchor_05",
+          "from": "old_3_t2301",
+          "to_video": "old_1",
+          "top1": "old_1_t4745",
+          "top1_score": 0.5161
+        },
+        {
+          "anchor": "anchor_05",
+          "from": "old_3_t2301",
+          "to_video": "old_2",
+          "top1": "old_2_t3369",
+          "top1_score": 0.7061
+        },
+        {
+          "anchor": "anchor_05",
+          "from": "old_3_t2444",
+          "to_video": "old_1",
+          "top1": "old_1_t3926",
+          "top1_score": 0.5016
+        },
+        {
+          "anchor": "anchor_05",
+          "from": "old_3_t2144",
+          "to_video": "old_1",
+          "top1": "old_1_t4248",
+          "top1_score": 0.5012
+        },
+        {
+          "anchor": "anchor_05",
+          "from": "old_3_t2144",
+          "to_video": "old_2",
+          "top1": "old_2_t3369",
+          "top1_score": 0.6914
+        },
+        {
+          "anchor": "anchor_05",
+          "from": "old_3_t2622",
+          "to_video": "old_2",
+          "top1": "old_2_t3369",
+          "top1_score": 0.7025
+        },
+        {
+          "anchor": "anchor_06",
+          "from": "old_2_t476",
+          "to_video": "old_1",
+          "top1": "old_1_t1073",
+          "top1_score": 0.7449
+        },
+        {
+          "anchor": "anchor_06",
+          "from": "old_2_t476",
+          "to_video": "old_3",
+          "top1": "old_3_t158",
+          "top1_score": 0.8366
+        },
+        {
+          "anchor": "anchor_06",
+          "from": "old_2_t1632",
+          "to_video": "old_1",
+          "top1": "old_1_t3131",
+          "top1_score": 0.7635
+        },
+        {
+          "anchor": "anchor_06",
+          "from": "old_2_t448",
+          "to_video": "old_1",
+          "top1": "old_1_t1085",
+          "top1_score": 0.7975
+        },
+        {
+          "anchor": "anchor_06",
+          "from": "old_2_t448",
+          "to_video": "old_3",
+          "top1": "old_3_t770",
+          "top1_score": 0.7936
+        },
+        {
+          "anchor": "anchor_06",
+          "from": "old_2_t3474",
+          "to_video": "old_1",
+          "top1": "old_1_t3131",
+          "top1_score": 0.7415
+        },
+        {
+          "anchor": "anchor_06",
+          "from": "old_2_t1478",
+          "to_video": "old_1",
+          "top1": "old_1_t3155",
+          "top1_score": 0.7341
+        },
+        {
+          "anchor": "anchor_06",
+          "from": "old_2_t598",
+          "to_video": "old_1",
+          "top1": "old_1_t3155",
+          "top1_score": 0.7448
+        },
+        {
+          "anchor": "anchor_06",
+          "from": "old_3_t2585",
+          "to_video": "old_1",
+          "top1": "old_1_t3208",
+          "top1_score": 0.7606
+        },
+        {
+          "anchor": "anchor_06",
+          "from": "old_3_t2486",
+          "to_video": "old_1",
+          "top1": "old_1_t3131",
+          "top1_score": 0.6978
+        },
+        {
+          "anchor": "anchor_06",
+          "from": "old_3_t2030",
+          "to_video": "old_1",
+          "top1": "old_1_t3155",
+          "top1_score": 0.8612
+        },
+        {
+          "anchor": "anchor_06",
+          "from": "old_3_t2107",
+          "to_video": "old_1",
+          "top1": "old_1_t3208",
+          "top1_score": 0.8612
+        },
+        {
+          "anchor": "anchor_06",
+          "from": "old_3_t1813",
+          "to_video": "old_1",
+          "top1": "old_1_t3131",
+          "top1_score": 0.8547
+        },
+        {
+          "anchor": "anchor_06",
+          "from": "old_3_t1855",
+          "to_video": "old_1",
+          "top1": "old_1_t3131",
+          "top1_score": 0.7108
+        },
+        {
+          "anchor": "anchor_07",
+          "from": "old_3_t3053",
+          "to_video": "old_2",
+          "top1": "old_2_t3863",
+          "top1_score": 0.6384
+        },
+        {
+          "anchor": "anchor_07",
+          "from": "old_3_t2485",
+          "to_video": "old_1",
+          "top1": "old_1_t4597",
+          "top1_score": 0.5606
+        },
+        {
+          "anchor": "anchor_08",
+          "from": "old_1_t4909",
+          "to_video": "old_2",
+          "top1": "old_2_t3781",
+          "top1_score": 0.6104
+        },
+        {
+          "anchor": "anchor_08",
+          "from": "old_1_t4926",
+          "to_video": "old_2",
+          "top1": "old_2_t3801",
+          "top1_score": 0.6183
+        },
+        {
+          "anchor": "anchor_08",
+          "from": "old_1_t4476",
+          "to_video": "old_2",
+          "top1": "old_2_t3670",
+          "top1_score": 0.8182
+        },
+        {
+          "anchor": "anchor_08",
+          "from": "old_1_t961",
+          "to_video": "old_3",
+          "top1": "old_3_t425",
+          "top1_score": 0.7673
+        },
+        {
+          "anchor": "anchor_08",
+          "from": "old_1_t4573",
+          "to_video": "old_3",
+          "top1": "old_3_t2976",
+          "top1_score": 0.7703
+        },
+        {
+          "anchor": "anchor_08",
+          "from": "old_2_t946",
+          "to_video": "old_1",
+          "top1": "old_1_t1954",
+          "top1_score": 0.6112
+        },
+        {
+          "anchor": "anchor_08",
+          "from": "old_2_t1608",
+          "to_video": "old_1",
+          "top1": "old_1_t2996",
+          "top1_score": 0.7406
+        },
+        {
+          "anchor": "anchor_08",
+          "from": "old_3_t2855",
+          "to_video": "old_2",
+          "top1": "old_2_t3670",
+          "top1_score": 0.8846
+        },
+        {
+          "anchor": "anchor_08",
+          "from": "old_3_t2077",
+          "to_video": "old_2",
+          "top1": "old_2_t1436",
+          "top1_score": 0.6508
+        },
+        {
+          "anchor": "anchor_08",
+          "from": "old_3_t2933",
+          "to_video": "old_2",
+          "top1": "old_2_t916",
+          "top1_score": 0.6634
+        },
+        {
+          "anchor": "anchor_08",
+          "from": "old_3_t2139",
+          "to_video": "old_2",
+          "top1": "old_2_t1436",
+          "top1_score": 0.6239
+        },
+        {
+          "anchor": "anchor_08",
+          "from": "old_3_t2516",
+          "to_video": "old_1",
+          "top1": "old_1_t3584",
+          "top1_score": 0.6155
+        },
+        {
+          "anchor": "anchor_08",
+          "from": "old_3_t2516",
+          "to_video": "old_2",
+          "top1": "old_2_t3436",
+          "top1_score": 0.7254
+        },
+        {
+          "anchor": "anchor_08",
+          "from": "old_3_t2535",
+          "to_video": "old_1",
+          "top1": "old_1_t1954",
+          "top1_score": 0.6285
+        },
+        {
+          "anchor": "anchor_08",
+          "from": "old_3_t2535",
+          "to_video": "old_2",
+          "top1": "old_2_t3436",
+          "top1_score": 0.6898
+        },
+        {
+          "anchor": "anchor_08",
+          "from": "old_3_t3057",
+          "to_video": "old_1",
+          "top1": "old_1_t4393",
+          "top1_score": 0.6285
+        },
+        {
+          "anchor": "anchor_08",
+          "from": "old_3_t3057",
+          "to_video": "old_2",
+          "top1": "old_2_t3670",
+          "top1_score": 0.5672
+        },
+        {
+          "anchor": "anchor_08",
+          "from": "old_3_t279",
+          "to_video": "old_2",
+          "top1": "old_2_t4597",
+          "top1_score": 0.6395
+        },
+        {
+          "anchor": "anchor_08",
+          "from": "old_3_t2670",
+          "to_video": "old_2",
+          "top1": "old_2_t1557",
+          "top1_score": 0.672
+        },
+        {
+          "anchor": "anchor_08",
+          "from": "old_3_t1808",
+          "to_video": "old_1",
+          "top1": "old_1_t1954",
+          "top1_score": 0.6349
+        },
+        {
+          "anchor": "anchor_08",
+          "from": "old_3_t1808",
+          "to_video": "old_2",
+          "top1": "old_2_t4597",
+          "top1_score": 0.6189
+        },
+        {
+          "anchor": "anchor_08",
+          "from": "old_3_t2525",
+          "to_video": "old_1",
+          "top1": "old_1_t4393",
+          "top1_score": 0.5667
+        },
+        {
+          "anchor": "anchor_08",
+          "from": "old_3_t2525",
+          "to_video": "old_2",
+          "top1": "old_2_t3436",
+          "top1_score": 0.7515
+        },
+        {
+          "anchor": "anchor_09",
+          "from": "old_1_t4072",
+          "to_video": "old_3",
+          "top1": "old_3_t2709",
+          "top1_score": 0.6898
+        },
+        {
+          "anchor": "anchor_10",
+          "from": "old_3_t2028",
+          "to_video": "old_2",
+          "top1": "old_2_t4313",
+          "top1_score": 0.5477
+        },
+        {
+          "anchor": "anchor_11",
+          "from": "old_2_t4155",
+          "to_video": "old_3",
+          "top1": "old_3_t4349",
+          "top1_score": 0.7524
+        },
+        {
+          "anchor": "anchor_12",
+          "from": "old_1_t939",
+          "to_video": "old_2",
+          "top1": "old_2_t622",
+          "top1_score": 0.6712
+        },
+        {
+          "anchor": "anchor_12",
+          "from": "old_1_t834",
+          "to_video": "old_2",
+          "top1": "old_2_t622",
+          "top1_score": 0.7232
+        },
+        {
+          "anchor": "anchor_12",
+          "from": "old_3_t748",
+          "to_video": "old_2",
+          "top1": "old_2_t622",
+          "top1_score": 0.5966
+        },
+        {
+          "anchor": "anchor_12",
+          "from": "old_3_t402",
+          "to_video": "old_1",
+          "top1": "old_1_t719",
+          "top1_score": 0.746
+        },
+        {
+          "anchor": "anchor_12",
+          "from": "old_3_t402",
+          "to_video": "old_2",
+          "top1": "old_2_t622",
+          "top1_score": 0.6222
+        },
+        {
+          "anchor": "anchor_12",
+          "from": "old_3_t805",
+          "to_video": "old_2",
+          "top1": "old_2_t622",
+          "top1_score": 0.5684
+        },
+        {
+          "anchor": "anchor_12",
+          "from": "old_3_t773",
+          "to_video": "old_2",
+          "top1": "old_2_t622",
+          "top1_score": 0.6123
+        },
+        {
+          "anchor": "anchor_13",
+          "from": "old_3_t3970",
+          "to_video": "old_1",
+          "top1": "old_1_t3957",
+          "top1_score": 0.6352
+        },
+        {
+          "anchor": "anchor_14",
+          "from": "old_1_t2854",
+          "to_video": "old_2",
+          "top1": "old_2_t4511",
+          "top1_score": 0.6799
+        },
+        {
+          "anchor": "anchor_15",
+          "from": "old_1_t3138",
+          "to_video": "old_2",
+          "top1": "old_2_t2861",
+          "top1_score": 0.6699
+        },
+        {
+          "anchor": "anchor_15",
+          "from": "old_3_t3766",
+          "to_video": "old_1",
+          "top1": "old_1_t4079",
+          "top1_score": 0.7245
+        },
+        {
+          "anchor": "anchor_15",
+          "from": "old_3_t2016",
+          "to_video": "old_2",
+          "top1": "old_2_t1671",
+          "top1_score": 0.7002
+        },
+        {
+          "anchor": "anchor_16",
+          "from": "old_1_t3372",
+          "to_video": "old_2",
+          "top1": "old_2_t2857",
+          "top1_score": 0.7417
+        },
+        {
+          "anchor": "anchor_16",
+          "from": "old_3_t3736",
+          "to_video": "old_2",
+          "top1": "old_2_t2569",
+          "top1_score": 0.7155
+        },
+        {
+          "anchor": "anchor_16",
+          "from": "old_3_t4217",
+          "to_video": "old_2",
+          "top1": "old_2_t2857",
+          "top1_score": 0.6994
+        },
+        {
+          "anchor": "anchor_16",
+          "from": "old_3_t3704",
+          "to_video": "old_2",
+          "top1": "old_2_t2569",
+          "top1_score": 0.7329
+        },
+        {
+          "anchor": "anchor_17",
+          "from": "old_1_t3940",
+          "to_video": "old_3",
+          "top1": "old_3_t3463",
+          "top1_score": 0.8899
+        },
+        {
+          "anchor": "anchor_17",
+          "from": "old_2_t2058",
+          "to_video": "old_3",
+          "top1": "old_3_t3463",
+          "top1_score": 0.8218
+        },
+        {
+          "anchor": "anchor_17",
+          "from": "old_3_t2047",
+          "to_video": "old_1",
+          "top1": "old_1_t2919",
+          "top1_score": 0.687
+        },
+        {
+          "anchor": "anchor_17",
+          "from": "old_3_t2047",
+          "to_video": "old_2",
+          "top1": "old_2_t1623",
+          "top1_score": 0.7235
+        },
+        {
+          "anchor": "anchor_18",
+          "from": "old_1_t724",
+          "to_video": "old_2",
+          "top1": "old_2_t625",
+          "top1_score": 0.6809
+        },
+        {
+          "anchor": "anchor_18",
+          "from": "old_1_t750",
+          "to_video": "old_2",
+          "top1": "old_2_t625",
+          "top1_score": 0.6681
+        },
+        {
+          "anchor": "anchor_18",
+          "from": "old_1_t809",
+          "to_video": "old_2",
+          "top1": "old_2_t625",
+          "top1_score": 0.6876
+        },
+        {
+          "anchor": "anchor_18",
+          "from": "old_3_t422",
+          "to_video": "old_2",
+          "top1": "old_2_t625",
+          "top1_score": 0.7129
+        },
+        {
+          "anchor": "anchor_18",
+          "from": "old_3_t421",
+          "to_video": "old_2",
+          "top1": "old_2_t625",
+          "top1_score": 0.7446
+        },
+        {
+          "anchor": "anchor_18",
+          "from": "old_3_t4375",
+          "to_video": "old_2",
+          "top1": "old_2_t2668",
+          "top1_score": 0.6244
+        },
+        {
+          "anchor": "anchor_19",
+          "from": "old_1_t1117",
+          "to_video": "old_3",
+          "top1": "old_3_t1609",
+          "top1_score": 0.6141
+        },
+        {
+          "anchor": "anchor_19",
+          "from": "old_2_t1346",
+          "to_video": "old_3",
+          "top1": "old_3_t1609",
+          "top1_score": 0.6039
+        },
+        {
+          "anchor": "anchor_19",
+          "from": "old_2_t812",
+          "to_video": "old_1",
+          "top1": "old_1_t1250",
+          "top1_score": 0.5839
+        },
+        {
+          "anchor": "anchor_19",
+          "from": "old_2_t812",
+          "to_video": "old_3",
+          "top1": "old_3_t1291",
+          "top1_score": 0.6258
+        },
+        {
+          "anchor": "anchor_20",
+          "from": "old_1_t4863",
+          "to_video": "old_3",
+          "top1": "old_3_t2863",
+          "top1_score": 0.7506
+        }
+      ],
+      "run_dir": "results/hero_s1/reid-closure-multiview-v2",
+      "stitch_false_merges": []
+    }
+  ],
+  "schema_version": "1.0"
+}

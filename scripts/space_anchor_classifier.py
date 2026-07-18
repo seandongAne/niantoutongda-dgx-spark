@@ -42,7 +42,7 @@ from backend.tools.spatial import (  # noqa: E402
 )
 
 CLASSIFIER_SCHEMA_VERSION = "1.0"
-CLASSIFIER_VERSION = "space-anchor-nemotron-v2"
+CLASSIFIER_VERSION = "space-anchor-nemotron-v3"
 ANCHOR_CANDIDATES_FILENAME = "anchor_candidates.json"
 METRICS_FILENAME = "metrics.json"
 HASHES_FILENAME = "hashes.json"
@@ -509,13 +509,31 @@ def _parse_anchor_fields(
 ) -> dict[str, Any] | None:
     expected_scores = {*anchors, "other"}
     scores = payload.get("anchor_scores")
-    if not isinstance(scores, dict) or set(scores) != expected_scores:
+    if not isinstance(scores, dict):
+        # Nemotron occasionally flattens the score object despite guided JSON.
+        flat_scores = {
+            anchor: payload[anchor]
+            for anchor in [*anchors, "other"]
+            if anchor in payload
+        }
+        scores = flat_scores or None
+    if not isinstance(scores, dict):
+        return None
+    # The model also consistently omits only the catch-all ``other`` score in
+    # one response shape.  All requested semantic scores remain mandatory;
+    # treating the omitted catch-all as zero does not invent a target label.
+    if set(scores) == set(anchors):
+        scores = {**scores, "other": 0}
+    if set(scores) != expected_scores:
         return None
     try:
         normalized_scores = {
             anchor: max(0, min(100, int(scores[anchor]))) for anchor in sorted(scores)
         }
-        best_anchor = str(payload.get("best_anchor") or payload["target_object"])
+        best_anchor_raw = payload.get("best_anchor") or payload.get("target_object")
+        if best_anchor_raw is None:
+            return None
+        best_anchor = str(best_anchor_raw)
     except (KeyError, TypeError, ValueError):
         return None
     if best_anchor not in expected_scores:
@@ -526,6 +544,7 @@ def _parse_anchor_fields(
         "display_name_zh": str(
             payload.get("display_name_zh")
             or payload.get("display_name")
+            or payload.get("chinese_display_name")
             or ANCHOR_DISPLAY_ZH.get(best_anchor)
             or best_anchor.replace("_", " ")
             or "自动识别区域"
@@ -538,11 +557,22 @@ def _parse_hard_fields(payload: Mapping[str, Any]) -> dict[str, Any] | None:
     try:
         support_raw = payload["support_type"]
         capacity_raw = payload["capacity_class"]
+
+        def nested_name(value: Any) -> Any:
+            if not isinstance(value, dict):
+                return value
+            return (
+                value.get("name")
+                or value.get("description")
+                or value.get("value")
+                or value.get("type")
+            )
+
         support_type = str(
-            support_raw.get("name") if isinstance(support_raw, dict) else support_raw
+            nested_name(support_raw)
         )
         capacity_class = str(
-            capacity_raw.get("name") if isinstance(capacity_raw, dict) else capacity_raw
+            nested_name(capacity_raw)
         )
         support_confidence = max(
             0,
@@ -896,9 +926,26 @@ def run_classifier(
     failed = len(evidence_rows) - len(candidates)
     failed_rate = failed / len(evidence_rows) if evidence_rows else 1.0
     if failed_rate > max_failed_rate:
+        failure_path = out_dir / "failure_diagnostics.json"
+        failure_path.write_bytes(
+            _json_bytes(
+                {
+                    "schema_version": CLASSIFIER_SCHEMA_VERSION,
+                    "classifier_version": CLASSIFIER_VERSION,
+                    "input_track_count": len(evidence_rows),
+                    "classified_track_count": len(candidates),
+                    "failed_track_count": failed,
+                    "failed_rate": round(failed_rate, 8),
+                    "max_failed_rate": max_failed_rate,
+                    "usage": dict(client.usage),
+                    "diagnostics": diagnostics,
+                },
+                indent=2,
+            )
+        )
         raise RuntimeError(
             f"automatic anchor classification failure rate {failed_rate:.4f} "
-            f"exceeds {max_failed_rate:.4f}"
+            f"exceeds {max_failed_rate:.4f}; diagnostics: {failure_path}"
         )
 
     candidate_payload = [item.model_dump(mode="json") for item in candidates]

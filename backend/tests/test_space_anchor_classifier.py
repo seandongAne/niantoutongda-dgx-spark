@@ -197,3 +197,54 @@ def test_missing_hard_confidences_can_be_repaired_by_independent_second_call():
     hard = parse_hard_field_prediction(repair)
     assert anchor is not None and hard is not None
     assert {**anchor, **hard}["capacity_confidence"] == 81
+
+
+def test_parser_normalizes_observed_nemotron_omissions_and_description_aliases():
+    parsed = parse_prediction(
+        json.dumps(
+            {
+                "anchor_scores": {
+                    "study_desk": 100,
+                    "wall_shelf": 0,
+                },
+                "best_anchor": "study_desk",
+                "chinese_display_name": "学习桌",
+                "support_type": {"description": "surface", "confidence": 95},
+                "capacity_class": {"description": "medium", "confidence": 90},
+            }
+        ),
+        ["study_desk", "wall_shelf"],
+    )
+
+    assert parsed == {
+        "anchor_scores": {"other": 0, "study_desk": 100, "wall_shelf": 0},
+        "best_anchor": "study_desk",
+        "display_name_zh": "学习桌",
+        "support_type": "surface",
+        "support_confidence": 95,
+        "capacity_class": "medium",
+        "capacity_confidence": 90,
+    }
+
+
+def test_parser_normalizes_observed_flat_score_shape():
+    parsed = parse_prediction(
+        json.dumps(
+            {
+                "study_desk": 5,
+                "wall_shelf": 85,
+                "best_anchor": "wall_shelf",
+                "support_type": {"name": "shelf", "confidence": 90},
+                "capacity_class": {"name": "small", "confidence": 80},
+            }
+        ),
+        ["study_desk", "wall_shelf"],
+    )
+
+    assert parsed is not None
+    assert parsed["anchor_scores"] == {
+        "other": 0,
+        "study_desk": 5,
+        "wall_shelf": 85,
+    }
+    assert parsed["best_anchor"] == "wall_shelf"

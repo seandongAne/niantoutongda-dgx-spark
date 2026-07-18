@@ -270,6 +270,32 @@
   相对区域不等于精确测量或安全认证、真实搬后照片尚未采集、AutoTune 只代表受控域内
   收益。技术稿提交 `f355771c`。
 
+### 增量 D6-11:验收 Agent 迁入 Spark 与代表卡就绪(夜间)
+
+- 正式 verify 执行位置由 Mac 本地阶段迁为 Spark stage:任务卡、验收清单、父 trace
+  与所选照片以项目相对路径定向同步到 `spark:~/proj`,总量超过 50 MiB 即拒绝;跨境
+  传输失败重试一次,仍失败则停止。远端 EXEC 同时启动 MEM/SPACE,完成后只逐文件拉回
+  requests、两份角色 fragment、combined messages、verdict、更新任务卡与
+  `fanout-run.json`,不拉取无关 results 大目录。
+- 远端 runner 补齐真实退出码 marker。任一 worker 或远端命令非零时立即向本地传播
+  退出码和日志,不再把快速失败拖成编排总超时;拉回前删除本地旧声明产物,失败路径不会
+  误读上次成功结果。实现提交 `08213054`。
+- 从 `08213054b8aec4c424a6e6620e7242bdaa0ffae7` 的独立干净 checkout 通过标准
+  `scripts/deploy.sh` 部署,避免工作区并行 ReID 实验进入 Spark。强制安全门两次均为
+  `✅ SPARK CLEAN`;实机 `spark-48f0` 合成冒烟中 MEM PID `1216003`、SPACE PID
+  `1216004`,重叠 `92.055 ms`,两支退出码均为 0。远端与拉回本地的 requests/MEM/
+  SPACE/messages 四份 SHA-256 逐项一致。
+- Spark 产出的三卡结果仍为 `VERIFIED=1 / NEEDS_USER=1 / FAILED=1`;本地 strict
+  replay 为 `PASS`,20 条消息、3/3 验收请求闭合、2/2 adjudication 闭合。该运行只用
+  明确标注的 synthetic fixture 验进程与协议边界,没有加载 Nemotron,也不构成物理执行
+  证据。
+- 当前正式代表任务收敛为 `card-02 学习文具箱→书桌`;验收模板已加入
+  `selected_card_ids=["card-02"]`,七类实体全部预填 `present=false`,照片路径冻结为
+  `local-data/hero_s1/acceptance/study_desk_after.jpg`。缺少该真实照片时实测在 worker
+  启动前以 `FileNotFoundError` 停止,输出目录无文件。准备提交 `4e6c4725`;正式配置继续
+  保持 verify/strict 关闭,照片到位前不作 `PHYSICAL_EXECUTION_VERIFIED` 声明。
+- 全量后端验证 `351 passed`;`compileall` 与 `git diff --check` 通过。
+
 ## 失败与教训
 
 - AutoTune-v1 将澄清从 1379 降至 677,但完整合并仍为 14/20、R@1 仅 0.8083,
@@ -297,6 +323,10 @@
 - 参赛稿的“酷炫”若只靠形容词,容易把可信投影写成通用 ReID 已解决,或把已实现的
   验收协议写成真实物理复原已完成。有效的技术张力应来自结构、数字和失败边界,并在
   每个高光数字旁保留它实际证明的范围。
+- 共享工作区的另一任务在暂存检查与提交之间写入同一个 Git index,第一次提交意外夹带
+  并行 ReID 文件。随即只移动本地提交/index 指针、不改工作区文件,完整恢复并行改动,
+  后续两次提交改用隔离临时 index。多任务共享 worktree 时,“提交前看过 staged”仍不足;
+  提交本身也必须隔离 index 或在提交后立即核对文件清单。
 
 ## 明日计划
 
@@ -309,8 +339,9 @@
 - 彩排时由一位未参与实现的队友只看成果页复述四步主线;若仍需解释内部名词,继续改写
   展示文案,但风险提醒方向不再返回正式页面或当前交付包。
 - 优先开箱和二维码均留在可选增强池,仅在不影响彩排与成片时处理;真实复原照片到位后
-  再为一张代表卡打开 `selected_card_ids` 验收并把完整往返 trace 纳入正式演示,在此之前
-  不作物理执行已验证声明。
+  直接用已冻结的 `card-02` 模板打开 verify/strict,复核 Spark-local PID 重叠、四份
+  trace 哈希和最终 bundle,再把完整往返 trace 纳入正式演示;在此之前不作物理执行已
+  验证声明。
 - AutoTune 已关账后撤销并清理 Spark 上遗留的 StepFun API key,不把凭据继续留在
   曾被入侵的 `Developer` 账户。
 - 队友整合 `docs/参赛项目技术介绍.md` 时优先复用开头技术摘要、总体架构和已验证结果

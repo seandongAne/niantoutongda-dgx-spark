@@ -42,7 +42,7 @@ from backend.tools.spatial import (  # noqa: E402
 )
 
 CLASSIFIER_SCHEMA_VERSION = "1.0"
-CLASSIFIER_VERSION = "space-anchor-nemotron-v4"
+CLASSIFIER_VERSION = "space-anchor-nemotron-v5"
 ANCHOR_CANDIDATES_FILENAME = "anchor_candidates.json"
 METRICS_FILENAME = "metrics.json"
 HASHES_FILENAME = "hashes.json"
@@ -792,6 +792,13 @@ def classify_one(
         prediction = cache.get(cache_key)
     cache_hit = prediction is not None
     raw_responses: list[str] = []
+    hard_fields_unresolved = bool(
+        prediction is not None
+        and prediction.get("support_type") == "unknown"
+        and prediction.get("support_confidence") == 0
+        and prediction.get("capacity_class") == "unknown"
+        and prediction.get("capacity_confidence") == 0
+    )
     if prediction is None:
         raw_text: str | None = None
         for attempt in range(2):
@@ -834,6 +841,21 @@ def classify_one(
                     if hard_fields is not None:
                         prediction = {**anchor_fields, **hard_fields}
                         break
+                if prediction is None:
+                    # Semantic classification succeeded, but the model ignored
+                    # both independent hard-field prompts.  Preserve the track
+                    # as an auditable candidate with UNKNOWN/zero hard fields;
+                    # the assignment layer will reject every edge from it.
+                    # This separates batch transport/parser failure from the
+                    # stricter per-edge support/capacity evidence gate.
+                    prediction = {
+                        **anchor_fields,
+                        "support_type": "unknown",
+                        "support_confidence": 0,
+                        "capacity_class": "unknown",
+                        "capacity_confidence": 0,
+                    }
+                    hard_fields_unresolved = True
         if prediction is not None:
             with cache_lock:
                 cache[cache_key] = prediction
@@ -857,11 +879,15 @@ def classify_one(
         ),
         "source_refs": sources,
         "cache_hit": cache_hit,
-        "status": "OK" if prediction is not None else "CLASSIFICATION_FAILED",
+        "status": (
+            "HARD_FIELDS_UNRESOLVED"
+            if hard_fields_unresolved
+            else "OK" if prediction is not None else "CLASSIFICATION_FAILED"
+        ),
         "prediction": prediction,
     }
-    if prediction is None and raw_responses:
-        diagnostic["failed_response_excerpt"] = raw_responses[-1][-2000:]
+    if (prediction is None or hard_fields_unresolved) and raw_responses:
+        diagnostic["response_excerpts"] = [item[-2000:] for item in raw_responses]
     if prediction is None:
         return None, diagnostic
     return (
@@ -964,6 +990,9 @@ def run_classifier(
     diagnostics.sort(key=lambda item: item["track_id"])
     failed = len(evidence_rows) - len(candidates)
     failed_rate = failed / len(evidence_rows) if evidence_rows else 1.0
+    hard_field_unresolved = sum(
+        item["status"] == "HARD_FIELDS_UNRESOLVED" for item in diagnostics
+    )
     if failed_rate > max_failed_rate:
         failure_path = out_dir / "failure_diagnostics.json"
         failure_path.write_bytes(
@@ -998,6 +1027,11 @@ def run_classifier(
         "classified_track_count": len(candidates),
         "failed_track_count": failed,
         "failed_rate": round(failed_rate, 8),
+        "hard_field_unresolved_track_count": hard_field_unresolved,
+        "hard_field_unresolved_rate": round(
+            hard_field_unresolved / len(evidence_rows) if evidence_rows else 1.0,
+            8,
+        ),
         "automatic_visual_instance_count": len(set(instance_ids.values())),
         "model": model,
         "endpoint": endpoint,

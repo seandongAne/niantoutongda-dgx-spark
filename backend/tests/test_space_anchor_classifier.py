@@ -12,6 +12,7 @@ from scripts.space_anchor_classifier import (
     _expected_anchors,
     automatic_visual_instance_ids,
     build_contact_sheet,
+    classify_one,
     parse_prediction,
     parse_anchor_prediction,
     parse_hard_field_prediction,
@@ -275,3 +276,57 @@ def test_anchor_parser_normalizes_observed_per_anchor_object_shape():
         "best_anchor": "wall_shelf",
         "display_name_zh": "墙面置物架",
     }
+
+
+def test_unresolved_hard_fields_are_preserved_but_assignment_ineligible(
+    tmp_path, monkeypatch
+):
+    frame = tmp_path / "kf_000001.jpg"
+    Image.new("RGB", (320, 180), (230, 230, 230)).save(frame)
+    monkeypatch.setattr("scripts.space_anchor_classifier.PROJ", tmp_path)
+    raw = json.dumps(
+        {
+            "study_desk": {
+                "anchor_score": 90,
+                "support_type": "surface",
+                "capacity_class": "medium",
+                "display_name": "学习桌",
+            }
+        }
+    )
+
+    class FakeClient:
+        anchors = ["study_desk"]
+        model = "nemotron-test"
+        schema = {"type": "object"}
+
+        def chat(self, image_bytes):
+            return raw
+
+        def chat_hard_fields(self, image_bytes):
+            return raw
+
+    evidence = TrackEvidence(
+        track_id="t-a",
+        observations=(_observation("t-a", frame.name, (10, 10, 200, 150)),),
+        prototype_refs=(),
+        hero_ref=None,
+        visual_instance_id="auto_visual_x",
+    )
+    candidate, diagnostic = classify_one(
+        FakeClient(),
+        evidence,
+        out_dir=tmp_path / "out",
+        evidence_dir=tmp_path / "evidence",
+        cache={},
+        cache_path=tmp_path / "cache.jsonl",
+        cache_lock=__import__("threading").Lock(),
+    )
+
+    assert candidate is not None
+    assert diagnostic["status"] == "HARD_FIELDS_UNRESOLVED"
+    hypothesis = candidate.anchor_hypotheses[0]
+    assert hypothesis.support_type is None
+    assert hypothesis.support_confidence == 0
+    assert hypothesis.capacity_class is None
+    assert hypothesis.capacity_confidence == 0

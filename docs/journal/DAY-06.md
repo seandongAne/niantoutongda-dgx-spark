@@ -223,6 +223,31 @@
 - 实现提交 `fd5c3542`;新增结果页防外显、历史风险过滤及禁用阶段不进入 bundle 的
   回归门。定向测试 `36 passed`,全仓验证 `294 passed`,`git diff --check` 通过。
 
+### 增量 D6-9:验收双 Agent 并行分支与选卡范围(夜间)
+
+- `EXEC→MEM/SPACE→EXEC` 从同进程内的顺序函数调用改为真实进程边界。EXEC 先生成
+  不可变验收请求,随后在等待任一结果前同时启动独立 MEM 与 SPACE worker;两者分别
+  只写自己的 trace fragment,EXEC 在角色、覆盖集合、请求 payload hash 与因果引用
+  全部吻合后才执行确定性 fan-in。进程 PID、起止时间、重叠时长和退出码另存
+  `fanout-run.json`,不混入确定性 trace 哈希。
+- 验收链改为失败安全:所选卡缺少相关照片引用、引用文件缺失或为空、任一 worker
+  失败/超时、角色结果缺失或越界时,均不生成 combined messages 与 verdict;启动新一轮
+  前先清除旧 final outputs,避免失败后误读上次成功结果。Hero pipeline 同时把照片字节、
+  worker 代码与两份角色 fragment 纳入新鲜度及交付边界。
+- `AcceptanceManifest.selected_card_ids` 建立正式选卡合同:省略或 `null` 表示全卡验收,
+  显式列表必须非空、唯一且属于任务卡集合;adjudication 不得越出所选范围。只选代表卡
+  时只产生该卡请求与 verdict,未选卡保持原状态,不再被错误改写为 `FAILED`。
+- 开发 fixture 增加三张明确标注为 synthetic placeholder 的最小 PPM,仅用于自动化协议
+  回归,不构成真实物理执行证据。正式 hero 配置仍保持 verify 关闭,没有作出
+  `PHYSICAL_EXECUTION_VERIFIED` 声明;真实复原照片仍是最后的现场证据,不是本轮并行
+  架构实现的前置条件。
+- 实现提交 `812f0989`。全仓验证 `309 passed`;`compileall` 与
+  `git diff --check` 通过。本地完整开发链落在
+  `/private/tmp/dgx-verify-fanout.dyQn2o`:MEM/SPACE 实测重叠约 87.53 ms、两进程均
+  返回 0;strict trace replay 为 `PASS`,20 条消息、3/3 请求闭合、2/2 adjudication
+  闭合。结果分布为 `VERIFIED=1 / NEEDS_USER=1 / FAILED=1`,证明 fan-in 保留独立判断
+  而非把所有分支强行包装成成功。
+
 ## 失败与教训
 
 - AutoTune-v1 将澄清从 1379 降至 677,但完整合并仍为 14/20、R@1 仅 0.8083,
@@ -243,6 +268,10 @@
 - “剪刀”错图说明可信投影仍需检查证据轨是否内部一致;一个轨迹 ID 可以同时含正确帧
   和污染帧,不能因类别名正确就直接冻结。展示层也不应暴露内部枚举、英文 ID 和状态码;
   可审计性应放在折叠证据区,不应牺牲主叙事可读性。
+- 旧验收实现虽然在 trace 中使用 MEM/SPACE 角色名,实际仍由 EXEC 进程顺序调用同一
+  模块,只能证明协议形状,不能证明独立 fan-out;照片字段也只校验字符串,选一张代表卡
+  时还会把未选卡判失败。独立性必须由进程边界、各自 fragment、时间重叠与失败传播
+  共同证明,照片存在性与验收范围则必须在启动 worker 前失败安全地冻结。
 
 ## 明日计划
 
@@ -254,7 +283,8 @@
   重现 5/5、20/20 和 trace `PASS`;ComfyUI、Qwen 35B 与主链模型继续严格错峰。
 - 彩排时由一位未参与实现的队友只看成果页复述四步主线;若仍需解释内部名词,继续改写
   展示文案,但风险提醒方向不再返回正式页面或当前交付包。
-- 优先开箱和二维码均留在可选增强池,仅在不影响彩排与成片时处理;复原前后照片继续
-  只作可选物理执行验收。
+- 优先开箱和二维码均留在可选增强池,仅在不影响彩排与成片时处理;真实复原照片到位后
+  再为一张代表卡打开 `selected_card_ids` 验收并把完整往返 trace 纳入正式演示,在此之前
+  不作物理执行已验证声明。
 - AutoTune 已关账后撤销并清理 Spark 上遗留的 StepFun API key,不把凭据继续留在
   曾被入侵的 `Developer` 账户。

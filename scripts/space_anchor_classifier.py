@@ -42,7 +42,7 @@ from backend.tools.spatial import (  # noqa: E402
 )
 
 CLASSIFIER_SCHEMA_VERSION = "1.0"
-CLASSIFIER_VERSION = "space-anchor-nemotron-v3"
+CLASSIFIER_VERSION = "space-anchor-nemotron-v4"
 ANCHOR_CANDIDATES_FILENAME = "anchor_candidates.json"
 METRICS_FILENAME = "metrics.json"
 HASHES_FILENAME = "hashes.json"
@@ -509,14 +509,37 @@ def _parse_anchor_fields(
 ) -> dict[str, Any] | None:
     expected_scores = {*anchors, "other"}
     scores = payload.get("anchor_scores")
+    per_anchor_nodes: dict[str, Mapping[str, Any]] = {}
     if not isinstance(scores, dict):
         # Nemotron occasionally flattens the score object despite guided JSON.
         flat_scores = {
             anchor: payload[anchor]
             for anchor in [*anchors, "other"]
-            if anchor in payload
+            if anchor in payload and not isinstance(payload[anchor], dict)
         }
-        scores = flat_scores or None
+        if flat_scores:
+            scores = flat_scores
+        else:
+            # Another observed shape makes each anchor a small object.  Only
+            # the model-provided score is lifted; support/capacity still need
+            # their own confidence gate below or an independent repair call.
+            per_anchor_nodes = {
+                anchor: payload[anchor]
+                for anchor in anchors
+                if isinstance(payload.get(anchor), dict)
+            }
+            if set(per_anchor_nodes) == set(anchors) and all(
+                "anchor_score" in node for node in per_anchor_nodes.values()
+            ):
+                scores = {
+                    anchor: node["anchor_score"]
+                    for anchor, node in per_anchor_nodes.items()
+                }
+                other_node = payload.get("other")
+                if isinstance(other_node, dict) and "anchor_score" in other_node:
+                    scores["other"] = other_node["anchor_score"]
+            else:
+                scores = None
     if not isinstance(scores, dict):
         return None
     # The model also consistently omits only the catch-all ``other`` score in
@@ -532,12 +555,21 @@ def _parse_anchor_fields(
         }
         best_anchor_raw = payload.get("best_anchor") or payload.get("target_object")
         if best_anchor_raw is None:
-            return None
+            best_score = max(normalized_scores.values())
+            winners = [
+                anchor
+                for anchor, score in normalized_scores.items()
+                if score == best_score
+            ]
+            if len(winners) != 1:
+                return None
+            best_anchor_raw = winners[0]
         best_anchor = str(best_anchor_raw)
     except (KeyError, TypeError, ValueError):
         return None
     if best_anchor not in expected_scores:
         return None
+    best_node = per_anchor_nodes.get(best_anchor, {})
     return {
         "anchor_scores": normalized_scores,
         "best_anchor": best_anchor,
@@ -545,6 +577,9 @@ def _parse_anchor_fields(
             payload.get("display_name_zh")
             or payload.get("display_name")
             or payload.get("chinese_display_name")
+            or best_node.get("display_name_zh")
+            or best_node.get("display_name")
+            or best_node.get("chinese_display_name")
             or ANCHOR_DISPLAY_ZH.get(best_anchor)
             or best_anchor.replace("_", " ")
             or "自动识别区域"
@@ -626,6 +661,10 @@ def parse_prediction(text: str, anchors: Sequence[str]) -> dict[str, Any] | None
         return None
     anchor_fields = _parse_anchor_fields(payload, anchors)
     hard_fields = _parse_hard_fields(payload)
+    if hard_fields is None and anchor_fields is not None:
+        best_node = payload.get(anchor_fields["best_anchor"])
+        if isinstance(best_node, dict):
+            hard_fields = _parse_hard_fields(best_node)
     if anchor_fields is None or hard_fields is None:
         return None
     return {**anchor_fields, **hard_fields}

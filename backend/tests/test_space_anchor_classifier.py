@@ -248,3 +248,30 @@ def test_parser_normalizes_observed_flat_score_shape():
         "wall_shelf": 85,
     }
     assert parsed["best_anchor"] == "wall_shelf"
+
+
+def test_anchor_parser_normalizes_observed_per_anchor_object_shape():
+    raw = json.dumps(
+        {
+            "study_desk": {
+                "anchor_score": 5,
+                "support_type": "unknown",
+                "capacity_class": "medium",
+                "display_name": "小型书桌",
+            },
+            "wall_shelf": {
+                "anchor_score": 85,
+                "support_type": "shelf",
+                "capacity_class": "small",
+                "display_name": "墙面置物架",
+            },
+        }
+    )
+
+    assert parse_prediction(raw, ["study_desk", "wall_shelf"]) is None
+    parsed = parse_anchor_prediction(raw, ["study_desk", "wall_shelf"])
+    assert parsed == {
+        "anchor_scores": {"other": 0, "study_desk": 5, "wall_shelf": 85},
+        "best_anchor": "wall_shelf",
+        "display_name_zh": "墙面置物架",
+    }

@@ -20,6 +20,8 @@
   保持部署测试态口径。
 - 对 Grounding DINO 建立冻结输入、PyTorch 基线、ONNX 独立 oracle 与 TensorRT
   多精度对照,只在输出和检测决策等价门通过后接受性能收益。
+- 在不再读取两次终检 GT 的前提下,试验 schema 转写与实例级语义签名重排;先分离
+  选参/冻结证据边界,再测 PyTorch AMP、Torch-TensorRT 混合执行和 TF-TRT 前置门。
 
 ## 关键证据或截图
 
@@ -329,6 +331,44 @@
   `results/acceptance/SF1/trt-gdino-20260718-summary/`;复现工装关键提交包括
   `d4cad3ea`、`3774a47f`、`144d37fd`、`141f0feb`、`b3c6fe49`。
 
+### 增量 D6-15:语义重排、AMP 与 Torch-TensorRT 混合门(夜间)
+
+- 实验在隔离分支 `codex/semantic-perf-20260718` 完成,实现提交 `fdead9a5`,证据提交
+  `e9159a3a`。转写层新增中英文 display/alias/compound 对齐、置信度与审计 evidence;
+  多来源冲突和歧义复合标签一律 fail closed。伪标签生成允许完全省略 GT,限定
+  candidate-only tutor 来源并冻结 stitch/link/ingest/tutor 哈希,已有证据拒绝覆盖。
+- 实例级语义签名将转写 identity 与 S5 可比属性组合,只重排既有视觉 Top-5 候选。
+  未读冻结人工 GT 的诊断实验得到 116 个 pseudo identity/502 个 tracklet;hash split
+  为 dev 74 identity/340 tracklet、proxy partition 42/162,tracklet 交集 0。语义权重
+  `0.15` 在 127 个 dev query 上使 R@1 `0.4961→0.6378`;已打开的 58-query partition
+  为 `46→51` 个 Top-1 命中,点估计 `0.7931→0.8793`。
+- 上述语义数字不构成独立冻结集结论:既有 SF1 projection 的训练标签覆盖本轮
+  502/502 tracklet,旧 selection 还输出过全体转写覆盖率;两侧 Wilson 95% 区间分别
+  `[0.6723,0.8775]`、`[0.7712,0.9403]`。因此只保留为 transductive diagnostic,
+  不写成 hero R@1 `0.8083→0.8793`;该 partition 已消耗,转写器修订后不得重开。
+  新评估器默认拒绝 learned projection,select 只构建 dev signature,holdout 才构建
+  holdout signature,并把 evaluator 与全部数据输入哈希一起冻结。
+- PyTorch forward-only AMP 在同一 batch 2 冻结输入、100 次测量下:FP32 P50
+  `680.43 ms`;FP16 `497.98 ms`、`1.366×`;BF16 `502.50 ms`、`1.354×`。FP16
+  检测数仍为 `[5,5]`但标签/顺序结构不等价;BF16 检测数变为 `[4,5]`;两者严格
+  决策门均 FAIL。显存 allocator 峰值仅少约 40 MiB,不据此声明统一内存显著下降。
+- 39 个阶段、每张量 4096 点的漂移探针显示误差分布在文本、视觉、encoder/decoder:
+  FP16 首个 `>1e-3` 观测在 BERT layer 1、首个 `>0.1` 在 Swin stage 1;BF16
+  分别在 BERT layer 0 与 text projection。阶段采样不能证明单一因果算子,因此
+  自定义 converter 维持 NO-GO,等待 FX/ATen 算子级 trace 与 selective FP32 island。
+- Torch-TensorRT 使用 digest 固定的 NVIDIA 26.06 基础镜像,隔离派生层只安装
+  `transformers==5.13.1`;运行栈为 PyTorch/Torch-TensorRT `2.13.0a0`、TensorRT
+  `11.0.0.114`、CUDA `13.3`。提交版 v2 在第一道容器 eager FP32 门停止:P50
+  `657.45 ms`,但对现有 PyTorch `2.13.0+cu130` 冻结 oracle 的有限 logits 最大偏差
+  `4.1671`、boxes `0.9841`;verdict 为
+  `NO_GO_CONTAINER_EAGER_FP32_BASELINE_MISMATCH`。未进入 TRT 分区/编译或 FP16,
+  也未把容器自身延迟写成加速。
+- TF-TRT 前置审查为 NO-GO:项目环境无 TensorFlow、无 native TensorFlow
+  Grounding DINO SavedModel,现有 ONNX oracle 也未对齐 PyTorch。未拉 TensorFlow
+  容器、未产生不可比性能数字。总对比和机器可读结论落在
+  `results/acceptance/SF1/optimization-comparison-20260718/`;全量后端验证
+  `360 passed`,`py_compile` 与 `git diff --check` 通过。
+
 ## 失败与教训
 
 - AutoTune-v1 将澄清从 1379 降至 677,但完整合并仍为 14/20、R@1 仅 0.8083,
@@ -365,6 +405,16 @@
   改写 bit-exact 只能证明文件结构和改写边界,不能替代导出后 raw-output oracle。
   动态图还受 TensorRT `EyeLike` 限制,本轮只覆盖固定 batch/分辨率/文本长度;TensorRT
   context memory 与 PyTorch allocator 峰值口径不同,不据此声明显存优化。
+- identity/tracklet 零交集仍不足以证明模型层独立:上游 learned projection 若已经见过
+  holdout identity,或 select 暴露过 holdout 聚合特征,只能称 metric-sealed/transductive
+  诊断。冻结合同必须同时覆盖数据、代码、预训练来源与实际读取时序;当前 proxy partition
+  已被打开,后续算法修订只能等新 `holdout_b`,不能换名字后复用。
+- FP16 检测数保持 `[5,5]`不等于输出等价;标签、顺序或框关联变化同样会破坏下游。
+  阶段 hook 的“首次观测漂移”也不是致因算子。自定义转换前应先做标签+IoU 匹配、
+  算子级 trace 和 FP32 island 消融,不能从一个 stage 名直接推导 converter。
+- Torch-TensorRT 容器包含目标编译器并不保证可与现有 PyTorch oracle 比较;26.06 的
+  `2.13.0a0/CUDA 13.3` 与现有 `2.13.0+cu130` 在同权重同输入下已发生大幅有限值漂移。
+  必须把容器 eager FP32 放在编译前,否则很容易把运行栈漂移误归因给 TensorRT。
 
 ## 明日计划
 
@@ -387,3 +437,10 @@
 - Grounding DINO 主链继续保留 PyTorch。若继续 TensorRT,优先切为更小的隔离子图或
   PyTorch 集成式编译路径,沿用同一冻结 raw-output、非有限值模式与检测决策门;只有
   oracle 先 PASS 才重新测速度和内存,当前 2.45× 仅保留为探索上界。
+- 为语义重排采集并冻结未参与本轮选参的新 `holdout_b`;若继续使用 learned projection,
+  只准用 dev identity 训练后再封存 holdout。新集到位前只修评估工装,不再产生提升声明。
+- AMP 下一轮先做 FX/ATen 算子级漂移和 selective FP32 island 消融,再用更大冻结检测集
+  以标签+IoU 匹配报告新增、丢失和重排;无法形成局部稳定岛时停止自定义 converter。
+- Torch-TensorRT 先取得与现有 PyTorch build 数值一致的隔离运行栈;容器 eager FP32
+  raw oracle PASS 后才重开 dry-run 分区覆盖、hybrid FP32 与 FP16。TF-TRT 继续旁路,
+  没有 native TF FP32 SavedModel 对齐时不创建性能结果。

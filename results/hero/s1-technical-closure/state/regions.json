@@ -1,0 +1,17 @@
+{
+  "cmd": ".venv/bin/python /Users/seandong/Documents/DGX Spark Thing/scripts/regions_task.py --manifest /Users/seandong/Documents/DGX Spark Thing/fixtures/hero_s1/regions.target5.json --out-dir /Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/regions",
+  "code": {
+    "/Users/seandong/Documents/DGX Spark Thing/scripts/regions_task.py": "02a743a83b3e323957f043dd13962e405911c3211a627a136386d52e45a67b45"
+  },
+  "finished_at": "2026-07-18T02:16:18+00:00",
+  "inputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/fixtures/hero_s1/regions.target5.json": "65034f2ab104b0a64855f39c8a556af69475abb26ecc7137ff5091e9c3d218d5"
+  },
+  "outputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/regions/regions.json": "f35cd99e29f99768dab4d61441efb6b1812f04bebd64b11135ab832619ed13dd",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/regions/regions_core.jsonl": "ef3a0fee782f5a84d49484a0e2b00ca3e1f63873a1651efeebdd3d682aaf5274"
+  },
+  "stage": "regions",
+  "started_at": "2026-07-18T02:16:18+00:00",
+  "status": "done"
+}

@@ -1,0 +1,5 @@
+{"schema_version":"1.0","region_id":"chest_top","anchor":"chest_of_drawers","support_type":"surface","capacity_class":"medium","attributes":{"near_power":"true"},"evidence_refs":["new_1.mp4@01:24"]}
+{"schema_version":"1.0","region_id":"display_cabinet","anchor":"display_cabinet","support_type":"shelf","capacity_class":"small","attributes":{},"evidence_refs":["new_1.mp4@01:34"]}
+{"schema_version":"1.0","region_id":"study_desk","anchor":"study_desk","support_type":"surface","capacity_class":"medium","attributes":{"near_power":"true"},"evidence_refs":["new_1.mp4@00:54"]}
+{"schema_version":"1.0","region_id":"vanity_top","anchor":"vanity","support_type":"surface","capacity_class":"medium","attributes":{"near_power":"true"},"evidence_refs":["new_1.mp4@01:10"]}
+{"schema_version":"1.0","region_id":"wall_shelf","anchor":"wall_shelf","support_type":"shelf","capacity_class":"small","attributes":{"near_power":"true"},"evidence_refs":["new_1.mp4@01:08"]}

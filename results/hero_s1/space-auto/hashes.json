@@ -1,0 +1,15 @@
+{
+  "algorithm": "sha256",
+  "inputs": {
+    "frame_dimensions": "1b7e91b6cb26e46f918a041861c1059d158ee006dbbfe7f92e28d981e79728c4",
+    "observations_jsonl": "a4333094994d3144b57fcffbdf7f8a0bddc7afc924fb242ffcd78b24de17e72c",
+    "space_vocab_json": "072d1c86a3d15d1c1ebf510e728c1b8a88f2e09aba66981058c3087dac8404d9",
+    "tracklets_jsonl": "26f9b5a18b60899fd7fd404c038939b7d68154d4099b1af7557624f8309d147d"
+  },
+  "normalized_hash": "7cd6704edcbf1d9e05ea13d16949007c8bc6c1a3c220769faaa21236fbd183f4",
+  "outputs": {
+    "auto_observations.jsonl": "f1c8eb81f72e3472a7b2d44bbe69d9c76ab4bb0a5d0727ce3a2c7f843fcb6842",
+    "metrics.json": "8a5ed2a9db8fe5f3664f2ccefb2ec355b38726bc09a5d17bb46c5c69d7793bd6"
+  },
+  "schema_version": "1.0"
+}

@@ -1,0 +1,19 @@
+{
+  "alternatives": {
+    "cups_and_drinks": "chest_top",
+    "study_stationery": "vanity_top",
+    "technical_snacks_pack": "display_cabinet",
+    "technical_toys_pack": "chest_top",
+    "toiletries_and_care": "chest_top"
+  },
+  "assignments": {
+    "cups_and_drinks": "display_cabinet",
+    "study_stationery": "study_desk",
+    "technical_snacks_pack": "chest_top",
+    "technical_toys_pack": "wall_shelf",
+    "toiletries_and_care": "vanity_top"
+  },
+  "conflicts": [],
+  "objective": 50,
+  "status": "PLAN_READY"
+}

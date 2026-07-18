@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0",
+  "plan_id": "plan-hero-v1",
+  "assignments": [
+    {
+      "schema_version": "1.0",
+      "group_id": "cups_and_drinks",
+      "region_id": "display_cabinet",
+      "score_breakdown": {
+        "narration_hint": 10
+      },
+      "alternative_region_id": "chest_top"
+    },
+    {
+      "schema_version": "1.0",
+      "group_id": "study_stationery",
+      "region_id": "study_desk",
+      "score_breakdown": {
+        "narration_hint": 10
+      },
+      "alternative_region_id": "vanity_top"
+    },
+    {
+      "schema_version": "1.0",
+      "group_id": "technical_snacks_pack",
+      "region_id": "chest_top",
+      "score_breakdown": {
+        "narration_hint": 10
+      },
+      "alternative_region_id": "display_cabinet"
+    },
+    {
+      "schema_version": "1.0",
+      "group_id": "technical_toys_pack",
+      "region_id": "wall_shelf",
+      "score_breakdown": {
+        "narration_hint": 10
+      },
+      "alternative_region_id": "chest_top"
+    },
+    {
+      "schema_version": "1.0",
+      "group_id": "toiletries_and_care",
+      "region_id": "vanity_top",
+      "score_breakdown": {
+        "narration_hint": 10
+      },
+      "alternative_region_id": "chest_top"
+    }
+  ],
+  "hard_constraints": [
+    "支撑类型兼容",
+    "区域容量",
+    "电源证据",
+    "同放/互斥/禁放"
+  ],
+  "soft_scores": {
+    "objective": 50
+  },
+  "solver_status": "PLAN_READY",
+  "conflicts": []
+}

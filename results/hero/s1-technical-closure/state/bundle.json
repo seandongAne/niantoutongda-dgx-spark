@@ -1,0 +1,12 @@
+{
+  "cmd": "",
+  "code": {},
+  "finished_at": "2026-07-18T02:20:07+00:00",
+  "inputs": {},
+  "outputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-technical-closure/bundle.json": "fd699ace8b185a1580509bee27beea84f43b25a90939e6d0094aa317edab5e9c"
+  },
+  "stage": "bundle",
+  "started_at": "2026-07-18T02:20:07+00:00",
+  "status": "done"
+}

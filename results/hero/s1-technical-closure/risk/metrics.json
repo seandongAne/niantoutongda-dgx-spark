@@ -1,0 +1,23 @@
+{
+  "closure_id": "hero_s1_technical_closure_v1",
+  "disclaimer_zh": "仅为辅助风险提醒，不构成安全认证，也不能替代现场人员或专业人员复核。",
+  "input_sha256": {
+    "closure": "36470f329c7183587c949fd522ed5328549ddc6bc1ab094fd0efe76699f6318e",
+    "facts": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356"
+  },
+  "output_sha256": {
+    "assessments.json": "2abd2a009d1b5d2eac85c83bc704be08b1d09a6f5fc928119bb69c70e6c3cd83"
+  },
+  "rule_count": 3,
+  "rule_order": [
+    "CHILD_SHARP_TOOL_REACH",
+    "TRIP_HAZARD_IN_PATH",
+    "POWER_IN_WET_ZONE"
+  ],
+  "schema_version": "1.0",
+  "status_counts": {
+    "NEEDS_USER": 3,
+    "NOT_APPLICABLE": 0,
+    "TRIGGERED": 0
+  }
+}

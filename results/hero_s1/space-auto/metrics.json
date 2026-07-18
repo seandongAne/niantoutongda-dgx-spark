@@ -1,0 +1,37 @@
+{
+  "adapter_version": "space-observation-adapter-v1",
+  "auto_observation_count": 2278,
+  "concept_tracklet_counts": {
+    "chest_of_drawers": 33,
+    "display_cabinet": 41,
+    "study_desk": 23,
+    "vanity": 29,
+    "wall_shelf": 42
+  },
+  "detected_target_concept_count": 5,
+  "detected_target_concepts": [
+    "chest_of_drawers",
+    "display_cabinet",
+    "study_desk",
+    "vanity",
+    "wall_shelf"
+  ],
+  "fallback_frame_size": null,
+  "frame_size_source_counts": {
+    "pil": 208
+  },
+  "furniture_tracklet_count": 168,
+  "ignored_tracklet_count": 73,
+  "input_observation_count": 3480,
+  "input_tracklet_count": 284,
+  "near_diagonal_ratio": 0.15,
+  "outlet_tracklet_count": 43,
+  "power_state_counts": {
+    "NEAR": 318,
+    "NOT_NEAR": 0,
+    "UNKNOWN": 1960
+  },
+  "schema_version": "1.0",
+  "target_concept_count": 5,
+  "video_id": "new_1"
+}

@@ -1,0 +1,210 @@
+{
+  "box_count": 5,
+  "boxes": [
+    {
+      "box_id": "box-group-01",
+      "box_label_zh": "学习文具箱",
+      "box_type": "life_group",
+      "group_id": "study_stationery",
+      "items": [
+        {
+          "canonical_id": "marker_set",
+          "display_name_source": "display",
+          "display_name_zh": "水彩笔",
+          "entity_id": "hero_marker_set",
+          "quantity": 1
+        },
+        {
+          "canonical_id": "utility_knife",
+          "display_name_source": "display",
+          "display_name_zh": "壁纸刀",
+          "entity_id": "hero_utility_knife",
+          "quantity": 1
+        },
+        {
+          "canonical_id": "pen",
+          "display_name_source": "display",
+          "display_name_zh": "铅笔与圆珠笔",
+          "entity_id": "hero_pen",
+          "quantity": 6
+        },
+        {
+          "canonical_id": "scissors",
+          "display_name_source": "display",
+          "display_name_zh": "剪刀",
+          "entity_id": "hero_scissors",
+          "quantity": 1
+        },
+        {
+          "canonical_id": "pencil_sharpener",
+          "display_name_source": "display",
+          "display_name_zh": "转笔刀",
+          "entity_id": "hero_pencil_sharpener",
+          "quantity": 1
+        },
+        {
+          "canonical_id": "set_square",
+          "display_name_source": "display",
+          "display_name_zh": "三角尺",
+          "entity_id": "hero_set_square",
+          "quantity": 1
+        },
+        {
+          "canonical_id": "book",
+          "display_name_source": "display",
+          "display_name_zh": "书",
+          "entity_id": "hero_book",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "box_id": "box-group-02",
+      "box_label_zh": "杯子饮品箱",
+      "box_type": "life_group",
+      "group_id": "cups_and_drinks",
+      "items": [
+        {
+          "canonical_id": "water_bottle",
+          "display_name_source": "display",
+          "display_name_zh": "水壶",
+          "entity_id": "hero_water_bottle",
+          "quantity": 1
+        },
+        {
+          "canonical_id": "coffee_jar",
+          "display_name_source": "display",
+          "display_name_zh": "咖啡罐",
+          "entity_id": "hero_coffee_jar",
+          "quantity": 1
+        },
+        {
+          "canonical_id": "tea_bag",
+          "display_name_source": "display",
+          "display_name_zh": "茶叶",
+          "entity_id": "hero_tea_bag",
+          "quantity": 2
+        },
+        {
+          "canonical_id": "mug",
+          "display_name_source": "display",
+          "display_name_zh": "马克杯",
+          "entity_id": "hero_mug",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "box_id": "box-group-03",
+      "box_label_zh": "洗漱护理箱",
+      "box_type": "life_group",
+      "group_id": "toiletries_and_care",
+      "items": [
+        {
+          "canonical_id": "sunscreen_tin",
+          "display_name_source": "display",
+          "display_name_zh": "防晒霜",
+          "entity_id": "hero_sunscreen_tin",
+          "quantity": 1
+        },
+        {
+          "canonical_id": "hand_cream",
+          "display_name_source": "display",
+          "display_name_zh": "护手霜",
+          "entity_id": "hero_hand_cream",
+          "quantity": 1
+        },
+        {
+          "canonical_id": "hair_clip",
+          "display_name_source": "display",
+          "display_name_zh": "发卡",
+          "entity_id": "hero_hair_clip",
+          "quantity": 1
+        },
+        {
+          "canonical_id": "comb",
+          "display_name_source": "display",
+          "display_name_zh": "梳子",
+          "entity_id": "hero_comb",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "box_id": "box-technical-01",
+      "box_label_zh": "玩具技术装箱单元箱",
+      "box_type": "technical_pack_unit",
+      "group_id": "technical_toys_pack",
+      "items": [
+        {
+          "canonical_id": "plush_toy",
+          "display_name_source": "display",
+          "display_name_zh": "玩具娃娃",
+          "entity_id": "hero_plush_toy",
+          "quantity": 1
+        },
+        {
+          "canonical_id": "rubiks_cube",
+          "display_name_source": "display",
+          "display_name_zh": "魔方",
+          "entity_id": "hero_rubiks_cube",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "box_id": "box-technical-02",
+      "box_label_zh": "零食技术装箱单元箱",
+      "box_type": "technical_pack_unit",
+      "group_id": "technical_snacks_pack",
+      "items": [
+        {
+          "canonical_id": "popping_candy",
+          "display_name_source": "display",
+          "display_name_zh": "跳跳糖",
+          "entity_id": "hero_popping_candy",
+          "quantity": 1
+        },
+        {
+          "canonical_id": "hawthorn_sticks",
+          "display_name_source": "display",
+          "display_name_zh": "山楂棒",
+          "entity_id": "hero_hawthorn_sticks",
+          "quantity": 1
+        },
+        {
+          "canonical_id": "biscuits",
+          "display_name_source": "display",
+          "display_name_zh": "饼干",
+          "entity_id": "hero_biscuits",
+          "quantity": 1
+        }
+      ]
+    }
+  ],
+  "canonical_item_count": 20,
+  "canonical_item_order": [
+    "water_bottle",
+    "sunscreen_tin",
+    "marker_set",
+    "utility_knife",
+    "plush_toy",
+    "coffee_jar",
+    "rubiks_cube",
+    "pen",
+    "scissors",
+    "pencil_sharpener",
+    "set_square",
+    "hand_cream",
+    "hair_clip",
+    "comb",
+    "popping_candy",
+    "hawthorn_sticks",
+    "biscuits",
+    "tea_bag",
+    "book",
+    "mug"
+  ],
+  "closure_id": "hero_s1_technical_closure_v1",
+  "schema_version": "1.0"
+}

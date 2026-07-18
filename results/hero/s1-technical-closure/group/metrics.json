@@ -1,0 +1,26 @@
+{
+  "box_count": 5,
+  "closure_id": "hero_s1_technical_closure_v1",
+  "covered_canonical_item_count": 20,
+  "group_count": 3,
+  "grouped_item_count": 15,
+  "independent_item_count": 5,
+  "input_sha256": {
+    "closure": "36470f329c7183587c949fd522ed5328549ddc6bc1ab094fd0efe76699f6318e",
+    "display": "bf4af337fd92b3a8eac66d8f9b637d746a92ad2a8348027b1807128340e51fb3",
+    "inventory": "7d5f393d613cbaf13a05572498d7ccefc13dd95856f92d0258bed71ca0ce35dc"
+  },
+  "output_sha256": {
+    "boxlist.json": "49cf4135c8671a00161ebe453e0221d32a09bfe35db6cfc0afa0dadfbcd34fae",
+    "groups.jsonl": "02eb6db7821962d49988741ea3688f3f03dd0c4f92d264171f52d95610f5c473",
+    "independent_pack_items.jsonl": "a0b9f4f13bb406b76deafb3ccef84f029d65f68048628200ecf158d529a24d95",
+    "life_groups.jsonl": "f45b54265a649545732879eb10164631be3f96b6826eee469d014ae01bed1ea4",
+    "placement_groups.jsonl": "9b87db0931c7d3e005d24d809da3c2aaaeb48d39aa9d2b2332a73b723fe934b6"
+  },
+  "placement_group_count": 5,
+  "placement_grouped_item_count": 20,
+  "schema_version": "1.0",
+  "status": "PASS",
+  "technical_pack_unit_count": 2,
+  "trusted_inventory_count": 20
+}

@@ -1,0 +1,32 @@
+{
+  "attribute_enriched_tracklet_count": 4628,
+  "automatic_link_count": 997,
+  "baseline_only": true,
+  "clarification_count": 607,
+  "clarifications_suppressed_by_cap": 34,
+  "clarifications_suppressed_low_evidence": 1966,
+  "config_version": "reid-hero-s1-neighborhood-v2",
+  "cycle_closure_count": 63,
+  "deterministic": true,
+  "entity_count": 3262,
+  "g2_blocker": "machine-readable anchor-to-tracklet ground truth is absent",
+  "g2_evaluated": false,
+  "known_category_tracklets": 4332,
+  "low_evidence_tracklet_count": 2358,
+  "matched_entity_count": 598,
+  "neighborhood_candidate_applied_count": 5286,
+  "neighborhood_candidate_covered_count": 27133,
+  "neighborhood_enabled": true,
+  "neighborhood_locked_assignment_count": 933,
+  "new_entity_count": 974,
+  "repeat_count": 1,
+  "run_hashes": [
+    "5d90dcce00e88c99a40257894bfd1fa9ff7d5a204f9db8f98c53a29351ac30b2"
+  ],
+  "stitch_enabled": true,
+  "stitch_merge_count": 494,
+  "suspected_entity_count": 1690,
+  "tracklet_count": 4629,
+  "tracklet_count_after_stitch": 4135,
+  "user_same_link_count": 0
+}

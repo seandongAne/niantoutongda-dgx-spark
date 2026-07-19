@@ -1,0 +1,196 @@
+{
+  "schema_version": "2.0",
+  "created_at": "2026-07-19",
+  "scope": "SINGLE_ANCHOR_LOCAL_SCALE_CONFIDENCE_PRODUCTION_GATE",
+  "verdict": "PASS_EXISTING_OPERATIONAL_GATES_KEEP_EXPERIMENTAL",
+  "promote_to_primary": false,
+  "code_commit": "a8ae2f0e8186cdb04740e71132a27a5cbcb97988",
+  "baseline": {
+    "path": "results/hero_s1/reid-closure-multiview-v2",
+    "automatic_link_count": 994,
+    "automatic_mode_count": 926,
+    "cycle_closure_count": 68,
+    "clarification_count": 591,
+    "matched_entity_count": 595,
+    "metrics_sha256": "ef1e73a0014afee838cfd4bea9e36501b70222d115accc2c237e2381c620464d",
+    "accepted_links_sha256": "ffef5be5d1a66d32291447fb2505feac219c25c2d73d1152f348c84c471a018b"
+  },
+  "guards": {
+    "removed_baseline_automatic_max": 0,
+    "automatic_link_count_min": 994,
+    "clarification_count_max": 591,
+    "deterministic_final_replay": true
+  },
+  "proxy": {
+    "algorithm": "local-anchor-scale + temporal-MAD + confidence-weighted-blend-v2",
+    "min_shared_grid": [1],
+    "max_neighbors_grid": [3, 5, 7],
+    "blends": [0.1, 0.2, 0.3],
+    "winner": {
+      "max_neighbors": 7,
+      "min_shared_anchors": 1,
+      "blend": 0.3,
+      "pseudo_recall_at_1": 0.44385,
+      "pseudo_recall_at_5": 0.860963,
+      "selection_tutor_auc": 0.660428,
+      "holdout_tutor_auc": 0.711429
+    },
+    "legacy_single_anchor_control": {
+      "pseudo_recall_at_1": 0.44385,
+      "pseudo_recall_at_5": 0.860963,
+      "selection_tutor_auc": 0.664884,
+      "holdout_tutor_auc": 0.697143
+    },
+    "baseline_metrics": {
+      "pseudo_recall_at_1": 0.44385,
+      "pseudo_recall_at_5": 0.855615,
+      "selection_tutor_auc": 0.657308,
+      "holdout_tutor_auc": 0.688571
+    },
+    "report": "results/acceptance/HERO_S1/neighborhood-context-v5-single-anchor/proxy-report.json",
+    "report_sha256": "ab0096cdf4a151e05475bc5889afdca9653b8237f7d906ecbdc5570c37a7223a",
+    "sidecar": "results/acceptance/HERO_S1/neighborhood-context-v5-single-anchor/context-scores.jsonl",
+    "sidecar_sha256": "2ed2b00305ca95d6826bdfb7119866bf4291bf9d87d5bd921a38faf5a91cf55e",
+    "candidate_pairs": 30788,
+    "covered_pairs": 27133,
+    "single_anchor_covered_pairs": 4456,
+    "confidence_mean": 0.663814
+  },
+  "production_grid": [
+    {
+      "blend": 0.1,
+      "path": "results/hero_s1/reid-neighborhood-v2-b010-final",
+      "config_sha256": "fdc9b497362c037782ec8376399afe5333163f8773f3d4004520a62562a98ec3",
+      "repeat_count": 2,
+      "run_hashes": [
+        "e1084827d5a3072cbd8f77e18f88521ecf1c112d3d9c9a0b5a70f388f48809a6",
+        "e1084827d5a3072cbd8f77e18f88521ecf1c112d3d9c9a0b5a70f388f48809a6"
+      ],
+      "automatic_link_count": 996,
+      "automatic_mode_count": 928,
+      "cycle_closure_count": 68,
+      "clarification_count": 589,
+      "matched_entity_count": 596,
+      "covered_candidates": 27133,
+      "applied_candidates": 5286,
+      "applied_by_shared_anchor_count": {
+        "1": 950,
+        "2": 920,
+        "3": 836,
+        "4": 810,
+        "5": 935,
+        "6": 704,
+        "7": 131
+      },
+      "removed_baseline_automatic": 0,
+      "added_automatic": [
+        ["old_1_t2140", "old_3_t4934"],
+        ["old_1_t4779", "old_3_t2303"]
+      ],
+      "removed_baseline_cycle_count": 3,
+      "added_cycle_count": 3,
+      "metrics_sha256": "feab28d4fffad990335c44ce63048600634b9b7222031c992d275da5366747ca",
+      "accepted_links_sha256": "704617be58ef0a19d9c6e812710774940689d8a7cfb92f9bba55c6b1f734afa5",
+      "pass": true
+    },
+    {
+      "blend": 0.2,
+      "path": "results/hero_s1/reid-neighborhood-v2-b020-screen",
+      "config_sha256": "012400de1e50a2e07373b86af27b5f2bb63cb83060105d58469df0789d319bfd",
+      "repeat_count": 1,
+      "run_hash": "036122263ee7def703d1f031d56a864107f0199d6ddacb0b26ee57fb71d3cfe6",
+      "automatic_link_count": 995,
+      "automatic_mode_count": 930,
+      "cycle_closure_count": 65,
+      "clarification_count": 602,
+      "removed_baseline_automatic": 0,
+      "metrics_sha256": "39199dfb8353265824ca0de507f7e46c733bb498005481fa237d0bbd16c24237",
+      "accepted_links_sha256": "65bbe66354a6f107e1a2588cde053c1609f77be189f96c2b76090add1c805375",
+      "pass": false,
+      "failure": "clarification_count_increased_by_11"
+    },
+    {
+      "blend": 0.3,
+      "path": "results/hero_s1/reid-neighborhood-v2-b030-screen",
+      "config_sha256": "fd7c263a544367b92642138c6ca83346137dcceb58d1424099097822f43084d2",
+      "repeat_count": 1,
+      "run_hash": "5d90dcce00e88c99a40257894bfd1fa9ff7d5a204f9db8f98c53a29351ac30b2",
+      "automatic_link_count": 997,
+      "automatic_mode_count": 934,
+      "cycle_closure_count": 63,
+      "clarification_count": 607,
+      "removed_baseline_automatic": 0,
+      "metrics_sha256": "cc051580775875a6adef370ebf8d8501634908dafab2b6cb6f6bc889c4ba9b44",
+      "accepted_links_sha256": "cf707b292c28a36fb43d7b38f0ae780f0e6e4c1359e4294f4e6a1f7ba433af5c",
+      "pass": false,
+      "failure": "clarification_count_increased_by_16"
+    }
+  ],
+  "min_shared_ablation": {
+    "treatment": "min_shared_1_blend_0.10",
+    "control": "min_shared_3_blend_0.10",
+    "control_path": "results/hero_s1/reid-neighborhood-v2-min3-b010-control",
+    "control_config": "configs/reid_hero_s1_neighborhood_v2_min3_control.yaml",
+    "control_config_sha256": "8cd845718e558e83d4d6e98a69aef52563021f1b09fdecd9cf3a35c211121890",
+    "control_metrics": {
+      "automatic_link_count": 994,
+      "automatic_mode_count": 928,
+      "cycle_closure_count": 66,
+      "clarification_count": 589,
+      "matched_entity_count": 596,
+      "covered_candidates": 17992,
+      "applied_candidates": 3416,
+      "removed_baseline_automatic": 0,
+      "run_hash": "e3bbc223b5dbdbb707f25313b52825d05e78e5af560aaf34870ac697a6b96b73",
+      "metrics_sha256": "2e0c65011c7140fe7db91b946554d38602a14c78979a4d5a3135655ce1bcdd41",
+      "accepted_links_sha256": "20c40420094b751ee5ac557c2090e9f83bcb6287bf47a58a9fb5706c7d5293ad"
+    },
+    "treatment_minus_control": {
+      "automatic_link_count": 2,
+      "automatic_mode_count": 0,
+      "cycle_closure_count": 2,
+      "clarification_count": 0,
+      "matched_entity_count": 0,
+      "covered_candidates": 9141,
+      "applied_candidates": 1870
+    },
+    "mechanism_examples": [
+      {
+        "cycle_pair": ["old_1_t4808", "old_3_t3279"],
+        "support_shared_anchor_counts": [1, 2],
+        "note": "direct one/two-anchor support exists only in treatment"
+      },
+      {
+        "cycle_pair": ["old_1_t3503", "old_2_t1790"],
+        "support_shared_anchor_counts": [6, 6],
+        "note": "indirectly recovered because the wider calibrated candidate universe changes assignment order"
+      }
+    ],
+    "conclusion": "Allowing one/two shared anchors contributes two net cycle closures at unchanged automatic and clarification counts."
+  },
+  "post_selection_reused_gt_regression": {
+    "independent": false,
+    "used_for_selection": false,
+    "tuning_after_read": false,
+    "artifact": "results/acceptance/HERO_S1/neighborhood-context-v2-single-anchor-terminal/gt-regression.json",
+    "artifact_sha256": "9a17132ded59eca16e75ff41406956abc2fd1b9d4ccfbb9cca60b0dc0fd65c67",
+    "baseline": {
+      "complete_merge": "17/20",
+      "recall_at_1": "488/577",
+      "recall_at_1_value": 0.8458,
+      "high_confidence_false_merge": 0,
+      "clarification_no_anchor": 505
+    },
+    "treatment": {
+      "complete_merge": "17/20",
+      "recall_at_1": "489/577",
+      "recall_at_1_value": 0.8475,
+      "high_confidence_false_merge": 0,
+      "clarification_no_anchor": 503
+    },
+    "changed_anchor": "anchor_05_plus_1_hit",
+    "recall_gate_pass": false,
+    "hard_negative_groups": "0/0_not_provided"
+  },
+  "conclusion": "The confidence-weighted single-anchor v2 passes the existing no-GT operational gates and contributes two net cycle closures over the min_shared=3 ablation. Reused GT regression is non-degrading and gains one known hit, but is not independent and remains below the 0.86 recall gate; keep experimental until a new held-out set is evaluated."
+}

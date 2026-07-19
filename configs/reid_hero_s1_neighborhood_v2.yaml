@@ -6,10 +6,12 @@ reason: >-
   锚点间局部尺度归一化，以跨帧 MAD、共视率和共同帧数计算证据置信度；单锚点
   基础置信度上限为三分之一。无证据候选逐字保持 baseline，原高置信分配与组件
   继续锁定。无 GT 代理网格限定 min_shared=1，proxy winner 为 blend 0.30；
-  是否可用仍由生产链接/澄清门决定。
+  生产网格中仅 blend 0.10 同时通过旧 automatic 零删除、总链接不下降与澄清
+  不增加三门；因此冻结 0.10 做确定性回放，但在新独立测试集到位前仍不替换 v2
+  主工作点。
 applies_to_dataset: hero_s1
-frozen: false
-experimental_status: production_gate_pending
+frozen: true
+experimental_status: operational_gate_passed_no_gt
 promote_to_primary: false
 embedding_dim: 768
 top_k: 5
@@ -49,7 +51,7 @@ neighborhood:
   enabled: true
   artifact: results/acceptance/HERO_S1/neighborhood-context-v5-single-anchor/context-scores.jsonl
   sha256: 2ed2b00305ca95d6826bdfb7119866bf4291bf9d87d5bd921a38faf5a91cf55e
-  blend: 0.30
+  blend: 0.10
   calibration: per_video_pair_quantile
   scope: uncertain_only
   confidence_weighting: true
@@ -62,4 +64,5 @@ derived_from:
   proxy_report: results/acceptance/HERO_S1/neighborhood-context-v5-single-anchor/proxy-report.json
   proxy_report_sha256: ab0096cdf4a151e05475bc5889afdca9653b8237f7d906ecbdc5570c37a7223a
   context_sidecar_sha256: 2ed2b00305ca95d6826bdfb7119866bf4291bf9d87d5bd921a38faf5a91cf55e
+  production_selection: blend-0.10-only-operational-pass
   selection_rule: static-neighborhood-single-anchor-confidence-v2-no-frozen-gt

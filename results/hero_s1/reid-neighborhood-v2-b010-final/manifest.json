@@ -1,0 +1,53 @@
+{
+  "attributes": {
+    "path": "results/s5/attributes_hero_s1.jsonl",
+    "sha256": "80362edbc33326fd009de0b5b202bf4e5b58ac2c7e40ff83a6f2a529a4d23338"
+  },
+  "code_commit": "a8ae2f0e8186cdb04740e71132a27a5cbcb97988",
+  "config": {
+    "path": "configs/reid_hero_s1_neighborhood_v2.yaml",
+    "sha256": "fdc9b497362c037782ec8376399afe5333163f8773f3d4004520a62562a98ec3"
+  },
+  "constraints": {
+    "path": null,
+    "sha256": null
+  },
+  "created_at": "2026-07-19T11:46:24Z",
+  "cycle": {
+    "enabled": true,
+    "rule": "one_round_three_video_dual_evidence_v1"
+  },
+  "ground_truth": null,
+  "ground_truth_status": "MISSING_MACHINE_READABLE_ANNOTATIONS",
+  "ingest_root": "results/hero_s1/ingest",
+  "multiview": {
+    "artifact": "results/hero_s1/multiview-dinov2-v1/views.npz",
+    "blend": 0.5,
+    "calibration": "per_video_pair_quantile",
+    "enabled": true,
+    "max_views_per_rep": 6,
+    "method": "max_pair",
+    "sha256": "6c48978bf14e5a0a9f63885c4d848f8e56101471f2652efb5665adb7c7a9a00b",
+    "space": "raw"
+  },
+  "neighborhood": {
+    "artifact": "results/acceptance/HERO_S1/neighborhood-context-v5-single-anchor/context-scores.jsonl",
+    "blend": 0.1,
+    "calibration": "per_video_pair_quantile",
+    "confidence_weighting": true,
+    "enabled": true,
+    "scope": "uncertain_only",
+    "sha256": "2ed2b00305ca95d6826bdfb7119866bf4291bf9d87d5bd921a38faf5a91cf55e"
+  },
+  "projection": {
+    "artifact": "results/sf1/hero_s1_autotune_v1/projection.npz",
+    "enabled": true,
+    "sha256": "79a74f135acad1f43ac25d391a01becdbac1dc8b219430a4a14c6ddaf6da02e4"
+  },
+  "schema_version": "1.0",
+  "slice_id": "S3",
+  "vocab": {
+    "path": "fixtures/hero_s1/vocab.json",
+    "sha256": "35655f3f73f22e035835a61db2fa7ea93b9992f7cea9be4e93e9bfead25c7f1e"
+  }
+}

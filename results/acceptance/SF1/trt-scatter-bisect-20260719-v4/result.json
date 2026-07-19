@@ -1,0 +1,296 @@
+{
+  "acceptance_boundary": "Frozen two-image workload; instrumented engine blocks fusions, so no timing claim. A guilty verdict here names the first divergent op-site, not yet a reproduced upstream TensorRT bug report.",
+  "code_commit": "2a48cba99f7a6582c94b4d286e3453541a64c1dd",
+  "created_at_unix": 1784433266,
+  "engine_build": {
+    "command": [
+      "/home/Developer/local/tensorrt-10.14.1.48/usr/src/tensorrt/bin/trtexec",
+      "--onnx=results/acceptance/SF1/trt-scatter-bisect-20260719-v4/scatter_bisect_instrumented.onnx",
+      "--saveEngine=results/acceptance/SF1/trt-scatter-bisect-20260719-v4/scatter_bisect_fp32_notf32.engine",
+      "--noTF32",
+      "--skipInference",
+      "--memPoolSize=workspace:16384M"
+    ],
+    "duration_seconds": 61.42090702056885,
+    "log_tail": [],
+    "returncode": 0
+  },
+  "guilty_nodes": [],
+  "instrumentation_equivalence": {
+    "bit_exact": {
+      "logits": true,
+      "pred_boxes": true
+    },
+    "equivalent": true
+  },
+  "instrumented_onnx": {
+    "path": "results/acceptance/SF1/trt-scatter-bisect-20260719-v4/scatter_bisect_instrumented.onnx",
+    "sha256": "0ea776b81a9fd8d9edeb819d4396ace9348ecd380caf3ecf1868da9b432be462",
+    "typed_outputs_backfilled": true
+  },
+  "onnx": {
+    "path": "results/acceptance/SF1/trt-gdino-20260718-v10-dynamo-static/grounding_dino.onnx",
+    "sha256": "aae91bfda8571d1bc24c3ed5f3dc4f8d68e3b111e3fbc0b7ec2d148f243864ee"
+  },
+  "ort_vs_trt": {
+    "add_189": {
+      "bit_exact": false,
+      "candidate_dtype": "float32",
+      "candidate_finite_count": 6144,
+      "candidate_shape": [
+        2,
+        12,
+        256
+      ],
+      "comparison_valid": true,
+      "dtype_equal": true,
+      "jointly_finite_count": 6144,
+      "max_abs_on_jointly_finite": 0.00091552734375,
+      "mean_abs_on_jointly_finite": 1.9769222186975337e-05,
+      "nonfinite_pattern_equal": true,
+      "reference_dtype": "float32",
+      "reference_finite_count": 6144,
+      "reference_shape": [
+        2,
+        12,
+        256
+      ],
+      "shape_equal": true
+    },
+    "layer_norm_114": {
+      "bit_exact": false,
+      "candidate_dtype": "float32",
+      "candidate_finite_count": 6144,
+      "candidate_shape": [
+        2,
+        12,
+        256
+      ],
+      "comparison_valid": true,
+      "dtype_equal": true,
+      "jointly_finite_count": 6144,
+      "max_abs_on_jointly_finite": 1.2516975402832031e-05,
+      "mean_abs_on_jointly_finite": 5.046823314813764e-07,
+      "nonfinite_pattern_equal": true,
+      "reference_dtype": "float32",
+      "reference_finite_count": 6144,
+      "reference_shape": [
+        2,
+        12,
+        256
+      ],
+      "shape_equal": true
+    },
+    "layer_norm_117": {
+      "bit_exact": false,
+      "candidate_dtype": "float32",
+      "candidate_finite_count": 10703872,
+      "candidate_shape": [
+        2,
+        20906,
+        256
+      ],
+      "comparison_valid": true,
+      "dtype_equal": true,
+      "jointly_finite_count": 10703872,
+      "max_abs_on_jointly_finite": 8.034706115722656e-05,
+      "mean_abs_on_jointly_finite": 5.291189331571607e-07,
+      "nonfinite_pattern_equal": true,
+      "reference_dtype": "float32",
+      "reference_finite_count": 10703872,
+      "reference_shape": [
+        2,
+        20906,
+        256
+      ],
+      "shape_equal": true
+    },
+    "linear_328": {
+      "bit_exact": false,
+      "candidate_dtype": "float32",
+      "candidate_finite_count": 10703872,
+      "candidate_shape": [
+        2,
+        20906,
+        256
+      ],
+      "comparison_valid": true,
+      "dtype_equal": true,
+      "jointly_finite_count": 10703872,
+      "max_abs_on_jointly_finite": 0.00010824203491210938,
+      "mean_abs_on_jointly_finite": 3.977310255967045e-07,
+      "nonfinite_pattern_equal": true,
+      "reference_dtype": "float32",
+      "reference_finite_count": 10703872,
+      "reference_shape": [
+        2,
+        20906,
+        256
+      ],
+      "shape_equal": true
+    },
+    "logits": {
+      "bit_exact": false,
+      "candidate_dtype": "float32",
+      "candidate_finite_count": 21600,
+      "candidate_shape": [
+        2,
+        900,
+        256
+      ],
+      "comparison_valid": true,
+      "dtype_equal": true,
+      "jointly_finite_count": 21600,
+      "max_abs_on_jointly_finite": 2.800177574157715,
+      "mean_abs_on_jointly_finite": 0.00743772748167868,
+      "nonfinite_pattern_equal": true,
+      "reference_dtype": "float32",
+      "reference_finite_count": 21600,
+      "reference_shape": [
+        2,
+        900,
+        256
+      ],
+      "shape_equal": true
+    },
+    "matmul_12": {
+      "bit_exact": false,
+      "candidate_dtype": "float32",
+      "candidate_finite_count": 501744,
+      "candidate_shape": [
+        2,
+        20906,
+        12
+      ],
+      "comparison_valid": true,
+      "dtype_equal": true,
+      "jointly_finite_count": 501744,
+      "max_abs_on_jointly_finite": 0.00018787384033203125,
+      "mean_abs_on_jointly_finite": 7.451414062172529e-06,
+      "nonfinite_pattern_equal": true,
+      "reference_dtype": "float32",
+      "reference_finite_count": 501744,
+      "reference_shape": [
+        2,
+        20906,
+        12
+      ],
+      "shape_equal": true
+    },
+    "pred_boxes": {
+      "bit_exact": false,
+      "candidate_dtype": "float32",
+      "candidate_finite_count": 7200,
+      "candidate_shape": [
+        2,
+        900,
+        4
+      ],
+      "comparison_valid": true,
+      "dtype_equal": true,
+      "jointly_finite_count": 7200,
+      "max_abs_on_jointly_finite": 0.8357304548844695,
+      "mean_abs_on_jointly_finite": 0.0012854752990016196,
+      "nonfinite_pattern_equal": true,
+      "reference_dtype": "float32",
+      "reference_finite_count": 7200,
+      "reference_shape": [
+        2,
+        900,
+        4
+      ],
+      "shape_equal": true
+    },
+    "transpose_345": {
+      "bit_exact": false,
+      "candidate_dtype": "float32",
+      "candidate_finite_count": 6144,
+      "candidate_shape": [
+        2,
+        256,
+        12
+      ],
+      "comparison_valid": true,
+      "dtype_equal": true,
+      "jointly_finite_count": 6144,
+      "max_abs_on_jointly_finite": 1.2516975402832031e-05,
+      "mean_abs_on_jointly_finite": 5.046823314813764e-07,
+      "nonfinite_pattern_equal": true,
+      "reference_dtype": "float32",
+      "reference_finite_count": 6144,
+      "reference_shape": [
+        2,
+        256,
+        12
+      ],
+      "shape_equal": true
+    }
+  },
+  "platform": {
+    "gpu": "NVIDIA GB10",
+    "machine": "aarch64",
+    "tensorrt": "10.14.1.48",
+    "torch": "2.13.0+cu130"
+  },
+  "schema_version": "1.0",
+  "scope": "SF1_DIAGNOSTIC_SCATTER_BISECT_NOT_ACCEPTANCE",
+  "target_node": {
+    "inputs": [
+      "layer_norm_117",
+      "transpose_345"
+    ],
+    "marked_values": [
+      "matmul_12",
+      "layer_norm_117",
+      "transpose_345",
+      "linear_328",
+      "layer_norm_114",
+      "add_189"
+    ],
+    "name": "node_matmul_12",
+    "op_type": "MatMul",
+    "outputs": [
+      "matmul_12"
+    ],
+    "passthrough_chain_from_target_value": [],
+    "skipped_initializer_inputs": [
+      "wrapped.model.enc_output_norm.weight",
+      "wrapped.model.enc_output_norm.bias",
+      "wrapped.model.encoder.layers.5.text_enhancer_layer.layer_norm_after.weight",
+      "wrapped.model.encoder.layers.5.text_enhancer_layer.layer_norm_after.bias"
+    ],
+    "target_value": "matmul_12",
+    "traced_nodes": {
+      "node_layer_norm_114": {
+        "depth": 2,
+        "op_type": "LayerNormalization",
+        "output": "layer_norm_114",
+        "traced_inputs": [
+          "add_189"
+        ]
+      },
+      "node_layer_norm_117": {
+        "depth": 2,
+        "op_type": "LayerNormalization",
+        "output": "layer_norm_117",
+        "traced_inputs": [
+          "linear_328"
+        ]
+      },
+      "node_matmul_12": {
+        "depth": 1,
+        "op_type": "MatMul",
+        "output": "matmul_12",
+        "traced_inputs": [
+          "layer_norm_117",
+          "transpose_345"
+        ]
+      }
+    }
+  },
+  "thresholds": {
+    "clean_max_abs": 0.001,
+    "dirty_max_abs": 0.1
+  },
+  "verdict": "NO_DIVERGENCE_REPRODUCED_AT_TRACED_NODES"
+}

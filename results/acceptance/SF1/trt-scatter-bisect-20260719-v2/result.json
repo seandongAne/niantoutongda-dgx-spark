@@ -1,0 +1,160 @@
+{
+  "acceptance_boundary": "Frozen two-image workload; instrumented engine blocks fusions, so no timing claim. A guilty verdict here names the first divergent op-site, not yet a reproduced upstream TensorRT bug report.",
+  "code_commit": "a49c236a218fdc0a59519e866c36be553226001a",
+  "created_at_unix": 1784416199,
+  "engine_build": {
+    "command": [
+      "/home/Developer/local/tensorrt-10.14.1.48/usr/src/tensorrt/bin/trtexec",
+      "--onnx=results/acceptance/SF1/trt-scatter-bisect-20260719-v2/scatter_bisect_instrumented.onnx",
+      "--saveEngine=results/acceptance/SF1/trt-scatter-bisect-20260719-v2/scatter_bisect_fp32_notf32.engine",
+      "--noTF32",
+      "--skipInference",
+      "--memPoolSize=workspace:16384M"
+    ],
+    "duration_seconds": 61.48120427131653,
+    "log_tail": [],
+    "returncode": 0
+  },
+  "instrumentation_equivalence": {
+    "bit_exact": {
+      "logits": true,
+      "pred_boxes": true
+    },
+    "equivalent": true
+  },
+  "instrumented_onnx": {
+    "path": "results/acceptance/SF1/trt-scatter-bisect-20260719-v2/scatter_bisect_instrumented.onnx",
+    "sha256": "a6cc275b492d5ad01f2069391919148db3ca1b36502beeb48308caaadce2e0e5",
+    "typed_outputs_backfilled": true
+  },
+  "onnx": {
+    "path": "results/acceptance/SF1/trt-gdino-20260718-v10-dynamo-static/grounding_dino.onnx",
+    "sha256": "aae91bfda8571d1bc24c3ed5f3dc4f8d68e3b111e3fbc0b7ec2d148f243864ee"
+  },
+  "ort_vs_trt": {
+    "logits": {
+      "bit_exact": false,
+      "candidate_dtype": "float32",
+      "candidate_finite_count": 21600,
+      "candidate_shape": [
+        2,
+        900,
+        256
+      ],
+      "comparison_valid": true,
+      "dtype_equal": true,
+      "jointly_finite_count": 21600,
+      "max_abs_on_jointly_finite": 5.9051642417907715,
+      "mean_abs_on_jointly_finite": 1.1760901410132647,
+      "nonfinite_pattern_equal": true,
+      "reference_dtype": "float32",
+      "reference_finite_count": 21600,
+      "reference_shape": [
+        2,
+        900,
+        256
+      ],
+      "shape_equal": true
+    },
+    "pred_boxes": {
+      "bit_exact": false,
+      "candidate_dtype": "float32",
+      "candidate_finite_count": 7200,
+      "candidate_shape": [
+        2,
+        900,
+        4
+      ],
+      "comparison_valid": true,
+      "dtype_equal": true,
+      "jointly_finite_count": 7200,
+      "max_abs_on_jointly_finite": 0.9913885593414307,
+      "mean_abs_on_jointly_finite": 0.26310613215243694,
+      "nonfinite_pattern_equal": true,
+      "reference_dtype": "float32",
+      "reference_finite_count": 7200,
+      "reference_shape": [
+        2,
+        900,
+        4
+      ],
+      "shape_equal": true
+    },
+    "slice_scatter": {
+      "bit_exact": false,
+      "candidate_dtype": "float32",
+      "candidate_finite_count": 501744,
+      "candidate_shape": [
+        2,
+        20906,
+        256
+      ],
+      "comparison_valid": true,
+      "dtype_equal": true,
+      "jointly_finite_count": 501744,
+      "max_abs_on_jointly_finite": 4.818028926849365,
+      "mean_abs_on_jointly_finite": 0.6095137992437395,
+      "nonfinite_pattern_equal": true,
+      "reference_dtype": "float32",
+      "reference_finite_count": 501744,
+      "reference_shape": [
+        2,
+        20906,
+        256
+      ],
+      "shape_equal": true
+    },
+    "val_8892": {
+      "bit_exact": false,
+      "candidate_dtype": "float32",
+      "candidate_finite_count": 501744,
+      "candidate_shape": [
+        256,
+        20906,
+        2
+      ],
+      "comparison_valid": true,
+      "dtype_equal": true,
+      "jointly_finite_count": 501744,
+      "max_abs_on_jointly_finite": 4.818028926849365,
+      "mean_abs_on_jointly_finite": 0.6095137992437395,
+      "nonfinite_pattern_equal": true,
+      "reference_dtype": "float32",
+      "reference_finite_count": 501744,
+      "reference_shape": [
+        256,
+        20906,
+        2
+      ],
+      "shape_equal": true
+    }
+  },
+  "platform": {
+    "gpu": "NVIDIA GB10",
+    "machine": "aarch64",
+    "tensorrt": "10.14.1.48",
+    "torch": "2.13.0+cu130"
+  },
+  "schema_version": "1.0",
+  "scope": "SF1_DIAGNOSTIC_SCATTER_BISECT_NOT_ACCEPTANCE",
+  "target_node": {
+    "inputs": [
+      "val_8892"
+    ],
+    "marked_values": [
+      "val_8892",
+      "slice_scatter"
+    ],
+    "name": "node_slice_scatter",
+    "op_type": "Transpose",
+    "outputs": [
+      "slice_scatter"
+    ],
+    "skipped_initializer_inputs": []
+  },
+  "thresholds": {
+    "clean_max_abs": 0.001,
+    "dirty_max_abs": 0.1
+  },
+  "verdict": "UPSTREAM_OF_SCATTER_GUILTY:val_8892"
+}

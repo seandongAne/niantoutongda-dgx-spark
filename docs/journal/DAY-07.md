@@ -171,10 +171,22 @@
   TRT parser 拒收 UNKNOWN(0);v2 回填 dtype 后拿到判决
   `UPSTREAM_OF_SCATTER_GUILTY:val_8892`——图里名为 `slice_scatter` 的节点实为
   **Transpose 纯搬运**(输入 `val_8892 [256,20906,2]` 与输出脏度逐位相同,max
-  `4.818`),scatter/填充路径洗清,罪在更上游。v3(提交 `41a6f274`)改为穿透
-  {Transpose,Reshape,Identity,Cast,Squeeze,Unsqueeze,Flatten} 上溯两层真实算子、
-  ORT 数组回填 dtype、自动输出 `GUILTY_OP:<op>@<node>`;发射器 `c8d739ae`,
-  正在运行(vLLM 在线,与 B 阶段同型轻载)。
+  `4.818`),scatter/填充路径洗清,罪在更上游。v3(提交 `41a6f274`)穿透
+  {Transpose,Reshape,Identity,Cast,Squeeze,Unsqueeze,Flatten} 上溯两层真实算子:
+  真实生产链=`matmul_12`(对比头 matmul,[2,20906,12])→ Where 掩码 → ScatterND
+  组装 → Transpose,四值脏度逐位相同(max `4.818`)——第一脏值锁定 `matmul_12`,
+  判决 `DIRTY_BEYOND_DEPTH2`(其直接输入未入观测)。
+- **线② 终局:v4 反转定案"融合依赖漂移"**。给二分器加 `--target-value`(提交
+  `2a48cba9`)指向 `matmul_12` 本体:其输出变**干净**(`1.9e-4`),全部上游
+  (layer_norm/linear/add)`≤9.2e-4` 全净——同一张量、同一 `--noTF32`,仅因标记
+  的观测输出集不同,就在 `4.818` 与 `1.9e-4` 间翻转;而 v4 引擎的最终 logits 仍脏
+  (max `2.8`)。合并 v3/v4 与哨兵证据:**逐算子数学全部无辜,脏度总是"逃离"被
+  materialize 的区域——根因是 TensorRT 对对比头区域(编码器侧与解码器侧两个同构
+  text-image matmul 子图)的融合 kernel 编译缺陷,谁留在融合里谁算错**。这是可
+  最小化上报 NVIDIA 的 bug 模式;工程侧对应的修复假设=在生产引擎上强制拆分该区
+  融合(附加哑输出/图外科),需重过检测门与计时才有资格谈采纳。二分证据:
+  `trt-scatter-bisect-20260719-{v2,v3,v4}/result.json`(timing cache 使 v3/v4
+  单轮仅约 90 秒)。
 - **线③ v10/v11 两项终局**。其一,OOM 真凶定案:v10 在 vLLM 已停、115GiB
   空闲下仍 exit 137,击杀点=`_profile_trt_events` 用 CUDA/CUPTI profiler 包住
   编译模块**首次执行**;profiler 自述仅是"佐证、永不作门",故加
@@ -227,18 +239,20 @@
   宿主无免密 sudo,运行中栈不可观测——可观测性要在发射前设计,不能事后补。
 - 图中值名不等于算子语义:名为 `slice_scatter` 的节点实为 Transpose 搬运工。
   二分工具必须穿透搬运算子上溯真实生产者,否则定罪永远停在无辜的中转节点。
+- 单次构建的二分定罪对 TRT 不充分:标记观测点本身改变融合决策,同一张量在两次
+  构建间 `4.818↔1.9e-4` 翻转。"输入净/输出脏"判据只在融合边界固定时有效;结论
+  必须来自成对构建的差分(v3×v4),否则会把融合缺陷误写成某个算子的数学错误。
 
 ## 明日计划
 
-- **待用户裁决(TRT 线唯一阻塞)**:是否临时错峰停 Nemotron vLLM 以完成 v10
-  (文本外置 FP32 engine 的门禁与计时,完毕即恢复服务);替代方案为 batch 1 缩
-  负载压峰值,但与冻结负载口径不一致,只能作诊断。
-- TRT 根因最后一层二分:在对比头 matmul 输出(slice_scatter 前)追加哨兵重跑
-  定位脚本;若坐实 slice_scatter,以 concat 填充改写导出图,先过 ORT 门再重建
-  clean engine 过检测门。
-- 选择性 BF16 是否进主链=验收口径裁决:候选与全部数字已备齐([5,5] 零翻转、
-  encoder-only 分数差 ≤3.4e-3、唯一残留 img1 单框 IoU 0.982);若裁定新口径,
-  先扩独立冻结检测集回归再谈采纳,不在两图上反复调参。
+- ~~错峰停 vLLM 完成 v10/v11~~ 已执行完毕:v11 编译成又挂死,已击杀并恢复
+  vLLM 服务,TRT 混编线止损(详 D7-4);若重启该线,先给探针加心跳再谈。
+- ~~TRT 根因最后一层二分~~ 已定案=融合依赖漂移(D7-4)。可选后续(需用户批准
+  时间盒):①生产引擎融合拆分实验——按 v4 标记集+解码器侧对应值附加哑输出重建
+  引擎,过检测门+计时,两者都过才有"修复版 TRT engine"候选;②做 NVIDIA 可复现
+  最小上报包(ONNX 子图+两组标记差分)。
+- ~~选择性 BF16 口径裁决~~ 已裁决并执行:revised-0.98 口径入册,扩集回归
+  5/32 FAIL,BF16 线关闭(D7-4);再启需先解决贴阈值翻转的结构性问题,不是调参。
 - 三线执行结果已落档;任一候选过冻结检测集合门,才进入更大独立冻结集回归与
   端到端吞吐;未过门的只记诊断,不产生性能声明。
 - 为语义重排采集并冻结未参与本轮选参的新 `holdout_b`;若继续使用 learned projection,

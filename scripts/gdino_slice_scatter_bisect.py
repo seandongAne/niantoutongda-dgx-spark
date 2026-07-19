@@ -55,6 +55,11 @@ def main() -> int:
     parser.add_argument("--output", required=True)
     parser.add_argument("--trtexec", required=True)
     parser.add_argument("--workspace-mib", type=int, default=16384)
+    parser.add_argument(
+        "--target-value",
+        default=TARGET_VALUE,
+        help="graph value whose real producer gets bisected (default: slice_scatter)",
+    )
     parser.add_argument("--code-commit")
     args = parser.parse_args()
 
@@ -99,14 +104,15 @@ def main() -> int:
             node = producer_of.get(current)
         return node, current, chain
 
-    if TARGET_VALUE not in producer_of:
-        raise RuntimeError(f"no node produces value {TARGET_VALUE!r}")
+    target_value = args.target_value
+    if target_value not in producer_of:
+        raise RuntimeError(f"no node produces value {target_value!r}")
 
-    level1_node, level1_output, level1_chain = real_producer(TARGET_VALUE)
+    level1_node, level1_output, level1_chain = real_producer(target_value)
     if level1_node is None:
         raise RuntimeError("walked into an initializer before any computing node")
 
-    marked = [TARGET_VALUE]
+    marked = [target_value]
     skipped_initializers = []
     node_map = {}
 
@@ -161,6 +167,7 @@ def main() -> int:
         "code_commit": args.code_commit or "unknown",
         "onnx": {"path": args.onnx, "sha256": _sha256(Path(args.onnx))},
         "target_node": {
+            "target_value": target_value,
             "op_type": target_node.op_type,
             "name": target_node.name,
             "inputs": list(target_node.input),

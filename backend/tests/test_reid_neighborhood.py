@@ -6,6 +6,7 @@ import pytest
 
 from backend.tools.reid.neighborhood import (
     CONTEXT_FORMAT_VERSION,
+    LEGACY_CONTEXT_FORMAT_VERSION,
     FrameDetection,
     GeometryObservation,
     NeighborRelation,
@@ -124,6 +125,97 @@ def test_same_topology_scores_above_changed_topology():
     assert compare_signatures(left, same, min_shared_anchors=3) is None
 
 
+def test_single_anchor_evidence_is_confidence_limited():
+    one_left = NeighborhoodSignature(
+        "a",
+        "v1",
+        (NeighborRelation("lamp", 1.0, 0.10, 0.0, 3),),
+    )
+    one_right = NeighborhoodSignature(
+        "b",
+        "v2",
+        (NeighborRelation("lamp", 1.0, 0.11, 0.0, 3),),
+    )
+    three_left = NeighborhoodSignature(
+        "c",
+        "v1",
+        tuple(
+            NeighborRelation(anchor, 1.0, distance, rank, 3)
+            for anchor, distance, rank in (
+                ("lamp", 0.10, 0.0),
+                ("book", 0.20, 0.5),
+                ("comb", 0.30, 1.0),
+            )
+        ),
+    )
+    three_right = NeighborhoodSignature(
+        "d",
+        "v2",
+        tuple(
+            NeighborRelation(anchor, 1.0, distance, rank, 3)
+            for anchor, distance, rank in (
+                ("lamp", 0.11, 0.0),
+                ("book", 0.21, 0.5),
+                ("comb", 0.31, 1.0),
+            )
+        ),
+    )
+
+    single = compare_signatures(one_left, one_right, min_shared_anchors=1)
+    triple = compare_signatures(three_left, three_right, min_shared_anchors=1)
+
+    assert single is not None and triple is not None
+    assert single.confidence == pytest.approx(1 / 3)
+    assert triple.confidence == pytest.approx(1.0)
+
+
+def test_local_anchor_scale_is_stable_under_zoom():
+    rows = {}
+    for video, scale in (("v1", 1.0), ("v2", 2.0)):
+        rows[f"{video}_cup"] = _geometry(
+            f"{video}_cup",
+            video,
+            "mug",
+            [
+                (0, (15 * scale, 45, 25 * scale, 55), 1.0),
+                (1, (15 * scale, 45, 25 * scale, 55), 1.0),
+            ],
+        )
+        rows[f"{video}_lamp"] = _geometry(
+            f"{video}_lamp",
+            video,
+            "lamp",
+            [
+                (0, (35 * scale, 45, 45 * scale, 55), 1.0),
+                (1, (35 * scale, 45, 45 * scale, 55), 1.0),
+            ],
+        )
+        rows[f"{video}_book"] = _geometry(
+            f"{video}_book",
+            video,
+            "book",
+            [
+                (0, (75 * scale, 45, 85 * scale, 55), 1.0),
+                (1, (75 * scale, 45, 85 * scale, 55), 1.0),
+            ],
+        )
+    signatures = build_signatures(
+        rows,
+        build_frame_index(rows),
+        anchor_categories=frozenset({"lamp", "book"}),
+        frame_sizes={"v1": (400, 100), "v2": (400, 100)},
+        max_neighbors=2,
+        min_common_frames=2,
+    )
+
+    v1_lamp = signatures["v1_cup"].by_anchor["lamp"]
+    v2_lamp = signatures["v2_cup"].by_anchor["lamp"]
+    assert v2_lamp.normalized_distance > v1_lamp.normalized_distance
+    assert v1_lamp.local_scale_distance == pytest.approx(
+        v2_lamp.local_scale_distance
+    )
+
+
 def test_stitch_geometry_is_collapsed_without_removing_originals():
     geometries = {
         "v1_t1": _geometry("v1_t1", "v1", "mug", [(0, (0, 0, 1, 1), 0.8)]),
@@ -158,6 +250,8 @@ def test_neighborhood_sidecar_loader_validates_hash_and_schema(tmp_path):
             "shared_anchors": ["book", "lamp"],
             "overlap": 0.7,
             "relation_agreement": 0.9,
+            "confidence": 0.8,
+            "support": 0.9,
         },
         {
             "schema_version": CONTEXT_FORMAT_VERSION,
@@ -176,11 +270,32 @@ def test_neighborhood_sidecar_loader_validates_hash_and_schema(tmp_path):
     )
 
     assert loaded[("v1_t1", "v2_t1")].shared_anchors == ("book", "lamp")
+    assert loaded[("v1_t1", "v2_t1")].confidence == 0.8
     assert loaded[("v1_t1", "v2_t2")].score is None
     with pytest.raises(ValueError, match="sha256 mismatch"):
         load_neighborhood_evidence(
             artifact.name, tmp_path, expected_sha256="0" * 64
         )
+
+    legacy = tmp_path / "context-v1.jsonl"
+    legacy.write_text(
+        json.dumps(
+            {
+                "schema_version": LEGACY_CONTEXT_FORMAT_VERSION,
+                "tracklet_a": "v1_t1",
+                "tracklet_b": "v2_t1",
+                "score": 0.8,
+                "shared_anchors": ["lamp"],
+                "overlap": 1.0,
+                "relation_agreement": 0.6,
+            }
+        )
+        + "\n"
+    )
+    legacy_loaded = load_neighborhood_evidence(
+        legacy.name, tmp_path, expected_sha256=sha256_file(legacy)
+    )
+    assert legacy_loaded[("v1_t1", "v2_t1")].confidence == 1.0
 
 
 def test_neighborhood_config_and_reranker_fail_closed():
@@ -192,6 +307,7 @@ def test_neighborhood_config_and_reranker_fail_closed():
             artifact="context.jsonl",
             sha256="hash",
             blend=1.0,
+            confidence_weighting=True,
         )
     )
     config.validate()
@@ -208,7 +324,7 @@ def test_neighborhood_config_and_reranker_fail_closed():
     }
     evidence = {
         ("v1_t1", "v2_t1"): NeighborhoodPairEvidence(
-            0.9, ("book", "lamp"), 0.8, 1.0
+            0.9, ("book", "lamp"), 0.8, 1.0, confidence=0.5
         ),
         ("v1_t1", "v2_t2"): NeighborhoodPairEvidence(
             0.1, ("book", "lamp"), 0.2, 0.0
@@ -218,10 +334,11 @@ def test_neighborhood_config_and_reranker_fail_closed():
 
     reranked = _rerank_neighborhood_scores(scores, evidence, config)
 
-    assert reranked[("v1_t1", "v2_t1")].total == 0.79
+    assert reranked[("v1_t1", "v2_t1")].total == 0.75
     assert reranked[("v1_t1", "v2_t2")].total == 0.71
     assert reranked[("v1_t1", "v2_t3")].total == 0.75
     assert reranked[("v1_t1", "v2_t3")].context_calibrated is None
+    assert reranked[("v1_t1", "v2_t1")].context_effective_blend == 0.5
     with pytest.raises(ValueError, match="misses 2 recalled pairs"):
         _rerank_neighborhood_scores(scores, {next(iter(evidence)): next(iter(evidence.values()))}, config)
 

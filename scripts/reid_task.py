@@ -131,6 +131,7 @@ def main() -> int:
             "blend": config.neighborhood.blend,
             "calibration": config.neighborhood.calibration,
             "scope": config.neighborhood.scope,
+            "confidence_weighting": config.neighborhood.confidence_weighting,
         },
         "cycle": {
             "enabled": config.cycle.enabled,

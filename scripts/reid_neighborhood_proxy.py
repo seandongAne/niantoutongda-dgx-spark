@@ -108,16 +108,28 @@ def _contextualize(
     scores = dict(baseline)
     scores.update(
         {
-            pair: (1.0 - blend) * baseline[pair] + blend * calibrated[pair]
+            pair: (
+                1.0 - blend * evidence[pair].confidence
+            ) * baseline[pair]
+            + blend * evidence[pair].confidence * calibrated[pair]
             for pair in calibrated
         }
     )
+    confidences = [evidence[pair].confidence for pair in eligible_pairs]
     counts = {
         "pairs": len(baseline),
         "score_band_pairs": len(score_band_pairs),
         "covered": len(eligible_pairs),
         "uncovered": len(score_band_pairs - eligible_pairs),
         "applied": len(calibrated),
+        "single_anchor_covered": sum(
+            len(evidence[pair].shared_anchors) == 1 for pair in eligible_pairs
+        ),
+        "confidence_mean": (
+            round(sum(confidences) / len(confidences), 6)
+            if confidences
+            else None
+        ),
     }
     return scores, evidence, counts
 
@@ -141,6 +153,8 @@ def _write_context_sidecar(
 
     path.parent.mkdir(parents=True, exist_ok=True)
     covered = 0
+    single_anchor_covered = 0
+    confidences = []
     with path.open("w", encoding="utf-8") as handle:
         for pair in sorted(pairs):
             left, right = signatures.get(pair[0]), signatures.get(pair[1])
@@ -152,6 +166,11 @@ def _write_context_sidecar(
                 else None
             )
             covered += item is not None
+            single_anchor_covered += (
+                item is not None and len(item.shared_anchors) == 1
+            )
+            if item is not None:
+                confidences.append(item.confidence)
             row = {
                 "schema_version": CONTEXT_FORMAT_VERSION,
                 "tracklet_a": pair[0],
@@ -162,9 +181,23 @@ def _write_context_sidecar(
                 "relation_agreement": (
                     round(item.relation_agreement, 8) if item is not None else None
                 ),
+                "confidence": (
+                    round(item.confidence, 8) if item is not None else None
+                ),
+                "support": round(item.support, 8) if item is not None else None,
             }
             handle.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
-    return {"candidate_pairs": len(pairs), "covered": covered, "uncovered": len(pairs) - covered}
+    return {
+        "candidate_pairs": len(pairs),
+        "covered": covered,
+        "uncovered": len(pairs) - covered,
+        "single_anchor_covered": single_anchor_covered,
+        "confidence_mean": (
+            round(sum(confidences) / len(confidences), 6)
+            if confidences
+            else None
+        ),
+    }
 
 
 def run_proxy(
@@ -181,7 +214,7 @@ def run_proxy(
     output_dir: str | Path,
     frame_size: tuple[int, int] = (1920, 1080),
     max_neighbors_grid: Sequence[int] = (3, 5, 7),
-    min_shared_grid: Sequence[int] = (3,),
+    min_shared_grid: Sequence[int] = (1,),
     blends: Sequence[float] = (0.10, 0.20, 0.30),
     min_anchor_frames: int = 5,
     min_anchor_single_fraction: float = 0.65,
@@ -396,13 +429,14 @@ def run_proxy(
     )
 
     report = {
-        "schema_version": "1.0",
-        "scope": "STATIC_NEIGHBORHOOD_PROXY_ONLY_NO_FROZEN_GT",
+        "schema_version": "2.0",
+        "scope": "STATIC_NEIGHBORHOOD_LOCAL_SCALE_CONFIDENCE_PROXY_NO_FROZEN_GT",
         "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "selection_status": "eligible_winner" if eligible else "no_candidate_passed_guards",
         "selection_policy": (
             "guard tutor different-p95 and pseudo R@5; maximize pseudo R@1, "
-            "tutor AUC and pseudo MRR; prefer smaller blend"
+            "tutor AUC and pseudo MRR; prefer smaller blend; apply pair-specific "
+            "blend scaled by temporal/support confidence"
         ),
         "frozen_gt_policy": {
             "read": False,
@@ -439,6 +473,7 @@ def run_proxy(
             "baseline": "projected-mean + raw-max-pair blend-0.50",
             "context_scope": "uncertain_only",
             "context_score_band": [context_score_min, context_score_max],
+            "algorithm": "local-anchor-scale + temporal-MAD + confidence-weighted-blend-v2",
         },
         "baseline": baseline_metrics,
         "winner": winner,
@@ -483,7 +518,7 @@ def main() -> int:
         default="79a74f135acad1f43ac25d391a01becdbac1dc8b219430a4a14c6ddaf6da02e4",
     )
     parser.add_argument(
-        "--out", default="results/acceptance/HERO_S1/neighborhood-context-v4"
+        "--out", default="results/acceptance/HERO_S1/neighborhood-context-v5-single-anchor"
     )
     parser.add_argument("--frame-width", type=int, default=1920)
     parser.add_argument("--frame-height", type=int, default=1080)

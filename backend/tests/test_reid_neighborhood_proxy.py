@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from backend.tools.reid.neighborhood import (
     NeighborRelation,
     NeighborhoodSignature,
@@ -46,6 +48,9 @@ def test_contextualize_only_changes_covered_pair_order_and_is_deterministic():
         "covered": 2,
         "uncovered": 1,
         "applied": 2,
+        "single_anchor_covered": 0,
+        "confidence_mean": 0.666667,
     }
     assert first[pair_uncovered] == baseline[pair_uncovered]
-    assert sorted(first.values()) == sorted(baseline.values())
+    assert first[pair_good] == pytest.approx(0.7633333333)
+    assert first[pair_bad] == pytest.approx(0.7366666667)

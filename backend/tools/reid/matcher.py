@@ -77,6 +77,8 @@ class PairScore:
     context_raw: float | None = None
     context_calibrated: float | None = None
     context_shared_anchors: tuple[str, ...] = ()
+    context_confidence: float | None = None
+    context_effective_blend: float | None = None
     baseline_high_confidence_locked: bool = False
 
     @property
@@ -119,6 +121,16 @@ class PairScore:
                 "applied": self.context_calibrated is not None,
                 "shared_anchor_count": len(self.context_shared_anchors),
                 "shared_anchors": list(self.context_shared_anchors),
+                "confidence": (
+                    round(self.context_confidence, 8)
+                    if self.context_confidence is not None
+                    else None
+                ),
+                "effective_blend": (
+                    round(self.context_effective_blend, 8)
+                    if self.context_effective_blend is not None
+                    else None
+                ),
             }
         return payload
 
@@ -321,8 +333,14 @@ def _rerank_neighborhood_scores(
     reranked: dict[tuple[str, str], PairScore] = {}
     for key, score in recalled_scores.items():
         evidence = evidence_by_pair[key]
+        effective_blend = (
+            blend * evidence.confidence
+            if config.neighborhood.confidence_weighting
+            else blend
+        )
         total = (
-            (1.0 - blend) * score.total + blend * calibrated[key]
+            (1.0 - effective_blend) * score.total
+            + effective_blend * calibrated[key]
             if key in calibrated
             else score.total
         )
@@ -333,6 +351,10 @@ def _rerank_neighborhood_scores(
             context_raw=evidence.score,
             context_calibrated=calibrated.get(key),
             context_shared_anchors=evidence.shared_anchors,
+            context_confidence=evidence.confidence,
+            context_effective_blend=(
+                effective_blend if key in calibrated else None
+            ),
         )
     return reranked
 

@@ -1,0 +1,65 @@
+version: reid-hero-s1-neighborhood-v2
+created_at: '2026-07-19'
+owner: 物品记忆 Agent
+reason: >-
+  在 v1 NO-GO 后试验单共同锚点安全版：目标-锚点距离同时按画面对角线和同帧
+  锚点间局部尺度归一化，以跨帧 MAD、共视率和共同帧数计算证据置信度；单锚点
+  基础置信度上限为三分之一。无证据候选逐字保持 baseline，原高置信分配与组件
+  继续锁定。无 GT 代理网格限定 min_shared=1，proxy winner 为 blend 0.30；
+  是否可用仍由生产链接/澄清门决定。
+applies_to_dataset: hero_s1
+frozen: false
+experimental_status: production_gate_pending
+promote_to_primary: false
+embedding_dim: 768
+top_k: 5
+weights:
+  instance: 0.65
+  semantic: 0.15
+  attribute: 0.15
+  context: 0.0
+  geometry: 0.05
+thresholds:
+  match: 0.82
+  new: 0.7
+  margin: 0.0
+  min_quality: 0.28
+stitch:
+  enabled: true
+  min_cosine: 0.85
+  max_gap_ms: 0
+filter:
+  min_observations: 5
+clarify:
+  max_partners_per_tracklet: 2
+projection:
+  enabled: true
+  artifact: results/sf1/hero_s1_autotune_v1/projection.npz
+  sha256: 79a74f135acad1f43ac25d391a01becdbac1dc8b219430a4a14c6ddaf6da02e4
+multiview:
+  enabled: true
+  artifact: results/hero_s1/multiview-dinov2-v1/views.npz
+  sha256: 6c48978bf14e5a0a9f63885c4d848f8e56101471f2652efb5665adb7c7a9a00b
+  method: max_pair
+  blend: 0.5
+  space: raw
+  calibration: per_video_pair_quantile
+  max_views_per_rep: 6
+neighborhood:
+  enabled: true
+  artifact: results/acceptance/HERO_S1/neighborhood-context-v5-single-anchor/context-scores.jsonl
+  sha256: 2ed2b00305ca95d6826bdfb7119866bf4291bf9d87d5bd921a38faf5a91cf55e
+  blend: 0.30
+  calibration: per_video_pair_quantile
+  scope: uncertain_only
+  confidence_weighting: true
+cycle:
+  enabled: true
+derived_from:
+  base_config: configs/reid_hero_s1_multiview_v2.yaml
+  base_sha256: 9881332d8d91f0472a83f7e249d31ff33ce904f259b7f60352a07877b8a980a6
+  v1_no_go_report: results/acceptance/HERO_S1/neighborhood-context-production-gate-v1/report.json
+  proxy_report: results/acceptance/HERO_S1/neighborhood-context-v5-single-anchor/proxy-report.json
+  proxy_report_sha256: ab0096cdf4a151e05475bc5889afdca9653b8237f7d906ecbdc5570c37a7223a
+  context_sidecar_sha256: 2ed2b00305ca95d6826bdfb7119866bf4291bf9d87d5bd921a38faf5a91cf55e
+  selection_rule: static-neighborhood-single-anchor-confidence-v2-no-frozen-gt

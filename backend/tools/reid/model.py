@@ -19,7 +19,11 @@ import yaml
 from backend.pipeline.vocab import Vocabulary
 from backend.schemas.core import Observation, Tracklet
 from backend.tools.reid.multiview import ARTIFACT_FORMAT_VERSION
-from backend.tools.reid.neighborhood import CONTEXT_FORMAT_VERSION
+from backend.tools.reid.neighborhood import (
+    CONTEXT_FORMAT_VERSION,
+    LEGACY_CONTEXT_FORMAT_VERSION,
+    SUPPORTED_CONTEXT_FORMAT_VERSIONS,
+)
 from backend.tools.sf1.projection import NumpyProjectionHead
 
 
@@ -104,6 +108,7 @@ class NeighborhoodConfig:
     blend: float = 0.10
     calibration: str = "per_video_pair_quantile"
     scope: str = "uncertain_only"
+    confidence_weighting: bool = False
 
 
 @dataclass(frozen=True)
@@ -202,6 +207,8 @@ class ReIDConfig:
             raise ValueError("unsupported neighborhood.calibration")
         if self.neighborhood.scope != "uncertain_only":
             raise ValueError("unsupported neighborhood.scope")
+        if not isinstance(self.neighborhood.confidence_weighting, bool):
+            raise ValueError("neighborhood.confidence_weighting must be boolean")
 
 
 @dataclass(frozen=True)
@@ -236,6 +243,8 @@ class NeighborhoodPairEvidence:
     shared_anchors: tuple[str, ...] = ()
     overlap: float | None = None
     relation_agreement: float | None = None
+    confidence: float = 1.0
+    support: float | None = None
 
 
 def _resolve_ref(ref: str, ingest_root: Path) -> Path:
@@ -353,10 +362,11 @@ def load_neighborhood_evidence(
         if not line.strip():
             continue
         row = json.loads(line)
-        if row.get("schema_version") != CONTEXT_FORMAT_VERSION:
+        format_version = row.get("schema_version")
+        if format_version not in SUPPORTED_CONTEXT_FORMAT_VERSIONS:
             raise ValueError(
                 f"unsupported neighborhood format at line {line_number}: "
-                f"{row.get('schema_version')}"
+                f"{format_version}"
             )
         a, b = str(row.get("tracklet_a", "")), str(row.get("tracklet_b", ""))
         if not a or not b or a == b:
@@ -367,26 +377,54 @@ def load_neighborhood_evidence(
         raw_score = row.get("score")
         raw_overlap = row.get("overlap")
         raw_agreement = row.get("relation_agreement")
+        raw_confidence = row.get("confidence")
+        raw_support = row.get("support")
         anchors = tuple(str(value) for value in row.get("shared_anchors", []))
         if anchors != tuple(sorted(set(anchors))):
             raise ValueError(f"neighborhood anchors must be sorted unique: {key}")
         if raw_score is None:
-            if anchors or raw_overlap is not None or raw_agreement is not None:
+            if (
+                anchors
+                or raw_overlap is not None
+                or raw_agreement is not None
+                or raw_confidence is not None
+                or raw_support is not None
+            ):
                 raise ValueError(f"uncovered neighborhood pair carries evidence: {key}")
-            item = NeighborhoodPairEvidence(score=None)
+            item = NeighborhoodPairEvidence(score=None, confidence=0.0)
         else:
             score = float(raw_score)
             overlap = float(raw_overlap)
             agreement = float(raw_agreement)
+            if format_version == CONTEXT_FORMAT_VERSION:
+                if raw_confidence is None or raw_support is None:
+                    raise ValueError(
+                        f"v2 neighborhood pair lacks confidence/support: {key}"
+                    )
+                confidence = float(raw_confidence)
+                support = float(raw_support)
+            else:
+                # v1 已封存产物保持原行为；新 v2 才启用单锚点置信度。
+                if format_version != LEGACY_CONTEXT_FORMAT_VERSION:
+                    raise ValueError(f"unsupported neighborhood format: {format_version}")
+                confidence = 1.0
+                support = None
             if not anchors:
                 raise ValueError(f"covered neighborhood pair lacks anchors: {key}")
-            if not all(math.isfinite(value) and 0 <= value <= 1 for value in (score, overlap, agreement)):
+            values = [score, overlap, agreement, confidence]
+            if support is not None:
+                values.append(support)
+            if not all(
+                math.isfinite(value) and 0 <= value <= 1 for value in values
+            ):
                 raise ValueError(f"invalid neighborhood score at line {line_number}")
             item = NeighborhoodPairEvidence(
                 score=score,
                 shared_anchors=anchors,
                 overlap=overlap,
                 relation_agreement=agreement,
+                confidence=confidence,
+                support=support,
             )
         evidence[key] = item
     if not evidence:

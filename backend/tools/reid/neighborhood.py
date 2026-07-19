@@ -24,7 +24,11 @@ from backend.schemas.core import Observation, Tracklet
 
 BBox = tuple[float, float, float, float]
 FrameKey = tuple[str, int]
-CONTEXT_FORMAT_VERSION = "reid-neighborhood-context-v1"
+LEGACY_CONTEXT_FORMAT_VERSION = "reid-neighborhood-context-v1"
+CONTEXT_FORMAT_VERSION = "reid-neighborhood-context-v2"
+SUPPORTED_CONTEXT_FORMAT_VERSIONS = frozenset(
+    {LEGACY_CONTEXT_FORMAT_VERSION, CONTEXT_FORMAT_VERSION}
+)
 
 
 @dataclass(frozen=True)
@@ -57,6 +61,10 @@ class NeighborRelation:
     normalized_distance: float
     normalized_rank: float
     common_frames: int
+    local_scale_distance: float | None = None
+    distance_mad: float = 0.0
+    local_distance_mad: float | None = None
+    local_scale_coverage: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -76,6 +84,8 @@ class ContextEvidence:
     shared_anchors: tuple[str, ...]
     overlap: float
     relation_agreement: float
+    confidence: float
+    support: float
 
 
 def _read_jsonl(path: Path, model_type):
@@ -277,11 +287,51 @@ def select_anchor_categories(
     return frozenset(eligible), diagnostics
 
 
+def _bbox_center(bbox: BBox) -> tuple[float, float]:
+    return (bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3]) / 2
+
+
 def _center_distance(a: BBox, b: BBox, frame_size: tuple[int, int]) -> float:
-    ax, ay = (a[0] + a[2]) / 2, (a[1] + a[3]) / 2
-    bx, by = (b[0] + b[2]) / 2, (b[1] + b[3]) / 2
+    ax, ay = _bbox_center(a)
+    bx, by = _bbox_center(b)
     diagonal = math.hypot(*frame_size)
     return math.hypot(ax - bx, ay - by) / diagonal if diagonal > 0 else 0.0
+
+
+def _frame_anchor_scale(
+    by_category: Mapping[str, Sequence[FrameDetection]],
+    *,
+    frame_size: tuple[int, int],
+    nms_iou: float,
+) -> float | None:
+    """用同帧稳定锚点间距估计局部缩放，削弱相机远近变化。"""
+
+    representatives = []
+    for values in by_category.values():
+        candidates = _nms(values, iou_threshold=nms_iou)
+        if candidates:
+            representatives.append(candidates[0])
+    if len(representatives) < 2:
+        return None
+    diagonal = math.hypot(*frame_size)
+    if diagonal <= 0:
+        return None
+    distances = []
+    for index, left in enumerate(representatives):
+        lx, ly = _bbox_center(left.bbox)
+        for right in representatives[index + 1 :]:
+            rx, ry = _bbox_center(right.bbox)
+            distance = math.hypot(lx - rx, ly - ry) / diagonal
+            if distance > 1e-9:
+                distances.append(distance)
+    return median(distances) if distances else None
+
+
+def _median_absolute_deviation(values: Sequence[float]) -> float:
+    if not values:
+        return 0.0
+    center = median(values)
+    return median([abs(value - center) for value in values])
 
 
 def build_signatures(
@@ -307,7 +357,7 @@ def build_signatures(
             previous = target_by_time.get(observation.timestamp_ms)
             if previous is None or observation.quality > previous.quality:
                 target_by_time[observation.timestamp_ms] = observation
-        samples: dict[str, list[float]] = defaultdict(list)
+        samples: dict[str, list[tuple[float, float | None]]] = defaultdict(list)
         for timestamp, target in sorted(target_by_time.items()):
             detections = frame_index.get((geometry.video_id, timestamp), ())
             by_category: dict[str, list[FrameDetection]] = defaultdict(list)
@@ -318,6 +368,11 @@ def build_signatures(
                     and bbox_iou(target.bbox, detection.bbox) < max_target_overlap
                 ):
                     by_category[detection.category_id].append(detection)
+            local_scale = _frame_anchor_scale(
+                by_category,
+                frame_size=frame_sizes[geometry.video_id],
+                nms_iou=nms_iou,
+            )
             for category, values in by_category.items():
                 candidates = _nms(values, iou_threshold=nms_iou)
                 if not candidates:
@@ -326,19 +381,36 @@ def build_signatures(
                     _center_distance(target.bbox, candidate.bbox, frame_sizes[geometry.video_id])
                     for candidate in candidates
                 )
-                samples[category].append(distance)
+                # d / scale 对相机 zoom 更稳；x/(1+x) 把无界比值压到 [0,1)。
+                local_distance = None
+                if local_scale is not None and local_scale > 1e-9:
+                    ratio = distance / local_scale
+                    local_distance = ratio / (1.0 + ratio)
+                samples[category].append((distance, local_distance))
 
         relations = []
         observation_count = max(1, len(target_by_time))
-        for category, distances in samples.items():
-            if len(distances) < min_common_frames:
+        for category, rows in samples.items():
+            if len(rows) < min_common_frames:
                 continue
+            distances = [distance for distance, _ in rows]
+            local_distances = [
+                distance for _, distance in rows if distance is not None
+            ]
             relations.append(
                 (
                     category,
-                    len(distances) / observation_count,
+                    len(rows) / observation_count,
                     median(distances),
-                    len(distances),
+                    len(rows),
+                    median(local_distances) if local_distances else None,
+                    _median_absolute_deviation(distances),
+                    (
+                        _median_absolute_deviation(local_distances)
+                        if local_distances
+                        else None
+                    ),
+                    len(local_distances) / len(rows),
                 )
             )
         relations.sort(key=lambda item: (item[2], -item[1], item[0]))
@@ -354,8 +426,29 @@ def build_signatures(
                     normalized_distance=round(distance, 8),
                     normalized_rank=round(index / rank_denominator, 8),
                     common_frames=common_frames,
+                    local_scale_distance=(
+                        round(local_distance, 8)
+                        if local_distance is not None
+                        else None
+                    ),
+                    distance_mad=round(distance_mad, 8),
+                    local_distance_mad=(
+                        round(local_distance_mad, 8)
+                        if local_distance_mad is not None
+                        else None
+                    ),
+                    local_scale_coverage=round(local_scale_coverage, 8),
                 )
-                for index, (category, co_visibility, distance, common_frames) in enumerate(selected)
+                for index, (
+                    category,
+                    co_visibility,
+                    distance,
+                    common_frames,
+                    local_distance,
+                    distance_mad,
+                    local_distance_mad,
+                    local_scale_coverage,
+                ) in enumerate(selected)
             ),
         )
     return signatures
@@ -381,6 +474,7 @@ def compare_signatures(
     union = set(left_by_anchor) | set(right_by_anchor)
     overlap = len(shared) / len(union) if union else 0.0
     agreements = []
+    supports = []
     for anchor in shared:
         a, b = left_by_anchor[anchor], right_by_anchor[anchor]
         distance_agreement = max(
@@ -389,16 +483,64 @@ def compare_signatures(
         )
         rank_agreement = max(0.0, 1.0 - abs(a.normalized_rank - b.normalized_rank))
         visibility_agreement = max(0.0, 1.0 - abs(a.co_visibility - b.co_visibility))
-        agreements.append(
-            0.50 * distance_agreement
-            + 0.30 * rank_agreement
-            + 0.20 * visibility_agreement
+        weighted = [
+            (0.55, distance_agreement),
+            (0.25, rank_agreement),
+            (0.20, visibility_agreement),
+        ]
+        if a.local_scale_distance is not None and b.local_scale_distance is not None:
+            local_agreement = max(
+                0.0,
+                1.0
+                - abs(a.local_scale_distance - b.local_scale_distance)
+                / distance_tolerance,
+            )
+            local_coverage = math.sqrt(
+                a.local_scale_coverage * b.local_scale_coverage
+            )
+            # 只在两侧都有局部尺度时让渡最多 25% 权重。
+            local_weight = 0.25 * local_coverage
+            weighted = [
+                (weight * (1.0 - local_weight), value)
+                for weight, value in weighted
+            ]
+            weighted.append((local_weight, local_agreement))
+        agreement = sum(weight * value for weight, value in weighted) / sum(
+            weight for weight, _ in weighted
         )
-    relation_agreement = sum(agreements) / len(agreements)
+
+        stability_a = 1.0 / (1.0 + a.distance_mad / distance_tolerance)
+        stability_b = 1.0 / (1.0 + b.distance_mad / distance_tolerance)
+        if a.local_distance_mad is not None:
+            stability_a *= 1.0 / (
+                1.0 + a.local_distance_mad / distance_tolerance
+            )
+        if b.local_distance_mad is not None:
+            stability_b *= 1.0 / (
+                1.0 + b.local_distance_mad / distance_tolerance
+            )
+        stability = math.sqrt(stability_a * stability_b)
+        visibility_support = math.sqrt(a.co_visibility * b.co_visibility)
+        frame_support = min(1.0, min(a.common_frames, b.common_frames) / 3.0)
+        support = (stability * visibility_support * frame_support) ** (1.0 / 3.0)
+        agreements.append((agreement, support))
+        supports.append(support)
+
+    support_total = sum(supports)
+    relation_agreement = (
+        sum(agreement * support for agreement, support in agreements) / support_total
+        if support_total > 0
+        else 0.0
+    )
+    support = sum(supports) / len(supports)
+    # 一个锚点只能提供弱证据；达到三个共同锚点后不再额外放大置信度。
+    confidence = min(1.0, len(shared) / 3.0) * support
     score = 0.50 * overlap + 0.50 * relation_agreement
     return ContextEvidence(
         score=max(0.0, min(1.0, score)),
         shared_anchors=shared,
         overlap=overlap,
         relation_agreement=relation_agreement,
+        confidence=max(0.0, min(1.0, confidence)),
+        support=max(0.0, min(1.0, support)),
     )

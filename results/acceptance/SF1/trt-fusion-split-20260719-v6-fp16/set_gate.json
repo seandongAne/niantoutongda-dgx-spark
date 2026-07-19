@@ -1,0 +1,55 @@
+{
+  "acceptance_boundary": "Frozen two-image workload only; a revised-0.98 pass here still requires the contract's expanded-regression and integration preconditions before any production adoption.",
+  "candidate_npz": {
+    "path": "results/acceptance/SF1/trt-fusion-split-20260719-v6-fp16/bench.outputs.npz",
+    "sha256": "6b1a0db6d67902b6e274b8decbef03a34a67b4e9d96958aa0809fcd42ff3e208"
+  },
+  "code_commit": "5c129ae0d6fd36c78a9edd0997e5b71624c63490",
+  "created_at_unix": 1784434632,
+  "gate_contract": "docs/运行时等价判定口径_2026-07-19.md",
+  "per_image": [
+    {
+      "candidate_count": 2,
+      "complete_one_to_one": false,
+      "diagnostic_pass": false,
+      "image_index": 0,
+      "max_box_abs_delta_px": 1.39691162109375,
+      "max_score_abs_delta": 0.019044429063796997,
+      "min_iou": 0.9949703528429882,
+      "reference_count": 5,
+      "revised_098_pass": false,
+      "strict_pass": false
+    },
+    {
+      "candidate_count": 4,
+      "complete_one_to_one": false,
+      "diagnostic_pass": false,
+      "image_index": 1,
+      "max_box_abs_delta_px": 7.869384765625,
+      "max_score_abs_delta": 0.019085198640823364,
+      "min_iou": 0.9735406716689912,
+      "reference_count": 5,
+      "revised_098_pass": false,
+      "strict_pass": false
+    }
+  ],
+  "platform": {
+    "machine": "aarch64"
+  },
+  "reference_npz": {
+    "path": "results/acceptance/SF1/trt-gdino-20260718-v10-dynamo-static/torch_outputs.npz",
+    "sha256": "bb0495e9b321847e50d57116a2d569107e0be7fd0af97a0f8ddbb57027dcad13"
+  },
+  "schema_version": "1.0",
+  "scope": "SF1_DIAGNOSTIC_NPZ_DECISION_SET_GATE",
+  "thresholds": {
+    "box": 0.22,
+    "text": 0.25
+  },
+  "tiers_all_images": {
+    "diagnostic": false,
+    "revised_098": false,
+    "strict": false
+  },
+  "verdict": "SET_ALL_TIERS_FAIL"
+}

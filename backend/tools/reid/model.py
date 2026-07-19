@@ -19,6 +19,7 @@ import yaml
 from backend.pipeline.vocab import Vocabulary
 from backend.schemas.core import Observation, Tracklet
 from backend.tools.reid.multiview import ARTIFACT_FORMAT_VERSION
+from backend.tools.reid.neighborhood import CONTEXT_FORMAT_VERSION
 from backend.tools.sf1.projection import NumpyProjectionHead
 
 
@@ -94,6 +95,18 @@ class MultiViewConfig:
 
 
 @dataclass(frozen=True)
+class NeighborhoodConfig:
+    """冻结的静态邻域 sidecar，只在 baseline Top-K 候选内重排。"""
+
+    enabled: bool = False
+    artifact: str = ""
+    sha256: str = ""
+    blend: float = 0.10
+    calibration: str = "per_video_pair_quantile"
+    scope: str = "uncertain_only"
+
+
+@dataclass(frozen=True)
 class CycleConfig:
     """两条独立边支撑的三视频组件闭环。"""
 
@@ -112,6 +125,7 @@ class ReIDConfig:
     clarify: ClarifyConfig = ClarifyConfig()
     projection: ProjectionConfig = ProjectionConfig()
     multiview: MultiViewConfig = MultiViewConfig()
+    neighborhood: NeighborhoodConfig = NeighborhoodConfig()
     cycle: CycleConfig = CycleConfig()
 
     @classmethod
@@ -130,6 +144,7 @@ class ReIDConfig:
             clarify=ClarifyConfig(**raw.get("clarify", {})),
             projection=ProjectionConfig(**raw.get("projection", {})),
             multiview=MultiViewConfig(**raw.get("multiview", {})),
+            neighborhood=NeighborhoodConfig(**raw.get("neighborhood", {})),
             cycle=CycleConfig(**raw.get("cycle", {})),
         )
         config.validate()
@@ -177,6 +192,16 @@ class ReIDConfig:
             raise ValueError("multiview.max_views_per_rep must be >= 2")
         if self.multiview.space == "projected" and not self.projection.enabled:
             raise ValueError("projected multiview space requires projection.enabled")
+        if self.neighborhood.enabled and not (
+            self.neighborhood.artifact and self.neighborhood.sha256
+        ):
+            raise ValueError("enabled neighborhood requires artifact and sha256")
+        if not 0 <= self.neighborhood.blend <= 1:
+            raise ValueError("neighborhood.blend must be in [0, 1]")
+        if self.neighborhood.calibration != "per_video_pair_quantile":
+            raise ValueError("unsupported neighborhood.calibration")
+        if self.neighborhood.scope != "uncertain_only":
+            raise ValueError("unsupported neighborhood.scope")
 
 
 @dataclass(frozen=True)
@@ -203,6 +228,14 @@ class TrackFeature:
     @property
     def observation_count(self) -> int:
         return len(self.timestamps_ms)
+
+
+@dataclass(frozen=True)
+class NeighborhoodPairEvidence:
+    score: float | None
+    shared_anchors: tuple[str, ...] = ()
+    overlap: float | None = None
+    relation_agreement: float | None = None
 
 
 def _resolve_ref(ref: str, ingest_root: Path) -> Path:
@@ -294,6 +327,71 @@ def _load_multiview_vectors(
             raise ValueError(f"multiview indices are not contiguous for {tracklet_id}")
         result[tracklet_id] = tuple(vector for _, vector in sorted(rows))
     return result
+
+
+def load_neighborhood_evidence(
+    ref: str,
+    ingest_root: str | Path,
+    *,
+    expected_sha256: str,
+) -> dict[tuple[str, str], NeighborhoodPairEvidence]:
+    """读取冻结邻域 sidecar，并对 hash/schema/分数范围 fail closed。"""
+
+    root = Path(ingest_root)
+    artifact = _resolve_ref(ref, root)
+    from backend.tools.sf1.projection import sha256_file
+
+    actual_sha256 = sha256_file(artifact)
+    if actual_sha256 != expected_sha256:
+        raise ValueError(
+            f"neighborhood sha256 mismatch: expected {expected_sha256}, got {actual_sha256}"
+        )
+    evidence: dict[tuple[str, str], NeighborhoodPairEvidence] = {}
+    for line_number, line in enumerate(
+        artifact.read_text(encoding="utf-8").splitlines(), 1
+    ):
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        if row.get("schema_version") != CONTEXT_FORMAT_VERSION:
+            raise ValueError(
+                f"unsupported neighborhood format at line {line_number}: "
+                f"{row.get('schema_version')}"
+            )
+        a, b = str(row.get("tracklet_a", "")), str(row.get("tracklet_b", ""))
+        if not a or not b or a == b:
+            raise ValueError(f"invalid neighborhood pair at line {line_number}")
+        key = tuple(sorted((a, b)))
+        if key in evidence:
+            raise ValueError(f"duplicate neighborhood pair: {key}")
+        raw_score = row.get("score")
+        raw_overlap = row.get("overlap")
+        raw_agreement = row.get("relation_agreement")
+        anchors = tuple(str(value) for value in row.get("shared_anchors", []))
+        if anchors != tuple(sorted(set(anchors))):
+            raise ValueError(f"neighborhood anchors must be sorted unique: {key}")
+        if raw_score is None:
+            if anchors or raw_overlap is not None or raw_agreement is not None:
+                raise ValueError(f"uncovered neighborhood pair carries evidence: {key}")
+            item = NeighborhoodPairEvidence(score=None)
+        else:
+            score = float(raw_score)
+            overlap = float(raw_overlap)
+            agreement = float(raw_agreement)
+            if not anchors:
+                raise ValueError(f"covered neighborhood pair lacks anchors: {key}")
+            if not all(math.isfinite(value) and 0 <= value <= 1 for value in (score, overlap, agreement)):
+                raise ValueError(f"invalid neighborhood score at line {line_number}")
+            item = NeighborhoodPairEvidence(
+                score=score,
+                shared_anchors=anchors,
+                overlap=overlap,
+                relation_agreement=agreement,
+            )
+        evidence[key] = item
+    if not evidence:
+        raise ValueError("neighborhood sidecar contains no pairs")
+    return evidence
 
 
 # S5 属性接线:只有这些键参与 _attribute_score 比较(白名单,杜绝流水线元数据

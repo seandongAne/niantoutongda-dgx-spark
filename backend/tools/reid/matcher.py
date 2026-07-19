@@ -26,11 +26,13 @@ from backend.schemas.core import (
 from backend.tools.reid.assignment import maximise_assignment
 from backend.tools.reid.model import (
     COMPARABLE_ATTRIBUTE_KEYS,
+    NeighborhoodPairEvidence,
     UNKNOWN_ATTRIBUTE_VALUES,
     ReIDConfig,
     TrackFeature,
     Vocabulary,
     load_features,
+    load_neighborhood_evidence,
 )
 from backend.tools.reid.multiview import quantile_calibrate, set_similarity
 from backend.tools.reid.stitch import stitch_features, tag_low_evidence
@@ -72,6 +74,10 @@ class PairScore:
     instance_base: float | None = None
     instance_multiview_raw: float | None = None
     instance_multiview_calibrated: float | None = None
+    context_raw: float | None = None
+    context_calibrated: float | None = None
+    context_shared_anchors: tuple[str, ...] = ()
+    baseline_high_confidence_locked: bool = False
 
     @property
     def viable(self) -> bool:
@@ -95,13 +101,26 @@ class PairScore:
                     ),
                 }
             )
-        return {
+        payload = {
             "tracklet_a": self.a,
             "tracklet_b": self.b,
             "score": round(self.total, 8),
             "components": components,
             "gate_reasons": list(self.gate_reasons),
         }
+        if self.context_raw is not None or self.context_calibrated is not None:
+            payload["context_evidence"] = {
+                "raw": round(self.context_raw, 8) if self.context_raw is not None else None,
+                "calibrated": (
+                    round(self.context_calibrated, 8)
+                    if self.context_calibrated is not None
+                    else None
+                ),
+                "applied": self.context_calibrated is not None,
+                "shared_anchor_count": len(self.context_shared_anchors),
+                "shared_anchors": list(self.context_shared_anchors),
+            }
+        return payload
 
 
 @dataclass
@@ -275,6 +294,49 @@ def _rerank_recalled_scores(
     return reranked
 
 
+def _rerank_neighborhood_scores(
+    recalled_scores: dict[tuple[str, str], PairScore],
+    evidence_by_pair: dict[tuple[str, str], NeighborhoodPairEvidence],
+    config: ReIDConfig,
+) -> dict[tuple[str, str], PairScore]:
+    """把冻结邻域 sidecar 作为一次性候选内重排，不扩大召回、不级联。"""
+
+    missing = sorted(set(recalled_scores) - set(evidence_by_pair))
+    if missing:
+        raise ValueError(
+            f"neighborhood artifact misses {len(missing)} recalled pairs; first={missing[0]}"
+        )
+    eligible = {
+        key: score
+        for key, score in recalled_scores.items()
+        if (
+            config.thresholds.new < score.total < config.thresholds.match
+            and evidence_by_pair[key].score is not None
+        )
+    }
+    baseline = {key: score.total for key, score in eligible.items()}
+    raw = {key: evidence_by_pair[key].score for key in eligible}
+    calibrated = quantile_calibrate(baseline, raw) if baseline else {}
+    blend = config.neighborhood.blend
+    reranked: dict[tuple[str, str], PairScore] = {}
+    for key, score in recalled_scores.items():
+        evidence = evidence_by_pair[key]
+        total = (
+            (1.0 - blend) * score.total + blend * calibrated[key]
+            if key in calibrated
+            else score.total
+        )
+        reranked[key] = replace(
+            score,
+            context=evidence.score if evidence.score is not None else 0.5,
+            total=max(0.0, min(1.0, total)),
+            context_raw=evidence.score,
+            context_calibrated=calibrated.get(key),
+            context_shared_anchors=evidence.shared_anchors,
+        )
+    return reranked
+
+
 def _second_best_margin(chosen: PairScore, alternatives: list[PairScore]) -> float:
     other_scores = [score.total for score in alternatives if score.viable and score != chosen]
     return chosen.total - max(other_scores, default=0.0)
@@ -284,6 +346,7 @@ def _pairwise_assignments(
     features: list[TrackFeature],
     config: ReIDConfig,
     constraints: IdentityConstraints,
+    neighborhood_evidence: dict[tuple[str, str], NeighborhoodPairEvidence] | None = None,
 ) -> tuple[list[PairScore], dict[tuple[str, str], tuple[tuple[str, ...], float]], list[dict[str, Any]]]:
     by_video: dict[str, list[TrackFeature]] = defaultdict(list)
     for feature in features:
@@ -324,13 +387,73 @@ def _pairwise_assignments(
             for score in ranked:
                 recalled_scores.setdefault(_pair_key(score.a, score.b), score)
         recalled = set(recalled_scores)
+        reranked = False
+        frozen_assignment_by_row: dict[int, int] = {}
         if config.multiview.enabled:
             feature_by_id = {feature.tracklet_id: feature for feature in left + right}
             recalled_scores = _rerank_recalled_scores(
                 recalled_scores, feature_by_id, config
             )
-            # Margin 必须与部署的重排分一致；只在 multiview
-            # 启用时重建，disabled 保持历史字节级行为。
+            reranked = True
+        if config.neighborhood.enabled:
+            if neighborhood_evidence is None:
+                raise ValueError("enabled neighborhood requires loaded evidence")
+            # 先在已部署的 baseline(+multiview) 分数上锁住高置信分配。否则即使
+            # 这些边的分数逐字不变，低分边换序也可能通过 Hungarian 间接挤掉它们。
+            baseline_left_ranked = {
+                feature.tracklet_id: sorted(
+                    (
+                        score
+                        for score in recalled_scores.values()
+                        if score.a == feature.tracklet_id
+                    ),
+                    key=lambda score: (-score.total, score.b),
+                )
+                for feature in left
+            }
+            baseline_right_ranked = {
+                feature.tracklet_id: sorted(
+                    (
+                        score
+                        for score in recalled_scores.values()
+                        if score.b == feature.tracklet_id
+                    ),
+                    key=lambda score: (-score.total, score.a),
+                )
+                for feature in right
+            }
+            baseline_matrix = [
+                [
+                    recalled_scores[_pair_key(score.a, score.b)].total
+                    if score.viable and _pair_key(score.a, score.b) in recalled
+                    else -math.inf
+                    for score in row
+                ]
+                for row in score_rows
+            ]
+            baseline_assignment = maximise_assignment(
+                baseline_matrix, config.thresholds.new + 1e-10
+            )
+            for row_index, column in enumerate(baseline_assignment):
+                if column is None or not math.isfinite(baseline_matrix[row_index][column]):
+                    continue
+                base = score_rows[row_index][column]
+                chosen = recalled_scores[_pair_key(base.a, base.b)]
+                margin = min(
+                    _second_best_margin(chosen, baseline_left_ranked[chosen.a]),
+                    _second_best_margin(chosen, baseline_right_ranked[chosen.b]),
+                )
+                if (
+                    chosen.total >= config.thresholds.match
+                    and margin >= config.thresholds.margin
+                ):
+                    frozen_assignment_by_row[row_index] = column
+            recalled_scores = _rerank_neighborhood_scores(
+                recalled_scores, neighborhood_evidence, config
+            )
+            reranked = True
+        if reranked:
+            # Margin 必须与部署的最终重排分一致；disabled 保持历史字节级行为。
             left_ranked = {
                 feature.tracklet_id: sorted(
                     (
@@ -362,6 +485,14 @@ def _pairwise_assignments(
             ]
             for row in score_rows
         ]
+        # 锁定 baseline 高置信行列；其余位置继续由最终重排分做一对一分配。
+        for frozen_row, frozen_column in frozen_assignment_by_row.items():
+            for column in range(len(right)):
+                if column != frozen_column:
+                    matrix[frozen_row][column] = -math.inf
+            for row_index in range(len(left)):
+                if row_index != frozen_row:
+                    matrix[row_index][frozen_column] = -math.inf
         assignment = maximise_assignment(matrix, config.thresholds.new + 1e-10)
         assigned_pairs: set[tuple[str, str]] = set()
         for row_index, column in enumerate(assignment):
@@ -369,6 +500,13 @@ def _pairwise_assignments(
                 continue
             base_chosen = score_rows[row_index][column]
             chosen = recalled_scores[_pair_key(base_chosen.a, base_chosen.b)]
+            baseline_locked = frozen_assignment_by_row.get(row_index) == column
+            if baseline_locked:
+                # 锁语义必须贯穿下一阶段的全局聚类；否则新边即使没有改变
+                # 本视频对的 Hungarian 结果，仍可能因先合并而挤掉旧组件。
+                chosen = replace(
+                    chosen, baseline_high_confidence_locked=True
+                )
             assigned_pairs.add(_pair_key(chosen.a, chosen.b))
             margin = min(
                 _second_best_margin(chosen, left_ranked[chosen.a]),
@@ -388,6 +526,7 @@ def _pairwise_assignments(
                     "assigned": True,
                     "margin": round(margin, 8),
                     "decision": decision,
+                    "baseline_high_confidence_locked": baseline_locked,
                 }
             )
             candidates_out.append(row)
@@ -414,7 +553,16 @@ def _pairwise_assignments(
             )
             candidates_out.append(record)
 
-    accepted.sort(key=lambda score: (-score.total, score.a, score.b))
+    # neighborhood disabled 时 locked 全为 False，保持历史排序；启用时先重建
+    # baseline 高置信组件，之后的新边只能补充，不能抢先制造跨视频冲突。
+    accepted.sort(
+        key=lambda score: (
+            not score.baseline_high_confidence_locked,
+            -score.total,
+            score.a,
+            score.b,
+        )
+    )
     candidates_out.sort(
         key=lambda row: (
             row["video_pair"],
@@ -776,7 +924,21 @@ def run_reid(
     feature_by_id = {feature.tracklet_id: feature for feature in matching_features}
     stitched_by_id = feature_by_id
 
-    accepted, ambiguous, candidates = _pairwise_assignments(matching_features, config, constraints)
+    neighborhood_evidence = (
+        load_neighborhood_evidence(
+            config.neighborhood.artifact,
+            ingest_root,
+            expected_sha256=config.neighborhood.sha256,
+        )
+        if config.neighborhood.enabled
+        else None
+    )
+    accepted, ambiguous, candidates = _pairwise_assignments(
+        matching_features,
+        config,
+        constraints,
+        neighborhood_evidence,
+    )
     union_find = _UnionFind(sorted(feature_by_id))
     accepted_records: list[dict[str, Any]] = []
 
@@ -918,6 +1080,19 @@ def run_reid(
             for record in accepted_records
         ),
         "cycle_closure_count": len(cycle_records),
+        "neighborhood_enabled": config.neighborhood.enabled,
+        "neighborhood_candidate_covered_count": sum(
+            row.get("context_evidence", {}).get("raw") is not None
+            for row in candidates
+        ),
+        "neighborhood_candidate_applied_count": sum(
+            row.get("context_evidence", {}).get("applied") is True
+            for row in candidates
+        ),
+        "neighborhood_locked_assignment_count": sum(
+            row.get("baseline_high_confidence_locked") is True
+            for row in candidates
+        ),
         "user_same_link_count": sum(record["mode"] == "user_same" for record in accepted_records),
     }
     return ReIDRun(

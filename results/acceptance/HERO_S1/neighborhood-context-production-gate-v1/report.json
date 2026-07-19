@@ -1,0 +1,113 @@
+{
+  "schema_version": "1.0",
+  "created_at": "2026-07-19",
+  "scope": "STATIC_NEIGHBORHOOD_PRODUCTION_GATE_NO_FROZEN_GT",
+  "verdict": "NO_GO_PURE_2D_NEIGHBORHOOD",
+  "promote_to_primary": false,
+  "baseline": {
+    "path": "results/hero_s1/reid-closure-multiview-v2",
+    "automatic_link_count": 994,
+    "automatic_mode_count": 926,
+    "cycle_closure_count": 68,
+    "clarification_count": 591,
+    "matched_entity_count": 595,
+    "metrics_sha256": "ef1e73a0014afee838cfd4bea9e36501b70222d115accc2c237e2381c620464d",
+    "accepted_links_sha256": "ffef5be5d1a66d32291447fb2505feac219c25c2d73d1152f348c84c471a018b"
+  },
+  "guards": {
+    "removed_baseline_automatic_max": 0,
+    "automatic_link_count_min": 994,
+    "clarification_count_max": 591
+  },
+  "candidates": [
+    {
+      "blend": 0.1,
+      "path": "results/hero_s1/reid-neighborhood-screen-b010-v1",
+      "config_snapshot": "results/acceptance/HERO_S1/neighborhood-context-production-gate-v1/config-b010.yaml",
+      "config_sha256": "fbeee6f8b93fca874678d0d37dcd2b0b6a0d9fb1a819104e49b4d37cfd9c7bd7",
+      "screen_repeat_count": 1,
+      "automatic_link_count": 995,
+      "automatic_mode_count": 930,
+      "cycle_closure_count": 65,
+      "clarification_count": 592,
+      "matched_entity_count": 597,
+      "neighborhood_candidate_applied_count": 3416,
+      "removed_baseline_automatic": 0,
+      "added_automatic": 4,
+      "run_hash": "30e179afbd0f3954d66700adc7fdfb284a700c2f8df93375476b8a1316491611",
+      "metrics_sha256": "9d1ce062e422a17929f859b722fd5223139466ae8181e29b51ce7689d9a8f46e",
+      "accepted_links_sha256": "1b9a8bc214da19924962a4d6f354b079a5e2ad5c0e7072d1154c730dc7e8e0f9",
+      "guards": {
+        "baseline_automatic_preserved": true,
+        "automatic_link_count_non_degrading": true,
+        "clarification_count_non_increasing": false
+      },
+      "pass": false
+    },
+    {
+      "blend": 0.2,
+      "path": "results/hero_s1/reid-neighborhood-screen-b020-v1",
+      "config_snapshot": "results/acceptance/HERO_S1/neighborhood-context-production-gate-v1/config-b020.yaml",
+      "config_sha256": "23f5bbfe6c46f3bbe32be6331d55700094e1f92fd03643a33ab94ace870b1f80",
+      "screen_repeat_count": 1,
+      "automatic_link_count": 993,
+      "automatic_mode_count": 930,
+      "cycle_closure_count": 63,
+      "clarification_count": 597,
+      "matched_entity_count": 597,
+      "neighborhood_candidate_applied_count": 3416,
+      "removed_baseline_automatic": 0,
+      "added_automatic": 4,
+      "run_hash": "c818a192f63aae49d5d0f5bf62d27897a20b4821de941a573ed9979bc8edcb1a",
+      "metrics_sha256": "433d9c0549f39842a86d5f59303694b559b6d5dd425eae6dfecae5be27d9e882",
+      "accepted_links_sha256": "c619f27f1352924b797b777df22deeb70d824c392c0951b59d1b2f053361dbae",
+      "guards": {
+        "baseline_automatic_preserved": true,
+        "automatic_link_count_non_degrading": false,
+        "clarification_count_non_increasing": false
+      },
+      "pass": false
+    },
+    {
+      "blend": 0.3,
+      "path": "results/hero_s1/reid-neighborhood-locked-v1",
+      "config_snapshot": "results/acceptance/HERO_S1/neighborhood-context-production-gate-v1/config-b030.yaml",
+      "config_sha256": "813aacb51e5fbb7f30ebb2c6baafbe3d1e7309322fdfc95f17f182a3c5e20d75",
+      "screen_repeat_count": 2,
+      "automatic_link_count": 993,
+      "automatic_mode_count": 935,
+      "cycle_closure_count": 58,
+      "clarification_count": 599,
+      "matched_entity_count": 598,
+      "neighborhood_candidate_applied_count": 3416,
+      "removed_baseline_automatic": 0,
+      "added_automatic": 9,
+      "run_hash": "b6e97cd1ac2996960e935b56f81d365855cda73260d0c23dc0ad50434f396a14",
+      "deterministic_replay": true,
+      "metrics_sha256": "366eb4a582afeaf08635542af10a571c5bb2f71140863c7fa0b1d4abddd4d0cb",
+      "accepted_links_sha256": "072e494ae5132c85e90b99927ca56aa9263a84e2e402720bf5003a65ffeea22a",
+      "guards": {
+        "baseline_automatic_preserved": true,
+        "automatic_link_count_non_degrading": false,
+        "clarification_count_non_increasing": false
+      },
+      "pass": false
+    }
+  ],
+  "proxy": {
+    "report": "results/acceptance/HERO_S1/neighborhood-context-v4/proxy-report.json",
+    "report_sha256": "5870c1fc8fad402d6e6d75e0afff3eb5c1bd9828392a0f632f112439fc4ca714",
+    "sidecar": "results/acceptance/HERO_S1/neighborhood-context-v4/context-scores.jsonl",
+    "sidecar_sha256": "e52187273f4fc23b19693a5b60badab13c4eb3873acd4dce0398d026a48ad492",
+    "winner_blend": 0.3,
+    "stable_anchor_category_count": 9,
+    "production_candidate_pairs": 30788,
+    "production_covered_pairs": 17992
+  },
+  "ground_truth_policy": {
+    "read_after_final_correctness_fixes": false,
+    "pre_fix_terminal_result": "invalidated_by_fail_closed_and_global_lock_audit",
+    "note": "No candidate passed the pre-GT production gate; the old GT result was not reused for selection or final claims."
+  },
+  "conclusion": "Static 2-D neighborhood evidence is deterministic and preserves all 926 baseline automatic edges after lock propagation, but no preset blend passes both total-link and clarification guards. Keep experimental; do not replace v2."
+}

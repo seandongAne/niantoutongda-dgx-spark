@@ -1,6 +1,6 @@
 version: "0.3"
 created_at: "2026-07-15"
-updated_at: "2026-07-16"
+updated_at: "2026-07-19"
 owner: "集成与平台主责"
 reason: "SP0 候选经 ModelScope API 核验;Nemotron NVFP4-QAD 已在 Spark 以 vLLM 实测通过"
 applies_to_dataset: "dev_a"
@@ -81,3 +81,13 @@ capabilities:
       env: nemotron_vl
       status: probed_spark
       note: "已在 Spark 验证的 fallback;仅 vLLM/NVFP4 主服务故障时启用"
+    candidate_upgrade:
+      id: nv-community/Nemotron-3-Nano-Omni-30B-A3B-Reasoning-NVFP4
+      ecosystem: nvidia
+      runtime: vllm
+      env: vllm_container
+      status: downloaded_spark_unserved
+      note: "2026-07-19 已从 ModelScope 完整下载 27/27 文件到 Spark，权重分片合计
+        22,409,034,192 bytes；config 架构 NemotronH_Nano_Omni_Reasoning_V3，
+        modelopt MIXED_PRECISION（routed experts 含 NVFP4）。尚未启动服务、未测
+        DGX Spark tok/s，也未替换当前 12B 主路。"

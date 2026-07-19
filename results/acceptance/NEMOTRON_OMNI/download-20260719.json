@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "status": "DOWNLOAD_OK_UNSERVED",
+  "verified_at": "2026-07-19",
+  "source": "ModelScope",
+  "model_id": "nv-community/Nemotron-3-Nano-Omni-30B-A3B-Reasoning-NVFP4",
+  "remote_path": "/home/Developer/models/nv-community__Nemotron-3-Nano-Omni-30B-A3B-Reasoning-NVFP4",
+  "file_count": 27,
+  "model_type": "NemotronH_Nano_Omni_Reasoning_V3",
+  "architectures": [
+    "NemotronH_Nano_Omni_Reasoning_V3"
+  ],
+  "quantization": {
+    "quant_method": "modelopt",
+    "quant_algo": "MIXED_PRECISION",
+    "nvfp4_present": true
+  },
+  "weight_files": [
+    {
+      "name": "model-00001-of-00003.safetensors",
+      "bytes": 9999356664
+    },
+    {
+      "name": "model-00002-of-00003.safetensors",
+      "bytes": 9993385656
+    },
+    {
+      "name": "model-00003-of-00003.safetensors",
+      "bytes": 2416291872
+    }
+  ],
+  "weight_bytes": 22409034192,
+  "download_log": {
+    "path": "logs/remote/nemotron3-nano-omni-nvfp4-download.log",
+    "bytes": 1501688,
+    "sha256": "4cf9dabb1a30951d95f3d9fbaef931575b5402182b9b1ffe4503eb36a4d47d99",
+    "completion_markers": [
+      "Downloading: 100% 27/27",
+      "Snapshot ready",
+      "DOWNLOAD_OK"
+    ]
+  },
+  "runtime_status": {
+    "served": false,
+    "loaded": false,
+    "speed_benchmarked": false,
+    "promoted_to_primary": false
+  },
+  "notes": "Download verification does not prove vLLM compatibility, video quality, or DGX Spark throughput."
+}

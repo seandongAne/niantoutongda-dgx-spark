@@ -7,5 +7,7 @@ stepfun-ai/Step-Audio-Tokenizer
 stepfun-ai/Step-Audio-TTS-3B
 # NVIDIA 生态主载体(nv-community 镜像,API 核验 200,Spark 实测通过)
 nv-community/NVIDIA-Nemotron-Nano-12B-v2-VL-NVFP4-QAD
+# 原生图像/视频/音频候选升级；下载完成但尚未服务验收，不替换 12B 主路
+nv-community/Nemotron-3-Nano-Omni-30B-A3B-Reasoning-NVFP4
 # 已验证 fallback:仅 vLLM/NVFP4 主服务故障时启用
 nv-community/NVIDIA-Nemotron-Nano-12B-v2-VL-BF16

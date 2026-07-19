@@ -124,6 +124,14 @@ def main() -> int:
             "calibration": config.multiview.calibration,
             "max_views_per_rep": config.multiview.max_views_per_rep,
         },
+        "neighborhood": {
+            "enabled": config.neighborhood.enabled,
+            "artifact": config.neighborhood.artifact or None,
+            "sha256": config.neighborhood.sha256 or None,
+            "blend": config.neighborhood.blend,
+            "calibration": config.neighborhood.calibration,
+            "scope": config.neighborhood.scope,
+        },
         "cycle": {
             "enabled": config.cycle.enabled,
             "rule": "one_round_three_video_dual_evidence_v1"

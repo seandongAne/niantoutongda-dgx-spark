@@ -1,0 +1,60 @@
+version: reid-hero-s1-neighborhood-v1
+created_at: '2026-07-19'
+owner: 物品记忆 Agent
+reason: >-
+  在冻结 raw/max_pair/0.50 v2 工作点上增加一次性静态邻域重排。选参只消费
+  tutor 与 pseudo identities，不读取冻结 anchor GT；生产候选仍由原双向 Top-5
+  决定。邻域证据只作用于 0.70–0.82 不确定带，且要求至少 3 个共同锚点；
+  无证据候选逐字保持 baseline。原 baseline 高置信 Hungarian 分配先锁定，避免
+  不确定边换序间接挤掉既有自动匹配。
+applies_to_dataset: hero_s1
+frozen: true
+embedding_dim: 768
+top_k: 5
+weights:
+  instance: 0.65
+  semantic: 0.15
+  attribute: 0.15
+  context: 0.0
+  geometry: 0.05
+thresholds:
+  match: 0.82
+  new: 0.7
+  margin: 0.0
+  min_quality: 0.28
+stitch:
+  enabled: true
+  min_cosine: 0.85
+  max_gap_ms: 0
+filter:
+  min_observations: 5
+clarify:
+  max_partners_per_tracklet: 2
+projection:
+  enabled: true
+  artifact: results/sf1/hero_s1_autotune_v1/projection.npz
+  sha256: 79a74f135acad1f43ac25d391a01becdbac1dc8b219430a4a14c6ddaf6da02e4
+multiview:
+  enabled: true
+  artifact: results/hero_s1/multiview-dinov2-v1/views.npz
+  sha256: 6c48978bf14e5a0a9f63885c4d848f8e56101471f2652efb5665adb7c7a9a00b
+  method: max_pair
+  blend: 0.5
+  space: raw
+  calibration: per_video_pair_quantile
+  max_views_per_rep: 6
+neighborhood:
+  enabled: true
+  artifact: results/acceptance/HERO_S1/neighborhood-context-v4/context-scores.jsonl
+  sha256: e52187273f4fc23b19693a5b60badab13c4eb3873acd4dce0398d026a48ad492
+  blend: 0.30
+  calibration: per_video_pair_quantile
+  scope: uncertain_only
+cycle:
+  enabled: true
+derived_from:
+  base_config: configs/reid_hero_s1_multiview_v2.yaml
+  base_sha256: 9881332d8d91f0472a83f7e249d31ff33ce904f259b7f60352a07877b8a980a6
+  proxy_report: results/acceptance/HERO_S1/neighborhood-context-v4/proxy-report.json
+  context_sidecar_sha256: e52187273f4fc23b19693a5b60badab13c4eb3873acd4dce0398d026a48ad492
+  selection_rule: static-neighborhood-proxy-v1-no-frozen-gt

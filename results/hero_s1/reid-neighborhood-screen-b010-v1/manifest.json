@@ -3,9 +3,10 @@
     "path": "results/s5/attributes_hero_s1.jsonl",
     "sha256": "80362edbc33326fd009de0b5b202bf4e5b58ac2c7e40ff83a6f2a529a4d23338"
   },
-  "code_commit": "85c92f1aa2f0e96c75a3a76d1b0eb5f57db89ae9",
+  "code_commit": "2b2d6c6464d86fd09e9ce08ff5721419c153f7d5",
+  "code_commit_status": "post_run_exact_source_snapshot",
   "config": {
-    "path": "configs/reid_hero_s1_neighborhood_v1.yaml",
+    "path": "results/acceptance/HERO_S1/neighborhood-context-production-gate-v1/config-b010.yaml",
     "sha256": "fbeee6f8b93fca874678d0d37dcd2b0b6a0d9fb1a819104e49b4d37cfd9c7bd7"
   },
   "constraints": {

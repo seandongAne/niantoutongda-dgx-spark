@@ -5,9 +5,18 @@
 > 当日主责:GDINO 运行时等价复核定案与三线性能优化执行(BF16 选择性混合 / TRT 哨兵二分 / Torch-TensorRT 文本外置)
 >
 > 状态:完成(运行时等价三线收官:口径合同落地,BF16 扩集回归 5/32 否决关线;TRT 根因定案=融合依赖漂移,修复配方使 FP32 引擎首过严格门 629.96ms、FP16 修复版 2.49× 消除灾难但贴阈值关线;文本外置编译四连成而运行挂死,60 分钟死线止损;入账优化维持 compile FP32 1.170×;技术稿测试态句按"过门才更新"规则以实测数字替换)
+>
+> 追加状态:静态邻域拓扑链路完成实现与三 blend 生产门,结论 NO-GO、不替换 v2;
+> Nemotron 3 Nano Omni 30B-A3B NVFP4 候选完成远端下载与结构校验,尚未加载或服务。
 
 ## 今日目标
 
+- 利用三段视频内物品静止先验,以稳定单实例周边物构造无 GT 局部拓扑指纹;
+  仅重排既有 ReID 候选,并以旧 automatic 零删除、总链接不下降、澄清不增加为
+  生产门,不因结果放宽标准。
+- 在 Spark 安全门和内存检查通过后,从 ModelScope 拉取
+  `nv-community/Nemotron-3-Nano-Omni-30B-A3B-Reasoning-NVFP4`,只完成下载、
+  文件与量化结构校验;本轮不加载、不启动服务,不产生 tok/s 或视频能力声明。
 - 在不再读取两次终检 GT 的前提下,试验 schema 转写与实例级语义签名重排;先分离
   选参/冻结证据边界,再测 PyTorch AMP、Torch-TensorRT 混合执行和 TF-TRT 前置门。
 - 复核 Grounding DINO 的 precision policy、encoder proposal、TopK query 排位与
@@ -26,6 +35,40 @@
   输入与集合匹配器哈希一起封存,不再依赖框架默认值。
 
 ## 关键证据或截图
+
+### 增量 D7-6:静态邻域生产门 NO-GO 与 Nemotron Omni 远端下载(晚间)
+
+- Spark 首次连接前安全门输出 `✅ SPARK CLEAN`;下载前内存为 121 GiB total、
+  43 GiB used、77 GiB available、swap 0,磁盘余量约 2.4 TiB。ModelScope 后台任务
+  完成 `27/27`,远端目录
+  `/home/Developer/models/nv-community__Nemotron-3-Nano-Omni-30B-A3B-Reasoning-NVFP4`;
+  三个权重分片合计 `22,409,034,192` bytes。config 架构为
+  `NemotronH_Nano_Omni_Reasoning_V3`,modelopt `MIXED_PRECISION`,routed experts
+  含 NVFP4。下载日志已拉回,1,501,688 bytes,SHA-256
+  `4cf9dabb1a30951d95f3d9fbaef931575b5402182b9b1ffe4503eb36a4d47d99`。
+  证据为 `results/acceptance/NEMOTRON_OMNI/download-20260719.json`;状态严格保持
+  `DOWNLOAD_OK_UNSERVED`,没有启动 vLLM、没有测 tok/s、没有替换现有 12B 主路。
+- 新增静态邻域模块与代理脚本:从 ingest 逐帧框自动筛出 9 个跨三视频稳定的
+  单实例类别,以共现率、归一化中心距和邻近排序形成局部指纹;目标重叠框排除,
+  少于 3 个共同锚点返回无证据。sidecar 覆盖原候选 `17,992/30,788`,SHA-256
+  `e52187273f4fc23b19693a5b60badab13c4eb3873acd4dce0398d026a48ad492`。
+- 提交前审阅修正两处安全语义:①无共同锚点候选此前仍被 0.5 中性值带入分位数
+  重排,现改为逐字保持 baseline;②高置信锁此前只覆盖视频对 Hungarian,新边仍可在
+  全局聚类抢先挤掉旧组件,现让锁定边优先重建 baseline 组件。修复后 926 条原
+  automatic 边在 0.10/0.20/0.30 三个 blend 中均为零删除。
+- 无冻结 GT 代理选择 7 邻居、至少 3 共同锚点、blend 0.30:pseudo R@1
+  `0.443850→0.443850`,R@5 `0.855615→0.860963`;tutor selection AUC
+  `0.657308→0.660250`,holdout AUC `0.688571→0.722857`。生产门不采信代理单点:
+  baseline 为链接 994/澄清 591;blend 0.10=`995/592`,0.20=`993/597`,
+  0.30=`993/599`,三者均 FAIL。0.30 双回放 hash 一致为
+  `b6e97cd1ac2996960e935b56f81d365855cda73260d0c23dc0ad50434f396a14`;
+  确定性 PASS 不改变效果 NO-GO。
+- 两项正确性修复后三个候选均止于无 GT 生产门,没有再次读取人工 anchor GT;
+  更早的终检已标记失效,不用于选参或提升声明。机器可读判决为
+  `results/acceptance/HERO_S1/neighborhood-context-production-gate-v1/report.json`。
+  三次运行配置字节快照与 manifest SHA 完全一致。实现与小体积证据提交
+  `2b2d6c64`;全量后端测试 `368 passed`,JSON/YAML、`py_compile`、哈希及
+  `git diff --check` 均通过。
 
 ### 增量 D7-1:语义重排、AMP 与 Torch-TensorRT 混合门(凌晨)
 
@@ -270,9 +313,23 @@
 - 单次构建的二分定罪对 TRT 不充分:标记观测点本身改变融合决策,同一张量在两次
   构建间 `4.818↔1.9e-4` 翻转。"输入净/输出脏"判据只在融合边界固定时有效;结论
   必须来自成对构建的差分(v3×v4),否则会把融合缺陷误写成某个算子的数学错误。
+- “无证据取中性值”只有在该分量不参与排序时才中性;一旦进入分位数映射,它会
+  改变没有共同锚点的候选。缺失证据必须从重排集合中排除,不能用数值占位伪装。
+- 视频对 Hungarian 锁不等于实体级锁。跨三个视频聚类存在顺序效应,新边可能先占
+  组件而挤掉已锁旧边;保护语义必须贯穿召回、分配和 union 三层,并做边集合差分。
+- proxy R@5/AUC 改善不能替代生产门。纯二维距离与排序对视角、遮挡和检测碎片仍
+  敏感;三个预设 blend 无一同时满足总链接和澄清门,应如实关线而非继续扫参数。
+- 权重下载成功只证明快照完整可读,不证明当前 vLLM 能加载该自定义 Omni 架构,
+  更不证明其视频精度或 25 tok/s 目标;服务兼容、显存峰值和吞吐必须另立实验。
 
 ## 明日计划
 
+- 在再次执行 `free -h` 后单独验证 Nemotron Omni 的 tokenizer/processor 与运行时
+  兼容性;先做最小加载和单样本健康探针,再决定是否启动服务。只有服务稳定后才测
+  统一输入长度下的 prefill/decode tok/s、显存峰值和短视频链路,不沿用下载结论。
+- 静态邻域 v1 保持 NO-GO。若继续跨视频实体确认,改为高分辨率目标+周边 crop 或
+  短视频片段的模型裁决,输入显式列出目标与邻居实体;采集新的未见测试集后再验收,
+  不在当前三视频继续调 blend,也不重开已失效的旧 GT 终检。
 - ~~错峰停 vLLM 完成 v10/v11~~ 已执行完毕:v11 编译成又挂死,已击杀并恢复
   vLLM 服务,TRT 混编线止损(详 D7-4);若重启该线,先给探针加心跳再谈。
 - ~~TRT 根因最后一层二分~~ 已定案=融合依赖漂移(D7-4);~~融合拆分实验~~

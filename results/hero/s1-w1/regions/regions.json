@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.0",
+  "video_id": "new_1",
+  "entries": [
+    {
+      "schema_version": "1.0",
+      "region_id": "sofa_seat",
+      "anchor": "sofa",
+      "display_name_zh": "皮沙发座面",
+      "support_type": "surface",
+      "capacity_class": "large",
+      "near_power": false,
+      "evidence_refs": [
+        "new_1.mp4@00:24"
+      ]
+    },
+    {
+      "schema_version": "1.0",
+      "region_id": "sofa_bench",
+      "anchor": "sofa",
+      "display_name_zh": "沙发前长凳托盘",
+      "support_type": "surface",
+      "capacity_class": "medium",
+      "near_power": false,
+      "evidence_refs": [
+        "new_1.mp4@00:34"
+      ]
+    },
+    {
+      "schema_version": "1.0",
+      "region_id": "study_desk",
+      "anchor": "desk",
+      "display_name_zh": "书桌面",
+      "support_type": "surface",
+      "capacity_class": "medium",
+      "near_power": true,
+      "evidence_refs": [
+        "new_1.mp4@00:54"
+      ]
+    },
+    {
+      "schema_version": "1.0",
+      "region_id": "vanity_top",
+      "anchor": "vanity",
+      "display_name_zh": "花布面桌台面",
+      "support_type": "surface",
+      "capacity_class": "medium",
+      "near_power": true,
+      "evidence_refs": [
+        "new_1.mp4@01:10"
+      ]
+    },
+    {
+      "schema_version": "1.0",
+      "region_id": "wall_shelf",
+      "anchor": "vanity",
+      "display_name_zh": "墙上木搁板",
+      "support_type": "shelf",
+      "capacity_class": "small",
+      "near_power": true,
+      "evidence_refs": [
+        "new_1.mp4@01:08"
+      ]
+    },
+    {
+      "schema_version": "1.0",
+      "region_id": "chest_top",
+      "anchor": "chest_of_drawers",
+      "display_name_zh": "红木斗柜台面",
+      "support_type": "surface",
+      "capacity_class": "medium",
+      "near_power": true,
+      "evidence_refs": [
+        "new_1.mp4@01:24"
+      ]
+    },
+    {
+      "schema_version": "1.0",
+      "region_id": "display_cabinet",
+      "anchor": "display_cabinet",
+      "display_name_zh": "玻璃展示柜隔层",
+      "support_type": "shelf",
+      "capacity_class": "small",
+      "near_power": false,
+      "evidence_refs": [
+        "new_1.mp4@01:34"
+      ]
+    }
+  ],
+  "notes": "定稿:由 new_1.mp4(开灯补光版)逐帧目视起草,2026-07-17 用户确认通过;时间戳=抽帧序号×2s,精度±2s;衣柜因内部未拍未登记。用户裁决(07-17):洗手间不补拍——旁白去向为洗手间的组(防晒霜/发卡/梳子/护手霜)无匹配区域,按降级口径判卷如实记录,不算区域登记缺失。"
+}

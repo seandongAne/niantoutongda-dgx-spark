@@ -1,0 +1,19 @@
+{
+  "cmd": ".venv/bin/python /Users/seandong/Documents/DGX Spark Thing/scripts/entity_naming.py --entities /Users/seandong/Documents/DGX Spark Thing/results/hero_s1/reid/entities.jsonl --attributes /Users/seandong/Documents/DGX Spark Thing/results/s5/attributes_hero_s1.jsonl --out /Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/naming/display.jsonl --trace-id hero-s1-w1 --trace-out /Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/naming/trace.jsonl --clarifications /Users/seandong/Documents/DGX Spark Thing/results/hero_s1/reid/clarifications.jsonl --tracklets-dir /Users/seandong/Documents/DGX Spark Thing/results/hero_s1/ingest",
+  "code": {
+    "/Users/seandong/Documents/DGX Spark Thing/scripts/entity_naming.py": "840f9b3ebc0b0cacf478b3939677346954f3038a2836cb24405e6721f6ce8e74"
+  },
+  "finished_at": "2026-07-17T17:52:38+00:00",
+  "inputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero_s1/reid/clarifications.jsonl": "234615fc1852c2b275d88d2f96f39f226cfc2dad502119ee67f9a425d82a88e0",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero_s1/reid/entities.jsonl": "84da7abb86821a5574dc9d29b9901a1ce0aafdae53e6f6a90a24e0e4cc0d10bc",
+    "/Users/seandong/Documents/DGX Spark Thing/results/s5/attributes_hero_s1.jsonl": "80362edbc33326fd009de0b5b202bf4e5b58ac2c7e40ff83a6f2a529a4d23338"
+  },
+  "outputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/naming/display.jsonl": "6b410915e2d83b677f060a729c9a680f71d4bfde0acebcc44b11e5a09c66b263",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/naming/trace.jsonl": "eaa006c4916d4afbf5604b3a5a72acb7ec59c6a82c8f4fa94af86befad3d7930"
+  },
+  "stage": "naming",
+  "started_at": "2026-07-17T17:51:39+00:00",
+  "status": "done"
+}

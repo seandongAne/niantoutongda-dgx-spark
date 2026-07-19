@@ -1,0 +1,13 @@
+{
+  "alternatives": {
+    "g01": "sofa_bench",
+    "g02": "sofa_bench"
+  },
+  "assignments": {
+    "g01": "chest_top",
+    "g02": "chest_top"
+  },
+  "conflicts": [],
+  "objective": 0,
+  "status": "PLAN_READY"
+}

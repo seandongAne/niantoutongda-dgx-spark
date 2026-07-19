@@ -1,0 +1,10 @@
+{
+  "cmd": "source ~/venv/bin/activate && cd ~/proj && python scripts/ingest_task.py --out local-data/hero_s1/space-ingest --config-version hero-s1-space-v1 --vocab fixtures/hero_s1/space_vocab.json --box-threshold 0.25 --tile-box-threshold 0.22 --frame-batch-size 2 --no-stationary-tiles --videos new_1=local-data/hero_s1/new_1.mp4 && python scripts/space_observation_adapter.py --ingest-dir local-data/hero_s1/space-ingest/new_1 --vocab fixtures/hero_s1/space_vocab.json --out-dir results/hero_s1/space-auto --video-id new_1",
+  "code": {},
+  "finished_at": "2026-07-18T02:09:43+00:00",
+  "inputs": {},
+  "outputs": {},
+  "stage": "space_observe",
+  "started_at": "2026-07-18T01:57:09+00:00",
+  "status": "done"
+}

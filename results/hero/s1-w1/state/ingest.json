@@ -1,0 +1,10 @@
+{
+  "cmd": "source ~/venv/bin/activate && cd ~/proj && python scripts/ingest_task.py --out results/hero_s1/ingest --config-version hero-s1-vocab1 --vocab fixtures/hero_s1/vocab.json --box-threshold 0.28 --videos old_1=local-data/hero_s1/old_1.mp4 old_2=local-data/hero_s1/old_2.mp4 old_3=local-data/hero_s1/old_3.mp4",
+  "code": {},
+  "finished_at": "2026-07-17T10:59:24+00:00",
+  "inputs": {},
+  "outputs": {},
+  "stage": "ingest",
+  "started_at": "2026-07-17T10:58:54+00:00",
+  "status": "done"
+}

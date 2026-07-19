@@ -1,0 +1,1 @@
+{"schema_version":"1.0","group_id":"g01","name_zh":"组合1","entity_ids":["entity_07b63114b8a4"],"dominant_source":"narration","member_evidence":[{"schema_version":"1.0","entity_id":"entity_07b63114b8a4","source":"narration","detail":"这是一个壁纸刀，是孩子的，现在在客厅搬到新家，想放在客厅和文具打包在一起。","refs":["n04"]}],"target_region_hint":"客厅"}

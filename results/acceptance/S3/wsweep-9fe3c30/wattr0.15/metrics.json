@@ -1,0 +1,22 @@
+{
+  "attribute_enriched_tracklet_count": 945,
+  "automatic_link_count": 153,
+  "baseline_only": true,
+  "clarification_count": 513,
+  "clarifications_suppressed_by_cap": 54,
+  "clarifications_suppressed_low_evidence": 253,
+  "config_version": "reid-dev-a-v3-wattr0.15",
+  "entity_count": 787,
+  "g2_blocker": "machine-readable anchor-to-tracklet ground truth is absent",
+  "g2_evaluated": false,
+  "known_category_tracklets": 912,
+  "low_evidence_tracklet_count": 225,
+  "matched_entity_count": 103,
+  "new_entity_count": 198,
+  "stitch_enabled": true,
+  "stitch_merge_count": 23,
+  "suspected_entity_count": 486,
+  "tracklet_count": 945,
+  "tracklet_count_after_stitch": 922,
+  "user_same_link_count": 0
+}

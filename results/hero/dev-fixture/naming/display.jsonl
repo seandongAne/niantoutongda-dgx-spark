@@ -1,0 +1,6 @@
+{"color_primary": "green", "display_name_zh": "绘本", "display_source": "vlm", "entity_id": "e_book", "hero_crop_ref": "fixtures/hero_dev/crops/book.jpg", "internal_recall_label": "book", "source_tracklet_id": "t_book"}
+{"color_primary": "gray", "display_name_zh": "收纳盒", "display_source": "vlm", "entity_id": "e_box", "hero_crop_ref": "fixtures/hero_dev/crops/box.jpg", "internal_recall_label": "storage box", "source_tracklet_id": "t_box"}
+{"color_primary": "black", "display_name_zh": "耳机", "display_source": "vlm", "entity_id": "e_headphones", "hero_crop_ref": "fixtures/hero_dev/crops/headphones.jpg", "internal_recall_label": "headphones", "source_tracklet_id": "t_hp"}
+{"color_primary": "blue", "display_name_zh": "水壶(蓝色)", "display_source": "vlm", "entity_id": "e_kettle_blue", "hero_crop_ref": "fixtures/hero_dev/crops/kettle_blue.jpg", "internal_recall_label": "kettle", "source_tracklet_id": "t_kb"}
+{"color_primary": "pink", "display_name_zh": "水壶(粉色)", "display_source": "vlm", "entity_id": "e_kettle_pink", "hero_crop_ref": "fixtures/hero_dev/crops/kettle_pink.jpg", "internal_recall_label": "kettle", "source_tracklet_id": "t_kp"}
+{"color_primary": "white", "display_name_zh": "台灯", "display_source": "vlm", "entity_id": "e_lamp", "hero_crop_ref": "fixtures/hero_dev/crops/lamp.jpg", "internal_recall_label": "table lamp", "source_tracklet_id": "t_lamp"}

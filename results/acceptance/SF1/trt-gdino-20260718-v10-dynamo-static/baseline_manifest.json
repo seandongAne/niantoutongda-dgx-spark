@@ -1,0 +1,155 @@
+{
+  "batch_size": 2,
+  "code_commit": "a4d0f6f1",
+  "created_at_unix": 1784371586,
+  "export_compatibility": {
+    "bit_exact_model_outputs_before_export": true,
+    "bit_exact_on_frozen_inputs": true,
+    "model_output_checks": {
+      "helper_scale_rewrite": {
+        "logits": {
+          "allclose_rtol_1e-6_atol_1e-7": true,
+          "bit_exact": true,
+          "max_abs_on_jointly_finite": 0.0,
+          "mean_abs_on_jointly_finite": 0.0,
+          "nonfinite_pattern_equal": true
+        },
+        "pred_boxes": {
+          "allclose_rtol_1e-6_atol_1e-7": true,
+          "bit_exact": true,
+          "max_abs_on_jointly_finite": 0.0,
+          "mean_abs_on_jointly_finite": 0.0,
+          "nonfinite_pattern_equal": true
+        }
+      },
+      "mask_rewrite": {
+        "logits": {
+          "allclose_rtol_1e-6_atol_1e-7": true,
+          "bit_exact": true,
+          "max_abs_on_jointly_finite": 0.0,
+          "mean_abs_on_jointly_finite": 0.0,
+          "nonfinite_pattern_equal": true
+        },
+        "pred_boxes": {
+          "allclose_rtol_1e-6_atol_1e-7": true,
+          "bit_exact": true,
+          "max_abs_on_jointly_finite": 0.0,
+          "mean_abs_on_jointly_finite": 0.0,
+          "nonfinite_pattern_equal": true
+        }
+      },
+      "module_scale_rewrite": {
+        "logits": {
+          "allclose_rtol_1e-6_atol_1e-7": true,
+          "bit_exact": true,
+          "max_abs_on_jointly_finite": 0.0,
+          "mean_abs_on_jointly_finite": 0.0,
+          "nonfinite_pattern_equal": true
+        },
+        "pred_boxes": {
+          "allclose_rtol_1e-6_atol_1e-7": true,
+          "bit_exact": true,
+          "max_abs_on_jointly_finite": 0.0,
+          "mean_abs_on_jointly_finite": 0.0,
+          "nonfinite_pattern_equal": true
+        }
+      }
+    },
+    "model_outputs_within_rtol_1e-6_atol_1e-7": true,
+    "scale_module_count": 1,
+    "sinusoidal_scale_rewrite": "zero_dim_tensor_v1",
+    "site_packages_modified": false,
+    "special_token_mask_rewrite": "broadcast_amax_amin_equal_identity_v2",
+    "transformers_torch_checks_disabled_for_dynamo": true
+  },
+  "images": [
+    "/home/Developer/proj/local-data/ingest_a_v6/v1/keyframes/kf_000165.jpg",
+    "/home/Developer/proj/local-data/ingest_a_v6/v4/keyframes/kf_000165.jpg"
+  ],
+  "inputs": {
+    "attention_mask": {
+      "dtype": "torch.int64",
+      "shape": [
+        2,
+        12
+      ]
+    },
+    "input_ids": {
+      "dtype": "torch.int64",
+      "shape": [
+        2,
+        12
+      ]
+    },
+    "pixel_mask": {
+      "dtype": "torch.int64",
+      "shape": [
+        2,
+        1333,
+        750
+      ]
+    },
+    "pixel_values": {
+      "dtype": "torch.float32",
+      "shape": [
+        2,
+        3,
+        1333,
+        750
+      ]
+    },
+    "token_type_ids": {
+      "dtype": "torch.int64",
+      "shape": [
+        2,
+        12
+      ]
+    }
+  },
+  "model_dir": "/home/Developer/models/IDEA-Research__grounding-dino-base",
+  "outputs": {
+    "logits": [
+      2,
+      900,
+      256
+    ],
+    "pred_boxes": [
+      2,
+      900,
+      4
+    ]
+  },
+  "platform": {
+    "cuda": "13.0",
+    "gpu": "NVIDIA GB10",
+    "machine": "aarch64",
+    "python": "3.12.3",
+    "torch": "2.13.0+cu130"
+  },
+  "prompt": "luggage. mini fridge. water bottle. desk.",
+  "pytorch_core": {
+    "mean_ms": 1173.7716064453125,
+    "p50_ms": 1173.7716064453125,
+    "p95_ms": 1173.7716064453125,
+    "peak_memory_bytes": 3707257856,
+    "process_peak_rss_bytes": 2209947648,
+    "runs": 1,
+    "samples_ms": [
+      1173.7716064453125
+    ],
+    "throughput_images_per_second": 1.7039089964502243,
+    "warmup": 0
+  },
+  "schema_version": "1.0",
+  "scope": "SF1-L2_TENSORRT_FEASIBILITY_ONLY",
+  "target_sizes": [
+    [
+      1920,
+      1080
+    ],
+    [
+      1920,
+      1080
+    ]
+  ]
+}

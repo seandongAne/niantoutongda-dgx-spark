@@ -1,0 +1,6 @@
+{"schema_version":"1.0","item_id":"n01","entity_id":"e_kettle_blue","method":"name_color","candidate_entity_ids":["e_kettle_blue"]}
+{"schema_version":"1.0","item_id":"n02","entity_id":"e_lamp","method":"name_unique","candidate_entity_ids":["e_lamp"]}
+{"schema_version":"1.0","item_id":"n03","entity_id":"e_kettle_pink","method":"name_color","candidate_entity_ids":["e_kettle_pink"]}
+{"schema_version":"1.0","item_id":"n04","entity_id":"e_box","method":"name_unique","candidate_entity_ids":["e_box"]}
+{"schema_version":"1.0","item_id":"n05","entity_id":"e_book","method":"name_unique","candidate_entity_ids":["e_book"]}
+{"schema_version":"1.0","item_id":"n06","entity_id":"e_headphones","method":"name_unique","candidate_entity_ids":["e_headphones"]}

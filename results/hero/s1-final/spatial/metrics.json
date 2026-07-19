@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0",
+  "video_id": "new_1",
+  "observation_count": 2278,
+  "candidate_count": 170,
+  "observed_candidate_count": 168,
+  "not_observed_count": 2,
+  "auto_accepted_count": 0,
+  "needs_user_count": 170,
+  "projected_region_count": 0,
+  "min_regions_required": 5,
+  "region_gate_passed": false,
+  "expected_anchor_count": 5,
+  "observed_expected_anchor_count": 3,
+  "expected_coverage_rate": 0.6,
+  "power_state_counts": {
+    "UNKNOWN": 170
+  },
+  "gate_status": "NEEDS_USER",
+  "gate_reasons": [
+    "min_regions_not_met:0/5",
+    "expected_anchors_not_auto_accepted:chest_of_drawers,display_cabinet,study_desk,vanity,wall_shelf"
+  ],
+  "normalized_hash": "42a1847e7ba82b01274e5c44e08ddb7a693fff461ca6353e4dc7b9f873b7c1d4"
+}

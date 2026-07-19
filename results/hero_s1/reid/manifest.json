@@ -1,0 +1,30 @@
+{
+  "attributes": {
+    "path": "results/s5/attributes_hero_s1.jsonl",
+    "sha256": "80362edbc33326fd009de0b5b202bf4e5b58ac2c7e40ff83a6f2a529a4d23338"
+  },
+  "code_commit": "112fadef5855a0f912ee23af08852670a11b81ab",
+  "config": {
+    "path": "configs/reid_hero_s1_w1.yaml",
+    "sha256": "45a3abfd67f33ccb8cf54cdf4159a522080b750ae66bf45851ba4d1650e08fa4"
+  },
+  "constraints": {
+    "path": null,
+    "sha256": null
+  },
+  "created_at": "2026-07-17T17:07:56Z",
+  "ground_truth": null,
+  "ground_truth_status": "MISSING_MACHINE_READABLE_ANNOTATIONS",
+  "ingest_root": "results/hero_s1/ingest",
+  "projection": {
+    "artifact": null,
+    "enabled": false,
+    "sha256": null
+  },
+  "schema_version": "1.0",
+  "slice_id": "S3",
+  "vocab": {
+    "path": "fixtures/hero_s1/vocab.json",
+    "sha256": "35655f3f73f22e035835a61db2fa7ea93b9992f7cea9be4e93e9bfead25c7f1e"
+  }
+}

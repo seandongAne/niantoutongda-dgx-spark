@@ -1,0 +1,11 @@
+{
+  "alternatives": {
+    "g01": "display_cabinet"
+  },
+  "assignments": {
+    "g01": "chest_top"
+  },
+  "conflicts": [],
+  "objective": 0,
+  "status": "PLAN_READY"
+}

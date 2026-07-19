@@ -1,0 +1,22 @@
+{
+  "cmd": ".venv/bin/python /Users/seandong/Documents/DGX Spark Thing/scripts/results_page.py --run-dir /Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture",
+  "code": {
+    "/Users/seandong/Documents/DGX Spark Thing/scripts/results_page.py": "3b4135f1282f086c0562f990b9ccf3a5c137170b52605985063f96e3d1699e7e"
+  },
+  "finished_at": "2026-07-16T18:17:33+00:00",
+  "inputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/audit/replay-report.json": "c2c256a593bcb8899bbe3596b0c9c343593e7b5e96d14ed8b501d1f61cf12365",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/group/groups.jsonl": "7e06116f9a91d87d4a422f47bc2d4d79f282c4e24545e316fa55defe86ee682b",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/layout/layout.json": "4d3f25fb4dcd704da4e9131ece106fcb6a5b29fba53b521a15d52da2dc1ac274",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/naming/display.jsonl": "2a47f12339fea31532ba7390364844e2eabefa9c67a3b4acb8b3fa3e1630d28c",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/regions/regions.json": "6d64511103681896eee5b8176571b1111ca6a83dfefea9b06de191c654559330",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/taskcards/taskcards.jsonl": "1fa39aa6952ccac67e57f31a0a6993359e0df11ecb69afb320dc761b948e3fb2",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/verify/verdicts.json": "d6d532cb0b0999fa9856ce3fe167cb6033cbcd1f81e27157a2d6e9e4a9ed403c"
+  },
+  "outputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/index.html": "6adab0a0292c18fa360d7e171f168827b693479db40e87f33898fec291760fda"
+  },
+  "stage": "report",
+  "started_at": "2026-07-16T18:17:33+00:00",
+  "status": "done"
+}

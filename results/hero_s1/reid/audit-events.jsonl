@@ -1,0 +1,1 @@
+{"schema_version":"1.0","event_id":"s3_bc2e131e3692","event_type":"CrossVideoReIDBaselineCompleted","actor":"MEM","input_refs":["results/hero_s1/ingest","configs/reid_hero_s1_w1.yaml","fixtures/hero_s1/vocab.json"],"output_refs":["results/hero_s1/reid/entities.jsonl","results/hero_s1/reid/metrics.json"],"config_version":"reid-hero-s1-w1","created_at":"2026-07-17T17:07:56Z"}

@@ -1,0 +1,14 @@
+{
+  "algorithm": "sha256",
+  "inputs": {
+    "auto_observations.jsonl": "f1c8eb81f72e3472a7b2d44bbe69d9c76ab4bb0a5d0727ce3a2c7f843fcb6842",
+    "expected_anchors": "bdc31720794b348c33c481f98cbc96e4209f0467efd1331fe41ec792765f0216",
+    "tracklets.jsonl": "26f9b5a18b60899fd7fd404c038939b7d68154d4099b1af7557624f8309d147d"
+  },
+  "normalized_hash": "e9047cbd5847132c4742349b95bf06407515361a477c8f4ecc7ab78b9267013b",
+  "outputs": {
+    "anchor_candidates.json": "16a4d8bf631ba8ab03dc53f46e6baa85a35e8b92ff36fed295fba3bb042702d8",
+    "metrics.json": "48a48b47989d43f684a738ed753565646a6059c33c9d70a9f21a33c9a8f2323c"
+  },
+  "schema_version": "1.0"
+}

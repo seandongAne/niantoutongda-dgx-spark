@@ -1,0 +1,38 @@
+{
+  "clarifications": {
+    "closed": 0,
+    "open": 1362,
+    "requests": 1362
+  },
+  "correlation_count": 1363,
+  "main_chain": {
+    "actions": [
+      "ENTITIES_READY",
+      "GROUPS_READY",
+      "PLACEMENT_READY",
+      "TASKS_READY"
+    ],
+    "complete": 1,
+    "correlation_ids": [
+      "hero-s1-w1"
+    ]
+  },
+  "message_count": 1366,
+  "message_types": {
+    "AgentHandoff": 4,
+    "ClarificationRequest": 1362
+  },
+  "producer_counts": {
+    "EXEC": 1,
+    "GROUP": 1,
+    "MEM": 1363,
+    "SPACE": 1
+  },
+  "status": "PASS",
+  "verification": {
+    "adjudication_closed": 0,
+    "adjudication_required": 0,
+    "closed": 0,
+    "requests": 0
+  }
+}

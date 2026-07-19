@@ -1,0 +1,98 @@
+{
+  "box_threshold": 0.35,
+  "candidates": {
+    "luggage/c0": {
+      "detections": 32,
+      "phrase": "pink rolling kids luggage",
+      "seconds": 15.8
+    },
+    "luggage/c1": {
+      "detections": 30,
+      "phrase": "pink hard shell luggage",
+      "seconds": 14.9
+    },
+    "luggage/c2": {
+      "detections": 30,
+      "phrase": "kids travel suitcase",
+      "seconds": 15.2
+    },
+    "luggage/c3": {
+      "detections": 36,
+      "phrase": "pink wheeled suitcase",
+      "seconds": 15.0
+    },
+    "luggage/c4": {
+      "detections": 31,
+      "phrase": "pink pull handle luggage",
+      "seconds": 15.1
+    },
+    "luggage/c5": {
+      "detections": 38,
+      "phrase": "small pink suitcase",
+      "seconds": 15.0
+    },
+    "night_light/c0": {
+      "detections": 52,
+      "phrase": "white cylinder night light",
+      "seconds": 15.1
+    },
+    "night_light/c1": {
+      "detections": 28,
+      "phrase": "sticker covered night light",
+      "seconds": 15.0
+    },
+    "night_light/c2": {
+      "detections": 34,
+      "phrase": "round top lamp",
+      "seconds": 15.2
+    },
+    "night_light/c3": {
+      "detections": 31,
+      "phrase": "bedside night light",
+      "seconds": 15.1
+    },
+    "night_light/c4": {
+      "detections": 29,
+      "phrase": "white column night light",
+      "seconds": 15.1
+    },
+    "night_light/c5": {
+      "detections": 46,
+      "phrase": "small decorative lamp",
+      "seconds": 15.1
+    },
+    "tumbler/c0": {
+      "detections": 30,
+      "phrase": "light straw tumbler",
+      "seconds": 15.0
+    },
+    "tumbler/c1": {
+      "detections": 32,
+      "phrase": "plastic straw cup",
+      "seconds": 15.1
+    },
+    "tumbler/c2": {
+      "detections": 49,
+      "phrase": "sippy cup",
+      "seconds": 15.2
+    },
+    "tumbler/c3": {
+      "detections": 42,
+      "phrase": "transparent straw tumbler",
+      "seconds": 15.1
+    },
+    "tumbler/c4": {
+      "detections": 40,
+      "phrase": "light color drinking bottle",
+      "seconds": 15.2
+    },
+    "tumbler/c5": {
+      "detections": 60,
+      "phrase": "kids straw cup",
+      "seconds": 15.2
+    }
+  },
+  "frames": 40,
+  "model": "grounding-dino-base@/home/Developer/models/IDEA-Research__grounding-dino-base",
+  "wall_seconds": 272.4
+}

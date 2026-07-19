@@ -1,0 +1,15 @@
+{
+  "alternatives": {
+    "g01": "closet_shelf",
+    "g02": "bedside",
+    "g03": "closet_shelf"
+  },
+  "assignments": {
+    "g01": "desk_top",
+    "g02": "closet_shelf",
+    "g03": "bedside"
+  },
+  "conflicts": [],
+  "objective": 30,
+  "status": "PLAN_READY"
+}

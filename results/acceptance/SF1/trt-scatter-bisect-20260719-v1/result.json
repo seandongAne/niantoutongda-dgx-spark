@@ -1,0 +1,75 @@
+{
+  "code_commit": "9ef953b7830be3239e1409839d9da735c0789586",
+  "created_at_unix": 1784415855,
+  "engine_build": {
+    "command": [
+      "/home/Developer/local/tensorrt-10.14.1.48/usr/src/tensorrt/bin/trtexec",
+      "--onnx=results/acceptance/SF1/trt-scatter-bisect-20260719-v1/scatter_bisect_instrumented.onnx",
+      "--saveEngine=results/acceptance/SF1/trt-scatter-bisect-20260719-v1/scatter_bisect_fp32_notf32.engine",
+      "--noTF32",
+      "--skipInference",
+      "--memPoolSize=workspace:16384M"
+    ],
+    "duration_seconds": 2.7243831157684326,
+    "log_tail": [
+      "[07/18/2026-23:04:55] [I] [TRT] [MemUsageChange] Init CUDA: CPU +0, GPU +0, now: CPU 34, GPU 80257 (MiB)",
+      "[07/18/2026-23:04:55] [I] Start parsing network model.",
+      "[07/18/2026-23:04:56] [I] [TRT] ----------------------------------------------------------------",
+      "[07/18/2026-23:04:56] [I] [TRT] Input filename:   results/acceptance/SF1/trt-scatter-bisect-20260719-v1/scatter_bisect_instrumented.onnx",
+      "[07/18/2026-23:04:56] [I] [TRT] ONNX IR version:  0.0.10",
+      "[07/18/2026-23:04:56] [I] [TRT] Opset version:    18",
+      "[07/18/2026-23:04:56] [I] [TRT] Producer name:    pytorch",
+      "[07/18/2026-23:04:56] [I] [TRT] Producer version: 2.13.0+cu130",
+      "[07/18/2026-23:04:56] [I] [TRT] Domain:           ",
+      "[07/18/2026-23:04:56] [I] [TRT] Model version:    0",
+      "[07/18/2026-23:04:56] [I] [TRT] Doc string:       ",
+      "[07/18/2026-23:04:56] [I] [TRT] ----------------------------------------------------------------",
+      "[07/18/2026-23:04:56] [W] [TRT] ModelImporter.cpp:661: Make sure input input_ids has Int64 binding.",
+      "[07/18/2026-23:04:56] [W] [TRT] ModelImporter.cpp:661: Make sure input token_type_ids has Int64 binding.",
+      "[07/18/2026-23:04:56] [W] [TRT] ModelImporter.cpp:661: Make sure input attention_mask has Int64 binding.",
+      "[07/18/2026-23:04:56] [W] [TRT] ModelImporter.cpp:661: Make sure input pixel_mask has Int64 binding.",
+      "Unsupported ONNX data type: <UNKNOWN> (0)",
+      "[07/18/2026-23:04:56] [E] [TRT] ModelImporter.cpp:141: ERROR: ModelImporter.cpp:898 In function importModel:",
+      "[8] Assertion failed: convertDtype(output.type().tensor_type().elem_type(), &output_trt_dtype): Failed to convert ONNX date type to TensorRT data type.",
+      "[07/18/2026-23:04:56] [E] Failed to parse onnx file",
+      "[07/18/2026-23:04:56] [I] Finished parsing network model. Parse time: 0.869816",
+      "[07/18/2026-23:04:56] [E] Parsing model failed",
+      "[07/18/2026-23:04:56] [E] Failed to create engine from model or file.",
+      "[07/18/2026-23:04:56] [E] Engine set up failed",
+      "&&&& FAILED TensorRT.trtexec [TensorRT v101401] [b48] # /home/Developer/local/tensorrt-10.14.1.48/usr/src/tensorrt/bin/trtexec --onnx=results/acceptance/SF1/trt-scatter-bisect-20260719-v1/scatter_bisect_instrumented.onnx --saveEngine=results/acceptance/SF1/trt-scatter-bisect-20260719-v1/scatter_bisect_fp32_notf32.engine --noTF32 --skipInference --memPoolSize=workspace:16384M"
+    ],
+    "returncode": 1
+  },
+  "instrumentation_equivalence": {
+    "bit_exact": {
+      "logits": true,
+      "pred_boxes": true
+    },
+    "equivalent": true
+  },
+  "onnx": {
+    "path": "results/acceptance/SF1/trt-gdino-20260718-v10-dynamo-static/grounding_dino.onnx",
+    "sha256": "aae91bfda8571d1bc24c3ed5f3dc4f8d68e3b111e3fbc0b7ec2d148f243864ee"
+  },
+  "schema_version": "1.0",
+  "scope": "SF1_DIAGNOSTIC_SCATTER_BISECT_NOT_ACCEPTANCE",
+  "target_node": {
+    "inputs": [
+      "val_8892"
+    ],
+    "marked_values": [
+      "val_8892",
+      "slice_scatter"
+    ],
+    "name": "node_slice_scatter",
+    "op_type": "Transpose",
+    "outputs": [
+      "slice_scatter"
+    ],
+    "skipped_initializer_inputs": []
+  },
+  "thresholds": {
+    "clean_max_abs": 0.001,
+    "dirty_max_abs": 0.1
+  }
+}

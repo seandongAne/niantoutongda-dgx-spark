@@ -1,0 +1,14 @@
+{
+  "algorithm": "sha256",
+  "inputs": {
+    "auto_observations.jsonl": "f1c8eb81f72e3472a7b2d44bbe69d9c76ab4bb0a5d0727ce3a2c7f843fcb6842",
+    "expected_anchors": "bdc31720794b348c33c481f98cbc96e4209f0467efd1331fe41ec792765f0216",
+    "tracklets.jsonl": "26f9b5a18b60899fd7fd404c038939b7d68154d4099b1af7557624f8309d147d"
+  },
+  "normalized_hash": "91d169fcd8b41a3b0a7df4fbeb347613a7faa349e3f628e4a45e49ef8ccc0de0",
+  "outputs": {
+    "anchor_candidates.json": "64f7be628941f8eddc9730dc28a15b08417930e8731faf80dc844cebf9a0e044",
+    "metrics.json": "5d3712c68c6227d9e00fa683e57fd55dc2483056f1243c15e3339617d4528e65"
+  },
+  "schema_version": "1.0"
+}

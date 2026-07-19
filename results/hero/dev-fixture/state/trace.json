@@ -1,0 +1,21 @@
+{
+  "cmd": ".venv/bin/python /Users/seandong/Documents/DGX Spark Thing/scripts/replay_trace.py --fragments /Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/naming/trace.jsonl /Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/group/trace.jsonl /Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/layout/trace.jsonl /Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/taskcards/trace.jsonl /Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/verify/messages.jsonl --out /Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/audit/events.jsonl --report /Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/audit/replay-report.json --require-main-chain --strict",
+  "code": {
+    "/Users/seandong/Documents/DGX Spark Thing/scripts/replay_trace.py": "f9dae5a205dd30d68be4507dd79b1394a442c799c2b4473e3b5d2423e97d9e20"
+  },
+  "finished_at": "2026-07-18T09:21:30+00:00",
+  "inputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/group/trace.jsonl": "43c0099a657efebe8d3e7419b8e744ba51fdd054be3f49bc5fb91a94c2c57a22",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/layout/trace.jsonl": "f0335175a750508e6fd1d59c6fc09e1964c04b16595dd85820a7eda443843eec",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/naming/trace.jsonl": "2c4524515482652ad8d56d3bb1663270ecef0daa1046857dd0851ba0b1050956",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/taskcards/trace.jsonl": "cfe6ecc30f483f26d4ccdc8b7f349cc00cb1eaed305b410fbe5fbcb7265a6426",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/verify/messages.jsonl": "7467c330557a889522656b31f081f112d0942157adde054a8dd7518da4c9a179"
+  },
+  "outputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/audit/events.jsonl": "362312215ad49c4c3e9de203e6dab873f250d178f64d86bdac286e2c052a69b1",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/audit/replay-report.json": "c2c256a593bcb8899bbe3596b0c9c343593e7b5e96d14ed8b501d1f61cf12365"
+  },
+  "stage": "trace",
+  "started_at": "2026-07-18T09:21:30+00:00",
+  "status": "done"
+}

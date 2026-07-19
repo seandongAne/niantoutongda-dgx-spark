@@ -1,0 +1,15 @@
+{
+  "cmd": "/Users/seandong/Documents/DGX Spark Thing/scripts/pull_results.sh",
+  "code": {},
+  "finished_at": "2026-07-17T17:51:39+00:00",
+  "inputs": {},
+  "outputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero_s1/reid/clarifications.jsonl": "234615fc1852c2b275d88d2f96f39f226cfc2dad502119ee67f9a425d82a88e0",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero_s1/reid/entities.jsonl": "84da7abb86821a5574dc9d29b9901a1ce0aafdae53e6f6a90a24e0e4cc0d10bc",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero_s1/reid/metrics.json": "6c46429fd495fdaddd0f818d1b9917720b1a23616d59e8ad2e79ac726666a4fe",
+    "/Users/seandong/Documents/DGX Spark Thing/results/s5/attributes_hero_s1.jsonl": "80362edbc33326fd009de0b5b202bf4e5b58ac2c7e40ff83a6f2a529a4d23338"
+  },
+  "stage": "pull",
+  "started_at": "2026-07-17T17:08:25+00:00",
+  "status": "done"
+}

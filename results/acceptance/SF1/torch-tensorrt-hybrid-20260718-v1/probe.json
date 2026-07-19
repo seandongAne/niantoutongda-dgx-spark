@@ -1,0 +1,206 @@
+{
+  "code_commit": "52625dee786b92ee93d7bc11ff4beea4daaf16cd",
+  "compiler_api": {
+    "fp16_route": "enable_autocast=true with autocast_low_precision_type=torch.float16",
+    "torch_export_export_signature": "(mod: torch.nn.modules.module.Module, args: tuple[typing.Any, ...], kwargs: collections.abc.Mapping[str, typing.Any] | None = None, *, dynamic_shapes: dict[str, typing.Any] | tuple[typing.Any, ...] | list[typing.Any] | None = None, strict: bool = False, preserve_module_call_signature: tuple[str, ...] = (), prefer_deferred_runtime_asserts_over_guards: bool = False) -> torch.export.exported_program.ExportedProgram",
+    "torch_tensorrt_dynamo_compile_signature": "(exported_program: 'ExportedProgram', inputs: 'Optional[Sequence[Sequence[Any]]]' = None, *, arg_inputs: 'Optional[Sequence[Sequence[Any]]]' = None, kwarg_inputs: 'Optional[dict[Any, Any]]' = None, device: 'Optional[Union[Device, torch.device, str]]' = None, disable_tf32: 'bool' = False, assume_dynamic_shape_support: 'bool' = False, sparse_weights: 'bool' = False, engine_capability: 'EngineCapability' = <EngineCapability.STANDARD: 1>, num_avg_timing_iters: 'int' = 1, workspace_size: 'int' = 0, dla_sram_size: 'int' = 1048576, dla_local_dram_size: 'int' = 1073741824, dla_global_dram_size: 'int' = 536870912, truncate_double: 'bool' = False, require_full_compilation: 'bool' = False, min_block_size: 'int' = 5, torch_executed_ops: 'Optional[Collection[Target]]' = None, torch_executed_modules: 'Optional[List[str]]' = None, pass_through_build_failures: 'bool' = False, max_aux_streams: 'Optional[int]' = None, version_compatible: 'bool' = False, optimization_level: 'Optional[int]' = None, use_python_runtime: 'bool' = False, use_fast_partitioner: 'bool' = True, enable_experimental_decompositions: 'bool' = False, dryrun: 'bool' = False, hardware_compatible: 'bool' = False, timing_cache_path: 'str' = '/tmp/torch_tensorrt_engine_cache/timing_cache.bin', runtime_cache_path: 'str' = '/tmp/torch_tensorrt_engine_cache/runtime_cache.bin', dynamic_shapes_kernel_specialization_strategy: 'str' = 'lazy', lazy_engine_init: 'bool' = False, cache_built_engines: 'bool' = False, reuse_cached_engines: 'bool' = False, engine_cache_dir: 'str' = '/tmp/torch_tensorrt_engine_cache', engine_cache_size: 'int' = 5368709120, custom_engine_cache: 'Optional[BaseEngineCache]' = None, use_fp32_acc: 'bool' = False, refit_identical_engine_weights: 'bool' = False, strip_engine_weights: 'bool' = False, immutable_weights: 'bool' = True, enable_weight_streaming: 'bool' = False, tiling_optimization_level: 'str' = 'none', l2_limit_for_tiling: 'int' = -1, offload_module_to_cpu: 'bool' = False, use_distributed_mode_trace: 'bool' = False, enable_autocast: 'bool' = False, autocast_low_precision_type: 'Optional[Union[torch.dtype, dtype]]' = None, autocast_excluded_nodes: 'Collection[str]' = set(), autocast_excluded_ops: 'Collection[Target]' = set(), autocast_max_output_threshold: 'float' = 512, autocast_max_depth_of_reduction: 'Optional[int]' = None, autocast_calibration_dataloader: 'Optional[torch.utils.data.DataLoader]' = None, cpu_memory_budget: 'Optional[int]' = None, enable_resource_partitioning: 'bool' = False, dynamically_allocate_resources: 'bool' = False, decompose_attention: 'bool' = False, attn_bias_is_causal: 'bool' = True, **kwargs: 'Any') -> 'torch.fx.GraphModule'"
+  },
+  "completed_at_unix": 1784400250,
+  "container_image": "nvcr.io/nvidia/pytorch:26.06-py3",
+  "created_at_unix": 1784400198,
+  "failure": {
+    "exception_type": "ProbeAbort",
+    "message": "container eager FP32 does not align with the frozen PyTorch FP32 outputs"
+  },
+  "gates": {
+    "all_pytorch_fallback_is_failure": true,
+    "decision_tolerance": {
+      "box_abs_px": 0.5,
+      "label_and_detection_structure_must_match": true,
+      "score_abs": 0.001
+    },
+    "fp16_raw_tolerance": {
+      "atol": 0.01,
+      "rtol": 0.01
+    },
+    "fp32_raw_alignment_required_before_fp16": true,
+    "fp32_raw_tolerance": {
+      "atol": 1e-07,
+      "rtol": 1e-06
+    }
+  },
+  "inputs": {
+    "baseline_manifest_path": "results/acceptance/SF1/trt-gdino-20260718-v10-dynamo-static/baseline_manifest.json",
+    "baseline_manifest_sha256": "b29fa5fd05d667104f476d00f8623e3002d7af31526c3bb9f13faed92269cae8",
+    "baseline_outputs_path": "results/acceptance/SF1/trt-gdino-20260718-v10-dynamo-static/torch_outputs.npz",
+    "baseline_outputs_sha256": "bb0495e9b321847e50d57116a2d569107e0be7fd0af97a0f8ddbb57027dcad13",
+    "batch_size": 2,
+    "dtypes": {
+      "attention_mask": "int64",
+      "input_ids": "int64",
+      "pixel_mask": "int64",
+      "pixel_values": "float32",
+      "token_type_ids": "int64"
+    },
+    "path": "results/acceptance/SF1/trt-gdino-20260718-v10-dynamo-static/sample_inputs.npz",
+    "postprocess_thresholds": {
+      "box": 0.22,
+      "text": 0.25
+    },
+    "prompt": "luggage. mini fridge. water bottle. desk.",
+    "sha256": "5410738ad8134275a762a178d27012c16ad281544d0d1c32f3524baf2c85bcf1",
+    "shapes": {
+      "attention_mask": [
+        2,
+        12
+      ],
+      "input_ids": [
+        2,
+        12
+      ],
+      "pixel_mask": [
+        2,
+        1333,
+        750
+      ],
+      "pixel_values": [
+        2,
+        3,
+        1333,
+        750
+      ],
+      "token_type_ids": [
+        2,
+        12
+      ]
+    },
+    "target_sizes": [
+      [
+        1920,
+        1080
+      ],
+      [
+        1920,
+        1080
+      ]
+    ]
+  },
+  "modes": {
+    "eager_fp32": {
+      "mean_ms": 656.9925109863282,
+      "p50_ms": 656.9501342773438,
+      "p95_ms": 660.1419708251954,
+      "peak_memory_bytes": 3718139904,
+      "raw_diff_vs_frozen_fp32": {
+        "logits": {
+          "allclose": false,
+          "atol": 1e-07,
+          "bit_exact": false,
+          "candidate_all_finite": false,
+          "jointly_finite_count": 21600,
+          "max_abs_on_jointly_finite": 4.1670684814453125,
+          "mean_abs_on_jointly_finite": 0.06836649775505066,
+          "nonfinite_pattern_equal": true,
+          "reference_all_finite": false,
+          "rtol": 1e-06,
+          "shape_equal": true,
+          "strict_equivalent": false
+        },
+        "pred_boxes": {
+          "allclose": false,
+          "atol": 1e-07,
+          "bit_exact": false,
+          "candidate_all_finite": true,
+          "jointly_finite_count": 7200,
+          "max_abs_on_jointly_finite": 0.9841400384902954,
+          "mean_abs_on_jointly_finite": 0.01713809370994568,
+          "nonfinite_pattern_equal": true,
+          "reference_all_finite": true,
+          "rtol": 1e-06,
+          "shape_equal": true,
+          "strict_equivalent": false
+        },
+        "strict_equivalent": false
+      },
+      "runs": 50,
+      "samples_ms": [
+        656.0845336914062,
+        657.258056640625,
+        656.2138061523438,
+        656.2290649414062,
+        653.2811279296875,
+        656.0386352539062,
+        653.9881591796875,
+        656.164794921875,
+        656.7866821289062,
+        658.514892578125,
+        652.9219360351562,
+        658.1417236328125,
+        658.4606323242188,
+        654.358154296875,
+        658.74951171875,
+        656.94287109375,
+        656.3042602539062,
+        660.0925903320312,
+        655.6082763671875,
+        655.9700317382812,
+        657.6559448242188,
+        654.6920776367188,
+        657.5628051757812,
+        657.2456665039062,
+        659.1575927734375,
+        657.4095458984375,
+        656.5946655273438,
+        653.7877197265625,
+        655.6185302734375,
+        656.1722412109375,
+        657.267333984375,
+        657.030517578125,
+        654.4979858398438,
+        662.9036254882812,
+        657.1826171875,
+        657.6900024414062,
+        659.0762329101562,
+        656.154296875,
+        658.1749877929688,
+        658.3579711914062,
+        656.82568359375,
+        659.2952880859375,
+        660.182373046875,
+        660.2247924804688,
+        655.9450073242188,
+        656.6550903320312,
+        658.194580078125,
+        655.0967407226562,
+        656.9573974609375,
+        657.906494140625
+      ],
+      "throughput_images_per_second": 3.044174730389917,
+      "warmup": 10
+    }
+  },
+  "platform": {
+    "cuda": "13.3",
+    "gpu": "NVIDIA GB10",
+    "machine": "aarch64",
+    "python": "3.12.3",
+    "tensorrt": "11.0.0.114",
+    "tf32_disabled_in_torch_and_tensorrt": true,
+    "torch": "2.13.0a0+8145d630e8.nv26.06",
+    "torch_tensorrt": "2.13.0a0",
+    "transformers": "5.13.1"
+  },
+  "process_peak_rss_bytes": 2970529792,
+  "saved_outputs": {
+    "keys": [
+      "eager_fp32_logits",
+      "eager_fp32_pred_boxes"
+    ],
+    "path": "results/acceptance/SF1/torch-tensorrt-hybrid-20260718-v1/probe.outputs.npz",
+    "sha256": "5d805f23c77be3c5ddd32bfcbcefcf1c6e006959f8aa9bf35608d46502fa3421"
+  },
+  "schema_version": "1.0",
+  "scope": "SF1_L2_TORCH_TENSORRT_HYBRID_FEASIBILITY_ONLY",
+  "status": "NO_GO",
+  "verdict": "NO_GO_CONTAINER_EAGER_FP32_BASELINE_MISMATCH"
+}

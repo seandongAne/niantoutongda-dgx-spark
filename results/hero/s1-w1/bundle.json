@@ -1,0 +1,155 @@
+{
+  "schema_version": "1.0",
+  "bundle_id": "s1-w1",
+  "created_at": "2026-07-17T19:09:27+00:00",
+  "config_refs": {
+    "hero_pipeline_s1.yaml": "1833f7de13f5327f5a3aa82f786da77bf70105dc390a87bc84c3b96e9591ee16"
+  },
+  "artifacts": [
+    {
+      "schema_version": "1.0",
+      "stage": "pull",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero_s1/reid/clarifications.jsonl",
+      "sha256": "234615fc1852c2b275d88d2f96f39f226cfc2dad502119ee67f9a425d82a88e0"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "pull",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero_s1/reid/entities.jsonl",
+      "sha256": "84da7abb86821a5574dc9d29b9901a1ce0aafdae53e6f6a90a24e0e4cc0d10bc"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "pull",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero_s1/reid/metrics.json",
+      "sha256": "6c46429fd495fdaddd0f818d1b9917720b1a23616d59e8ad2e79ac726666a4fe"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "pull",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/s5/attributes_hero_s1.jsonl",
+      "sha256": "80362edbc33326fd009de0b5b202bf4e5b58ac2c7e40ff83a6f2a529a4d23338"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "naming",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/naming/display.jsonl",
+      "sha256": "6b410915e2d83b677f060a729c9a680f71d4bfde0acebcc44b11e5a09c66b263"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "naming",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/naming/trace.jsonl",
+      "sha256": "eaa006c4916d4afbf5604b3a5a72acb7ec59c6a82c8f4fa94af86befad3d7930"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "narration",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/narration/narration.jsonl",
+      "sha256": "d6ecdc652063d01b5dca4641defe319ef2b303c703728f4013635f2f465bd005"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "regions",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/regions/regions.json",
+      "sha256": "b1699ba93850a3b9c1335babedb6482013903bb310fea4a55151237735e05907"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "regions",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/regions/regions_core.jsonl",
+      "sha256": "44c5f36d53401ab886c66126771e3b0fa0ea8e86208110e59385f6c176d328f2"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "group",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/group/clarifications.jsonl",
+      "sha256": "8c5301f6df5cc417cf608081110bcd614486940c223b5b7fb007714227eb5888"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "group",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/group/conflicts.json",
+      "sha256": "5f06204a73174bd1db4bc97c9c88b93e155d02fa67be753fcbff62f6263f6945"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "group",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/group/groups.jsonl",
+      "sha256": "41b8865cd2aac14a0b7b44a2d8961dc6f70b85430319dacbba091755235b58a0"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "group",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/group/life_groups.jsonl",
+      "sha256": "a15166f5dac0cb52b764e9b6dc62a84c2a88159ec8a1309b17e1c8af4cd215d0"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "group",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/group/resolutions.jsonl",
+      "sha256": "1d9b3640ab34b273139ec0f9eeeb3cfad4bcafacfd4cdeb8bbbecc7f0d116cae"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "group",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/group/trace.jsonl",
+      "sha256": "926f83df43c1c807afa442caa0f32a6ac9bb5d8594236bd4216ee5f016229753"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "layout",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/layout/layout.json",
+      "sha256": "fca40fcf82d8ad63d9de1d3c40af97ba2e2216f12805e9d6369ef34a393483b9"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "layout",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/layout/plan.json",
+      "sha256": "5e1f14c90b450f9b685067eaa1a4a1a0d4df82ee3379130f1366026f6f522745"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "layout",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/layout/trace.jsonl",
+      "sha256": "239e3310d93a759e61fe8aa3353121087f433d6c81309e57c8a19a610aa6662a"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "taskcards",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/taskcards/taskcards.jsonl",
+      "sha256": "689e8d034646d626b175e419ebcf1e30cc8ce153d339e962cf4a145d491096be"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "taskcards",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/taskcards/taskcards.md",
+      "sha256": "51b47bbe965662a03568952d0ab1c98881c5d55f0f653042f5d00a9b70f1d08f"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "taskcards",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/taskcards/trace.jsonl",
+      "sha256": "855a27e9b0800c5f5c5f9ddd5efff95cbced04aefbc5c5cbdb7383dc11704f5b"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "trace",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/audit/events.jsonl",
+      "sha256": "4a5408df835dc52c8caf4b69d7d4c603a7c0bf27e45c4388555fc5c3ad3a928f"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "trace",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/audit/replay-report.json",
+      "sha256": "7bdd3deab3d8dc19b4b7beb02ce1c857262385a4b927ecfe77f55f22922747cd"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "report",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/index.html",
+      "sha256": "860bb2669c603b1bf81ca712d47a7e856f4a575b59433abad4422fcc61a3acd4"
+    }
+  ],
+  "notes": ""
+}

@@ -1,0 +1,20 @@
+{
+  "cmd": ".venv/bin/python /Users/seandong/Documents/DGX Spark Thing/scripts/layout_task.py --groups /Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/group/groups.jsonl --regions /Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/regions/regions.json --out-dir /Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/layout --trace-id hero-dev-v1 --trace-parent /Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/group/trace.jsonl --trace-out /Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/layout/trace.jsonl",
+  "code": {
+    "/Users/seandong/Documents/DGX Spark Thing/scripts/layout_task.py": "b1b2df7b221784251308d79c6ea6f2d83adefd4ae25061414664e6e99b03a7d2"
+  },
+  "finished_at": "2026-07-16T18:17:33+00:00",
+  "inputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/group/groups.jsonl": "7e06116f9a91d87d4a422f47bc2d4d79f282c4e24545e316fa55defe86ee682b",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/group/trace.jsonl": "43c0099a657efebe8d3e7419b8e744ba51fdd054be3f49bc5fb91a94c2c57a22",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/regions/regions.json": "6d64511103681896eee5b8176571b1111ca6a83dfefea9b06de191c654559330"
+  },
+  "outputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/layout/layout.json": "4d3f25fb4dcd704da4e9131ece106fcb6a5b29fba53b521a15d52da2dc1ac274",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/layout/plan.json": "cd39e270da824999d3d1aba40f323324f28469bfc7bf12b6c1bb66cf8acc533b",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/layout/trace.jsonl": "f0335175a750508e6fd1d59c6fc09e1964c04b16595dd85820a7eda443843eec"
+  },
+  "stage": "layout",
+  "started_at": "2026-07-16T18:17:32+00:00",
+  "status": "done"
+}

@@ -1,0 +1,9 @@
+{
+  "completion_tokens": 2948,
+  "items": 3,
+  "model": "step-3.5-flash",
+  "note": "云端候选,未判卷;入词表前必须过 word_candidate_scan + rank 本地裁决",
+  "phrases": 18,
+  "prompt_tokens": 374,
+  "temperature": 0.7
+}

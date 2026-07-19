@@ -1,0 +1,16 @@
+{
+  "algorithm": "sha256",
+  "inputs": {
+    "anchor_descriptions": "e6127f0d9bf6ad7e81268531c88fb5a4cfe656cd0993fa5dc4cdc220e9050e23",
+    "auto_observations.jsonl": "f1c8eb81f72e3472a7b2d44bbe69d9c76ab4bb0a5d0727ce3a2c7f843fcb6842",
+    "classification_views": "08e53d36bb52807ffb7f3250f8e939c049518b37bdd2d25c49e9df1f2b78bddf",
+    "expected_anchors": "bdc31720794b348c33c481f98cbc96e4209f0467efd1331fe41ec792765f0216",
+    "tracklets.jsonl": "26f9b5a18b60899fd7fd404c038939b7d68154d4099b1af7557624f8309d147d"
+  },
+  "normalized_hash": "0ced8a84133c0862682dcea0dcd2905434dbf68d1241209a13ce16e6959518e2",
+  "outputs": {
+    "anchor_candidates.json": "78427a7d271a377688d8f5184bfea240badc8d70b32b4b8b8ed2db84a9b969ed",
+    "metrics.json": "d56864ccbf78e46559c83ab3387d4e3be36ab8627e6463ed0695ebbf292d3212"
+  },
+  "schema_version": "1.0"
+}

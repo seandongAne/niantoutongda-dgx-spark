@@ -1,0 +1,12 @@
+{
+  "cmd": "",
+  "code": {},
+  "finished_at": "2026-07-16T18:17:33+00:00",
+  "inputs": {},
+  "outputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/bundle.json": "d7bd8bb349f5057993ebf1fb069a8ebc30df3ae684b5a40d2f8df0e14d416334"
+  },
+  "stage": "bundle",
+  "started_at": "2026-07-16T18:17:33+00:00",
+  "status": "done"
+}

@@ -1,0 +1,3 @@
+{"schema_version":"1.0","group_id":"g01","entity_ids":["e_book","e_headphones"],"relation_edges":[],"source":"user","evidence_refs":["narration:e_book:绘本,妹妹的,现在在床上,搬过去放书桌,和耳机一组。","narration:e_headphones:耳机,现在在书包里,搬过去放书桌,和绘本一组。"]}
+{"schema_version":"1.0","group_id":"g02","entity_ids":["e_box","e_kettle_pink"],"relation_edges":[],"source":"user","evidence_refs":["narration:e_box:收纳盒,现在在角落,搬过去放柜子,和粉色水壶一组。","narration:e_kettle_pink:粉色水壶,姐姐的,现在在窗台,搬过去放柜子,和收纳盒一组。"]}
+{"schema_version":"1.0","group_id":"g03","entity_ids":["e_kettle_blue","e_lamp"],"relation_edges":[],"source":"user","evidence_refs":["narration:e_kettle_blue:蓝色水壶,妹妹的,现在在书桌上,搬过去放床头,和台灯一组。","narration:e_lamp:台灯,现在在床头柜,搬过去放床头,和蓝色水壶一组。"]}

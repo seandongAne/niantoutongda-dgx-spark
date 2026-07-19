@@ -1,0 +1,39 @@
+{
+  "card-01": {
+    "adjudication": null,
+    "photo_refs": [
+      "fixtures/hero_dev/acceptance/desk_after.ppm"
+    ],
+    "reason_codes": [],
+    "status_after": "VERIFIED",
+    "verdict": "VERIFIED"
+  },
+  "card-02": {
+    "adjudication": {
+      "decision": "reject_redo",
+      "note": "粉色水壶缺失，重新寻找后再验收"
+    },
+    "photo_refs": [
+      "fixtures/hero_dev/acceptance/closet_after.ppm"
+    ],
+    "reason_codes": [
+      "NOT_SEEN:e_kettle_pink"
+    ],
+    "status_after": "REGION_PLANNED",
+    "verdict": "FAILED"
+  },
+  "card-03": {
+    "adjudication": {
+      "decision": "accept_override",
+      "note": "用户确认低置信匹配确为蓝色水壶"
+    },
+    "photo_refs": [
+      "fixtures/hero_dev/acceptance/bedside_after.ppm"
+    ],
+    "reason_codes": [
+      "LOW_CONFIDENCE:e_kettle_blue"
+    ],
+    "status_after": "USER_OVERRIDDEN",
+    "verdict": "NEEDS_USER"
+  }
+}

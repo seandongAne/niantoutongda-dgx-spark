@@ -1,0 +1,16 @@
+{
+  "cmd": ".venv/bin/python /Users/seandong/Documents/DGX Spark Thing/scripts/narration_task.py --transcript /Users/seandong/Documents/DGX Spark Thing/fixtures/hero_dev/transcript.txt --out /Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/narration/narration.jsonl --audio-ref fixtures/hero_dev/narration.m4a",
+  "code": {
+    "/Users/seandong/Documents/DGX Spark Thing/scripts/narration_task.py": "e964c75fa7e42694bf29def0f179198fcb6ca358b1b588c53de4dc7e2a029918"
+  },
+  "finished_at": "2026-07-16T18:17:32+00:00",
+  "inputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/fixtures/hero_dev/transcript.txt": "e888d1bdf05ee2d4855a034d21f7908b15d4aa55a16f74b1dc0e8fb38bd4f881"
+  },
+  "outputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/narration/narration.jsonl": "b6379a84933ed8acef04350edb441ff823f73828eb8485856884ffd92db3da1f"
+  },
+  "stage": "narration",
+  "started_at": "2026-07-16T18:17:32+00:00",
+  "status": "done"
+}

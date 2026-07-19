@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "plan_id": "plan-hero-v1",
+  "assignments": [
+    {
+      "schema_version": "1.0",
+      "group_id": "g01",
+      "region_id": "chest_top",
+      "score_breakdown": {
+        "narration_hint": 0
+      },
+      "alternative_region_id": "sofa_bench"
+    },
+    {
+      "schema_version": "1.0",
+      "group_id": "g02",
+      "region_id": "chest_top",
+      "score_breakdown": {
+        "narration_hint": 0
+      },
+      "alternative_region_id": "sofa_bench"
+    }
+  ],
+  "hard_constraints": [
+    "支撑类型兼容",
+    "区域容量",
+    "电源证据",
+    "同放/互斥/禁放"
+  ],
+  "soft_scores": {
+    "objective": 0
+  },
+  "solver_status": "PLAN_READY",
+  "conflicts": []
+}

@@ -1,0 +1,45 @@
+{
+  "clarifications": {
+    "closed": 1,
+    "open": 0,
+    "requests": 1
+  },
+  "correlation_count": 5,
+  "main_chain": {
+    "actions": [
+      "ENTITIES_READY",
+      "GROUPS_READY",
+      "PLACEMENT_READY",
+      "TASKS_READY"
+    ],
+    "complete": 1,
+    "correlation_ids": [
+      "hero-dev-v1"
+    ]
+  },
+  "message_count": 20,
+  "message_types": {
+    "AgentHandoff": 4,
+    "ClarificationDecision": 1,
+    "ClarificationRequest": 1,
+    "ObjectPresenceCheckResult": 3,
+    "PlacementComplianceResult": 3,
+    "UserAdjudication": 2,
+    "VerificationCheckRequest": 3,
+    "VerificationVerdict": 3
+  },
+  "producer_counts": {
+    "EXEC": 7,
+    "GROUP": 1,
+    "MEM": 5,
+    "SPACE": 4,
+    "USER": 3
+  },
+  "status": "PASS",
+  "verification": {
+    "adjudication_closed": 2,
+    "adjudication_required": 2,
+    "closed": 3,
+    "requests": 3
+  }
+}

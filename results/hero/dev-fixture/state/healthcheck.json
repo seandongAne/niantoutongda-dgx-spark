@@ -1,0 +1,10 @@
+{
+  "cmd": "/Users/seandong/Documents/DGX Spark Thing/scripts/spark_healthcheck.sh",
+  "code": {},
+  "finished_at": "2026-07-18T09:21:05+00:00",
+  "inputs": {},
+  "outputs": {},
+  "stage": "healthcheck",
+  "started_at": "2026-07-18T09:21:02+00:00",
+  "status": "done"
+}

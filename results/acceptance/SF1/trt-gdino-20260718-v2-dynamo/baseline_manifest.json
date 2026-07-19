@@ -1,0 +1,124 @@
+{
+  "batch_size": 2,
+  "code_commit": "e70e87bf",
+  "created_at_unix": 1784368722,
+  "images": [
+    "/home/Developer/proj/local-data/ingest_a_v6/v1/keyframes/kf_000165.jpg",
+    "/home/Developer/proj/local-data/ingest_a_v6/v4/keyframes/kf_000165.jpg"
+  ],
+  "inputs": {
+    "attention_mask": {
+      "dtype": "torch.int64",
+      "shape": [
+        2,
+        12
+      ]
+    },
+    "input_ids": {
+      "dtype": "torch.int64",
+      "shape": [
+        2,
+        12
+      ]
+    },
+    "pixel_mask": {
+      "dtype": "torch.int64",
+      "shape": [
+        2,
+        1333,
+        750
+      ]
+    },
+    "pixel_values": {
+      "dtype": "torch.float32",
+      "shape": [
+        2,
+        3,
+        1333,
+        750
+      ]
+    },
+    "token_type_ids": {
+      "dtype": "torch.int64",
+      "shape": [
+        2,
+        12
+      ]
+    }
+  },
+  "model_dir": "/home/Developer/models/IDEA-Research__grounding-dino-base",
+  "outputs": {
+    "logits": [
+      2,
+      900,
+      256
+    ],
+    "pred_boxes": [
+      2,
+      900,
+      4
+    ]
+  },
+  "platform": {
+    "cuda": "13.0",
+    "gpu": "NVIDIA GB10",
+    "machine": "aarch64",
+    "python": "3.12.3",
+    "torch": "2.13.0+cu130"
+  },
+  "prompt": "luggage. mini fridge. water bottle. desk.",
+  "pytorch_core": {
+    "mean_ms": 684.4618530273438,
+    "p50_ms": 685.0541381835938,
+    "p95_ms": 688.7661926269532,
+    "peak_memory_bytes": 3716445184,
+    "process_peak_rss_bytes": 2189455360,
+    "runs": 30,
+    "samples_ms": [
+      688.7062377929688,
+      680.3936767578125,
+      686.264404296875,
+      683.1773681640625,
+      681.4793090820312,
+      686.3751831054688,
+      679.2428588867188,
+      685.6683349609375,
+      679.8173828125,
+      685.0174560546875,
+      683.40234375,
+      687.1260986328125,
+      686.49658203125,
+      686.1456909179688,
+      684.6546630859375,
+      689.7830200195312,
+      685.0908203125,
+      685.6846313476562,
+      682.78662109375,
+      683.9229736328125,
+      682.3480834960938,
+      688.8152465820312,
+      685.4923095703125,
+      683.4404296875,
+      679.6807250976562,
+      685.28662109375,
+      685.5454711914062,
+      681.1468505859375,
+      683.965576171875,
+      686.8986206054688
+    ],
+    "throughput_images_per_second": 2.922003602032883,
+    "warmup": 5
+  },
+  "schema_version": "1.0",
+  "scope": "SF1-L2_TENSORRT_FEASIBILITY_ONLY",
+  "target_sizes": [
+    [
+      1920,
+      1080
+    ],
+    [
+      1920,
+      1080
+    ]
+  ]
+}

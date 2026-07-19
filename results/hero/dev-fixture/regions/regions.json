@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "video_id": "new_1",
+  "entries": [
+    {
+      "schema_version": "1.0",
+      "region_id": "bedside",
+      "anchor": "bed",
+      "display_name_zh": "床头柜面",
+      "support_type": "surface",
+      "capacity_class": "small",
+      "near_power": true,
+      "evidence_refs": [
+        "new_1.mp4@00:12"
+      ]
+    },
+    {
+      "schema_version": "1.0",
+      "region_id": "desk_top",
+      "anchor": "desk",
+      "display_name_zh": "书桌面",
+      "support_type": "surface",
+      "capacity_class": "medium",
+      "near_power": true,
+      "evidence_refs": [
+        "new_1.mp4@00:41"
+      ]
+    },
+    {
+      "schema_version": "1.0",
+      "region_id": "closet_shelf",
+      "anchor": "closet",
+      "display_name_zh": "柜子隔层",
+      "support_type": "shelf",
+      "capacity_class": "medium",
+      "near_power": false,
+      "evidence_refs": [
+        "new_1.mp4@01:05"
+      ]
+    }
+  ],
+  "notes": "合成夹具:三个候选区域,对应睡前/学习/收纳三组合"
+}

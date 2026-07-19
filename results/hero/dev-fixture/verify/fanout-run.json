@@ -1,0 +1,29 @@
+{
+  "cancelled_after_failure": null,
+  "completed_at": "2026-07-18T09:21:11.083+00:00",
+  "mode": "parallel-subprocess-fanout",
+  "overlap_ms": 92.055,
+  "roles": {
+    "MEM": {
+      "completed_at": "2026-07-18T09:21:11.063+00:00",
+      "duration_ms": 92.816,
+      "pid": 1216003,
+      "returncode": 0,
+      "started_at": "2026-07-18T09:21:10.971+00:00",
+      "stderr": "",
+      "stdout": "{\"requests\": 3, \"results\": 3, \"role\": \"MEM\"}"
+    },
+    "SPACE": {
+      "completed_at": "2026-07-18T09:21:11.083+00:00",
+      "duration_ms": 112.164,
+      "pid": 1216004,
+      "returncode": 0,
+      "started_at": "2026-07-18T09:21:10.972+00:00",
+      "stderr": "",
+      "stdout": "{\"requests\": 3, \"results\": 3, \"role\": \"SPACE\"}"
+    }
+  },
+  "schema_version": "1.0",
+  "started_at": "2026-07-18T09:21:10.970+00:00",
+  "timeout_seconds": 30.0
+}

@@ -1,0 +1,149 @@
+{
+  "schema_version": "1.0",
+  "bundle_id": "dev-fixture",
+  "created_at": "2026-07-16T18:17:33+00:00",
+  "config_refs": {
+    "hero_pipeline_dev.yaml": "9231eb5bd266821b2db6d4d44380df44b5ce150bfb05820c133a0b91c4119613"
+  },
+  "artifacts": [
+    {
+      "schema_version": "1.0",
+      "stage": "naming",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/naming/display.jsonl",
+      "sha256": "2a47f12339fea31532ba7390364844e2eabefa9c67a3b4acb8b3fa3e1630d28c"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "naming",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/naming/trace.jsonl",
+      "sha256": "2c4524515482652ad8d56d3bb1663270ecef0daa1046857dd0851ba0b1050956"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "narration",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/narration/narration.jsonl",
+      "sha256": "b6379a84933ed8acef04350edb441ff823f73828eb8485856884ffd92db3da1f"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "regions",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/regions/regions.json",
+      "sha256": "6d64511103681896eee5b8176571b1111ca6a83dfefea9b06de191c654559330"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "regions",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/regions/regions_core.jsonl",
+      "sha256": "e37529512d04187920aaf1b6f298f89d95529b1f66e193ba245b53d7dec7d761"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "group",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/group/clarifications.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "group",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/group/conflicts.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "group",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/group/groups.jsonl",
+      "sha256": "7e06116f9a91d87d4a422f47bc2d4d79f282c4e24545e316fa55defe86ee682b"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "group",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/group/life_groups.jsonl",
+      "sha256": "65a791757d2a7e1c5d7b57aab3f3d1043ad3799ecff8d14ca39a8b0d616264b1"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "group",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/group/resolutions.jsonl",
+      "sha256": "fb905fb13d34f41937b55171c8b5e97c7d0668f7d468e4979574efb55e665986"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "group",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/group/trace.jsonl",
+      "sha256": "43c0099a657efebe8d3e7419b8e744ba51fdd054be3f49bc5fb91a94c2c57a22"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "layout",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/layout/layout.json",
+      "sha256": "4d3f25fb4dcd704da4e9131ece106fcb6a5b29fba53b521a15d52da2dc1ac274"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "layout",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/layout/plan.json",
+      "sha256": "cd39e270da824999d3d1aba40f323324f28469bfc7bf12b6c1bb66cf8acc533b"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "layout",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/layout/trace.jsonl",
+      "sha256": "f0335175a750508e6fd1d59c6fc09e1964c04b16595dd85820a7eda443843eec"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "taskcards",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/taskcards/taskcards.jsonl",
+      "sha256": "1fa39aa6952ccac67e57f31a0a6993359e0df11ecb69afb320dc761b948e3fb2"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "taskcards",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/taskcards/taskcards.md",
+      "sha256": "d0ab56dca5af496283d4673788b9b0979697c8529f2ec34d7e2bbd35d40aed79"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "taskcards",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/taskcards/trace.jsonl",
+      "sha256": "cfe6ecc30f483f26d4ccdc8b7f349cc00cb1eaed305b410fbe5fbcb7265a6426"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "verify",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/verify/messages.jsonl",
+      "sha256": "42aa595604aae025fe952455aeaf3a8899b55598ab46abc79ca67df17114d638"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "verify",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/verify/taskcards_verified.jsonl",
+      "sha256": "785691d772b3f14ff15fc511f01dabcbeb03716a2b0a8849a5dc2e7dd84dc3e0"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "verify",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/verify/verdicts.json",
+      "sha256": "d6d532cb0b0999fa9856ce3fe167cb6033cbcd1f81e27157a2d6e9e4a9ed403c"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "trace",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/audit/events.jsonl",
+      "sha256": "41b78350fdb258f5c7284b27a74672ff5464d85721501eb360f06c68b7f6134a"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "trace",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/audit/replay-report.json",
+      "sha256": "c2c256a593bcb8899bbe3596b0c9c343593e7b5e96d14ed8b501d1f61cf12365"
+    },
+    {
+      "schema_version": "1.0",
+      "stage": "report",
+      "path": "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/index.html",
+      "sha256": "6adab0a0292c18fa360d7e171f168827b693479db40e87f33898fec291760fda"
+    }
+  ],
+  "notes": ""
+}

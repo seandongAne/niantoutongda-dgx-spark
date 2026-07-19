@@ -1,0 +1,583 @@
+{
+  "box_threshold": 0.35,
+  "candidates": {
+    "biscuits/c0": {
+      "detections": 32,
+      "phrase": "pink sealed biscuit bag",
+      "seconds": 11.3
+    },
+    "biscuits/c1": {
+      "detections": 31,
+      "phrase": "transparent plastic cookie bag",
+      "seconds": 10.5
+    },
+    "biscuits/c2": {
+      "detections": 13,
+      "phrase": "sweet snack biscuit",
+      "seconds": 10.6
+    },
+    "biscuits/c3": {
+      "detections": 9,
+      "phrase": "packaged butter biscuit",
+      "seconds": 10.6
+    },
+    "biscuits/c4": {
+      "detections": 41,
+      "phrase": "pink round biscuit",
+      "seconds": 10.5
+    },
+    "biscuits/c5": {
+      "detections": 49,
+      "phrase": "clear food pouch",
+      "seconds": 10.6
+    },
+    "book/c0": {
+      "detections": 39,
+      "phrase": "pink white cover book",
+      "seconds": 10.5
+    },
+    "book/c1": {
+      "detections": 43,
+      "phrase": "mushroom illustration book",
+      "seconds": 10.4
+    },
+    "book/c2": {
+      "detections": 48,
+      "phrase": "paperback story book",
+      "seconds": 10.5
+    },
+    "book/c3": {
+      "detections": 61,
+      "phrase": "children picture book",
+      "seconds": 10.6
+    },
+    "book/c4": {
+      "detections": 35,
+      "phrase": "gold medal sticker book",
+      "seconds": 10.5
+    },
+    "book/c5": {
+      "detections": 96,
+      "phrase": "colorful cover book",
+      "seconds": 10.6
+    },
+    "coffee_jar/c0": {
+      "detections": 29,
+      "phrase": "clear glass coffee jar",
+      "seconds": 10.5
+    },
+    "coffee_jar/c1": {
+      "detections": 33,
+      "phrase": "cylinder coffee bean jar",
+      "seconds": 10.5
+    },
+    "coffee_jar/c2": {
+      "detections": 47,
+      "phrase": "transparent coffee storage jar",
+      "seconds": 10.5
+    },
+    "coffee_jar/c3": {
+      "detections": 43,
+      "phrase": "coffee bean container",
+      "seconds": 10.6
+    },
+    "coffee_jar/c4": {
+      "detections": 34,
+      "phrase": "clear cylinder jar",
+      "seconds": 10.5
+    },
+    "coffee_jar/c5": {
+      "detections": 28,
+      "phrase": "dark coffee bean jar",
+      "seconds": 10.5
+    },
+    "comb/c0": {
+      "detections": 28,
+      "phrase": "beige plastic comb",
+      "seconds": 10.5
+    },
+    "comb/c1": {
+      "detections": 45,
+      "phrase": "translucent hair comb",
+      "seconds": 10.6
+    },
+    "comb/c2": {
+      "detections": 48,
+      "phrase": "detangling hair comb",
+      "seconds": 10.5
+    },
+    "comb/c3": {
+      "detections": 40,
+      "phrase": "beige long comb",
+      "seconds": 10.6
+    },
+    "comb/c4": {
+      "detections": 41,
+      "phrase": "clear plastic comb",
+      "seconds": 10.6
+    },
+    "hair_clip/c0": {
+      "detections": 10,
+      "phrase": "fabric flower hair clip",
+      "seconds": 10.7
+    },
+    "hair_clip/c1": {
+      "detections": 6,
+      "phrase": "decorative hair barrette",
+      "seconds": 10.5
+    },
+    "hair_clip/c2": {
+      "detections": 14,
+      "phrase": "girls hair clip",
+      "seconds": 10.6
+    },
+    "hair_clip/c3": {
+      "detections": 39,
+      "phrase": "cream flower hair accessory",
+      "seconds": 10.6
+    },
+    "hair_clip/c4": {
+      "detections": 27,
+      "phrase": "dark comb teeth clip",
+      "seconds": 10.6
+    },
+    "hand_cream/c0": {
+      "detections": 30,
+      "phrase": "green tube hand cream",
+      "seconds": 10.5
+    },
+    "hand_cream/c1": {
+      "detections": 5,
+      "phrase": "daisy print hand cream",
+      "seconds": 10.7
+    },
+    "hand_cream/c2": {
+      "detections": 31,
+      "phrase": "moisturizing hand cream",
+      "seconds": 10.7
+    },
+    "hand_cream/c3": {
+      "detections": 33,
+      "phrase": "travel hand cream",
+      "seconds": 10.6
+    },
+    "hand_cream/c4": {
+      "detections": 37,
+      "phrase": "green cosmetic tube",
+      "seconds": 10.5
+    },
+    "hand_cream/c5": {
+      "detections": 53,
+      "phrase": "white daisy cream tube",
+      "seconds": 10.6
+    },
+    "hawthorn_sticks/c0": {
+      "detections": 30,
+      "phrase": "white long hawthorn stick",
+      "seconds": 10.5
+    },
+    "hawthorn_sticks/c1": {
+      "detections": 0,
+      "phrase": "independent packaged hawthorn",
+      "seconds": 10.6
+    },
+    "hawthorn_sticks/c2": {
+      "detections": 42,
+      "phrase": "kids fruit snack",
+      "seconds": 10.6
+    },
+    "hawthorn_sticks/c3": {
+      "detections": 34,
+      "phrase": "hawthorn candy stick",
+      "seconds": 10.7
+    },
+    "hawthorn_sticks/c4": {
+      "detections": 35,
+      "phrase": "white small snack bag",
+      "seconds": 10.7
+    },
+    "hawthorn_sticks/c5": {
+      "detections": 53,
+      "phrase": "long thin food stick",
+      "seconds": 10.9
+    },
+    "marker_set/c0": {
+      "detections": 54,
+      "phrase": "translucent plastic marker case",
+      "seconds": 10.7
+    },
+    "marker_set/c1": {
+      "detections": 29,
+      "phrase": "blue cartoon marker set",
+      "seconds": 10.6
+    },
+    "marker_set/c2": {
+      "detections": 77,
+      "phrase": "colored marker storage box",
+      "seconds": 10.6
+    },
+    "marker_set/c3": {
+      "detections": 238,
+      "phrase": "art marker set",
+      "seconds": 11.0
+    },
+    "marker_set/c4": {
+      "detections": 28,
+      "phrase": "white marker organizer",
+      "seconds": 10.5
+    },
+    "marker_set/c5": {
+      "detections": 27,
+      "phrase": "kids drawing marker set",
+      "seconds": 10.7
+    },
+    "mug/c0": {
+      "detections": 30,
+      "phrase": "white ceramic mug",
+      "seconds": 10.6
+    },
+    "mug/c1": {
+      "detections": 38,
+      "phrase": "green flower bird mug",
+      "seconds": 10.6
+    },
+    "mug/c2": {
+      "detections": 40,
+      "phrase": "handled drinking mug",
+      "seconds": 10.6
+    },
+    "mug/c3": {
+      "detections": 34,
+      "phrase": "ceramic coffee cup",
+      "seconds": 10.5
+    },
+    "mug/c4": {
+      "detections": 29,
+      "phrase": "white handle mug",
+      "seconds": 10.6
+    },
+    "mug/c5": {
+      "detections": 42,
+      "phrase": "green pattern mug",
+      "seconds": 10.7
+    },
+    "pen/c0": {
+      "detections": 76,
+      "phrase": "black wooden pencil",
+      "seconds": 10.7
+    },
+    "pen/c1": {
+      "detections": 64,
+      "phrase": "red ballpoint pen",
+      "seconds": 10.7
+    },
+    "pen/c2": {
+      "detections": 36,
+      "phrase": "black writing pencil",
+      "seconds": 10.7
+    },
+    "pen/c3": {
+      "detections": 116,
+      "phrase": "ballpoint pen set",
+      "seconds": 10.8
+    },
+    "pen/c4": {
+      "detections": 36,
+      "phrase": "thin writing tool",
+      "seconds": 10.7
+    },
+    "pen/c5": {
+      "detections": 13,
+      "phrase": "red and black pen",
+      "seconds": 10.7
+    },
+    "pencil_sharpener/c0": {
+      "detections": 28,
+      "phrase": "beige cylinder sharpener",
+      "seconds": 10.6
+    },
+    "pencil_sharpener/c1": {
+      "detections": 28,
+      "phrase": "cartoon pencil sharpener",
+      "seconds": 10.8
+    },
+    "pencil_sharpener/c2": {
+      "detections": 46,
+      "phrase": "manual pencil sharpener",
+      "seconds": 10.8
+    },
+    "pencil_sharpener/c3": {
+      "detections": 11,
+      "phrase": "kids stationery sharpener",
+      "seconds": 10.8
+    },
+    "pencil_sharpener/c4": {
+      "detections": 35,
+      "phrase": "beige plastic sharpener",
+      "seconds": 10.6
+    },
+    "pencil_sharpener/c5": {
+      "detections": 34,
+      "phrase": "white hole top sharpener",
+      "seconds": 10.6
+    },
+    "plush_toy/c0": {
+      "detections": 32,
+      "phrase": "pink white bunny plush",
+      "seconds": 10.6
+    },
+    "plush_toy/c1": {
+      "detections": 28,
+      "phrase": "blue heart glasses plush",
+      "seconds": 10.6
+    },
+    "plush_toy/c2": {
+      "detections": 44,
+      "phrase": "stuffed bunny toy",
+      "seconds": 10.6
+    },
+    "plush_toy/c3": {
+      "detections": 26,
+      "phrase": "plush keychain toy",
+      "seconds": 10.6
+    },
+    "plush_toy/c4": {
+      "detections": 38,
+      "phrase": "pink floppy ear plush",
+      "seconds": 10.5
+    },
+    "plush_toy/c5": {
+      "detections": 53,
+      "phrase": "cartoon glasses plush",
+      "seconds": 10.5
+    },
+    "popping_candy/c0": {
+      "detections": 89,
+      "phrase": "colorful plastic popping candy",
+      "seconds": 10.7
+    },
+    "popping_candy/c1": {
+      "detections": 38,
+      "phrase": "cartoon print candy bag",
+      "seconds": 10.6
+    },
+    "popping_candy/c2": {
+      "detections": 79,
+      "phrase": "kids snack candy",
+      "seconds": 10.6
+    },
+    "popping_candy/c3": {
+      "detections": 45,
+      "phrase": "popping candy packet",
+      "seconds": 10.6
+    },
+    "popping_candy/c4": {
+      "detections": 76,
+      "phrase": "bright candy pouch",
+      "seconds": 10.5
+    },
+    "popping_candy/c5": {
+      "detections": 36,
+      "phrase": "cartoon snack bag",
+      "seconds": 10.6
+    },
+    "rubiks_cube/c0": {
+      "detections": 28,
+      "phrase": "green orange yellow cube",
+      "seconds": 10.5
+    },
+    "rubiks_cube/c1": {
+      "detections": 43,
+      "phrase": "bright color puzzle cube",
+      "seconds": 10.5
+    },
+    "rubiks_cube/c2": {
+      "detections": 72,
+      "phrase": "puzzle cube",
+      "seconds": 10.5
+    },
+    "rubiks_cube/c3": {
+      "detections": 56,
+      "phrase": "solid block toy",
+      "seconds": 10.5
+    },
+    "rubiks_cube/c4": {
+      "detections": 65,
+      "phrase": "bright color cube",
+      "seconds": 10.5
+    },
+    "scissors/c0": {
+      "detections": 28,
+      "phrase": "blue plastic handle scissors",
+      "seconds": 10.5
+    },
+    "scissors/c1": {
+      "detections": 28,
+      "phrase": "silver short blade scissors",
+      "seconds": 10.6
+    },
+    "scissors/c2": {
+      "detections": 28,
+      "phrase": "safety craft scissors",
+      "seconds": 10.5
+    },
+    "scissors/c3": {
+      "detections": 28,
+      "phrase": "kids safety scissors",
+      "seconds": 10.5
+    },
+    "scissors/c4": {
+      "detections": 32,
+      "phrase": "blue cutting tool",
+      "seconds": 10.6
+    },
+    "scissors/c5": {
+      "detections": 28,
+      "phrase": "small silver scissors",
+      "seconds": 10.6
+    },
+    "set_square/c0": {
+      "detections": 42,
+      "phrase": "purple plastic set square",
+      "seconds": 10.6
+    },
+    "set_square/c1": {
+      "detections": 28,
+      "phrase": "translucent right triangle ruler",
+      "seconds": 10.7
+    },
+    "set_square/c2": {
+      "detections": 50,
+      "phrase": "geometry ruler",
+      "seconds": 10.8
+    },
+    "set_square/c3": {
+      "detections": 28,
+      "phrase": "purple triangle ruler",
+      "seconds": 10.6
+    },
+    "set_square/c4": {
+      "detections": 44,
+      "phrase": "translucent measuring ruler",
+      "seconds": 10.7
+    },
+    "set_square/c5": {
+      "detections": 48,
+      "phrase": "purple angle ruler",
+      "seconds": 10.7
+    },
+    "sunscreen_tin/c0": {
+      "detections": 47,
+      "phrase": "pink round sunscreen tin",
+      "seconds": 10.6
+    },
+    "sunscreen_tin/c1": {
+      "detections": 30,
+      "phrase": "cloud print tin container",
+      "seconds": 10.6
+    },
+    "sunscreen_tin/c2": {
+      "detections": 56,
+      "phrase": "pink metal tin box",
+      "seconds": 10.7
+    },
+    "sunscreen_tin/c3": {
+      "detections": 32,
+      "phrase": "sunscreen case",
+      "seconds": 10.7
+    },
+    "sunscreen_tin/c4": {
+      "detections": 37,
+      "phrase": "pink cloud pattern tin",
+      "seconds": 10.6
+    },
+    "sunscreen_tin/c5": {
+      "detections": 54,
+      "phrase": "round flat tin",
+      "seconds": 10.6
+    },
+    "tea_bag/c0": {
+      "detections": 42,
+      "phrase": "red paper tea bag",
+      "seconds": 10.6
+    },
+    "tea_bag/c1": {
+      "detections": 35,
+      "phrase": "golden print tea bag",
+      "seconds": 10.6
+    },
+    "tea_bag/c2": {
+      "detections": 28,
+      "phrase": "packaged black tea",
+      "seconds": 10.7
+    },
+    "tea_bag/c3": {
+      "detections": 31,
+      "phrase": "tea filter bag",
+      "seconds": 10.7
+    },
+    "tea_bag/c4": {
+      "detections": 46,
+      "phrase": "red small tea packet",
+      "seconds": 10.6
+    },
+    "tea_bag/c5": {
+      "detections": 35,
+      "phrase": "golden text tea bag",
+      "seconds": 10.6
+    },
+    "utility_knife/c0": {
+      "detections": 34,
+      "phrase": "silver metal cutting knife",
+      "seconds": 10.6
+    },
+    "utility_knife/c1": {
+      "detections": 28,
+      "phrase": "red craft knife",
+      "seconds": 10.6
+    },
+    "utility_knife/c2": {
+      "detections": 67,
+      "phrase": "wallpaper cutter",
+      "seconds": 10.8
+    },
+    "utility_knife/c3": {
+      "detections": 28,
+      "phrase": "red sharp utility tool",
+      "seconds": 10.5
+    },
+    "utility_knife/c4": {
+      "detections": 57,
+      "phrase": "silver blade cutting tool",
+      "seconds": 10.7
+    },
+    "water_bottle/c0": {
+      "detections": 28,
+      "phrase": "pink insulated water bottle",
+      "seconds": 10.5
+    },
+    "water_bottle/c1": {
+      "detections": 43,
+      "phrase": "teal flip lid bottle",
+      "seconds": 10.6
+    },
+    "water_bottle/c2": {
+      "detections": 66,
+      "phrase": "kids water bottle",
+      "seconds": 10.7
+    },
+    "water_bottle/c3": {
+      "detections": 31,
+      "phrase": "pink pattern tumbler",
+      "seconds": 10.7
+    },
+    "water_bottle/c4": {
+      "detections": 32,
+      "phrase": "unicorn print water bottle",
+      "seconds": 10.7
+    }
+  },
+  "frames": 28,
+  "model": "grounding-dino-base@/home/Developer/models/IDEA-Research__grounding-dino-base",
+  "wall_seconds": 1220.8
+}

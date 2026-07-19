@@ -1,0 +1,19 @@
+{
+  "cmd": ".venv/bin/python /Users/seandong/Documents/DGX Spark Thing/scripts/entity_naming.py --entities /Users/seandong/Documents/DGX Spark Thing/fixtures/hero_dev/entities.jsonl --attributes /Users/seandong/Documents/DGX Spark Thing/fixtures/hero_dev/attributes.jsonl --out /Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/naming/display.jsonl --trace-id hero-dev-v1 --trace-out /Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/naming/trace.jsonl --clarifications /Users/seandong/Documents/DGX Spark Thing/fixtures/hero_dev/clarifications.jsonl",
+  "code": {
+    "/Users/seandong/Documents/DGX Spark Thing/scripts/entity_naming.py": "840f9b3ebc0b0cacf478b3939677346954f3038a2836cb24405e6721f6ce8e74"
+  },
+  "finished_at": "2026-07-16T18:17:32+00:00",
+  "inputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/fixtures/hero_dev/attributes.jsonl": "453bbd46070d6d2915a139f9b03a230d7e2bcaa8b087951629fa5def3499685e",
+    "/Users/seandong/Documents/DGX Spark Thing/fixtures/hero_dev/clarifications.jsonl": "fd12562655162076520e2a1e52fbeabbee64452d08782440e6b7ac0123f30a8f",
+    "/Users/seandong/Documents/DGX Spark Thing/fixtures/hero_dev/entities.jsonl": "2b6aec9e02e951479765fb03bd3de36c2583f094a63f8e3cf889f0150bf01094"
+  },
+  "outputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/naming/display.jsonl": "2a47f12339fea31532ba7390364844e2eabefa9c67a3b4acb8b3fa3e1630d28c",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/dev-fixture/naming/trace.jsonl": "2c4524515482652ad8d56d3bb1663270ecef0daa1046857dd0851ba0b1050956"
+  },
+  "stage": "naming",
+  "started_at": "2026-07-16T18:17:32+00:00",
+  "status": "done"
+}

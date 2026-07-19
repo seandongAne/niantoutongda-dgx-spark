@@ -1,0 +1,20 @@
+{
+  "cmd": ".venv/bin/python /Users/seandong/Documents/DGX Spark Thing/scripts/replay_trace.py --fragments /Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/naming/trace.jsonl /Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/group/trace.jsonl /Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/layout/trace.jsonl /Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/taskcards/trace.jsonl --out /Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/audit/events.jsonl --report /Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/audit/replay-report.json --require-main-chain",
+  "code": {
+    "/Users/seandong/Documents/DGX Spark Thing/scripts/replay_trace.py": "f9dae5a205dd30d68be4507dd79b1394a442c799c2b4473e3b5d2423e97d9e20"
+  },
+  "finished_at": "2026-07-17T19:09:27+00:00",
+  "inputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/group/trace.jsonl": "926f83df43c1c807afa442caa0f32a6ac9bb5d8594236bd4216ee5f016229753",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/layout/trace.jsonl": "239e3310d93a759e61fe8aa3353121087f433d6c81309e57c8a19a610aa6662a",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/naming/trace.jsonl": "eaa006c4916d4afbf5604b3a5a72acb7ec59c6a82c8f4fa94af86befad3d7930",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/taskcards/trace.jsonl": "855a27e9b0800c5f5c5f9ddd5efff95cbced04aefbc5c5cbdb7383dc11704f5b"
+  },
+  "outputs": {
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/audit/events.jsonl": "4a5408df835dc52c8caf4b69d7d4c603a7c0bf27e45c4388555fc5c3ad3a928f",
+    "/Users/seandong/Documents/DGX Spark Thing/results/hero/s1-w1/audit/replay-report.json": "7bdd3deab3d8dc19b4b7beb02ce1c857262385a4b927ecfe77f55f22922747cd"
+  },
+  "stage": "trace",
+  "started_at": "2026-07-17T19:09:27+00:00",
+  "status": "done"
+}

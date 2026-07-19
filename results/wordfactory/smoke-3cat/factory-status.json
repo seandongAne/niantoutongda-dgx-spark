@@ -1,0 +1,15 @@
+{
+  "caps": {
+    "max_phrases": 90
+  },
+  "completed_at": "2026-07-16T10:53:04.376735+00:00",
+  "credential_policy": "stdin_memory_only_treat_as_exposed_revoke_after_job",
+  "phase": "complete",
+  "report_dir": "results/acceptance/WORDS/smoke-3cat",
+  "run_dir": "results/wordfactory/smoke-3cat",
+  "schema_version": "word-spark-factory-v1",
+  "started_at": "2026-07-16T10:47:55.782138+00:00",
+  "state": "complete",
+  "transfer_policy": "code_and_small_reports_only_no_bulk_over_ssh",
+  "updated_at": "2026-07-16T10:53:04.376753+00:00"
+}

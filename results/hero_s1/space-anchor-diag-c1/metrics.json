@@ -1,0 +1,277 @@
+{
+  "automatic_visual_instance_count": 73,
+  "classified_track_count": 7,
+  "classifier_version": "space-anchor-nemotron-v2",
+  "concurrency": 1,
+  "diagnostics": [
+    {
+      "cache_hit": false,
+      "contact_ref": "local-data/hero_s1/space-anchor-evidence-diag-c1/new_1_t001.jpg",
+      "contact_sha256": "eee51e637b40002f733c4775949552b08e3476b1c320f40d788cf91317e7dd23",
+      "prediction": {
+        "anchor_scores": {
+          "chest_of_drawers": 10,
+          "display_cabinet": 5,
+          "other": 5,
+          "study_desk": 90,
+          "vanity": 15,
+          "wall_shelf": 5
+        },
+        "best_anchor": "study_desk",
+        "capacity_class": "medium",
+        "capacity_confidence": 75,
+        "display_name_zh": "学习桌面",
+        "support_confidence": 85,
+        "support_type": "surface"
+      },
+      "source_refs": [
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/keyframes/kf_000870.jpg",
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/evidence/new_1_t001_f001350.jpg",
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/evidence/new_1_t001_f001410.jpg"
+      ],
+      "status": "OK",
+      "track_id": "new_1_t001",
+      "visual_instance_id": "auto_visual_5a487b9a5a39bd37"
+    },
+    {
+      "cache_hit": false,
+      "contact_ref": "local-data/hero_s1/space-anchor-evidence-diag-c1/new_1_t003.jpg",
+      "contact_sha256": "e62bdd984e0835da6025994c2f6c77cf05f6e5ea4513ed0afe4049e850856bef",
+      "prediction": {
+        "anchor_scores": {
+          "chest_of_drawers": 85,
+          "display_cabinet": 10,
+          "other": 0,
+          "study_desk": 5,
+          "vanity": 5,
+          "wall_shelf": 0
+        },
+        "best_anchor": "chest_of_drawers",
+        "capacity_class": "medium",
+        "capacity_confidence": 85,
+        "display_name_zh": "衣柜",
+        "support_confidence": 95,
+        "support_type": "surface"
+      },
+      "source_refs": [
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/keyframes/kf_000000.jpg",
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/evidence/new_1_t003_f000030.jpg",
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/evidence/new_1_t003_f000000.jpg"
+      ],
+      "status": "OK",
+      "track_id": "new_1_t003",
+      "visual_instance_id": "auto_visual_7ce8ad65475e3a91"
+    },
+    {
+      "cache_hit": false,
+      "contact_ref": "local-data/hero_s1/space-anchor-evidence-diag-c1/new_1_t005.jpg",
+      "contact_sha256": "bed84baddcb81a9db11ffc6d0263d9a48aa9357e3806e1699f0ea9b494c7741f",
+      "prediction": {
+        "anchor_scores": {
+          "chest_of_drawers": 85,
+          "display_cabinet": 10,
+          "other": 0,
+          "study_desk": 5,
+          "vanity": 0,
+          "wall_shelf": 0
+        },
+        "best_anchor": "chest_of_drawers",
+        "capacity_class": "medium",
+        "capacity_confidence": 80,
+        "display_name_zh": "斗柜台面",
+        "support_confidence": 90,
+        "support_type": "surface"
+      },
+      "source_refs": [
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/keyframes/kf_000000.jpg",
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/evidence/new_1_t005_f000150.jpg",
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/evidence/new_1_t005_f000090.jpg"
+      ],
+      "status": "OK",
+      "track_id": "new_1_t005",
+      "visual_instance_id": "auto_visual_5cced6e74bbc4d70"
+    },
+    {
+      "cache_hit": false,
+      "contact_ref": "local-data/hero_s1/space-anchor-evidence-diag-c1/new_1_t006.jpg",
+      "contact_sha256": "c3da5213cbf0274540daee7aceeeae778095007349ad3f2105b43b6cdfeefd6e",
+      "failed_response_excerpt": "```json\n{\n  \"anchor_scores\": {\n    \"chest_of_drawers\": 0,\n    \"display_cabinet\": 0,\n    \"study_desk\": 100,\n    \"vanity\": 0,\n    \"wall_shelf\": 0\n  },\n  \"best_anchor\": \"study_desk\",\n  \"support_type\": {\n    \"confidence\": 95,\n    \"description\": \"surface\"\n  },\n  \"capacity_class\": {\n    \"confidence\": 90,\n    \"description\": \"medium\"\n  },\n  \"chinese_display_name\": \"学习桌\"\n}\n```\n",
+      "prediction": null,
+      "source_refs": [
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/keyframes/kf_000720.jpg",
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/evidence/new_1_t006_f001410.jpg",
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/evidence/new_1_t006_f001350.jpg"
+      ],
+      "status": "CLASSIFICATION_FAILED",
+      "track_id": "new_1_t006",
+      "visual_instance_id": "auto_visual_5a487b9a5a39bd37"
+    },
+    {
+      "cache_hit": false,
+      "contact_ref": "local-data/hero_s1/space-anchor-evidence-diag-c1/new_1_t007.jpg",
+      "contact_sha256": "3b25c41574b5447018429ad733f27d8e73b6b694e40b312ab3d8f35e9ed5cd80",
+      "failed_response_excerpt": "```json\n{\n  \"anchor_scores\": {\n    \"chest_of_drawers\": 85,\n    \"display_cabinet\": 10,\n    \"study_desk\": 5,\n    \"vanity\": 0,\n    \"wall_shelf\": 0\n  },\n  \"best_anchor\": \"chest_of_drawers\",\n  \"support_type\": {\n    \"confidence\": 90,\n    \"name\": \"surface\"\n  },\n  \"capacity_class\": {\n    \"confidence\": 80,\n    \"name\": \"medium\"\n  }\n}\n```\n",
+      "prediction": null,
+      "source_refs": [
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/keyframes/kf_000000.jpg",
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/evidence/new_1_t007_f000330.jpg",
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/evidence/new_1_t007_f000180.jpg"
+      ],
+      "status": "CLASSIFICATION_FAILED",
+      "track_id": "new_1_t007",
+      "visual_instance_id": "auto_visual_5cced6e74bbc4d70"
+    },
+    {
+      "cache_hit": false,
+      "contact_ref": "local-data/hero_s1/space-anchor-evidence-diag-c1/new_1_t008.jpg",
+      "contact_sha256": "d5b9b03a110d299c5360218619cd27f26c3fe19c48f7c71529fdcd72e42b4cd1",
+      "prediction": {
+        "anchor_scores": {
+          "chest_of_drawers": 85,
+          "display_cabinet": 10,
+          "other": 0,
+          "study_desk": 5,
+          "vanity": 5,
+          "wall_shelf": 0
+        },
+        "best_anchor": "chest_of_drawers",
+        "capacity_class": "medium",
+        "capacity_confidence": 80,
+        "display_name_zh": "斗柜台面",
+        "support_confidence": 90,
+        "support_type": "shelf"
+      },
+      "source_refs": [
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/keyframes/kf_000000.jpg",
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/evidence/new_1_t008_f000150.jpg",
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/evidence/new_1_t008_f000090.jpg"
+      ],
+      "status": "OK",
+      "track_id": "new_1_t008",
+      "visual_instance_id": "auto_visual_5cced6e74bbc4d70"
+    },
+    {
+      "cache_hit": false,
+      "contact_ref": "local-data/hero_s1/space-anchor-evidence-diag-c1/new_1_t009.jpg",
+      "contact_sha256": "24f5b9b8f128aaa2afdb4cdc87db2a16f51e61149527edfa1d6cccafe5092f3c",
+      "prediction": {
+        "anchor_scores": {
+          "chest_of_drawers": 0,
+          "display_cabinet": 0,
+          "other": 100,
+          "study_desk": 0,
+          "vanity": 0,
+          "wall_shelf": 0
+        },
+        "best_anchor": "other",
+        "capacity_class": "medium",
+        "capacity_confidence": 85,
+        "display_name_zh": "other",
+        "support_confidence": 95,
+        "support_type": "shelf"
+      },
+      "source_refs": [
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/keyframes/kf_000000.jpg",
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/evidence/new_1_t009_f000060.jpg",
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/evidence/new_1_t009_f000030.jpg"
+      ],
+      "status": "OK",
+      "track_id": "new_1_t009",
+      "visual_instance_id": "auto_visual_b0534850f5d3d40a"
+    },
+    {
+      "cache_hit": false,
+      "contact_ref": "local-data/hero_s1/space-anchor-evidence-diag-c1/new_1_t010.jpg",
+      "contact_sha256": "6ce568a352e9c1b3ffedad089c43bc5a0382edb04b0142302c7758fbd7c8ed0d",
+      "failed_response_excerpt": "```json\n{\n  \"chest_of_drawers\": 10,\n  \"display_cabinet\": 85,\n  \"study_desk\": 5,\n  \"vanity\": 5,\n  \"wall_shelf\": 5,\n  \"other\": 5,\n  \"best_anchor\": \"display_cabinet\",\n  \"support_type\": {\n    \"confidence\": 90,\n    \"name\": \"shelf\"\n  },\n  \"capacity_class\": {\n    \"confidence\": 80,\n    \"name\": \"medium\"\n  }\n}\n```\n",
+      "prediction": null,
+      "source_refs": [
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/keyframes/kf_000000.jpg",
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/evidence/new_1_t010_f000150.jpg",
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/evidence/new_1_t010_f000090.jpg"
+      ],
+      "status": "CLASSIFICATION_FAILED",
+      "track_id": "new_1_t010",
+      "visual_instance_id": "auto_visual_5cced6e74bbc4d70"
+    },
+    {
+      "cache_hit": false,
+      "contact_ref": "local-data/hero_s1/space-anchor-evidence-diag-c1/new_1_t012.jpg",
+      "contact_sha256": "346549166f260a7622cbaca8295423cb965a488548809922b65fcad37008adb5",
+      "prediction": {
+        "anchor_scores": {
+          "chest_of_drawers": 0,
+          "display_cabinet": 0,
+          "other": 5,
+          "study_desk": 0,
+          "vanity": 0,
+          "wall_shelf": 95
+        },
+        "best_anchor": "wall_shelf",
+        "capacity_class": "small",
+        "capacity_confidence": 85,
+        "display_name_zh": "墙面置物架",
+        "support_confidence": 90,
+        "support_type": "shelf"
+      },
+      "source_refs": [
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/keyframes/kf_000300.jpg",
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/evidence/new_1_t012_f000270.jpg",
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/evidence/new_1_t012_f000240.jpg"
+      ],
+      "status": "OK",
+      "track_id": "new_1_t012",
+      "visual_instance_id": "auto_visual_4e07d6cb7e4aad0e"
+    },
+    {
+      "cache_hit": false,
+      "contact_ref": "local-data/hero_s1/space-anchor-evidence-diag-c1/new_1_t014.jpg",
+      "contact_sha256": "d6636b91453228bd8f9ad0e0db37f0dc06861b6a9727ea69da96934a7efc3a3e",
+      "prediction": {
+        "anchor_scores": {
+          "chest_of_drawers": 10,
+          "display_cabinet": 85,
+          "other": 5,
+          "study_desk": 5,
+          "vanity": 10,
+          "wall_shelf": 5
+        },
+        "best_anchor": "display_cabinet",
+        "capacity_class": "medium",
+        "capacity_confidence": 85,
+        "display_name_zh": "展示柜层板",
+        "support_confidence": 95,
+        "support_type": "shelf"
+      },
+      "source_refs": [
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/keyframes/kf_000390.jpg",
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/evidence/new_1_t014_f000630.jpg",
+        "/home/Developer/proj/local-data/hero_s1/space-ingest/new_1/evidence/new_1_t014_f000600.jpg"
+      ],
+      "status": "OK",
+      "track_id": "new_1_t014",
+      "visual_instance_id": "auto_visual_b0534850f5d3d40a"
+    }
+  ],
+  "endpoint": "http://127.0.0.1:8000/v1",
+  "expected_anchor_labels": [
+    "chest_of_drawers",
+    "display_cabinet",
+    "study_desk",
+    "vanity",
+    "wall_shelf"
+  ],
+  "failed_rate": 0.3,
+  "failed_track_count": 3,
+  "guided_json": true,
+  "input_observation_count": 2278,
+  "input_track_count": 168,
+  "model": "/models/nv-community__NVIDIA-Nemotron-Nano-12B-v2-VL-NVFP4-QAD",
+  "schema_version": "1.0",
+  "usage": {
+    "calls": 13,
+    "completion_tokens": 1475,
+    "errors": 0,
+    "prompt_tokens": 6592
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "cmd": "source ~/venv/bin/activate && cd ~/proj && python scripts/reid_task.py --ingest-root results/hero_s1/ingest --vocab fixtures/hero_s1/vocab.json --config configs/reid_hero_s1_w1.yaml --attributes results/s5/attributes_hero_s1.jsonl --out results/hero_s1/reid",
+  "code": {},
+  "finished_at": "2026-07-17T17:08:25+00:00",
+  "inputs": {},
+  "outputs": {},
+  "stage": "reid",
+  "started_at": "2026-07-17T17:00:13+00:00",
+  "status": "done"
+}

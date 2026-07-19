@@ -152,6 +152,41 @@
 - Commits:工装 `4734724e`/`e7ee723e`/`f06b38e4`/`34474b65`,证据 `1bbbc91d`/
   `8e70b098`/`9a64e458`/`d9976001`,journal 手术 `58a93562`。
 
+### 增量 D7-4:口径修订、BF16 扩集回归否决、二分收窄与 v11 运行期死刑(深夜—次日晨)
+
+- **口径修订落成合同**(`docs/运行时等价判定口径_2026-07-19.md`,提交 `9ef953b7`):
+  用户裁决新增第三档 revised-0.98(集合等价+一对一标签匹配+IoU≥0.98+分数差
+  ≤1e-2),strict/diagnostic 两档原样保留。合同同时载明采纳前置:冻结对 PASS、
+  ≥24 帧未参与调参的扩集回归、主链集成回归,三关全过才准进主链。**并修正我此前
+  的口头误报**:双区 BF16 实测 img1 min IoU `0.97736`,在新口径下同样 FAIL,
+  "双区 1.336× 即刻可用"不成立;冻结对上只有 encoder-only(`0.98197`,`1.152×`)
+  过 revised-0.98——口径不迁就候选。
+- **线① BF16 扩集回归否决**(`gdino_selective_bf16_regression.py`,32 帧确定性
+  均匀抽样,evidence 提交 `84319689`):verdict=`REVISED_098_FAIL_5_OF_32`。
+  5 个失败帧全部是**一对一匹配不完整**(检测数 2→1、3→4 与两例 5→5 标签翻转),
+  IoU/分数本身反而都在门内——贴阈值翻转在开放帧上是常态而非冻结对特例。
+  encoder-only BF16 未过采纳前置②,**BF16 线关闭**;已入账运行时优化维持
+  `torch.compile` FP32 `1.170×` 唯一。
+- **线② 二分收窄两级**:v1 教训=`make_empty_tensor_value_info` 输出无 dtype,
+  TRT parser 拒收 UNKNOWN(0);v2 回填 dtype 后拿到判决
+  `UPSTREAM_OF_SCATTER_GUILTY:val_8892`——图里名为 `slice_scatter` 的节点实为
+  **Transpose 纯搬运**(输入 `val_8892 [256,20906,2]` 与输出脏度逐位相同,max
+  `4.818`),scatter/填充路径洗清,罪在更上游。v3(提交 `41a6f274`)改为穿透
+  {Transpose,Reshape,Identity,Cast,Squeeze,Unsqueeze,Flatten} 上溯两层真实算子、
+  ORT 数组回填 dtype、自动输出 `GUILTY_OP:<op>@<node>`;发射器 `c8d739ae`,
+  正在运行(vLLM 在线,与 B 阶段同型轻载)。
+- **线③ v10/v11 两项终局**。其一,OOM 真凶定案:v10 在 vLLM 已停、115GiB
+  空闲下仍 exit 137,击杀点=`_profile_trt_events` 用 CUDA/CUPTI profiler 包住
+  编译模块**首次执行**;profiler 自述仅是"佐证、永不作门",故加
+  `--skip-runtime-profile` 旁路(提交 `a49c236a`)。其二,v11(错峰,跳过
+  profiler)FP32 engine **第四次编译成功**(23:14,4225 算子 4224 进 TRT、仅
+  `aten.all.dim` 回退,两段 engine 2984+1240),但编译后执行阶段 CPU 99.8%/GPU
+  96% 空转 **4.5 小时零产出**——两段式结构正常前向应为秒级,判定运行期挂死;
+  按用户批准的 60 分钟死线规则 `docker kill`,链尾 trap 自动 `VLLM_RESTARTED`、
+  `CHAIN4_DONE`(03:47Z),错峰窗口关闭。**文本外置最终判定:编译可行
+  (aten.add 绕死,四连成),运行不可用;probe.json 从未落盘,技术稿测试态
+  表述按"过门才更新"规则不动。**
+
 ## 失败与教训
 
 - identity/tracklet 零交集仍不足以证明模型层独立:上游 learned projection 若已经见过
@@ -183,6 +218,15 @@
   `empty_cache` 不足以对抗 51GiB 驻留服务,错峰纪律对编译类任务同样适用。
   `offload_module_to_cpu` 会把权重搬 CPU 而示例输入在 cuda,FakeTensor 设备传播
   直接失败——不是可用的省内存手段。
+- **上条归因修正**:v10 证明 OOM 与 vLLM 驻留无关——真凶是 profiler 用 CUPTI
+  包住编译模块首次执行,115GiB 空闲照样 exit 137。"佐证型"测量必须天生可旁路,
+  否则它就是门。
+- 编译成功≠运行可用:v11 两段式混编(理论前向秒级)在执行阶段满载空转 4.5 小时
+  零产出。探针只在收尾打印一次 JSON,使挂死与慢基准外部完全不可分;长探针必须
+  每阶段/每 N 次 run 打一行心跳,沉默才能成为诊断信号。容器默认无 SYS_PTRACE、
+  宿主无免密 sudo,运行中栈不可观测——可观测性要在发射前设计,不能事后补。
+- 图中值名不等于算子语义:名为 `slice_scatter` 的节点实为 Transpose 搬运工。
+  二分工具必须穿透搬运算子上溯真实生产者,否则定罪永远停在无辜的中转节点。
 
 ## 明日计划
 

@@ -1,0 +1,127 @@
+{
+  "code_commit": "b9f9164807a721e463c3a694900a00ffb71c960d",
+  "marked_outputs": {
+    "add_189": {
+      "dtype": "float32",
+      "shape": [
+        2,
+        12,
+        256
+      ],
+      "source": "results/acceptance/SF1/trt-scatter-bisect-20260719-v4/result.json"
+    },
+    "full": {
+      "dtype": "float32",
+      "shape": [
+        2,
+        20906,
+        256
+      ],
+      "source": "results/acceptance/SF1/trt-scatter-bisect-20260719-v3/result.json"
+    },
+    "layer_norm_114": {
+      "dtype": "float32",
+      "shape": [
+        2,
+        12,
+        256
+      ],
+      "source": "results/acceptance/SF1/trt-scatter-bisect-20260719-v4/result.json"
+    },
+    "layer_norm_117": {
+      "dtype": "float32",
+      "shape": [
+        2,
+        20906,
+        256
+      ],
+      "source": "results/acceptance/SF1/trt-scatter-bisect-20260719-v4/result.json"
+    },
+    "linear_328": {
+      "dtype": "float32",
+      "shape": [
+        2,
+        20906,
+        256
+      ],
+      "source": "results/acceptance/SF1/trt-scatter-bisect-20260719-v4/result.json"
+    },
+    "masked_fill_46": {
+      "dtype": "float32",
+      "shape": [
+        2,
+        20906,
+        12
+      ],
+      "source": "results/acceptance/SF1/trt-scatter-bisect-20260719-v3/result.json"
+    },
+    "matmul_12": {
+      "dtype": "float32",
+      "shape": [
+        2,
+        20906,
+        12
+      ],
+      "source": "results/acceptance/SF1/trt-scatter-bisect-20260719-v4/result.json"
+    },
+    "slice_scatter": {
+      "dtype": "float32",
+      "shape": [
+        2,
+        20906,
+        256
+      ],
+      "source": "results/acceptance/SF1/trt-scatter-bisect-20260719-v3/result.json"
+    },
+    "transpose_345": {
+      "dtype": "float32",
+      "shape": [
+        2,
+        256,
+        12
+      ],
+      "source": "results/acceptance/SF1/trt-scatter-bisect-20260719-v4/result.json"
+    },
+    "val_8890": {
+      "dtype": "float32",
+      "shape": [
+        12,
+        20906,
+        2
+      ],
+      "source": "results/acceptance/SF1/trt-scatter-bisect-20260719-v3/result.json"
+    },
+    "val_8891": {
+      "dtype": "float32",
+      "shape": [
+        256,
+        20906,
+        2
+      ],
+      "source": "results/acceptance/SF1/trt-scatter-bisect-20260719-v3/result.json"
+    },
+    "val_8892": {
+      "dtype": "float32",
+      "shape": [
+        256,
+        20906,
+        2
+      ],
+      "source": "results/acceptance/SF1/trt-scatter-bisect-20260719-v3/result.json"
+    }
+  },
+  "note": "Extra outputs exist only to force TRT fusion splits; consumers must keep reading logits/pred_boxes and ignore the markers.",
+  "output_onnx": {
+    "path": "results/acceptance/SF1/trt-fusion-split-20260719-v5/marked.onnx",
+    "sha256": "1a92186ba9fb77e08fa83b95fb6d3fb155b5682eb1ca7fdbdbe410334cb51986"
+  },
+  "schema_version": "1.0",
+  "scope": "SF1_DIAGNOSTIC_FUSION_SPLIT_REPAIR_PREP",
+  "skipped": [
+    "bitwise_not_32"
+  ],
+  "source_onnx": {
+    "path": "results/acceptance/SF1/trt-gdino-20260718-v10-dynamo-static/grounding_dino.onnx",
+    "sha256": "aae91bfda8571d1bc24c3ed5f3dc4f8d68e3b111e3fbc0b7ec2d148f243864ee"
+  }
+}
